@@ -1,4 +1,4 @@
-# Academic Paper Writing Workflow for Claude
+# Medical Academic Paper Writing Workflow for Claude
 
 A structured workflow system for academic medical paper writing using Claude AI with MCP (Model Context Protocol) integration.
 
