@@ -1,4 +1,4 @@
-# Quality Control Guide (v0.2)
+# Quality Control Guide (v0.2.1)
 
 ## Overview
 논문 제출 전 **최소 3라운드**의 QC를 수행해야 합니다. 각 라운드는 서로 다른 측면에 집중하며, 모든 검증 결과는 `review/qc_log.md`에 기록합니다.
@@ -12,7 +12,8 @@
 | Round 1 | 숫자 일관성 (Number Consistency) | CRITICAL |
 | Round 2 | 참고문헌 검증 (Reference Verification) | CRITICAL |
 | Round 3 | 논리적 흐름 (Logic & Flow) | HIGH |
-| Round 4+ | 추가 검토 (Optional refinement) | MEDIUM |
+| Round 4 | 용어/약어/시제 일관성 (Terminology, Abbreviation & Tense) | HIGH |
+| Round 5+ | 추가 검토 (Optional refinement) | MEDIUM |
 
 ---
 
@@ -235,7 +236,10 @@ Conclusion이 Results에 의해 지지되는지 확인
 
 ---
 
-## Round 4+: Additional Checks (Optional)
+## Round 4: Terminology, Abbreviation & Tense Check (RECOMMENDED)
+
+> Round 1-3이 내용과 숫자에 집중한다면, Round 4는 표현의 일관성을 검증합니다.
+> Abbreviation과 Tense 오류는 리뷰어가 자주 지적하는 항목이므로 반드시 수행을 권장합니다.
 
 ### 4.1 Terminology Consistency
 동일한 개념에 동일한 용어 사용 확인
@@ -248,13 +252,13 @@ Conclusion이 Results에 의해 지지되는지 확인
 | Group labels (A/B, intervention/control) | [ ] |
 | Abbreviations | [ ] |
 
-### 4.2 Abbreviation Check
+### 4.2 Abbreviation Check (HIGH)
 - [ ] 모든 약어가 첫 사용 시 풀어서 정의됨
 - [ ] Abstract에서 별도로 정의됨 (standalone)
 - [ ] Tables/Figures에서 footnote로 정의됨
 - [ ] 일관된 약어 사용 (혼용 없음)
 
-### 4.3 Tense Consistency
+### 4.3 Tense Consistency (HIGH)
 - [ ] Methods: past tense
 - [ ] Results: past tense
 - [ ] Discussion (own findings): past tense
@@ -334,6 +338,7 @@ Conclusion이 Results에 의해 지지되는지 확인
 | `Run QC Round 1` | Number consistency check |
 | `Run QC Round 2` | Reference verification |
 | `Run QC Round 3` | Logic and flow check |
+| `Run QC Round 4` | Terminology, abbreviation & tense check |
 | `Compare [section1] vs [section2]` | Side-by-side comparison |
 | `Extract all numbers from [section]` | List all numerical values |
 | `Verify reference [#]` | Check specific citation |
