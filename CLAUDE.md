@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.2)
+# Academic Paper Writing Project (v0.2.1)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -13,12 +13,13 @@
 
 ```
 project/
-├── claude.md                     # This file - core rules & config
+├── CLAUDE.md                     # This file - core rules & config
 ├── docs/                         # Reference guides (read when needed)
 │   ├── writing_guide.md          # Section-by-section writing guide
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists (STROBE, CONSORT, etc.)
-│   └── qc_guide.md               # Quality control & consistency verification
+│   ├── qc_guide.md               # Quality control & consistency verification
+│   └── statistical_analysis_guide.md  # Statistical analysis guide
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # Master reference registry
 │   ├── pdf/                      # Original PDF files
@@ -27,7 +28,7 @@ project/
 │       └── author_year_keyword.md
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset (CSV/XLSX)
-│   ├── statistical_guide.md      # Auto-generated analysis plan
+│   ├── analysis_plan.md          # Auto-generated analysis plan
 │   └── py/                       # Python analysis scripts
 │       ├── 01_descriptive.py
 │       ├── 02_comparative.py
@@ -36,7 +37,7 @@ project/
 │   ├── table1_demographics.csv
 │   ├── table2_outcomes.csv
 │   └── statistics_summary.csv
-├── drafts/                       # Manuscript sections
+├── drafts/                       # Manuscript sections & tables
 │   ├── 01_title.md
 │   ├── 02_abstract.md
 │   ├── 03_introduction.md
@@ -45,16 +46,15 @@ project/
 │   ├── 06_discussion.md
 │   ├── 07_conclusion.md
 │   ├── 08_references.md
-│   └── 09_figure_legends.md
+│   ├── 09_figure_legends.md
+│   ├── table_1.md               # Individual table files
+│   ├── table_2.md
+│   └── figures/                  # Generated figures
+│       ├── fig_1.png
+│       └── fig_2.png
 ├── review/                       # Review & QC documents
-│   ├── consistency_check.md      # Cross-section verification log
 │   └── qc_log.md                 # QC round tracking
 └── output/                       # Final compiled manuscript
-    ├── table_1.md                # Individual table files
-    ├── table_2.md
-    ├── figures/                  # Generated figures
-    │   ├── fig_1.png
-    │   └── fig_2.png
     └── manuscript_final.docx
 ```
 
@@ -64,7 +64,7 @@ project/
 
 | File/Folder | Purpose | When to Use |
 |-------------|---------|-------------|
-| `claude.md` | Core rules, project config, writing style | Auto-loaded every session |
+| `CLAUDE.md` | Core rules, project config, writing style | Auto-loaded every session |
 | `docs/writing_guide.md` | Detailed section guidelines | When drafting specific sections |
 | `docs/expert_roles.md` | Expert team descriptions | When drafting or reviewing (Phase 2-4) |
 | `docs/checklist_guide.md` | Study-type checklists (STROBE, CONSORT, PRISMA, CARE) | Phase 5 (QC) and before submission |
@@ -74,14 +74,14 @@ project/
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
 | `knowledge/summaries/` | Key paper summaries | For frequently cited papers |
 | `data/` | Raw data (CSV/XLSX) | Phase 2 (statistical analysis) |
-| `data/statistical_guide.md` | Auto-generated analysis plan | Phase 2 (before running analysis) |
+| `data/analysis_plan.md` | Auto-generated analysis plan | Phase 2 (before running analysis) |
 | `data/py/` | Python analysis scripts | Phase 2 (statistical analysis) |
 | `results/` | Analysis output CSV files | Phase 2 (after analysis) |
-| `drafts/` | Individual section files | Phase 3-4 (drafting & polish) |
+| `drafts/` | Individual section files, tables, figures | Phase 3-4 (drafting & polish) |
+| `drafts/table_*.md` | Individual formatted tables | Phase 3 (from results CSV) |
+| `drafts/figures/` | Generated figure files | Phase 3 (from analysis) |
 | `review/qc_log.md` | QC round documentation | Phase 5 (track all QC iterations) |
-| `output/table_*.md` | Individual formatted tables | Phase 3 (from results CSV) |
-| `output/figures/` | Generated figure files | Phase 3 (from analysis) |
-| `output/` | Final compiled manuscript | Phase 6 (finalize) |
+| `output/` | Final compiled manuscript (docx only) | Phase 6 (finalize) |
 
 ---
 
@@ -182,7 +182,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 |----------|-----------|--------|
 | is the gold standard | remains the gold standard | 현재 상태 강조 |
 | is lacking | remains limited | 부정적 표현 완화 |
-| The purpose of this study was to... | This study aimed to... | 더 직접적 |
+| The purpose of this study was to... | This study aimed to... | 더 직접적 (둘 다 사용 가능) |
 | are consistent with | align with | 더 간결 |
 | elderly patients | older adult patients | 현대적/중립적 (AMA) |
 | Due to | Because of | 문법적 정확성* |
@@ -250,7 +250,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 
 ```
 Phase 1: Setup
-├── Define topic, journal, study design in claude.md
+├── Define topic, journal, study design in CLAUDE.md
 ├── Search references using MCP tools (pubmed action=search)
 ├── Register all refs in knowledge/evidence.md with key points
 ├── Save PDFs to knowledge/pdf/
@@ -258,7 +258,7 @@ Phase 1: Setup
 
 Phase 2: Statistical Analysis
 ├── Place raw data (CSV/XLSX) in data/
-├── Auto-generate data/statistical_guide.md
+├── Auto-generate data/analysis_plan.md
 │   └── Claude reads CSV → creates analysis plan
 ├── Generate Python scripts in data/py/
 │   ├── 01_descriptive.py (demographics, baseline)
@@ -266,13 +266,13 @@ Phase 2: Statistical Analysis
 │   └── 03_regression.py (if needed)
 ├── Run analysis → export results to results/
 │   └── table1_demographics.csv, table2_outcomes.csv, etc.
-├── Generate output/table_*.md from results CSV
-└── Generate figures → output/figures/
+├── Generate drafts/table_*.md from results CSV
+└── Generate figures → drafts/figures/
 
 Phase 3: Draft (in this order)
 ├── 04_methods.md      → establishes framework
 │   └── Expert: Dr. Researcher B (methodology)
-├── 05_results.md      → narrative (refer to output/table_*.md)
+├── 05_results.md      → narrative (refer to drafts/table_*.md)
 │   └── Expert: Dr. Researcher B
 ├── 03_introduction.md → background & gap
 │   └── Expert: Dr. Researcher A (clinical)
@@ -308,7 +308,7 @@ Phase 6: Finalize
 | Phase | Move to Next When |
 |-------|-------------------|
 | 1 → 2 | knowledge/evidence.md has ≥10 verified refs, topic defined, data ready |
-| 2 → 3 | statistical_guide.md created, all analyses complete, tables generated |
+| 2 → 3 | analysis_plan.md created, all analyses complete, tables generated |
 | 3 → 4 | All sections drafted, numbers match tables |
 | 4 → 5 | Writing style rules applied, Dr. Editor reviewed |
 | 5 → 6 | All 3 QC rounds passed, checklist complete |
@@ -329,11 +329,11 @@ Phase 6: Finalize
 ### Statistical Analysis
 | Command | Action |
 |---------|--------|
-| `Analyze data` | Read CSV from data/, generate statistical_guide.md |
+| `Analyze data` | Read CSV from data/, generate analysis_plan.md |
 | `Generate analysis scripts` | Create Python scripts in data/py/ |
 | `Run analysis` | Execute Python scripts, export to results/ |
-| `Generate tables` | Create output/table_*.md from results CSV |
-| `Generate figures` | Create figures in output/figures/ |
+| `Generate tables` | Create drafts/table_*.md from results CSV |
+| `Generate figures` | Create figures in drafts/figures/ |
 | `Summarize statistics` | Overview of all statistical results |
 
 ### Drafting
@@ -410,11 +410,11 @@ Apply "Natural Academic Writing Style" (above) during Phase 4:
 
 **Quick Workflow:**
 1. CSV/XLSX → `data/` 폴더에 배치
-2. `Analyze data` → statistical_guide.md 자동 생성
+2. `Analyze data` → analysis_plan.md 자동 생성
 3. `Generate analysis scripts` → data/py/ 스크립트 생성
 4. `Run analysis` → results/ CSV 출력
-5. `Generate tables` → output/table_*.md 생성
-6. `Generate figures` → output/figures/ (필요시, Table과 중복 확인)
+5. `Generate tables` → drafts/table_*.md 생성
+6. `Generate figures` → drafts/figures/ (필요시, Table과 중복 확인)
 
 **Test Selection (Dr. Statistician):**
 

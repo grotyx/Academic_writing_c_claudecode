@@ -1,4 +1,4 @@
-# Expert Team Roles & Responsibilities (v0.2)
+# Expert Team Roles & Responsibilities (v0.2.1)
 
 ## Overview
 This system simulates a collaborative academic writing team. Each expert brings specific perspectives and responsibilities to ensure high-quality manuscript development.

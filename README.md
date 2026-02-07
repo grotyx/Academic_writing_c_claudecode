@@ -4,7 +4,7 @@ A structured workflow system for academic medical paper writing using Claude AI 
 
 ## Version
 
-**v0.2** (2026-02-03)
+**v0.2.1** (2026-02-07)
 
 ---
 
@@ -39,16 +39,15 @@ project/
 │   └── summaries/                # Key paper summaries
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset
-│   ├── statistical_guide.md      # Auto-generated analysis plan
+│   ├── analysis_plan.md          # Auto-generated analysis plan
 │   └── py/                       # Python analysis scripts
 ├── results/                      # Analysis outputs
-├── drafts/                       # Manuscript sections
+├── drafts/                       # Manuscript sections, tables & figures
+│   ├── table_*.md
+│   └── figures/
 ├── review/                       # QC documents
-│   ├── consistency_check.md
 │   └── qc_log.md
 └── output/                       # Final compiled manuscript
-    ├── table_*.md
-    ├── figures/
     └── manuscript_final.docx
 ```
 
@@ -136,6 +135,23 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.2.1 (2026-02-07)
+- Fixed Introduction phrase contradiction (`"The purpose of this study was to..."` marked as both acceptable)
+- Removed unused `review/consistency_check.md` from project structure (merged into `qc_log.md`)
+- Renamed `data/statistical_guide.md` to `data/analysis_plan.md` for naming clarity
+- Moved tables and figures from `output/` to `drafts/` (`output/` now contains only final docx)
+- Created draft section templates (`drafts/01_title.md` ~ `09_figure_legends.md`)
+- Created table templates (`drafts/table_1.md` ~ `table_3.md`)
+- Upgraded QC Round 4 (Abbreviation/Tense) from Optional to RECOMMENDED (HIGH)
+- Added level tags (필수/권장/선택) to all checklists (STROBE, CONSORT, PRISMA, CARE)
+- Added level tags to General Submission Checklist
+- Added level tags to Statistical Analysis Guide quality checklist
+- Deleted stray `_ul` file
+- Fixed `claude.md` → `CLAUDE.md` case mismatch in CLAUDE.md project structure tree
+- Added missing `statistical_analysis_guide.md` to CLAUDE.md project structure tree
+- Fixed `statistical_analysis_guide.md` header version from v0.2 to v0.2.1
+- Fixed stale `output/` → `drafts/` path reference in `statistical_analysis_guide.md` Step 5
 
 ### v0.2 (2026-02-03)
 - Added Statistical Analysis Guide (`docs/statistical_analysis_guide.md`)

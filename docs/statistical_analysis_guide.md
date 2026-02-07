@@ -1,4 +1,4 @@
-# Statistical Analysis Guide (v0.2)
+# Statistical Analysis Guide (v0.2.1)
 
 > 통계 분석 수행 및 결과 정리를 위한 상세 가이드
 > Dr. Statistician의 역할을 기반으로 작성됨
@@ -17,7 +17,7 @@ Step 1: Data Preparation
 
 Step 2: Analysis Planning
 ├── Run "Analyze data" command
-├── Auto-generate data/statistical_guide.md
+├── Auto-generate data/analysis_plan.md
 │   ├── Variable types detected
 │   ├── Normality assessed
 │   └── Appropriate tests selected
@@ -40,7 +40,7 @@ Step 4: Execute Analysis
 Step 5: Output Generation
 ├── Run "Generate tables"
 ├── Run "Generate figures" (if needed)
-└── Creates output/
+└── Creates drafts/
     ├── table_1.md, table_2.md, ...
     └── figures/fig_*.png
 ```
@@ -341,26 +341,32 @@ def compare_groups(df, outcome_var, group_var):
 ## 8. Quality Checklist
 
 ### Before Analysis
-- [ ] Data file integrity verified
-- [ ] Variable types correctly identified
-- [ ] Missing values documented
-- [ ] Outliers checked
-- [ ] Analysis plan reviewed
+| Item | Level | Done |
+|------|-------|------|
+| Data file integrity verified | 필수 | [ ] |
+| Variable types correctly identified | 필수 | [ ] |
+| Missing values documented | 필수 | [ ] |
+| Outliers checked | 권장 | [ ] |
+| Analysis plan reviewed | 필수 | [ ] |
 
 ### After Analysis
-- [ ] All planned analyses completed
-- [ ] Results internally consistent
-- [ ] p-values correctly calculated
-- [ ] Effect sizes reported
-- [ ] 95% CIs provided for primary outcomes
+| Item | Level | Done |
+|------|-------|------|
+| All planned analyses completed | 필수 | [ ] |
+| Results internally consistent | 필수 | [ ] |
+| p-values correctly calculated | 필수 | [ ] |
+| Effect sizes reported | 권장 | [ ] |
+| 95% CIs provided for primary outcomes | 필수 | [ ] |
 
 ### Table/Figure Review
-- [ ] No redundancy between tables and figures
-- [ ] No redundancy between text and tables
-- [ ] Correct test indicated in footnotes
-- [ ] All abbreviations defined
-- [ ] Consistent decimal places
-- [ ] Supplementary materials appropriately used
+| Item | Level | Done |
+|------|-------|------|
+| No redundancy between tables and figures | 필수 | [ ] |
+| No redundancy between text and tables | 필수 | [ ] |
+| Correct test indicated in footnotes | 필수 | [ ] |
+| All abbreviations defined | 필수 | [ ] |
+| Consistent decimal places | 필수 | [ ] |
+| Supplementary materials appropriately used | 선택 | [ ] |
 
 ---
 
@@ -377,5 +383,5 @@ def compare_groups(df, outcome_var, group_var):
 
 ---
 
-*Last updated: v0.2*
+*Last updated: v0.2.1*
 *Based on Dr. Statistician role from expert_roles.md*

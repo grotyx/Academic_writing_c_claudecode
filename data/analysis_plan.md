@@ -85,14 +85,14 @@
 
 ## Output Files
 
-### Tables (→ output/)
+### Tables (→ drafts/)
 | Table | Content | Source |
 |-------|---------|--------|
 | table_1.md | Demographics & Baseline | results/table1_demographics.csv |
 | table_2.md | Primary Outcomes | results/table2_outcomes.csv |
 | table_3.md | Secondary Outcomes / Regression | results/table3_*.csv |
 
-### Figures (→ output/figures/)
+### Figures (→ drafts/figures/)
 | Figure | Content | Type |
 |--------|---------|------|
 | fig_1.png | Patient flow (CONSORT) | Flowchart |

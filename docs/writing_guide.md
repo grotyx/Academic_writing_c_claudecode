@@ -1,4 +1,4 @@
-# Section-by-Section Writing Guide (v0.2)
+# Section-by-Section Writing Guide (v0.2.1)
 
 ## General Principles
 - Use past tense for completed actions (Methods, Results)
