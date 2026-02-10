@@ -4,7 +4,7 @@ A structured workflow system for academic medical paper writing using Claude AI 
 
 ## Version
 
-**v0.2.1** (2026-02-07)
+**v0.2.2** (2026-02-10)
 
 ---
 
@@ -32,11 +32,12 @@ project/
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists
 │   ├── qc_guide.md               # Quality control procedures
-│   └── statistical_analysis_guide.md  # Statistical analysis guide
+│   ├── statistical_analysis_guide.md  # Statistical analysis guide
+│   └── evidence_guide.md         # Evidence 작성 가이드
 ├── knowledge/                    # Reference materials
-│   ├── evidence.md               # Master reference registry
+│   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # Original PDF files
-│   └── summaries/                # Key paper summaries
+│   └── summaries/                # 개별 논문 full-text 상세 요약
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset
 │   ├── analysis_plan.md          # Auto-generated analysis plan
@@ -56,7 +57,7 @@ project/
 ## Quick Start
 
 1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design
-2. **References**: Search PubMed and register papers in `knowledge/evidence.md`
+2. **References**: Search PubMed, summarize & register in `knowledge/evidence.md` (see `docs/evidence_guide.md`)
 3. **Data Analysis**: Place data in `data/` folder and run statistical analysis
 4. **Drafting**: Write sections in recommended order (Methods → Results → Introduction → Discussion)
 5. **QC**: Run minimum 3 QC rounds before submission
@@ -94,6 +95,7 @@ project/
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE checklists |
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
+| [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) |
 
 ---
 
@@ -135,6 +137,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.2.2 (2026-02-10)
+- Separated evidence guide from evidence registry
+- Added `docs/evidence_guide.md` with detailed summarization instructions (entry format, good/bad examples, checklist)
+- Refactored `knowledge/evidence.md` to pure data template (guide content moved to docs)
+- Updated `knowledge/` folder role hierarchy: PDF (원본) → summaries (개별 상세) → evidence (종합 정리)
 
 ### v0.2.1 (2026-02-07)
 - Fixed Introduction phrase contradiction (`"The purpose of this study was to..."` marked as both acceptable)
