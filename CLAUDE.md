@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.2.1)
+# Academic Paper Writing Project (v0.2.2)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -19,9 +19,10 @@ project/
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists (STROBE, CONSORT, etc.)
 │   ├── qc_guide.md               # Quality control & consistency verification
-│   └── statistical_analysis_guide.md  # Statistical analysis guide
+│   ├── statistical_analysis_guide.md  # Statistical analysis guide
+│   └── evidence_guide.md         # Evidence 작성 가이드
 ├── knowledge/                    # Reference materials
-│   ├── evidence.md               # Master reference registry
+│   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # Original PDF files
 │   │   └── author_year_keyword.pdf
 │   └── summaries/                # MD summaries of key papers
@@ -70,9 +71,10 @@ project/
 | `docs/checklist_guide.md` | Study-type checklists (STROBE, CONSORT, PRISMA, CARE) | Phase 5 (QC) and before submission |
 | `docs/qc_guide.md` | Consistency & accuracy verification procedures | Phase 5 (QC rounds) |
 | `docs/statistical_analysis_guide.md` | Statistical methods, test selection, templates | Phase 2 (analysis) |
-| `knowledge/evidence.md` | Reference registry & tracking | Phase 1 (setup) + before/after every citation |
+| `docs/evidence_guide.md` | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) | Phase 1 (setup) |
+| `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
-| `knowledge/summaries/` | Key paper summaries | For frequently cited papers |
+| `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
 | `data/` | Raw data (CSV/XLSX) | Phase 2 (statistical analysis) |
 | `data/analysis_plan.md` | Auto-generated analysis plan | Phase 2 (before running analysis) |
 | `data/py/` | Python analysis scripts | Phase 2 (statistical analysis) |
@@ -88,13 +90,15 @@ project/
 ## Critical Rules (MUST FOLLOW)
 
 ### 1. Citation Integrity
+
 - **NEVER fabricate or hallucinate references**
 - **ALWAYS check `knowledge/evidence.md` first** before searching (avoid duplicate work)
-- **New reference workflow:**
+- **New reference workflow:** (상세: `docs/evidence_guide.md`)
   1. Search → verify paper exists
   2. Save PDF to `knowledge/pdf/author_year_keyword.pdf`
-  3. Register in `knowledge/evidence.md` with key points
-  4. Then cite in manuscript
+  3. Register in `knowledge/evidence.md` with summary & key points
+  4. 핵심 논문은 `knowledge/summaries/`에 상세 요약 추가
+  5. Then cite in manuscript
 
 ### 2. Redundancy Prevention
 
@@ -252,8 +256,9 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 Phase 1: Setup
 ├── Define topic, journal, study design in CLAUDE.md
 ├── Search references using MCP tools (pubmed action=search)
-├── Register all refs in knowledge/evidence.md with key points
 ├── Save PDFs to knowledge/pdf/
+├── Summarize & register in knowledge/evidence.md (docs/evidence_guide.md 참조)
+├── 핵심 논문은 knowledge/summaries/에 상세 요약
 └── Read docs/writing_guide.md for target sections
 
 Phase 2: Statistical Analysis
