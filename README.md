@@ -111,9 +111,11 @@ project/
 
 **Professor Sang-Min Park, M.D., Ph.D.**
 
-Department of Orthopaedic Surgery
-Seoul National University Bundang Hospital
+Department of Orthopaedic Surgery,
+Seoul National University Bundang Hospital,
 Seoul National University College of Medicine
+
+https://sangmin.me/
 
 ---
 
