@@ -29,16 +29,7 @@ knowledge/
 
 ---
 
-## 검색 워크플로우
-
-### 새 논문 등록 절차
-
-1. **중복 확인**: `evidence.md`에서 이미 등록된 논문인지 확인
-2. **검색**: PubMed, Google Scholar 등으로 논문 검색
-3. **검증**: 논문이 실재하는지, 내용이 정확한지 확인
-4. **PDF 저장**: `knowledge/pdf/author_year_keyword.pdf`
-5. **evidence.md 등록**: 아래 형식에 맞춰 요약 작성
-6. **상세 요약** (선택): 핵심 논문은 `knowledge/summaries/`에 별도 상세 요약
+## PDF 처리 워크플로우
 
 ### PDF 파일명 규칙
 
@@ -50,6 +41,57 @@ knowledge/
 - `kim_2020_acdf_arthroplasty.pdf`
 - `park_2019_cervical_rom.pdf`
 - `smith_2023_meta_analysis_fusion.pdf`
+
+### 처리 방식: 폴더 스캔
+
+`Process new PDFs` 커맨드를 실행하면 아래 절차를 자동으로 수행한다.
+
+**절차:**
+
+1. `knowledge/pdf/` 폴더를 스캔하여 PDF 목록 확인
+2. `evidence.md`의 기존 **PDF:** 필드와 대조하여 미등록 PDF 식별
+3. 미등록 PDF 각각에 대해:
+   - PDF를 읽고 내용 파악
+   - evidence.md에 새 번호를 부여하여 entry 작성
+   - Citation, DOI, PMID 등 서지정보 추출
+   - Study Design, Objective, Main Findings 등 요약 작성
+4. 처리 결과 보고 (등록된 논문 수, 목록)
+
+**예시:**
+
+```
+사용자: knowledge/pdf/ 에 3개 PDF 추가
+       - kim_2020_acdf_arthroplasty.pdf
+       - park_2019_cervical_rom.pdf
+       - lee_2021_asd_incidence.pdf
+
+사용자: "Process new PDFs"
+
+Claude:
+  1. pdf/ 폴더 스캔 → 3개 PDF 발견
+  2. evidence.md 확인 → 모두 미등록
+  3. 각 PDF 읽기 → evidence.md에 [1], [2], [3] 등록
+  4. 보고: "3편 등록 완료: [1] Kim 2020, [2] Park 2019, [3] Lee 2021"
+```
+
+**주의사항:**
+
+- PDF 파일명이 규칙에 맞지 않으면 처리 전 파일명 변경을 제안
+- PDF를 읽을 수 없는 경우 (스캔본 등) Pending References에 추가
+- 이미 등록된 PDF는 건너뜀 (중복 방지)
+
+---
+
+## 검색을 통한 등록 워크플로우
+
+PubMed 검색 등으로 논문을 찾아 등록하는 경우:
+
+1. **중복 확인**: `evidence.md`에서 이미 등록된 논문인지 확인
+2. **검색**: PubMed, Google Scholar 등으로 논문 검색
+3. **검증**: 논문이 실재하는지, 내용이 정확한지 확인
+4. **PDF 저장**: `knowledge/pdf/author_year_keyword.pdf`
+5. **evidence.md 등록**: 아래 형식에 맞춰 요약 작성
+6. **상세 요약** (선택): 핵심 논문은 `knowledge/summaries/`에 별도 상세 요약
 
 ---
 

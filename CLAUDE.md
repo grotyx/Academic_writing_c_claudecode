@@ -327,6 +327,7 @@ Phase 6: Finalize
 | Command | Action |
 |---------|--------|
 | `Setup project for [topic]` | Initialize folder structure |
+| `Process new PDFs` | Scan knowledge/pdf/, register unprocessed PDFs in evidence.md |
 | `Search PubMed for [query]` | Use MCP pubmed tool, register in knowledge/evidence.md |
 | `Import DOI [doi]` | Fetch paper metadata and add to knowledge/evidence.md |
 | `Read writing guide for [section]` | Load section-specific guidance |
