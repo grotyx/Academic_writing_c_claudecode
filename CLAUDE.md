@@ -57,7 +57,9 @@ project/
 ├── review/                       # Review & QC documents
 │   └── qc_log.md                 # QC round tracking
 └── output/                       # Final compiled manuscript
-    └── manuscript_final.docx
+    ├── title_page_YYMMDD.docx
+    ├── manuscript_YYMMDD.docx
+    └── table_N_YYMMDD.docx
 ```
 
 ---
