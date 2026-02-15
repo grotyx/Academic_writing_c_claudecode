@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.2.2)
+# Academic Paper Writing Project (v0.2.3)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -20,7 +20,8 @@ project/
 │   ├── checklist_guide.md        # Study-type specific checklists (STROBE, CONSORT, etc.)
 │   ├── qc_guide.md               # Quality control & consistency verification
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
-│   └── evidence_guide.md         # Evidence 작성 가이드
+│   ├── evidence_guide.md         # Evidence 작성 가이드
+│   └── docx_guide.md            # DOCX 변환 가이드 (서식, 테이블, 네이밍)
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # Original PDF files
@@ -72,6 +73,7 @@ project/
 | `docs/qc_guide.md` | Consistency & accuracy verification procedures | Phase 5 (QC rounds) |
 | `docs/statistical_analysis_guide.md` | Statistical methods, test selection, templates | Phase 2 (analysis) |
 | `docs/evidence_guide.md` | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) | Phase 1 (setup) |
+| `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 6 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
 | `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
@@ -303,7 +305,11 @@ Phase 5: QC (minimum 3 rounds)
 └── Run study-specific checklist (checklist_guide.md)
 
 Phase 6: Finalize
-├── Compile to output/manuscript_final.docx
+├── Read docs/docx_guide.md (DOCX 변환 규칙 확인)
+├── Compile to DOCX (docs/docx_guide.md 규칙대로)
+│   ├── output/title_page_YYMMDD.docx (별도)
+│   ├── output/manuscript_YYMMDD.docx (본문 병합, 테이블 제외)
+│   └── output/table_N_YYMMDD.docx (각 테이블 별도)
 ├── Co-author review
 └── Final read-through
 ```
@@ -370,7 +376,7 @@ Phase 6: Finalize
 ### Finalize
 | Command | Action |
 |---------|--------|
-| `Compile manuscript` | Merge all sections |
+| `Compile manuscript` | Read `docs/docx_guide.md` → DOCX 변환 (규칙대로) |
 | `Format references for [journal]` | Apply journal citation style |
 | `Generate submission checklist` | Pre-submission verification |
 
