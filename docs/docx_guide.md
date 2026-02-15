@@ -74,7 +74,7 @@ Title(01)과 Table을 제외한 **모든 번호 섹션**을 하나의 DOCX로 �
 **기본 설정:**
 
 - 폰트: Times New Roman
-- 본문 크기: **10pt**
+- 글자 크기: 섹션 제목 **12pt** / 하위 소제목 **11pt** / 본문 **10pt**
 - 줄간격: 더블스페이스 (2.0)
 - 여백: 1인치 (2.54cm)
 - 글씨 색상: 검정
@@ -82,9 +82,9 @@ Title(01)과 Table을 제외한 **모든 번호 섹션**을 하나의 DOCX로 �
 **섹션 제목 (확장/축소 방지):**
 
 - **Heading 스타일(Heading 1, 2, 3...)을 사용하지 않음**
-- 섹션 제목은 Normal Paragraph + **Bold** 처리
+- 섹션 제목은 Normal Paragraph + **Bold, 12pt** 처리
 - Word의 Heading 스타일 사용 시 ▷ 확장/축소 화살표가 생기므로 반드시 회피
-- 하위 소제목: **Bold + Italic**
+- 하위 소제목: **Bold + Italic, 11pt**
 
 **Abstract 구조화 소제목:**
 
@@ -200,7 +200,16 @@ def add_section_title(doc, title_text):
     p = doc.add_paragraph()
     run = p.add_run(title_text.upper())
     run.bold = True
-    run.font.size = Pt(10)
+    run.font.size = Pt(12)
+    run.font.name = 'Times New Roman'
+
+# --- 하위 소제목 (Bold + Italic, 11pt) ---
+def add_subsection_title(doc, title_text):
+    p = doc.add_paragraph()
+    run = p.add_run(title_text)
+    run.bold = True
+    run.italic = True
+    run.font.size = Pt(11)
     run.font.name = 'Times New Roman'
 
 # --- 페이지 나누기 ---
@@ -287,12 +296,12 @@ def set_three_line_table(table):
 
 ### 본문 (manuscript_YYMMDD.docx)
 
-- [ ] 폰트: Times New Roman **10pt**
+- [ ] 폰트: Times New Roman (본문 10pt / 소제목 11pt / 섹션 제목 12pt)
 - [ ] 줄간격: 2.0 (더블스페이스)
 - [ ] 여백: 1인치
 - [ ] 글씨 색상: 검정
-- [ ] 섹션 제목: Bold (Heading 스타일 미사용 → 확장/축소 없음)
-- [ ] 하위 제목: Bold + Italic
+- [ ] 섹션 제목: Bold, 12pt (Heading 스타일 미사용 → 확장/축소 없음)
+- [ ] 하위 제목: Bold + Italic, 11pt
 - [ ] Abstract 구조화 소제목: Bold
 - [ ] 각 섹션: 새 페이지에서 시작
 - [ ] 연속 줄번호
