@@ -4,7 +4,7 @@ A structured workflow system for academic medical paper writing using Claude AI 
 
 ## Version
 
-**v0.2.2** (2026-02-10)
+**v0.2.3** (2026-02-15)
 
 ---
 
@@ -33,7 +33,8 @@ project/
 │   ├── checklist_guide.md        # Study-type specific checklists
 │   ├── qc_guide.md               # Quality control procedures
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
-│   └── evidence_guide.md         # Evidence 작성 가이드
+│   ├── evidence_guide.md         # Evidence 작성 가이드
+│   └── docx_guide.md            # DOCX 변환 가이드
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # Original PDF files
@@ -49,7 +50,9 @@ project/
 ├── review/                       # QC documents
 │   └── qc_log.md
 └── output/                       # Final compiled manuscript
-    └── manuscript_final.docx
+    ├── title_page_YYMMDD.docx
+    ├── manuscript_YYMMDD.docx
+    └── table_N_YYMMDD.docx
 ```
 
 ---
@@ -61,7 +64,7 @@ project/
 3. **Data Analysis**: Place data in `data/` folder and run statistical analysis
 4. **Drafting**: Write sections in recommended order (Methods → Results → Introduction → Discussion)
 5. **QC**: Run minimum 3 QC rounds before submission
-6. **Finalize**: Compile manuscript and prepare for submission
+6. **Finalize**: Compile manuscript to DOCX (see `docs/docx_guide.md`)
 
 ---
 
@@ -96,6 +99,7 @@ project/
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) |
+| [docs/docx_guide.md](docs/docx_guide.md) | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) |
 
 ---
 
@@ -103,7 +107,7 @@ project/
 
 - Claude AI with MCP support
 - Python 3.x (for statistical analysis)
-- Required Python packages: pandas, numpy, scipy, statsmodels
+- Required Python packages: pandas, numpy, scipy, statsmodels, python-docx
 
 ---
 
@@ -139,6 +143,16 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.2.3 (2026-02-15)
+
+- Added `docs/docx_guide.md` for DOCX conversion rules (formatting, table style, file naming)
+- Output files now include date suffix: `manuscript_YYMMDD.docx`, `title_page_YYMMDD.docx`, `table_N_YYMMDD.docx`
+- Title page generated as separate DOCX file
+- Tables generated as individual DOCX files with three-line style (no background, no vertical borders)
+- Manuscript body: 10pt font, continuous line numbering, page numbers, no heading styles (prevents collapse/expand)
+- Updated CLAUDE.md Phase 6 workflow and Quick Commands to reference docx_guide.md
+- Added python-docx to requirements
 
 ### v0.2.2 (2026-02-10)
 - Separated evidence guide from evidence registry
