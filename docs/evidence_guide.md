@@ -1,4 +1,4 @@
-# Evidence 작성 가이드
+# Evidence 작성 가이드 (v0.2.2)
 
 > `knowledge/evidence.md` 작성 방법 및 문헌 관리 워크플로우
 
