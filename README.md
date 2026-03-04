@@ -4,7 +4,7 @@ A structured workflow system for academic medical paper writing using Claude AI 
 
 ## Version
 
-**v0.2.3** (2026-02-15)
+**v0.2.4** (2026-03-04)
 
 ---
 
@@ -143,6 +143,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.2.4 (2026-03-04)
+
+- Added `.gitattributes` for LF line ending normalization
+- Added `.gitignore` rules for `.DS_Store`, local settings, IDE config
+- Added version headers to `docs/evidence_guide.md` (v0.2.2) and `docs/docx_guide.md` (v0.2.3)
 
 ### v0.2.3 (2026-02-15)
 
