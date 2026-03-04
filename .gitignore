@@ -1,2 +1,8 @@
+# OS generated files
+.DS_Store
+
+# Local settings
+.claude/settings.local.json
+
 # Presentation files (not part of manuscript workflow)
 presentation/
