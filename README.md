@@ -4,7 +4,7 @@ A structured workflow system for academic medical paper writing using Claude AI 
 
 ## Version
 
-**v0.2.4** (2026-03-04)
+**v0.2.5** (2026-03-09)
 
 ---
 
@@ -17,7 +17,8 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Statistical analysis workflow** with Python script generation
 - **Quality control procedures** with minimum 3-round verification
 - **Study-type specific checklists** (STROBE, CONSORT, PRISMA, CARE, etc.)
-- **MCP integration** for PubMed search and reference management
+- **PubMed search tool** with built-in Python script (no MCP or external packages required)
+- **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
 
 ---
 
@@ -43,6 +44,8 @@ project/
 │   ├── raw_data.csv              # Original dataset
 │   ├── analysis_plan.md          # Auto-generated analysis plan
 │   └── py/                       # Python analysis scripts
+├── scripts/                      # Utility scripts
+│   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── results/                      # Analysis outputs
 ├── drafts/                       # Manuscript sections, tables & figures
 │   ├── table_*.md
@@ -60,7 +63,7 @@ project/
 ## Quick Start
 
 1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design
-2. **References**: Search PubMed, summarize & register in `knowledge/evidence.md` (see `docs/evidence_guide.md`)
+2. **References**: Use `/search-evidence [query]` or `python3 scripts/search_pubmed.py` to search PubMed and register in `knowledge/evidence.md`
 3. **Data Analysis**: Place data in `data/` folder and run statistical analysis
 4. **Drafting**: Write sections in recommended order (Methods → Results → Introduction → Discussion)
 5. **QC**: Run minimum 3 QC rounds before submission
@@ -81,10 +84,21 @@ project/
 - Clear guidelines for Table vs Figure decision
 - Standard table structure (Table 1: Demographics, Table 2: Main Results)
 
-### MCP Integration
-- PubMed search and import
-- DOI-based paper retrieval
-- Reference formatting (Vancouver, AMA, APA, etc.)
+### PubMed Search Tool
+
+Built-in Python script (`scripts/search_pubmed.py`) for reference search without MCP:
+
+```bash
+python3 scripts/search_pubmed.py search "endoscopic spine surgery"  # Search
+python3 scripts/search_pubmed.py fetch 35486828                     # Import by PMID
+python3 scripts/search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # Import by DOI
+python3 scripts/search_pubmed.py related 35486828                   # Related articles
+```
+
+Slash commands for Claude integration:
+
+- `/search-evidence [query]` - Search, select, and register in evidence.md
+- `/import-doi [doi]` - Import by DOI and register in evidence.md
 
 ---
 
@@ -100,14 +114,16 @@ project/
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) |
+| [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) |
 
 ---
 
 ## Requirements
 
-- Claude AI with MCP support
-- Python 3.x (for statistical analysis)
-- Required Python packages: pandas, numpy, scipy, statsmodels, python-docx
+- Claude AI (Claude Code CLI or VSCode extension)
+- Python 3.x (for statistical analysis and PubMed search)
+- Python packages for statistical analysis: pandas, numpy, scipy, statsmodels, python-docx
+- PubMed search script (`scripts/search_pubmed.py`) uses only Python standard library (no additional packages)
 
 ---
 
@@ -143,6 +159,15 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.2.5 (2026-03-09)
+
+- Added `scripts/search_pubmed.py` - PubMed search tool using NCBI E-utilities API (no MCP, no external packages)
+  - Supports: search, fetch by PMID, import by DOI, find related articles
+  - Output formats: table, evidence.md entry, JSON
+- Added slash commands: `/search-evidence [query]`, `/import-doi [doi]`
+- Replaced MCP-dependent PubMed integration with standalone Python script
+- Updated project structure, Quick Commands, and documentation
 
 ### v0.2.4 (2026-03-04)
 

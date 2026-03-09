@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.2.4)
+# Academic Paper Writing Project (v0.2.5)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -54,6 +54,8 @@ project/
 │   └── figures/                  # Generated figures
 │       ├── fig_1.png
 │       └── fig_2.png
+├── scripts/                      # Utility scripts
+│   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── review/                       # Review & QC documents
 │   └── qc_log.md                 # QC round tracking
 └── output/                       # Final compiled manuscript
@@ -86,6 +88,7 @@ project/
 | `drafts/` | Individual section files, tables, figures | Phase 3-4 (drafting & polish) |
 | `drafts/table_*.md` | Individual formatted tables | Phase 3 (from results CSV) |
 | `drafts/figures/` | Generated figure files | Phase 3 (from analysis) |
+| `scripts/search_pubmed.py` | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) | Phase 1 (reference search) |
 | `review/qc_log.md` | QC round documentation | Phase 5 (track all QC iterations) |
 | `output/` | Final compiled manuscript (docx only) | Phase 6 (finalize) |
 
@@ -259,7 +262,8 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 ```
 Phase 1: Setup
 ├── Define topic, journal, study design in CLAUDE.md
-├── Search references using MCP tools (pubmed action=search)
+├── Search references: /search-evidence [query] 또는 scripts/search_pubmed.py
+├── Import by DOI: /import-doi [doi]
 ├── Save PDFs to knowledge/pdf/
 ├── Summarize & register in knowledge/evidence.md (docs/evidence_guide.md 참조)
 ├── 핵심 논문은 knowledge/summaries/에 상세 요약
@@ -336,8 +340,8 @@ Phase 6: Finalize
 |---------|--------|
 | `Setup project for [topic]` | Initialize folder structure |
 | `Process new PDFs` | Scan knowledge/pdf/, register unprocessed PDFs in evidence.md |
-| `Search PubMed for [query]` | Use MCP pubmed tool, register in knowledge/evidence.md |
-| `Import DOI [doi]` | Fetch paper metadata and add to knowledge/evidence.md |
+| `/search-evidence [query]` | PubMed 검색 → 선택 → evidence.md 등록 (slash command) |
+| `/import-doi [doi]` | DOI로 논문 가져와서 evidence.md 등록 (slash command) |
 | `Read writing guide for [section]` | Load section-specific guidance |
 
 ### Statistical Analysis
@@ -392,16 +396,29 @@ Phase 6: Finalize
 - Minimum 3 QC rounds mandatory before submission
 - Human expert review mandatory before submission
 
-### MCP Tool Integration
-Use `mcp__medical-kag-remote__pubmed` for reference search:
-- `action=search`: PubMed 검색
-- `action=import_by_doi`: DOI로 논문 가져오기
-- `action=hybrid_search`: 로컬 + PubMed 통합 검색
+### PubMed Search Tool
 
-Use `mcp__medical-kag-remote__reference` for citation formatting:
-- `action=format`: 단일 논문 포맷
-- `action=format_multiple`: 여러 논문 포맷
-- Supported styles: vancouver, ama, apa, jbjs, spine
+`scripts/search_pubmed.py` - NCBI E-utilities API 직접 호출 (MCP 불필요, 외부 패키지 불필요)
+
+**CLI 직접 사용:**
+
+```bash
+python3 scripts/search_pubmed.py search "query"           # 검색 (테이블 출력)
+python3 scripts/search_pubmed.py fetch <PMID> [PMID2...]  # PMID로 가져오기
+python3 scripts/search_pubmed.py doi <DOI>                # DOI로 가져오기
+python3 scripts/search_pubmed.py related <PMID>           # 관련 논문 검색
+```
+
+**옵션:**
+- `--max N`: 최대 결과 수 (기본 20)
+- `--sort relevance|pub_date`: 정렬 기준
+- `--format table|evidence|json`: 출력 형식
+- `--start-num N`: evidence 형식 시작 번호
+
+**Slash command (Claude 대화 내):**
+
+- `/search-evidence [query]`: 검색 → 선택 → abstract 기반 TODO 채우기 → evidence.md 등록
+- `/import-doi [doi]`: DOI → evidence.md 등록
 
 ### Expert Simulation
 When drafting, invoke experts from `docs/expert_roles.md`:
