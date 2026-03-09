@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.2.5)
+# Academic Paper Writing Project (v0.3.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -303,10 +303,13 @@ Phase 4: Style Polish
 │   └── Verify statistical notation
 └── Expert: Dr. Editor (final polish)
 
-Phase 5: QC (minimum 3 rounds)
+Phase 5: QC (minimum 3 rounds, 6 rounds recommended)
 ├── Round 1: Number consistency (qc_guide.md)
 ├── Round 2: Reference verification (qc_guide.md)
 ├── Round 3: Logic & flow check (qc_guide.md)
+├── Round 4: Terminology, abbreviation & tense (권장)
+├── Round 5: Statistical quality check (권장)
+├── Round 6: Critical review — 비판적 검토 (권장)
 ├── Document in review/qc_log.md
 └── Run study-specific checklist (checklist_guide.md)
 
@@ -328,7 +331,7 @@ Phase 6: Finalize
 | 2 → 3 | analysis_plan.md created, all analyses complete, tables generated |
 | 3 → 4 | All sections drafted, numbers match tables |
 | 4 → 5 | Writing style rules applied, Dr. Editor reviewed |
-| 5 → 6 | All 3 QC rounds passed, checklist complete |
+| 5 → 6 | Minimum 3 QC rounds passed (6 recommended), checklist complete |
 | 6 → Submit | Co-author approved, journal requirements met |
 
 ---
@@ -373,7 +376,7 @@ Phase 6: Finalize
 ### QC & Verification
 | Command | Action |
 |---------|--------|
-| `Run QC round [1/2/3]` | Execute specific QC round per qc_guide.md |
+| `Run QC round [1-6]` | Execute specific QC round per qc_guide.md |
 | `Check number consistency` | Cross-section number verification |
 | `Verify references` | Check all citations against evidence.md |
 | `Check logic flow` | Verify narrative consistency |

@@ -1,4 +1,4 @@
-# Expert Team Roles & Responsibilities (v0.2.1)
+# Expert Team Roles & Responsibilities (v0.3.0)
 
 ## Overview
 This system simulates a collaborative academic writing team. Each expert brings specific perspectives and responsibilities to ensure high-quality manuscript development.
@@ -119,15 +119,22 @@ This system simulates a collaborative academic writing team. Each expert brings 
 - Identifies potential statistical biases
 - Verifies number consistency across manuscript
 - Assesses clinical vs statistical significance
+- Enforces statistical parsimony (필요한 분석만 수행)
+- Defines analysis hierarchy (primary → secondary → exploratory)
+- Evaluates MCID (Minimal Clinically Important Difference) 도달 여부
+- Reviews subgroup analysis appropriateness (interaction test 확인)
 
 ### Expertise Areas
 - Parametric vs non-parametric test selection
 - Sample size and power calculations
 - Multiple comparison corrections
-- Effect size interpretation
+- Effect size interpretation (Cohen's d, OR, RR, HR)
 - Confidence interval analysis
+- Clinical significance assessment (MCID, NNT)
 - Survival analysis (when applicable)
 - Missing data impact assessment
+- Subgroup analysis and interaction testing
+- Sensitivity analysis design
 
 ### Consultation Triggers
 ```
@@ -137,11 +144,17 @@ This system simulates a collaborative academic writing team. Each expert brings 
 - "Are these p-values interpreted correctly?"
 - "Check for statistical errors"
 - "Is this effect size meaningful?"
+- "Is this clinically significant (MCID)?"
 - "How should we handle multiple comparisons?"
+- "Should we do subgroup analysis?"
+- "Do we need sensitivity analysis?"
 - "Verify numbers match across sections"
 ```
 
 ### Statistical Decision Guide
+
+> 상세 가이드: `docs/statistical_analysis_guide.md` 참조
+
 | Situation | Appropriate Test |
 |-----------|-----------------|
 | 2 groups, continuous, normal | Independent t-test |
@@ -160,6 +173,10 @@ This system simulates a collaborative academic writing team. Each expert brings 
 - [ ] Effect size not reported
 - [ ] Confidence intervals missing
 - [ ] Number inconsistencies between sections
+- [ ] RCT Table 1에 불필요한 p-value 포함
+- [ ] Analysis hierarchy 미정의 (primary/secondary 구분 없음)
+- [ ] Non-significant 결과를 "no difference"로 잘못 기술
+- [ ] Subgroup analysis에 interaction test 누락
 
 ### Guiding Questions
 *"Are the statistics appropriate for the data?"*

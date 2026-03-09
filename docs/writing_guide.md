@@ -1,4 +1,4 @@
-# Section-by-Section Writing Guide (v0.2.1)
+# Section-by-Section Writing Guide (v0.3.0)
 
 ## General Principles
 - Use past tense for completed actions (Methods, Results)
@@ -186,12 +186,18 @@ Secondary Outcomes:
 ```
 
 ### 4.6 Statistical Analysis
+
+> 상세 가이드: `docs/statistical_analysis_guide.md` 참조
+
 ```
+- Analysis hierarchy: primary → secondary → exploratory 명시
 - Descriptive statistics (mean±SD, median[IQR], n(%))
 - Normality testing method
 - Comparative tests with justification:
   - Continuous: t-test vs Mann-Whitney
   - Categorical: Chi-square vs Fisher's exact
+- Effect size measures (Cohen's d, OR, RR, HR 등)
+- 95% Confidence intervals for key outcomes
 - Multiple comparison correction (if applicable)
 - Significance level (typically p<0.05)
 - Power analysis (if prospective)
@@ -204,6 +210,8 @@ Secondary Outcomes:
 - Be specific enough for reproduction
 - Justify statistical test choices
 - Define all outcome measures before describing analysis
+- Report effect sizes with CIs, not just p-values
+- RCT Table 1: p-value 생략이 원칙 (CONSORT 2010)
 
 ---
 
@@ -259,10 +267,18 @@ Secondary Outcomes:
 - Numbers not in any table
 - Flow diagram numbers (enrolled, excluded)
 
+**Non-significant Results Reporting:**
+- ✅ "No significant difference was observed between groups (mean difference 1.2, 95% CI: -0.8 to 3.2, *p* = 0.24)"
+- ✅ "The difference did not reach statistical significance"
+- ❌ "There was no difference between groups" (absence of evidence ≠ evidence of absence)
+- ❌ "The treatment failed to show improvement" (implies expected direction)
+- ❌ "The result was insignificant" ("insignificant" ≠ "not significant")
+
 **Tips:**
 - Report what you found, not what it means
 - NO interpretation - save for Discussion
 - Report negative findings too (important for transparency)
+- Non-significant results: report CI to show precision of estimate
 - Past tense throughout
 
 ---

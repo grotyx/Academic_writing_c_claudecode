@@ -1,4 +1,4 @@
-# Quality Control Guide (v0.2.1)
+# Quality Control Guide (v0.3.0)
 
 ## Overview
 논문 제출 전 **최소 3라운드**의 QC를 수행해야 합니다. 각 라운드는 서로 다른 측면에 집중하며, 모든 검증 결과는 `review/qc_log.md`에 기록합니다.
@@ -13,7 +13,9 @@
 | Round 2 | 참고문헌 검증 (Reference Verification) | CRITICAL |
 | Round 3 | 논리적 흐름 (Logic & Flow) | HIGH |
 | Round 4 | 용어/약어/시제 일관성 (Terminology, Abbreviation & Tense) | HIGH |
-| Round 5+ | 추가 검토 (Optional refinement) | MEDIUM |
+| Round 5 | 통계적 품질 (Statistical Quality) | HIGH |
+| Round 6 | 비판적 검토 (Critical Review) | HIGH |
+| Round 7+ | 추가 검토 (Optional refinement) | MEDIUM |
 
 ---
 
@@ -60,6 +62,7 @@ Lost to follow-up     [ ]      [ ]      [ ]      [ ]     [ ]
 - p-value 표기 불일치 (예: p=0.023 vs p<0.05)
 - CI 범위 오기
 - 백분율 계산 오류 (분모 확인)
+- Effect size와 CI가 p-value와 논리적으로 일치하는지 (예: CI가 0을 포함하면 p>0.05여야 함)
 
 ### 1.3 Time/Period Consistency
 연구 기간, 추적 기간 등 시간 관련 수치 확인
@@ -267,6 +270,111 @@ Conclusion이 Results에 의해 지지되는지 확인
 
 ---
 
+## Round 5: Statistical Quality Check (HIGH)
+
+> 통계 분석의 적절성과 보고 품질을 검증합니다.
+> 상세 기준: `docs/statistical_analysis_guide.md` 참조
+
+### 5.1 Analysis Hierarchy
+- [ ] Primary outcome이 명확히 정의되었는가?
+- [ ] Secondary outcomes이 구분되어 있는가?
+- [ ] Exploratory analysis가 별도로 표시되었는가?
+- [ ] Multiple comparison correction이 필요한 곳에 적용되었는가?
+
+### 5.2 Statistical Parsimony
+- [ ] 불필요한 통계 검정이 포함되지 않았는가?
+- [ ] RCT인 경우: Table 1에 p-value가 없는가? (CONSORT 2010 원칙)
+- [ ] 관찰 연구: Table 1 p-value가 연구 목적에 부합하는가?
+- [ ] 모든 통계 검정이 연구 목적과 관련 있는가?
+
+### 5.3 Effect Size & CI
+- [ ] 주요 결과에 effect size가 보고되었는가? (Cohen's d, OR, RR, HR 등)
+- [ ] 95% CI가 주요 비교에 포함되었는가?
+- [ ] p-value만으로 결과를 해석하지 않았는가?
+
+### 5.4 Non-significant Results
+- [ ] "No difference" 대신 "no significant difference"로 기술했는가?
+- [ ] CI를 통해 추정의 정밀도를 보여주었는가?
+- [ ] "insignificant"(하찮은)를 "not significant"와 혼용하지 않았는가?
+- [ ] "failed to show" 등 방향성을 암시하는 표현을 사용하지 않았는가?
+
+### 5.5 Subgroup & Sensitivity
+- [ ] Subgroup analysis가 사전 지정(pre-specified)되었는가?
+- [ ] Interaction test가 수행되었는가? (within-group p-value만으로 해석하지 않았는가?)
+- [ ] 필요한 sensitivity analysis가 수행되었는가?
+
+---
+
+## Round 6: Critical Review — 비판적 검토 (HIGH)
+
+> 리뷰어의 시각에서 논문의 논리적 취약점과 과장을 점검합니다.
+> "만약 내가 이 논문의 리뷰어라면 무엇을 지적할까?"
+
+### 6.1 Overclaiming Check (과장 여부)
+
+**Conclusion vs Results 비교:**
+
+| Check | Pass? |
+|-------|-------|
+| Conclusion이 Results에 의해 직접 지지되는가? | [ ] |
+| "First study to..." 등 과장된 표현이 없는가? | [ ] |
+| 인과관계를 주장하지 않는가? (관찰 연구의 경우) | [ ] |
+| "Proves" 대신 "suggests", "demonstrates" 등 적절한 동사를 사용했는가? | [ ] |
+| Clinical implication이 데이터 범위를 초과하지 않는가? | [ ] |
+
+**과장 표현 체크:**
+- ❌ "This study proves that..." (관찰 연구에서)
+- ❌ "The first study to demonstrate..." (확인 불가능한 주장)
+- ❌ "Dramatic improvement" → ✅ "Significant improvement"
+- ❌ "Clearly superior" → ✅ "Associated with better outcomes"
+
+### 6.2 Logical Fallacy Check (논리적 오류)
+
+| Fallacy | Description | Check |
+|---------|-------------|-------|
+| Absence of evidence | "차이가 없었다" = "동등하다"로 해석 | [ ] |
+| Post hoc reasoning | 사후 분석 결과를 사전 가설처럼 기술 | [ ] |
+| Cherry picking | 유리한 결과만 강조, 불리한 결과 축소 | [ ] |
+| Ecological fallacy | 그룹 수준 결과를 개인에게 적용 | [ ] |
+| Correlation ≠ Causation | 상관관계를 인과관계로 기술 | [ ] |
+
+### 6.3 Bias Acknowledgment (편향 인정)
+
+- [ ] Selection bias가 Limitations에서 다루어졌는가?
+- [ ] Information/measurement bias가 언급되었는가?
+- [ ] Confounding factors가 식별되고 대응되었는가?
+- [ ] Loss to follow-up의 영향이 논의되었는가?
+- [ ] 후향적 연구의 한계가 명시되었는가? (해당 시)
+
+### 6.4 Balanced Literature Review (균형 잡힌 문헌 고찰)
+
+- [ ] 우리 결과와 일치하는 문헌만 인용하지 않았는가?
+- [ ] 상반된 결과를 보인 연구도 공정하게 인용했는가?
+- [ ] 상반된 결과에 대한 합리적 설명이 있는가? (대상군, 방법, 추적기간 차이 등)
+- [ ] 최근 문헌이 누락되지 않았는가?
+
+### 6.5 Generalizability (일반화 가능성)
+
+- [ ] 연구 대상군의 특성이 결론의 적용 범위와 일치하는가?
+- [ ] 단일 기관 연구의 한계가 논의되었는가?
+- [ ] 특정 인구집단 결과를 전체로 일반화하지 않았는가?
+- [ ] "All patients" 대신 "patients with [specific criteria]"로 한정했는가?
+
+### 6.6 Reviewer Anticipation (리뷰어 예상 질문)
+
+스스로 답해 보기:
+
+```
+Q1: 왜 이 통계 방법을 선택했는가? (다른 방법이 더 적절하지 않은가?)
+Q2: Sample size가 충분한가? Power analysis 근거는?
+Q3: 이 결과가 confounding 때문은 아닌가?
+Q4: Follow-up 기간이 충분한가?
+Q5: 이 연구가 기존 연구와 다른 점은 무엇이며, 왜 필요한가?
+Q6: Missing data가 결과에 영향을 줄 수 있는가?
+```
+
+---
+
 ## QC Documentation Template
 
 ### review/qc_log.md
@@ -319,10 +427,51 @@ Conclusion이 Results에 의해 지지되는지 확인
 
 ---
 
+## Round 5: Statistical Quality
+**Date:** YYYY-MM-DD
+
+### Findings:
+| Item | Issue | Action | Fixed? |
+|------|-------|--------|--------|
+| | | | [ ] |
+
+### Summary:
+- Parsimony issues: X
+- Effect size/CI missing: X
+- Fixed: X / Pending: X
+
+---
+
+## Round 6: Critical Review
+**Date:** YYYY-MM-DD
+
+### Findings:
+| Category | Issue | Severity | Action | Fixed? |
+|----------|-------|----------|--------|--------|
+| Overclaiming | | | | [ ] |
+| Logical fallacy | | | | [ ] |
+| Bias | | | | [ ] |
+| Literature balance | | | | [ ] |
+| Generalizability | | | | [ ] |
+
+### Reviewer Anticipated Questions:
+| Q# | Question | Addressed in Manuscript? | Location |
+|----|----------|--------------------------|----------|
+| | | [ ] | |
+
+### Summary:
+- Overclaiming issues: X
+- Logic issues: X
+- Fixed: X / Pending: X
+
+---
+
 ## Final Sign-off
 - [ ] All Round 1 issues resolved
 - [ ] All Round 2 issues resolved
 - [ ] All Round 3 issues resolved
+- [ ] All Round 5 issues resolved
+- [ ] All Round 6 issues resolved
 - [ ] Ready for submission
 
 **Date:** YYYY-MM-DD
@@ -339,6 +488,8 @@ Conclusion이 Results에 의해 지지되는지 확인
 | `Run QC Round 2` | Reference verification |
 | `Run QC Round 3` | Logic and flow check |
 | `Run QC Round 4` | Terminology, abbreviation & tense check |
+| `Run QC Round 5` | Statistical quality check |
+| `Run QC Round 6` | Critical review (비판적 검토) |
 | `Compare [section1] vs [section2]` | Side-by-side comparison |
 | `Extract all numbers from [section]` | List all numerical values |
 | `Verify reference [#]` | Check specific citation |

@@ -4,7 +4,7 @@ A structured workflow system for academic medical paper writing using Claude AI 
 
 ## Version
 
-**v0.2.5** (2026-03-09)
+**v0.3.0** (2026-03-09)
 
 ---
 
@@ -159,6 +159,32 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.3.0 (2026-03-09)
+
+- Major rewrite of `docs/statistical_analysis_guide.md` (v0.2.1 → v0.3.0)
+  - Added Statistical Parsimony principle (NEJM 2019): RCT Table 1 no p-value, SMD alternative
+  - Added Analysis Hierarchy: Primary > Secondary > Exploratory with reporting rules
+  - Added Study Design → Statistics Matching: design-specific test selection, regression models, propensity score
+  - Added Clinical vs Statistical Significance: effect sizes (Cohen's d, OR, RR, HR), spine-specific MCID values, NNT
+  - Added Subgroup Analysis Guidelines: 5 rules, interaction test requirements
+  - Added Sensitivity Analysis: types and when required
+  - Added Methods Statistical Section Checklist (10 mandatory items per ICMJE/SAMPL)
+  - Enhanced table templates: separate RCT (no p-value) and observational (with p-value) formats
+  - Enhanced figure guidelines: study design-specific figures, forest plot guide, DPI requirements
+  - Updated Python template with Cohen's d and 95% CI calculation
+  - Expanded common errors from 6 to 13 items
+- Updated `docs/writing_guide.md` (v0.2.1 → v0.3.0)
+  - Added statistical_analysis_guide cross-reference, analysis hierarchy, effect size/CI to §4.6
+  - Added non-significant results reporting guide with correct/incorrect examples to §05
+  - Added RCT Table 1 p-value omission rule
+- Updated `docs/expert_roles.md` (v0.2.1 → v0.3.0)
+  - Expanded Dr. Statistician: parsimony, hierarchy, MCID, subgroup responsibilities
+  - Added 4 new common issues to flag (RCT Table 1, hierarchy, non-significant language, interaction test)
+- Updated `docs/qc_guide.md` (v0.2.1 → v0.3.0)
+  - Added Round 5: Statistical Quality Check (hierarchy, parsimony, effect size/CI, subgroup/sensitivity)
+  - Added Round 6: Critical Review (overclaiming, logical fallacy, bias, literature balance, generalizability, reviewer anticipation)
+  - Added effect size/CI-p-value consistency check to Round 1
 
 ### v0.2.5 (2026-03-09)
 
