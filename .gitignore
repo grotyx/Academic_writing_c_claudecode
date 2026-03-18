@@ -1,9 +1,0 @@
-# OS generated files
-.DS_Store
-
-# Local settings
-.claude/settings.local.json
-.vscode/
-
-# Presentation files (not part of manuscript workflow)
-presentation/
