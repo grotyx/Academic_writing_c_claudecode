@@ -1,11 +1,21 @@
-# Academic Paper Writing Project (v0.3.0)
+# Academic Paper Writing Project (v0.3.0) — Spine GraphRAG
 
 ## Research Configuration
-**Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
-**Target Journal:** [INSERT TARGET JOURNAL]
-**Study Design:** [RCT / Cohort / Case-Control / Case Series / Meta-analysis / etc.]
+**Project:** Spine GraphRAG (Medical KAG) — 4편 논문 동시 관리
+**Source Code:** `/Users/sangminpark/Documents/rag_research/` (시스템 코드 + evaluation)
+**Publication Plan:** `/Users/sangminpark/Documents/rag_research/docs/PUBLICATION_PLAN.md`
 
-> ⚠️ Update this section for each new paper project
+### 4편 논문
+
+| 폴더 | 논문 | 타겟 저널 | IF | 상태 |
+|------|------|----------|-----|------|
+| `drafts/P1_System_Architecture/` | Spine GraphRAG 시스템 아키텍처 + 성능 검증 | JMIR | ~7.0 | 초안 v0.1 완료 |
+| `drafts/P2_SNOMED_Ontology/` | 735-Code SNOMED-CT 온톨로지 + 정규화 | IJMI | ~4.7 | 미착수 |
+| `drafts/P3_Evidence_Synthesis/` | Evidence Chain 기반 수술법 자동 비교 | Spine Journal | ~4.0 | 미착수 |
+| `drafts/P4_Clinical_Decision_Support/` | KG 기반 CDS vs LLM 직접 질문 비교 | Neurosurg Focus | ~4.1 | 미착수 (IRB 필요) |
+
+> 각 P 폴더 안에 해당 논문의 draft, figures, tables를 관리.
+> `drafts/` root의 01_title.md ~ 09_figure_legends.md 는 writing_guide 템플릿.
 
 ---
 
@@ -40,20 +50,13 @@ project/
 │   ├── table2_outcomes.csv
 │   └── statistics_summary.csv
 ├── drafts/                       # Manuscript sections & tables
-│   ├── 01_title.md
-│   ├── 02_abstract.md
-│   ├── 03_introduction.md
-│   ├── 04_methods.md
-│   ├── 05_results.md
-│   ├── 06_discussion.md
-│   ├── 07_conclusion.md
-│   ├── 08_references.md
-│   ├── 09_figure_legends.md
-│   ├── table_1.md               # Individual table files
-│   ├── table_2.md
-│   └── figures/                  # Generated figures
-│       ├── fig_1.png
-│       └── fig_2.png
+│   ├── 01_title.md ~ 09_figure_legends.md  # Writing guide templates
+│   ├── table_*.md               # Table templates
+│   ├── P1_System_Architecture/  # Paper 1: System (JMIR) — 초안 v0.1 완료
+│   │   └── P1_draft_v0.1.md
+│   ├── P2_SNOMED_Ontology/      # Paper 2: SNOMED (IJMI)
+│   ├── P3_Evidence_Synthesis/   # Paper 3: Evidence Chain (Spine J)
+│   └── P4_Clinical_Decision_Support/  # Paper 4: CDS (Neurosurg Focus)
 ├── scripts/                      # Utility scripts
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── review/                       # Review & QC documents
