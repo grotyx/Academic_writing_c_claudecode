@@ -1,6 +1,8 @@
+🇺🇸 [English](README.md) | 🇰🇷 [한국어](README.ko.md) | 🇯🇵 [日本語](README.ja.md) | 🇨🇳 [中文](README.zh.md)
+
 # Medical Academic Paper Writing Workflow for Claude
 
-A structured workflow system for academic medical paper writing using Claude AI with MCP (Model Context Protocol) integration.
+A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
@@ -34,12 +36,12 @@ project/
 │   ├── checklist_guide.md        # Study-type specific checklists
 │   ├── qc_guide.md               # Quality control procedures
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
-│   ├── evidence_guide.md         # Evidence 작성 가이드
-│   └── docx_guide.md            # DOCX 변환 가이드
+│   ├── evidence_guide.md         # Evidence writing guide
+│   └── docx_guide.md            # DOCX conversion guide
 ├── knowledge/                    # Reference materials
-│   ├── evidence.md               # 참고문헌 요약 정리 자료집
+│   ├── evidence.md               # Reference summary collection
 │   ├── pdf/                      # Original PDF files
-│   └── summaries/                # 개별 논문 full-text 상세 요약
+│   └── summaries/                # Detailed full-text paper summaries
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset
 │   ├── analysis_plan.md          # Auto-generated analysis plan
@@ -112,9 +114,9 @@ Slash commands for Claude integration:
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE checklists |
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
-| [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) |
-| [docs/docx_guide.md](docs/docx_guide.md) | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) |
-| [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) |
+| [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence writing guide (format, summary methods, workflow) |
+| [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
+| [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
 
 ---
 
@@ -215,7 +217,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 - Separated evidence guide from evidence registry
 - Added `docs/evidence_guide.md` with detailed summarization instructions (entry format, good/bad examples, checklist)
 - Refactored `knowledge/evidence.md` to pure data template (guide content moved to docs)
-- Updated `knowledge/` folder role hierarchy: PDF (원본) → summaries (개별 상세) → evidence (종합 정리)
+- Updated `knowledge/` folder role hierarchy: PDF (original) → summaries (detailed) → evidence (consolidated)
 
 ### v0.2.1 (2026-02-07)
 - Fixed Introduction phrase contradiction (`"The purpose of this study was to..."` marked as both acceptable)
@@ -225,7 +227,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 - Created draft section templates (`drafts/01_title.md` ~ `09_figure_legends.md`)
 - Created table templates (`drafts/table_1.md` ~ `table_3.md`)
 - Upgraded QC Round 4 (Abbreviation/Tense) from Optional to RECOMMENDED (HIGH)
-- Added level tags (필수/권장/선택) to all checklists (STROBE, CONSORT, PRISMA, CARE)
+- Added level tags (required/recommended/optional) to all checklists (STROBE, CONSORT, PRISMA, CARE)
 - Added level tags to General Submission Checklist
 - Added level tags to Statistical Analysis Guide quality checklist
 - Deleted stray `_ul` file
