@@ -17,7 +17,7 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Structured project organization** for manuscripts, data, and references
 - **Expert team simulation** (Clinical Expert, Methodology Expert, Statistician, Editor)
 - **Statistical analysis workflow** with Python script generation
-- **Quality control procedures** with minimum 3-round verification
+- **Quality control procedures** with minimum 3-round verification (6 rounds recommended)
 - **Study-type specific checklists** (STROBE, CONSORT, PRISMA, CARE, etc.)
 - **PubMed search tool** with built-in Python script (no MCP or external packages required)
 - **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
@@ -76,15 +76,34 @@ project/
 ## Key Features
 
 ### Expert Team Simulation
+
 - **Dr. Researcher A**: Clinical perspective (Introduction, Discussion)
 - **Dr. Researcher B**: Methodology (Methods, Results, Tables)
-- **Dr. Statistician**: Statistical validation
+- **Dr. Statistician**: Statistical validation, parsimony, MCID/NNT assessment
 - **Dr. Editor**: Final polish, consistency check
 
 ### Redundancy Prevention
+
 - Avoid triple duplication (Results text + Table + Figure)
 - Clear guidelines for Table vs Figure decision
 - Standard table structure (Table 1: Demographics, Table 2: Main Results)
+
+### Statistical Analysis Guide (v0.3.0)
+
+- Statistical Parsimony — RCT Table 1 without p-values
+- Analysis Hierarchy — Primary > Secondary > Exploratory
+- Clinical Significance — Effect size, MCID, NNT
+- Subgroup Analysis Rules — Interaction test required
+- Non-significant Results Reporting Guide
+
+### Quality Control (6 Rounds)
+
+- Round 1: Number consistency
+- Round 2: Reference verification
+- Round 3: Logic and flow
+- Round 4: Terminology, abbreviation, and tense consistency
+- Round 5: Statistical quality
+- Round 6: Critical review (overclaiming, logical fallacy, bias, generalizability)
 
 ### PubMed Search Tool
 
