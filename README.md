@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.3.0** (2026-03-09)
+**v0.4.0** (2026-04-09)
 
 ---
 
@@ -134,6 +134,8 @@ Slash commands for Claude integration:
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence writing guide (format, summary methods, workflow) |
+| [docs/revision_guide.md](docs/revision_guide.md) | Reviewer response guide (response letter, diplomatic language) |
+| [docs/figure_guide.md](docs/figure_guide.md) | Figure generation guide (DPI, palettes, Python templates) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
 
@@ -180,6 +182,24 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.4.0 (2026-04-09)
+
+- Added `docs/revision_guide.md` - Reviewer response and revision guide
+  - Point-by-point response letter format and structure
+  - Comment classification system (Major/Minor/Editorial)
+  - 5 response templates (agree, partial agree, disagree, cannot implement, clarify)
+  - Diplomatic language guide with do/don't examples
+  - Revision tracking file structure and log template
+- Added `docs/figure_guide.md` - Publication-quality figure generation guide
+  - DPI/format requirements per journal standards
+  - Python (matplotlib/seaborn) journal-style configuration template
+  - Colorblind-friendly palettes (Okabe-Ito)
+  - Figure type guides: box plot, Kaplan-Meier, forest plot, line plot
+  - Panel labeling conventions and color strategy
+- Added `drafts/00_cover_letter.md` - Concise cover letter template
+- Updated CLAUDE.md: project structure, file roles, Quick Commands for revision and figures
+- Removed Spine GraphRAG project-specific references from project structure
 
 ### v0.3.0 (2026-03-09)
 

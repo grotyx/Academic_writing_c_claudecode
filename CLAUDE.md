@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.3.0)
+# Academic Paper Writing Project (v0.4.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -21,6 +21,8 @@ project/
 │   ├── qc_guide.md               # Quality control & consistency verification
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence 작성 가이드
+│   ├── revision_guide.md        # Revision & reviewer response guide
+│   ├── figure_guide.md          # Figure generation guide
 │   └── docx_guide.md            # DOCX 변환 가이드 (서식, 테이블, 네이밍)
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
@@ -40,13 +42,10 @@ project/
 │   ├── table2_outcomes.csv
 │   └── statistics_summary.csv
 ├── drafts/                       # Manuscript sections & tables
+│   ├── 00_cover_letter.md       # Cover letter template
 │   ├── 01_title.md ~ 09_figure_legends.md  # Writing guide templates
 │   ├── table_*.md               # Table templates
-│   ├── P1_System_Architecture/  # Paper 1: System (JMIR) — 초안 v0.1 완료
-│   │   └── P1_draft_v0.1.md
-│   ├── P2_SNOMED_Ontology/      # Paper 2: SNOMED (IJMI)
-│   ├── P3_Evidence_Synthesis/   # Paper 3: Evidence Chain (Spine J)
-│   └── P4_Clinical_Decision_Support/  # Paper 4: CDS (Neurosurg Focus)
+│   └── figures/                 # Generated figures
 ├── scripts/                      # Utility scripts
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── review/                       # Review & QC documents
@@ -70,6 +69,8 @@ project/
 | `docs/qc_guide.md` | Consistency & accuracy verification procedures | Phase 5 (QC rounds) |
 | `docs/statistical_analysis_guide.md` | Statistical methods, test selection, templates | Phase 2 (analysis) |
 | `docs/evidence_guide.md` | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) | Phase 1 (setup) |
+| `docs/revision_guide.md` | Reviewer response guide (응답서 작성, 외교적 표현) | Revision (리뷰어 코멘트 수신 후) |
+| `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2-3 (figure 생성 시) |
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 6 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
@@ -374,6 +375,21 @@ Phase 6: Finalize
 | `Verify references` | Check all citations against evidence.md |
 | `Check logic flow` | Verify narrative consistency |
 | `Run checklist for [study type]` | STROBE/CONSORT/PRISMA/CARE checklist |
+
+### Revision (after reviewer comments)
+| Command | Action |
+|---------|--------|
+| `Analyze reviewer comments` | Comment 분류 (Major/Minor) 및 대응 전략 제안 |
+| `Draft response to reviewer [N]` | 특정 리뷰어 응답서 초안 작성 |
+| `Draft response letter` | 전체 응답서 초안 작성 |
+| `Review response letter` | Dr. Editor 관점에서 응답서 검토 |
+| `Check response completeness` | 응답서 ↔ 원고 수정 일치 확인 |
+
+### Figures
+| Command | Action |
+|---------|--------|
+| `Generate figure for [data/analysis]` | Read figure_guide.md → Python figure 생성 |
+| `Check figure quality` | DPI, 색맹 팔레트, 흑백 구분 확인 |
 
 ### Finalize
 | Command | Action |
