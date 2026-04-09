@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v0.3.0** (2026-03-09)
+**v0.4.0** (2026-04-09)
 
 ---
 
@@ -37,6 +37,8 @@ project/
 │   ├── qc_guide.md               # 质量控制流程
 │   ├── statistical_analysis_guide.md  # 统计分析指南
 │   ├── evidence_guide.md         # 证据文献编写指南
+│   ├── revision_guide.md        # 审稿人回复指南
+│   ├── figure_guide.md          # 图表生成指南
 │   └── docx_guide.md            # DOCX 转换指南
 ├── knowledge/                    # 参考资料
 │   ├── evidence.md               # 参考文献摘要汇编
@@ -134,6 +136,8 @@ Claude 集成斜杠命令：
 | [docs/qc_guide.md](docs/qc_guide.md) | 质量控制流程（6轮） |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | 统计分析指南（节约原则、MCID、亚组分析） |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | 证据文献编写指南（格式、摘要方法、工作流） |
+| [docs/revision_guide.md](docs/revision_guide.md) | 审稿人回复指南（回复信撰写、外交措辞） |
+| [docs/figure_guide.md](docs/figure_guide.md) | 图表生成指南（DPI、调色板、Python模板） |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 转换指南（格式、表格样式、命名规则） |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 搜索脚本（NCBI E-utilities，无需外部包） |
 
