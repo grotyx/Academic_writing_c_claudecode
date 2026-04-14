@@ -1,4 +1,4 @@
-# Quality Control Guide (v0.3.0)
+# Quality Control Guide (v0.4.0)
 
 ## Overview
 논문 제출 전 **최소 3라운드**의 QC를 수행해야 합니다. 각 라운드는 서로 다른 측면에 집중하며, 모든 검증 결과는 `review/qc_log.md`에 기록합니다.
@@ -140,10 +140,111 @@ Citation #[X]:
 ```
 
 ### 2.4 Reference List Integrity
-- [ ] 본문에 인용된 모든 reference가 list에 있음
-- [ ] List의 모든 reference가 본문에 인용됨
-- [ ] 번호 순서 정확 (순차적)
+- [ ] 본문에 인용된 모든 reference가 list에 있음 (orphan citation 없음)
+- [ ] List의 모든 reference가 본문에 인용됨 (unused reference 없음)
+- [ ] 번호가 빠짐 없이 연속적 (예: [1],[2],[4] → [3] 누락 확인)
+- [ ] 중복 번호 없음 (같은 번호가 다른 문헌에 사용되지 않음)
 - [ ] Format이 target journal style과 일치
+
+### 2.5 Placeholder Reference Detection (가짜/임시 인용 감지)
+
+> AI 작성 시 흔히 발생하는 가상 참조번호 및 placeholder 검출
+
+**Scan Pattern — 다음을 전체 원고에서 검색:**
+```
+❌ [ref1], [ref2], [ref3] ...       ← 가상 번호
+❌ [X], [XX], [N]                   ← placeholder
+❌ [?], [TBD], [TODO]               ← 미정 표시
+❌ (Author et al., year)            ← 실제 번호 미부여
+❌ [REF], [CITE], [INSERT]          ← 삽입 예정 표시
+❌ [1-99] 범위를 벗어나는 비정상 번호  ← evidence.md 총 ref 수 초과 번호
+```
+
+**Process:**
+1. 전체 원고 (.md 파일)에서 위 패턴 검색
+2. 발견 시 → `knowledge/evidence.md`에서 실제 문헌 확인 후 정확한 번호로 교체
+3. evidence.md에 해당 문헌이 없으면 → 문헌 검색 후 등록 → 번호 부여
+4. 교체 불가능한 경우 → `review/qc_log.md`에 기록
+
+### 2.6 Order of Appearance Check (등장순 번호 검증)
+
+> 대부분의 의학 저널은 **order of appearance** 방식을 채택 (Vancouver style)
+
+**Verification Process:**
+1. 원고를 Introduction → Methods → Results → Discussion → Conclusion 순서로 읽기
+2. 각 citation의 **첫 등장 위치**를 기록
+3. 첫 등장 순서와 reference 번호가 일치하는지 확인
+
+**Check Matrix:**
+```
+Citation  First Appears In    Position    Number Correct?
+[1]       Introduction ¶1     1st cited   [ ] Yes
+[2]       Introduction ¶1     2nd cited   [ ] Yes
+[3]       Introduction ¶2     3rd cited   [ ] Yes
+...
+[N]       Discussion ¶4       Nth cited   [ ] Yes
+```
+
+**Common Errors:**
+- 수정 과정에서 문장 순서 변경 → 번호 순서 깨짐
+- 섹션 삭제/추가 후 번호 미갱신
+- Discussion에서 새 reference 추가 후 기존 번호 미조정
+
+**Renumbering이 필요한 경우:**
+1. 현재 순서를 전체 기록
+2. 올바른 순서로 매핑 테이블 작성 (old → new)
+3. 모든 본문 citation 번호 일괄 변경
+4. Reference list 순서 재배치
+5. 변경 후 다시 한 번 전체 검증
+
+### 2.7 Reference Format Consistency (서지 형식 일관성)
+
+> 모든 reference가 동일한 저널 스타일로 통일되었는지 확인
+
+**Check Items:**
+| Item | Consistent? |
+|------|-------------|
+| 저자명 형식 (예: Park SM vs Park S.M. vs Park, S.M.) | [ ] |
+| 저자 수 cutoff (예: 3명 초과 시 "et al." vs 6명 초과) | [ ] |
+| 저널명 약어 (Index Medicus 기준, 마침표 유무) | [ ] |
+| 연도 위치 (저자 뒤 vs 저널 뒤) | [ ] |
+| Volume/Issue/Page 형식 (예: 2024;45(2):123-130 vs 2024, 45, 123–130) | [ ] |
+| DOI 포함 여부 및 형식 | [ ] |
+| 논문 제목 대소문자 (Sentence case vs Title Case) | [ ] |
+| 마침표, 쉼표, 세미콜론 위치 | [ ] |
+
+**Target Journal Style 확인:**
+1. Target journal의 author guidelines에서 reference style 확인
+2. 해당 저널의 최근 published article에서 실제 format 확인
+3. 모든 reference에 동일 style 적용
+
+### 2.8 Citation Distribution Check (인용 분포 균형)
+
+> 인용이 특정 섹션에 편중되지 않았는지 확인
+
+**Section-wise Citation Count:**
+| Section | Citation Count | % of Total | Assessment |
+|---------|---------------|------------|------------|
+| Introduction | | | |
+| Methods | | | |
+| Results | | | |
+| Discussion | | | |
+| Total | | 100% | |
+
+**Red Flags:**
+- Introduction에만 인용 집중, Discussion에 거의 없음
+- Discussion에서 새로운 문헌 인용 없이 자기 결과만 기술
+- Results에 불필요한 인용 (결과 섹션은 보통 최소한의 인용)
+- 특정 저자/그룹의 논문에 과도하게 의존 (self-citation 포함)
+
+**Self-citation Check:**
+- [ ] Self-citation 비율이 전체의 20% 이하인가?
+- [ ] Self-citation이 내용상 필수적인가? (불필요한 자기 인용 제거)
+
+**Recency Check:**
+- [ ] 최근 5년 이내 문헌이 전체의 50% 이상인가?
+- [ ] 해당 분야의 최신 주요 논문이 누락되지 않았는가?
+- [ ] 고전적 reference (>10년)는 꼭 필요한 것만 포함했는가?
 
 ---
 
@@ -400,14 +501,41 @@ Q6: Missing data가 결과에 영향을 줄 수 있는가?
 ## Round 2: Reference Verification
 **Date:** YYYY-MM-DD
 
-### Findings:
+### 2.1-2.4 Citation Existence, Accuracy, Placement & List Integrity:
 | Ref # | Issue | Action | Fixed? |
 |-------|-------|--------|--------|
 | | | | [ ] |
 
+### 2.5 Placeholder References Found:
+| Location | Placeholder Text | Replaced With | Fixed? |
+|----------|-----------------|---------------|--------|
+| | | | [ ] |
+
+### 2.6 Order of Appearance:
+| Citation | First Appears | Position | Number Correct? | Renumbered To |
+|----------|--------------|----------|-----------------|---------------|
+| | | | [ ] | |
+
+### 2.7 Format Consistency Issues:
+| Ref # | Issue (형식 불일치) | Action | Fixed? |
+|-------|-------------------|--------|--------|
+| | | | [ ] |
+
+### 2.8 Citation Distribution:
+| Section | Count | % | Assessment |
+|---------|-------|---|------------|
+| Introduction | | | |
+| Methods | | | |
+| Results | | | |
+| Discussion | | | |
+| Self-citation rate | | | ≤20%? |
+| Recent (≤5yr) rate | | | ≥50%? |
+
 ### Summary:
 - References checked: X/X
-- Issues found: X
+- Placeholder refs found/fixed: X/X
+- Order of appearance correct: [ ] Yes / [ ] Renumbered
+- Format inconsistencies: X
 - Fixed: X / Pending: X
 
 ---

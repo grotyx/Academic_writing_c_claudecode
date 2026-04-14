@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.4.0** (2026-04-09)
+**v0.5.0** (2026-04-14)
 
 ---
 
@@ -15,6 +15,9 @@ A structured workflow system for academic medical paper writing using Claude AI.
 This project provides a comprehensive framework for writing academic medical papers with Claude AI assistance. It includes:
 
 - **Structured project organization** for manuscripts, data, and references
+- **Multi-paper project support** with per-paper subfolder organization
+- **File versioning system** (date-based default, _v1, _REV1 styles)
+- **Revision workflow** with dedicated revision folders and file naming
 - **Expert team simulation** (Clinical Expert, Methodology Expert, Statistician, Editor)
 - **Statistical analysis workflow** with Python script generation
 - **Quality control procedures** with minimum 3-round verification (6 rounds recommended)
@@ -99,7 +102,7 @@ project/
 ### Quality Control (6 Rounds)
 
 - Round 1: Number consistency
-- Round 2: Reference verification
+- Round 2: Reference verification (+ order of appearance, placeholder detection, format consistency, citation distribution)
 - Round 3: Logic and flow
 - Round 4: Terminology, abbreviation, and tense consistency
 - Round 5: Statistical quality
@@ -182,6 +185,23 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.5.0 (2026-04-14)
+
+- Enhanced QC Round 2 (Reference Verification) with 4 new sub-checks:
+  - 2.5 Placeholder Reference Detection — detect fake/temporary citations ([ref1], [TBD], [X], etc.)
+  - 2.6 Order of Appearance Check — verify citation numbering follows Vancouver style order
+  - 2.7 Reference Format Consistency — check bibliographic style uniformity across all references
+  - 2.8 Citation Distribution Check — section-wise citation balance, self-citation rate, recency
+- Strengthened Reference List Integrity (2.4) — added number continuity and duplicate number checks
+- Updated QC Log template with Round 2 enhanced sections
+- Added File Versioning rules (Critical Rule #5) — date-based default (`_YYMMDD`), `_v1`, `_REV1`, `_FINAL`
+- Added Multi-Paper Organization (Critical Rule #6) — per-paper subfolders for data, results, drafts, output, review
+- Added Multi-Paper Project structure diagram (shared docs/knowledge/scripts, separate per-paper folders)
+- Added Revision folder structure — `drafts/revision/REV{N}/`, `output/revision/REV{N}/`
+- Added Phase 7 (Revision) to Recommended Workflow with QC re-run requirement
+- Updated Phase Completion Criteria with Submit → Revision path
+- Updated File Roles table with revision folder entries
 
 ### v0.4.0 (2026-04-09)
 
