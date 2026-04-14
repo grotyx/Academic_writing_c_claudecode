@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.4.0)
+# Academic Paper Writing Project (v0.5.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -11,6 +11,7 @@
 
 ## Project Structure
 
+### Single Paper Project (기본)
 ```
 project/
 ├── CLAUDE.md                     # This file - core rules & config
@@ -56,6 +57,97 @@ project/
     └── table_N_YYMMDD.docx
 ```
 
+### Multi-Paper Project (하나의 데이터에서 여러 논문 작성 시)
+
+> 동일 데이터셋에서 여러 논문을 작성할 때, 논문별 서브폴더로 정리
+
+```
+project/
+├── CLAUDE.md
+├── docs/                         # 공유 가이드 (모든 논문 공통)
+├── knowledge/                    # 공유 참고문헌 (모든 논문 공통)
+│   ├── evidence.md
+│   ├── pdf/
+│   └── summaries/
+├── scripts/                      # 공유 스크립트
+├── data/
+│   ├── raw_data.csv              # 원본 데이터 (공유)
+│   ├── paper1_xxx/               # 논문1 분석용 데이터
+│   │   ├── analysis_plan.md
+│   │   ├── filtered_data.csv     # 해당 논문에 맞게 필터링한 데이터
+│   │   └── py/
+│   └── paper2_yyy/               # 논문2 분석용 데이터
+│       ├── analysis_plan.md
+│       ├── filtered_data.csv
+│       └── py/
+├── results/
+│   ├── paper1_xxx/               # 논문1 분석 결과
+│   │   ├── table1_demographics.csv
+│   │   └── table2_outcomes.csv
+│   └── paper2_yyy/               # 논문2 분석 결과
+│       ├── table1_demographics.csv
+│       └── table2_outcomes.csv
+├── drafts/
+│   ├── paper1_xxx/               # 논문1 원고
+│   │   ├── 01_title.md ~ 09_figure_legends.md
+│   │   ├── table_*.md
+│   │   └── figures/
+│   └── paper2_yyy/               # 논문2 원고
+│       ├── 01_title.md ~ 09_figure_legends.md
+│       ├── table_*.md
+│       └── figures/
+├── review/
+│   ├── paper1_xxx/
+│   │   └── qc_log.md
+│   └── paper2_yyy/
+│       └── qc_log.md
+└── output/
+    ├── paper1_xxx/               # 논문1 최종 DOCX
+    │   ├── manuscript_YYMMDD.docx
+    │   └── table_N_YYMMDD.docx
+    └── paper2_yyy/               # 논문2 최종 DOCX
+        ├── manuscript_YYMMDD.docx
+        └── table_N_YYMMDD.docx
+```
+
+**서브폴더 네이밍:** `paper{N}_{keyword}` (예: `paper1_infection`, `paper2_outcomes`)
+- 저자가 선호하는 이름이 있으면 그에 따름
+- keyword는 짧고 식별 가능한 단어로
+
+### Revision 구조 (리뷰어 코멘트 수신 후)
+
+> Revision 시에는 각 논문 폴더 내에 `revision/` 서브폴더를 만들어 정리
+
+```
+# Single paper인 경우
+drafts/
+├── 01_title.md ~ (원본 유지)
+└── revision/
+    ├── REV1/                     # 1차 revision
+    │   ├── 01_title_REV1.md
+    │   ├── 04_methods_REV1.md    # 수정된 섹션만
+    │   ├── response_letter_REV1.md
+    │   └── figures/
+    └── REV2/                     # 2차 revision
+        ├── 04_methods_REV2.md
+        └── response_letter_REV2.md
+
+output/
+├── manuscript_YYMMDD.docx        # 원본 제출본
+└── revision/
+    ├── REV1/
+    │   ├── manuscript_REV1_YYMMDD.docx
+    │   ├── table_N_REV1_YYMMDD.docx
+    │   └── response_letter_REV1_YYMMDD.docx
+    └── REV2/
+        ├── manuscript_REV2_YYMMDD.docx
+        └── response_letter_REV2_YYMMDD.docx
+
+# Multi-paper인 경우: 동일 구조가 각 paper 서브폴더 안에 적용
+drafts/paper1_xxx/revision/REV1/
+output/paper1_xxx/revision/REV1/
+```
+
 ---
 
 ## File Roles
@@ -85,6 +177,8 @@ project/
 | `scripts/search_pubmed.py` | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) | Phase 1 (reference search) |
 | `review/qc_log.md` | QC round documentation | Phase 5 (track all QC iterations) |
 | `output/` | Final compiled manuscript (docx only) | Phase 6 (finalize) |
+| `drafts/revision/REV{N}/` | Revision별 수정 원고 | Phase 7 (revision) |
+| `output/revision/REV{N}/` | Revision별 최종 DOCX + response letter | Phase 7 (revision) |
 
 ---
 
@@ -153,6 +247,50 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - Run **minimum 3 QC rounds** before submission
 - Follow `docs/qc_guide.md` for detailed procedures
 - Document all checks in `review/qc_log.md`
+
+### 5. File Versioning (파일 버전 관리)
+
+> 최종본, revision, 대규모 변경 시 파일명에 버전을 표기해야 함
+
+**기본 규칙:** 저자가 별도 스타일을 지정하지 않으면 **날짜(YYMMDD)** 를 기본으로 사용
+
+**버전 표기 형식:**
+
+| 형식 | 용도 | 예시 |
+|------|------|------|
+| `_YYMMDD` | 기본 (날짜 기반) | `manuscript_260414.docx` |
+| `_v1`, `_v2` | 저자 요청 시 (순차 버전) | `manuscript_v1.docx` |
+| `_REV1`, `_REV2` | Revision 제출본 | `manuscript_REV1_260414.docx` |
+| `_FINAL` | 최종 제출본 | `manuscript_FINAL_260414.docx` |
+
+**적용 시점:**
+- **Phase 6 (Finalize):** 최초 제출본에 날짜 또는 버전 부여
+- **Revision:** `_REV1`, `_REV2` 표기 필수 (+ 날짜 병기 권장)
+- **대규모 변경:** 기존 파일 덮어쓰지 않고 새 버전으로 저장
+- **Minor 수정:** 동일 파일명 유지 가능 (git으로 추적)
+
+**파일명 패턴:**
+```
+{내용}_{버전}_{날짜}.{확장자}
+```
+- 예: `manuscript_REV1_260414.docx`, `table_1_v2.docx`, `response_letter_REV1_260414.docx`
+- 저자가 원하는 스타일이 있으면 그에 따름 (저자 지시 우선)
+
+### 6. Multi-Paper Organization (멀티 논문 정리)
+
+> 하나의 데이터에서 여러 논문을 작성할 때 반드시 서브폴더로 분리
+
+**규칙:**
+- `data/`, `results/`, `drafts/`, `output/`, `review/` 각각에 논문별 서브폴더 생성
+- `docs/`, `knowledge/`, `scripts/`는 공유 (서브폴더 불필요)
+- 서브폴더명: `paper{N}_{keyword}` 또는 저자가 지정한 이름
+- 원본 데이터는 `data/` 루트에, 논문별 필터링 데이터는 서브폴더에 배치
+
+**Revision 시:**
+- 각 논문 서브폴더 안에 `revision/REV1/`, `revision/REV2/` 생성
+- 수정된 섹션만 revision 폴더에 저장 (변경 없는 파일은 복사하지 않음)
+- Response letter도 해당 revision 폴더에 포함
+- output도 동일하게 `output/{paper}/revision/REV1/` 구조
 
 ---
 
@@ -313,8 +451,21 @@ Phase 6: Finalize
 │   ├── output/title_page_YYMMDD.docx (별도)
 │   ├── output/manuscript_YYMMDD.docx (본문 병합, 테이블 제외)
 │   └── output/table_N_YYMMDD.docx (각 테이블 별도)
+├── 파일명에 버전 표기 (기본: _YYMMDD, 저자 지정 시 _v1 등)
 ├── Co-author review
 └── Final read-through
+
+Phase 7: Revision (리뷰어 코멘트 수신 후)
+├── Read docs/revision_guide.md
+├── Revision 폴더 생성: drafts/revision/REV1/, output/revision/REV1/
+├── 수정된 섹션만 _REV1 접미사로 저장
+├── Response letter 작성 → drafts/revision/REV1/response_letter_REV1.md
+├── QC re-run (최소 Round 1-2 재수행)
+├── Compile revised DOCX → output/revision/REV1/
+│   ├── manuscript_REV1_YYMMDD.docx
+│   ├── table_N_REV1_YYMMDD.docx (변경된 테이블만)
+│   └── response_letter_REV1_YYMMDD.docx
+└── 2차 revision 시: REV2/ 폴더에 동일 구조 반복
 ```
 
 ### Phase Completion Criteria
@@ -326,7 +477,9 @@ Phase 6: Finalize
 | 3 → 4 | All sections drafted, numbers match tables |
 | 4 → 5 | Writing style rules applied, Dr. Editor reviewed |
 | 5 → 6 | Minimum 3 QC rounds passed (6 recommended), checklist complete |
-| 6 → Submit | Co-author approved, journal requirements met |
+| 6 → Submit | Co-author approved, journal requirements met, versioned files in output/ |
+| Submit → 7 | Reviewer comments received |
+| 7 → Resubmit | Revised manuscript + response letter complete, QC re-run passed |
 
 ---
 
