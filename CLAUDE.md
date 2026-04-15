@@ -33,7 +33,7 @@ project/
 │       └── author_year_keyword.md
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset (CSV/XLSX)
-│   ├── analysis_plan.md          # Auto-generated analysis plan
+│   ├── analysis_plan.md          # Analysis plan (required before analysis)
 │   └── py/                       # Python analysis scripts
 │       ├── 01_descriptive.py
 │       ├── 02_comparative.py
@@ -43,6 +43,7 @@ project/
 │   ├── table2_outcomes.csv
 │   └── statistics_summary.csv
 ├── drafts/                       # Manuscript sections & tables
+│   ├── draft_plan.md            # Draft plan (required before drafting)
 │   ├── 00_cover_letter.md       # Cover letter template
 │   ├── 01_title.md ~ 09_figure_legends.md  # Writing guide templates
 │   ├── table_*.md               # Table templates
@@ -89,10 +90,12 @@ project/
 │       └── table2_outcomes.csv
 ├── drafts/
 │   ├── paper1_xxx/               # 논문1 원고
+│   │   ├── draft_plan.md         # 논문1 원고 구성 계획
 │   │   ├── 01_title.md ~ 09_figure_legends.md
 │   │   ├── table_*.md
 │   │   └── figures/
 │   └── paper2_yyy/               # 논문2 원고
+│       ├── draft_plan.md         # 논문2 원고 구성 계획
 │       ├── 01_title.md ~ 09_figure_legends.md
 │       ├── table_*.md
 │       └── figures/
@@ -156,30 +159,30 @@ output/paper1_xxx/revision/REV1/
 |-------------|---------|-------------|
 | `CLAUDE.md` | Core rules, project config, writing style | Auto-loaded every session |
 | `docs/writing_guide.md` | Detailed section guidelines | When drafting specific sections |
-| `docs/expert_roles.md` | Expert team descriptions | When drafting or reviewing (Phase 2-4) |
-| `docs/checklist_guide.md` | Study-type checklists (STROBE, CONSORT, PRISMA, CARE) | Phase 5 (QC) and before submission |
-| `docs/qc_guide.md` | Consistency & accuracy verification procedures | Phase 5 (QC rounds) |
+| `docs/expert_roles.md` | Expert team descriptions | When drafting or reviewing (Phase 3-5) |
+| `docs/checklist_guide.md` | Study-type checklists (STROBE, CONSORT, PRISMA, CARE) | Phase 6 (QC) and before submission |
+| `docs/qc_guide.md` | Consistency & accuracy verification procedures | Phase 6 (QC rounds) |
 | `docs/statistical_analysis_guide.md` | Statistical methods, test selection, templates | Phase 2 (analysis) |
 | `docs/evidence_guide.md` | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) | Phase 1 (setup) |
 | `docs/revision_guide.md` | Reviewer response guide (응답서 작성, 외교적 표현) | Revision (리뷰어 코멘트 수신 후) |
 | `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2-3 (figure 생성 시) |
-| `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 6 (DOCX 변환 시 **반드시** 읽고 따를 것) |
+| `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
 | `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
 | `data/` | Raw data (CSV/XLSX) | Phase 2 (statistical analysis) |
-| `data/analysis_plan.md` | Auto-generated analysis plan | Phase 2 (before running analysis) |
+| `data/analysis_plan.md` | 분석 계획 (필수 작성·승인 후 분석 진행) | Phase 2 (before running analysis) |
 | `data/py/` | Python analysis scripts | Phase 2 (statistical analysis) |
 | `results/` | Analysis output CSV files | Phase 2 (after analysis) |
 | `drafts/draft_plan.md` | 원고 구성 계획 (key message, table/figure plan, outline) | Phase 3 (drafting 전 필수) |
 | `drafts/` | Individual section files, tables, figures | Phase 4-5 (drafting & polish) |
-| `drafts/table_*.md` | Individual formatted tables | Phase 3 (from results CSV) |
-| `drafts/figures/` | Generated figure files | Phase 3 (from analysis) |
+| `drafts/table_*.md` | Individual formatted tables | Phase 2 (from results CSV) |
+| `drafts/figures/` | Generated figure files | Phase 2 (from analysis) |
 | `scripts/search_pubmed.py` | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) | Phase 1 (reference search) |
-| `review/qc_log.md` | QC round documentation | Phase 5 (track all QC iterations) |
-| `output/` | Final compiled manuscript (docx only) | Phase 6 (finalize) |
-| `drafts/revision/REV{N}/` | Revision별 수정 원고 | Phase 7 (revision) |
-| `output/revision/REV{N}/` | Revision별 최종 DOCX + response letter | Phase 7 (revision) |
+| `review/qc_log.md` | QC round documentation | Phase 6 (track all QC iterations) |
+| `output/` | Final compiled manuscript (docx only) | Phase 7 (finalize) |
+| `drafts/revision/REV{N}/` | Revision별 수정 원고 | Phase 8 (revision) |
+| `output/revision/REV{N}/` | Revision별 최종 DOCX + response letter | Phase 8 (revision) |
 
 ---
 
@@ -265,7 +268,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 | `_FINAL` | 최종 제출본 | `manuscript_FINAL_260414.docx` |
 
 **적용 시점:**
-- **Phase 6 (Finalize):** 최초 제출본에 날짜 또는 버전 부여
+- **Phase 7 (Finalize):** 최초 제출본에 날짜 또는 버전 부여
 - **Revision:** `_REV1`, `_REV2` 표기 필수 (+ 날짜 병기 권장)
 - **대규모 변경:** 기존 파일 덮어쓰지 않고 새 버전으로 저장
 - **Minor 수정:** 동일 파일명 유지 가능 (git으로 추적)
@@ -492,10 +495,10 @@ Phase 1: Setup
 ├── 핵심 논문은 knowledge/summaries/에 상세 요약
 └── Read docs/writing_guide.md for target sections
 
-Phase 2: Statistical Analysis
+Phase 2: Statistical Analysis — Opus 권장 (analysis_plan)
 ├── Place raw data (CSV/XLSX) in data/
-├── Auto-generate data/analysis_plan.md
-│   └── Claude reads CSV → creates analysis plan
+├── Create data/analysis_plan.md (필수, 사용자 승인 후 진행)
+│   └── Claude reads CSV → creates analysis plan → 사용자 확인
 ├── Generate Python scripts in data/py/
 │   ├── 01_descriptive.py (demographics, baseline)
 │   ├── 02_comparative.py (group comparisons)
@@ -505,9 +508,12 @@ Phase 2: Statistical Analysis
 ├── Generate drafts/table_*.md from results CSV
 └── Generate figures → drafts/figures/
 
-Phase 3: Draft Plan (원고 구성 계획)
+Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 ├── Create drafts/draft_plan.md
 │   ├── Key message (이 논문의 핵심 메시지 1-2문장)
+│   ├── Tone & voice (논조/어조 설정)
+│   ├── Essential references (필수 인용 참고문헌 + 인용 목적)
+│   ├── Evidence gap (추가 필요 근거 자료)
 │   ├── Table/Figure plan (어떤 Table/Figure를 몇 개, 어떤 내용으로)
 │   ├── Introduction outline (background → gap → purpose 흐름)
 │   ├── Discussion outline (주요 논점 3-5개, 비교할 선행연구)
@@ -599,7 +605,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 ### Statistical Analysis
 | Command | Action |
 |---------|--------|
-| `Analyze data` | Read CSV from data/, generate analysis_plan.md |
+| `Analyze data` | Read CSV from data/, create analysis_plan.md (필수, 승인 후 진행) |
 | `Generate analysis scripts` | Create Python scripts in data/py/ |
 | `Run analysis` | Execute Python scripts, export to results/ |
 | `Generate tables` | Create drafts/table_*.md from results CSV |
@@ -695,7 +701,7 @@ When drafting, invoke experts from `docs/expert_roles.md`:
 - **Dr. Editor**: Final polish, consistency check
 
 ### Writing Style Priority
-Apply "Natural Academic Writing Style" (above) during Phase 4:
+Apply "Natural Academic Writing Style" (above) during Phase 5:
 1. Transitions: but → nonetheless
 2. Verbs: showed → demonstrated
 3. Corrections: elderly → older adult
@@ -708,7 +714,7 @@ Apply "Natural Academic Writing Style" (above) during Phase 4:
 
 **Quick Workflow:**
 1. CSV/XLSX → `data/` 폴더에 배치
-2. `Analyze data` → analysis_plan.md 자동 생성
+2. `Analyze data` → analysis_plan.md 작성 (필수, 사용자 승인 후 진행)
 3. `Generate analysis scripts` → data/py/ 스크립트 생성
 4. `Run analysis` → results/ CSV 출력
 5. `Generate tables` → drafts/table_*.md 생성
