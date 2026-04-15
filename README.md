@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.5.1** (2026-04-15)
+**v0.5.2** (2026-04-15)
 
 ---
 
@@ -202,6 +202,18 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.5.2 (2026-04-15)
+
+- Fixed cross-file inconsistencies across all documentation
+- Updated figure format workflow: PNG for drafts (300 DPI), TIFF with LZW compression for final submission (600+ DPI), PPT/vector as options
+- Updated `save_figure()` template: `draft=True` (PNG) / `final=True` (TIFF LZW) parameter split
+- Added `review/reviewer_comments_REV{N}.md` to CLAUDE.md revision structure and File Roles table
+- Fixed `analysis_plan.md` placeholder from `[FROM CLAUDE.md]` to user-friendly `[연구 설계 입력]`
+- Aligned `revision_guide.md` file structure with CLAUDE.md (R1→REV1 naming convention)
+- Added Round 4 template to `qc_guide.md` QC log and Final Sign-off
+- Updated `statistical_analysis_guide.md` figure output format to include TIFF
+- Updated `checklist_guide.md` figure submission requirements (TIFF LZW 600+ DPI)
 
 ### v0.5.1 (2026-04-15)
 

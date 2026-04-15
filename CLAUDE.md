@@ -186,6 +186,7 @@ output/paper1_xxx/revision/REV1/
 | `scripts/search_pubmed.py` | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) | Phase 1 (reference search) |
 | `review/qc_log.md` | QC round documentation | Phase 6 (track all QC iterations) |
 | `output/` | Final compiled manuscript (docx only) | Phase 7 (finalize) |
+| `review/reviewer_comments_REV{N}.md` | 리뷰어 코멘트 원문 | Phase 8 (revision) |
 | `drafts/revision/REV{N}/` | Revision별 수정 원고 | Phase 8 (revision) |
 | `output/revision/REV{N}/` | Revision별 최종 DOCX + response letter | Phase 8 (revision) |
 
@@ -570,6 +571,7 @@ Phase 7: Finalize
 
 Phase 8: Revision (리뷰어 코멘트 수신 후)
 ├── Read docs/revision_guide.md
+├── 리뷰어 코멘트 저장: review/reviewer_comments_REV1.md
 ├── Revision 폴더 생성: drafts/revision/REV1/, output/revision/REV1/
 ├── 수정된 섹션만 _REV1 접미사로 저장
 ├── Response letter 작성 → drafts/revision/REV1/response_letter_REV1.md
