@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.5.0** (2026-04-14)
+**v0.5.1** (2026-04-15)
 
 ---
 
@@ -53,6 +53,7 @@ project/
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── results/                      # Analysis outputs
 ├── drafts/                       # Manuscript sections, tables & figures
+│   ├── draft_plan.md             # Manuscript outline & strategy (required before drafting)
 │   ├── table_*.md
 │   └── figures/
 ├── review/                       # QC documents
@@ -69,10 +70,11 @@ project/
 
 1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design
 2. **References**: Use `/search-evidence [query]` or `python3 scripts/search_pubmed.py` to search PubMed and register in `knowledge/evidence.md`
-3. **Data Analysis**: Place data in `data/` folder and run statistical analysis
-4. **Drafting**: Write sections in recommended order (Methods → Results → Introduction → Discussion)
-5. **QC**: Run minimum 3 QC rounds before submission
-6. **Finalize**: Compile manuscript to DOCX (see `docs/docx_guide.md`)
+3. **Data Analysis**: Place data in `data/` folder → create `analysis_plan.md` (required) → run statistical analysis
+4. **Draft Plan**: Create `drafts/draft_plan.md` with key message, tone, essential references, and outline (Opus recommended)
+5. **Drafting**: Write sections in recommended order (Methods → Results → Introduction → Discussion) (Sonnet OK if draft plan is solid)
+6. **QC**: Run minimum 3 QC rounds before submission
+7. **Finalize**: Compile manuscript to DOCX (see `docs/docx_guide.md`)
 
 ---
 
@@ -84,6 +86,19 @@ project/
 - **Dr. Researcher B**: Methodology (Methods, Results, Tables)
 - **Dr. Statistician**: Statistical validation, parsimony, MCID/NNT assessment
 - **Dr. Editor**: Final polish, consistency check
+
+### Mandatory Planning Before Writing
+
+- **Analysis Plan** (`data/analysis_plan.md`): Required before any statistical analysis — defines research questions, endpoints, and test selection
+- **Draft Plan** (`drafts/draft_plan.md`): Required before any section drafting — defines key message, tone/voice, essential references, evidence gaps, table/figure plan, and section outlines
+- Both plans require user approval before proceeding to the next phase
+- Per-paper plans for multi-paper projects
+
+### Model Selection by Phase
+
+- **Opus recommended**: Analysis Plan, Draft Plan, Revision — strategic decisions that determine paper quality
+- **Sonnet default (Opus if budget allows)**: Drafting, Style Polish, QC — plan-guided execution
+- Core principle: "Plan with Opus → Write with Sonnet"
 
 ### Redundancy Prevention
 
@@ -185,6 +200,21 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.5.1 (2026-04-15)
+
+- Added Analysis Plan Mandatory (Critical Rule #7) — `analysis_plan.md` must be created and approved before running any statistical analysis
+  - Per-paper analysis plans for multi-paper projects (`data/paper{N}_xxx/analysis_plan.md`)
+  - Required contents: research questions, inclusion/exclusion criteria, variable definitions, test selection rationale, significance level
+- Added Draft Plan Mandatory (Critical Rule #8) — `drafts/draft_plan.md` must be created and approved before drafting any sections
+  - Required contents: key message, tone/voice, essential references, evidence gaps, table/figure plan, introduction/discussion outlines, limitation points
+  - Per-paper draft plans for multi-paper projects
+- Added Model Selection by Phase (Critical Rule #9) — cost-efficient model guidance
+  - Opus recommended: Analysis Plan, Draft Plan, Revision (strategic phases)
+  - Sonnet default with Opus optional: Drafting, Style Polish, QC (plan-guided execution)
+  - Plan Mode (`/plan`) recommended for Draft Plan creation
+- Workflow phases renumbered (7 → 8 phases): added Phase 3 (Draft Plan) between Analysis and Drafting
+- Updated Phase Completion Criteria with draft_plan.md approval gate
 
 ### v0.5.0 (2026-04-14)
 
