@@ -17,12 +17,13 @@ Step 1: Data Preparation
 
 Step 2: Analysis Planning
 ├── Run "Analyze data" command
-├── Auto-generate data/analysis_plan.md
-│   ├── Variable types detected
-│   ├── Normality assessed
-│   ├── Primary/secondary/exploratory endpoints defined
-│   └── Appropriate tests selected
-└── Review with Dr. Statistician perspective
+├── Create data/analysis_plan.md (사용자 승인 필수)
+│   ├── Research question & hypothesis
+│   ├── Study population (inclusion/exclusion)
+│   ├── Variable definitions (primary/secondary/exploratory)
+│   ├── Statistical methods & justification
+│   └── Significance level & multiple comparison plan
+└── 사용자 확인 후 Step 3 진행
 
 Step 3: Script Generation
 ├── Run "Generate analysis scripts"
@@ -43,7 +44,7 @@ Step 5: Output Generation
 ├── Run "Generate figures" (if needed)
 └── Creates drafts/
     ├── table_1.md, table_2.md, ...
-    └── figures/fig_*.png
+    └── figures/fig_*.png (초안), fig_*.tiff (제출용)
 ```
 
 ---

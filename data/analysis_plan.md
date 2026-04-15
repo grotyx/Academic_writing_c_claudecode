@@ -1,137 +1,132 @@
-# Statistical Analysis Guide
+# Analysis Plan
 
-> 이 파일은 data/ 폴더의 CSV/XLSX 파일을 분석하여 자동 생성됩니다.
-> `Analyze data` 명령으로 데이터에 맞게 업데이트됩니다.
+> 통계 분석 전 반드시 작성하고 사용자 승인 후 진행합니다.
+> 상세 통계 가이드: `docs/statistical_analysis_guide.md` 참조
 
 ---
 
-## Data Overview
+## 1. Research Question & Hypothesis (연구 질문 및 가설)
+
+**연구 질문:**
+- [연구 질문을 구체적으로 기술]
+
+**가설:**
+- H0: [귀무가설]
+- H1: [대립가설]
+
+---
+
+## 2. Study Population (대상 선정/제외 기준)
+
+**Design:** `[연구 설계 입력: RCT / Cohort / Case-Control / etc.]`
+
+**Inclusion Criteria:**
+- [기준 1]
+- [기준 2]
+
+**Exclusion Criteria:**
+- [기준 1]
+- [기준 2]
+
+**Expected Sample Size:** [N]
+
+---
+
+## 3. Data Overview
 
 ### Source File
-- **File:** `[AUTO: filename.csv]`
-- **Rows:** `[AUTO: n rows]`
-- **Columns:** `[AUTO: n columns]`
-- **Last Updated:** `[AUTO: date]`
+- **File:** `[filename.csv/xlsx]`
+- **Rows:** `[n rows]`
+- **Columns:** `[n columns]`
 
 ### Variable Summary
 
-| Variable | Type | Description | Missing (%) |
-|----------|------|-------------|-------------|
-| `[AUTO]` | Continuous/Categorical | `[AUTO]` | `[AUTO]` |
+| Variable | Type | Description | Role | Missing (%) |
+|----------|------|-------------|------|-------------|
+| `[var]` | Continuous/Categorical | `[설명]` | Primary/Secondary/Covariate | `[%]` |
 
 ---
 
-## Study Design
+## 4. Variable Definitions (변수 정의)
 
-- **Design:** `[FROM claude.md: Study Design]`
-- **Groups:** `[AUTO: detected groups or manual input]`
-- **Primary Outcome:** `[MANUAL: specify]`
-- **Secondary Outcomes:** `[MANUAL: specify]`
+### Primary Endpoint
+- **Variable:** [변수명]
+- **Definition:** [정의]
+- **Measurement:** [측정 방법 및 시점]
 
----
+### Secondary Endpoints
+- [변수명]: [정의 및 측정 방법]
+- [변수명]: [정의 및 측정 방법]
 
-## Analysis Plan
+### Exploratory Endpoints (해당 시)
+- [변수명]: [정의]
 
-### 1. Descriptive Statistics (→ table_1.md)
-
-**Continuous Variables:**
-- Report as: mean ± SD (normal) or median [IQR] (non-normal)
-- Normality test: Shapiro-Wilk (n < 50) or Kolmogorov-Smirnov (n ≥ 50)
-
-**Categorical Variables:**
-- Report as: n (%)
-
-**Script:** `data/py/01_descriptive.py`
-**Output:** `results/table1_demographics.csv`
-
-### 2. Comparative Analysis (→ table_2.md, table_3.md)
-
-**Between-Group Comparisons:**
-
-| Comparison | Variable Type | Distribution | Test |
-|------------|---------------|--------------|------|
-| 2 groups | Continuous | Normal | Independent t-test |
-| 2 groups | Continuous | Non-normal | Mann-Whitney U |
-| 2 groups | Categorical | - | Chi-square / Fisher's exact |
-| >2 groups | Continuous | Normal | One-way ANOVA |
-| >2 groups | Continuous | Non-normal | Kruskal-Wallis |
-| Paired | Continuous | Normal | Paired t-test |
-| Paired | Continuous | Non-normal | Wilcoxon signed-rank |
-
-**Script:** `data/py/02_comparative.py`
-**Output:** `results/table2_outcomes.csv`
-
-### 3. Advanced Analysis (if applicable)
-
-**Regression Analysis:**
-- Linear regression: continuous outcome
-- Logistic regression: binary outcome
-- Cox regression: time-to-event outcome
-
-**Script:** `data/py/03_regression.py`
-**Output:** `results/table3_regression.csv`
+### Covariates / Confounders
+- [변수명]: [정의 및 선정 근거]
 
 ---
 
-## Statistical Thresholds
+## 5. Statistical Methods (통계 검정법 선택 및 근거)
+
+### Descriptive Statistics
+- Continuous (normal): mean ± SD
+- Continuous (non-normal): median [IQR]
+- Categorical: n (%)
+- Normality test: Shapiro-Wilk (n < 50) / Kolmogorov-Smirnov (n ≥ 50)
+
+### Comparative Analysis
+
+| Comparison | Variable Type | Distribution | Test | Justification |
+|------------|---------------|--------------|------|---------------|
+| [비교 내용] | Continuous/Categorical | Normal/Non-normal | [검정법] | [선택 근거] |
+
+### Advanced Analysis (해당 시)
+- [ ] Linear regression — [목적]
+- [ ] Logistic regression — [목적]
+- [ ] Cox regression — [목적]
+- [ ] Other: [specify]
+
+---
+
+## 6. Significance Level & Multiple Comparison (유의수준 및 다중비교 보정)
 
 | Parameter | Value |
 |-----------|-------|
 | Significance level (α) | 0.05 |
 | Confidence interval | 95% |
-| Multiple comparison correction | Bonferroni (if >3 comparisons) |
+| Multiple comparison correction | [None / Bonferroni / Holm / FDR] |
+| Correction 적용 대상 | [어떤 비교에 적용할지] |
 
 ---
 
-## Output Files
+## 7. Output Plan
+
+### Scripts (→ data/py/)
+| Script | Purpose |
+|--------|---------|
+| 01_descriptive.py | Baseline demographics |
+| 02_comparative.py | Group comparisons |
+| 03_regression.py | Advanced analysis (if needed) |
 
 ### Tables (→ drafts/)
 | Table | Content | Source |
 |-------|---------|--------|
 | table_1.md | Demographics & Baseline | results/table1_demographics.csv |
 | table_2.md | Primary Outcomes | results/table2_outcomes.csv |
-| table_3.md | Secondary Outcomes / Regression | results/table3_*.csv |
+| table_3.md | [Additional Analysis] | results/table3_*.csv |
 
 ### Figures (→ drafts/figures/)
 | Figure | Content | Type |
 |--------|---------|------|
-| fig_1.png | Patient flow (CONSORT) | Flowchart |
-| fig_2.png | Primary outcome comparison | Bar/Box plot |
-| fig_3.png | Kaplan-Meier (if applicable) | Survival curve |
+| [fig_N.png] | [내용] | [Bar/Box/Line/Survival/Flow] |
 
 ---
 
-## Python Environment
+## Checklist Before Proceeding
 
-```python
-# Required packages
-import pandas as pd
-import numpy as np
-from scipy import stats
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-# For advanced analysis
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
-from sklearn.preprocessing import LabelEncoder
-```
-
----
-
-## Checklist Before Analysis
-
-- [ ] Data file placed in data/ folder
-- [ ] Variable names are clear and consistent
-- [ ] Missing values identified and documented
-- [ ] Outcome variables defined
-- [ ] Group variable identified (if comparative study)
-- [ ] Statistical plan reviewed by Dr. Statistician
-
----
-
-## Notes
-
-- All p-values reported to 3 decimal places (or <0.001)
-- Effect sizes reported where applicable
-- 95% CI provided for primary outcomes
-- This guide updates automatically when data changes
+- [ ] 연구 질문과 가설이 명확한가?
+- [ ] 선정/제외 기준이 구체적인가?
+- [ ] Primary endpoint가 1개로 정의되었는가?
+- [ ] 통계 검정법이 데이터 유형에 적합한가?
+- [ ] 다중비교 보정이 필요한 곳에 계획되었는가?
+- [ ] **사용자 승인 완료** → 분석 진행
