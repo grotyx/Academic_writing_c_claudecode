@@ -165,7 +165,7 @@ output/paper1_xxx/revision/REV1/
 | `docs/statistical_analysis_guide.md` | Statistical methods, test selection, templates | Phase 2 (analysis) |
 | `docs/evidence_guide.md` | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) | Phase 1 (setup) |
 | `docs/revision_guide.md` | Reviewer response guide (응답서 작성, 외교적 표현) | Revision (리뷰어 코멘트 수신 후) |
-| `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2-3 (figure 생성 시) |
+| `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2 (figure 생성 시) |
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
@@ -580,7 +580,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | Phase | Move to Next When |
 |-------|-------------------|
 | 1 → 2 | knowledge/evidence.md has ≥10 verified refs, topic defined, data ready |
-| 2 → 3 | analysis_plan.md created, all analyses complete, tables generated |
+| 2 → 3 | analysis_plan.md created & approved, all analyses complete, tables generated |
 | 3 → 4 | draft_plan.md created & approved, key message·table/figure plan·outline 확정 |
 | 4 → 5 | All sections drafted, numbers match tables |
 | 5 → 6 | Writing style rules applied, Dr. Editor reviewed |
@@ -612,10 +612,17 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `Generate figures` | Create figures in drafts/figures/ |
 | `Summarize statistics` | Overview of all statistical results |
 
+### Draft Plan
+
+| Command              | Action                                      |
+|----------------------|---------------------------------------------|
+| `Create draft plan`  | Create drafts/draft_plan.md (Opus 권장)     |
+| `Review draft plan`  | draft_plan.md 검토 및 수정 제안             |
+
 ### Drafting
 | Command | Action |
 |---------|--------|
-| `Draft [section]` | Write specific section |
+| `Draft [section]` | Write specific section (draft_plan.md 기반) |
 | `Draft [section] as Dr. [Expert]` | Write with specific expert perspective |
 | `Review as Dr. [Expert]` | Get expert feedback on current draft |
 | `Team review [section]` | All experts review section |
