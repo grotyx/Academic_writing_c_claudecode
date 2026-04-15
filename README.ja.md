@@ -49,7 +49,7 @@ project/
 │   └── summaries/                # 個別論文の詳細要約
 ├── data/                         # 統計分析
 │   ├── raw_data.csv              # 元データセット
-│   ├── analysis_plan.md          # 自動生成分析計画
+│   ├── analysis_plan.md          # 分析計画（分析前に必須作成）
 │   └── py/                       # Python 分析スクリプト
 ├── scripts/                      # ユーティリティスクリプト
 │   └── search_pubmed.py          # PubMed 検索ツール（外部依存なし）
