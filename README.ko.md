@@ -40,6 +40,8 @@ project/
 │   ├── qc_guide.md               # 품질 관리 절차
 │   ├── statistical_analysis_guide.md  # 통계 분석 가이드
 │   ├── evidence_guide.md         # 근거 문헌 작성 가이드
+│   ├── revision_guide.md        # 리뷰어 응답 가이드
+│   ├── figure_guide.md          # Figure 생성 가이드
 │   └── docx_guide.md            # DOCX 변환 가이드
 ├── knowledge/                    # 참고 자료
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
@@ -47,7 +49,7 @@ project/
 │   └── summaries/                # 개별 논문 상세 요약
 ├── data/                         # 통계 분석
 │   ├── raw_data.csv              # 원본 데이터셋
-│   ├── analysis_plan.md          # 자동 생성 분석 계획
+│   ├── analysis_plan.md          # 분석 계획 (분석 전 필수 작성)
 │   └── py/                       # Python 분석 스크립트
 ├── scripts/                      # 유틸리티 스크립트
 │   └── search_pubmed.py          # PubMed 검색 도구 (외부 의존성 없음)

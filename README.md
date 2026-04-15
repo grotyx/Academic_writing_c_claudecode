@@ -40,6 +40,8 @@ project/
 │   ├── qc_guide.md               # Quality control procedures
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence writing guide
+│   ├── revision_guide.md        # Reviewer response guide
+│   ├── figure_guide.md          # Figure generation guide
 │   └── docx_guide.md            # DOCX conversion guide
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # Reference summary collection
@@ -47,7 +49,7 @@ project/
 │   └── summaries/                # Detailed full-text paper summaries
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset
-│   ├── analysis_plan.md          # Auto-generated analysis plan
+│   ├── analysis_plan.md          # Analysis plan (required before analysis)
 │   └── py/                       # Python analysis scripts
 ├── scripts/                      # Utility scripts
 │   └── search_pubmed.py          # PubMed search tool (no external deps)

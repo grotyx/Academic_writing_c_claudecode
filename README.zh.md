@@ -49,7 +49,7 @@ project/
 │   └── summaries/                # 单篇论文详细摘要
 ├── data/                         # 统计分析
 │   ├── raw_data.csv              # 原始数据集
-│   ├── analysis_plan.md          # 自动生成的分析计划
+│   ├── analysis_plan.md          # 分析计划（分析前必须创建）
 │   └── py/                       # Python 分析脚本
 ├── scripts/                      # 实用脚本
 │   └── search_pubmed.py          # PubMed 搜索工具（无外部依赖）
