@@ -337,7 +337,7 @@
 | Main text within word limit | 필수 | [ ] |
 | References in correct format | 필수 | [ ] |
 | Tables in correct format (Word/Excel) | 필수 | [ ] |
-| Figures in high resolution (300+ dpi) | 필수 | [ ] |
+| Figures in required format (TIFF LZW 600+ DPI for submission, PNG for review) | 필수 | [ ] |
 | Figure legends complete | 필수 | [ ] |
 | Supplementary materials prepared | 선택 | [ ] |
 
