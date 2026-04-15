@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.5.1)
+# Academic Paper Writing Project (v0.5.2)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -135,6 +135,11 @@ drafts/
         ├── 04_methods_REV2.md
         └── response_letter_REV2.md
 
+review/
+├── qc_log.md
+├── reviewer_comments_REV1.md     # 리뷰어 코멘트 원문
+└── reviewer_comments_REV2.md     # (필요 시)
+
 output/
 ├── manuscript_YYMMDD.docx        # 원본 제출본
 └── revision/
@@ -159,7 +164,7 @@ output/paper1_xxx/revision/REV1/
 |-------------|---------|-------------|
 | `CLAUDE.md` | Core rules, project config, writing style | Auto-loaded every session |
 | `docs/writing_guide.md` | Detailed section guidelines | When drafting specific sections |
-| `docs/expert_roles.md` | Expert team descriptions | When drafting or reviewing (Phase 3-5) |
+| `docs/expert_roles.md` | Expert team descriptions | When drafting or reviewing (Phase 4-5) |
 | `docs/checklist_guide.md` | Study-type checklists (STROBE, CONSORT, PRISMA, CARE) | Phase 6 (QC) and before submission |
 | `docs/qc_guide.md` | Consistency & accuracy verification procedures | Phase 6 (QC rounds) |
 | `docs/statistical_analysis_guide.md` | Statistical methods, test selection, templates | Phase 2 (analysis) |
@@ -517,7 +522,8 @@ Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 │   ├── Table/Figure plan (어떤 Table/Figure를 몇 개, 어떤 내용으로)
 │   ├── Introduction outline (background → gap → purpose 흐름)
 │   ├── Discussion outline (주요 논점 3-5개, 비교할 선행연구)
-│   └── Limitation points (예상 한계점)
+│   ├── Limitation points (예상 한계점)
+│   └── Target word count (저널 기준, 선택)
 ├── 사용자 확인 후 Phase 4 진행
 └── Multi-paper: drafts/paper{N}_xxx/draft_plan.md
 

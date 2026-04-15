@@ -187,11 +187,26 @@ We have revised the relevant text to better convey this point.
 
 ```
 review/
-├── qc_log.md                     # 기존 QC 로그
-├── reviewer_comments_R1.md       # Round 1 리뷰어 코멘트 원문
-├── response_letter_R1.md         # Round 1 응답서
-├── reviewer_comments_R2.md       # Round 2 (필요 시)
-└── response_letter_R2.md         # Round 2 응답서
+├── qc_log.md                              # 기존 QC 로그
+├── reviewer_comments_REV1.md              # Round 1 리뷰어 코멘트 원문
+└── reviewer_comments_REV2.md              # Round 2 (필요 시)
+
+drafts/revision/
+├── REV1/
+│   ├── response_letter_REV1.md            # Round 1 응답서
+│   ├── 04_methods_REV1.md                 # 수정된 섹션만
+│   └── ...
+└── REV2/                                  # (필요 시)
+    ├── response_letter_REV2.md
+    └── ...
+
+output/revision/
+├── REV1/
+│   ├── manuscript_REV1_YYMMDD.docx
+│   ├── table_N_REV1_YYMMDD.docx
+│   └── response_letter_REV1_YYMMDD.docx
+└── REV2/
+    └── ...
 ```
 
 ### 수정 이력 추적
@@ -201,9 +216,9 @@ review/
 
 | Round | Date | Reviewer | Comment # | Category | Action | Status |
 |-------|------|----------|-----------|----------|--------|--------|
-| R1 | YYYY-MM-DD | Rev 1 | 1.1 | Major-Method | Revised | Done |
-| R1 | YYYY-MM-DD | Rev 1 | 1.2 | Minor-Writing | Revised | Done |
-| R1 | YYYY-MM-DD | Rev 2 | 2.1 | Major-Interp | Rebutted | Done |
+| REV1 | YYYY-MM-DD | Rev 1 | 1.1 | Major-Method | Revised | Done |
+| REV1 | YYYY-MM-DD | Rev 1 | 1.2 | Minor-Writing | Revised | Done |
+| REV1 | YYYY-MM-DD | Rev 2 | 2.1 | Major-Interp | Rebutted | Done |
 ```
 
 ---

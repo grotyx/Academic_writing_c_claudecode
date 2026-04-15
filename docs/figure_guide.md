@@ -18,11 +18,11 @@
 
 | 형식 | 용도 | 비고 |
 |------|------|------|
-| TIFF | 사진, 영상 이미지 | 무손실, 대부분 저널 선호 |
-| PDF | 벡터 그래프 | 확대해도 품질 유지 |
-| PNG | 웹/초안용 그래프 | 무손실, 파일 크기 작음 |
+| **PNG** | **초안/리뷰용** | 무손실, 파일 크기 작음, 작업 중 기본 형식 |
+| **TIFF (LZW)** | **최종 제출용** | 무손실 + LZW 압축, 대부분 저널 선호 |
+| PDF | 벡터 그래프 (제출용 대안) | 확대해도 품질 유지 |
 | SVG | 벡터 원본 보관 | 편집 가능, 저널 제출 전 변환 필요 |
-| JPG | 사진 (최후 수단) | 손실 압축, 가능하면 TIFF 사용 |
+| PPT/PPTX | 공저자 편집·발표용 | 필요 시 별도 제공 |
 | EPS | 일부 저널 요구 시 | 레거시 형식 |
 
 ### 크기
@@ -113,25 +113,31 @@ THREE_GROUP = ['#0072B2', '#D55E00', '#009E73']
 ### 저장 함수
 
 ```python
-def save_figure(fig, filename, formats=None):
-    """다중 형식으로 Figure 저장
+def save_figure(fig, filename, draft=True, final=False):
+    """Figure 저장 (초안 PNG + 최종 TIFF)
 
     Args:
         fig: matplotlib figure 객체
         filename: 확장자 제외 파일명
-        formats: 저장 형식 리스트 (기본: ['pdf', 'tiff'])
+        draft: True면 PNG 저장 (초안/리뷰용, 기본 True)
+        final: True면 TIFF (LZW) 저장 (최종 제출용)
     """
-    if formats is None:
-        formats = ['pdf', 'tiff']
-
-    for fmt in formats:
-        dpi = 1200 if fmt == 'tiff' else 600
+    if draft:
         fig.savefig(
-            f'drafts/figures/{filename}.{fmt}',
-            dpi=dpi,
+            f'drafts/figures/{filename}.png',
+            dpi=300,
             bbox_inches='tight',
             pad_inches=0.05,
             facecolor='white',
+        )
+    if final:
+        fig.savefig(
+            f'drafts/figures/{filename}.tiff',
+            dpi=600,
+            bbox_inches='tight',
+            pad_inches=0.05,
+            facecolor='white',
+            pil_kwargs={'compression': 'tiff_lzw'},
         )
     plt.close(fig)
 ```
@@ -315,10 +321,10 @@ Abbreviations: [약어 정의]
 - [ ] 불필요한 장식 (3D, 그라데이션, 격자) 을 제거했는가?
 
 ### 저장 시
-- [ ] Line art: 600+ DPI로 저장했는가?
-- [ ] 사진: 300+ DPI로 저장했는가?
-- [ ] TIFF 또는 PDF 형식인가?
-- [ ] 파일명이 Figure_1, Figure_2 순서인가?
+- [ ] 초안: PNG (300 DPI) 로 저장했는가?
+- [ ] 최종 제출: TIFF (LZW, 600+ DPI) 로 저장했는가?
+- [ ] 사진 포함 시: 300+ DPI 이상인가?
+- [ ] 파일명이 fig_1, fig_2 순서인가?
 
 ### 제출 전
 - [ ] Figure legend가 독립적으로 이해 가능한가?

@@ -555,6 +555,25 @@ Q6: Missing data가 결과에 영향을 줄 수 있는가?
 
 ---
 
+## Round 4: Terminology, Abbreviation & Tense
+**Date:** YYYY-MM-DD
+**Performed by:** [Name/Claude]
+
+### Findings:
+| Category | Issue | Location | Action | Fixed? |
+|----------|-------|----------|--------|--------|
+| Terminology | | | | [ ] |
+| Abbreviation | | | | [ ] |
+| Tense | | | | [ ] |
+
+### Summary:
+- Terminology issues: X
+- Abbreviation issues: X
+- Tense issues: X
+- Fixed: X / Pending: X
+
+---
+
 ## Round 5: Statistical Quality
 **Date:** YYYY-MM-DD
 
@@ -598,6 +617,7 @@ Q6: Missing data가 결과에 영향을 줄 수 있는가?
 - [ ] All Round 1 issues resolved
 - [ ] All Round 2 issues resolved
 - [ ] All Round 3 issues resolved
+- [ ] All Round 4 issues resolved
 - [ ] All Round 5 issues resolved
 - [ ] All Round 6 issues resolved
 - [ ] Ready for submission
