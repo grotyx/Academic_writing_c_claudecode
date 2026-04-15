@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v0.5.0** (2026-04-14)
+**v0.5.1** (2026-04-15)
 
 ---
 
@@ -55,6 +55,7 @@ project/
 │   └── search_pubmed.py          # PubMed 搜索工具（无外部依赖）
 ├── results/                      # 分析输出
 ├── drafts/                       # 稿件章节、表格、图表
+│   ├── draft_plan.md             # 稿件构成计划（撰写前必须）
 │   ├── table_*.md
 │   └── figures/
 ├── review/                       # QC 文档
@@ -71,10 +72,11 @@ project/
 
 1. **设置**：在 `CLAUDE.md` 中填写研究主题、目标期刊和研究设计
 2. **参考文献**：使用 `/search-evidence [关键词]` 或 `python3 scripts/search_pubmed.py` 搜索 PubMed 并注册到 `knowledge/evidence.md`
-3. **数据分析**：将数据放入 `data/` 文件夹并运行统计分析
-4. **撰写初稿**：按推荐顺序撰写各章节（Methods → Results → Introduction → Discussion）
-5. **质量控制**：提交前至少进行3轮 QC 检查（推荐6轮）
-6. **最终定稿**：将稿件编译为 DOCX（参见 `docs/docx_guide.md`）
+3. **数据分析**：将数据放入 `data/` 文件夹 → 创建 `analysis_plan.md`（必须）→ 运行统计分析
+4. **稿件计划**：在 `drafts/draft_plan.md` 中撰写核心信息、论调、必要参考文献和大纲（推荐 Opus）
+5. **撰写初稿**：按推荐顺序撰写各章节（Draft Plan 充实的情况下 Sonnet 也可）
+6. **质量控制**：提交前至少进行3轮 QC 检查（推荐6轮）
+7. **最终定稿**：将稿件编译为 DOCX（参见 `docs/docx_guide.md`）
 
 ---
 
@@ -86,6 +88,19 @@ project/
 - **Dr. Researcher B**：方法学（Methods、Results、Tables）
 - **Dr. Statistician**：统计验证、节约原则、MCID/NNT 评估
 - **Dr. Editor**：最终润色、一致性检查
+
+### 撰写前必须计划（Planning Before Writing）
+
+- **分析计划**（`data/analysis_plan.md`）：统计分析前必须 — 定义研究问题、评价指标、检验方法选择
+- **稿件计划**（`drafts/draft_plan.md`）：章节撰写前必须 — 核心信息、论调/语气、必要参考文献、证据缺口、Table/Figure 计划、章节大纲
+- 两项计划均需用户确认后方可进入下一阶段
+- 多论文项目需为每篇论文单独制定计划
+
+### 分阶段模型选择（Model Selection by Phase）
+
+- **推荐 Opus**：Analysis Plan、Draft Plan、Revision — 需要战略性判断的阶段
+- **默认 Sonnet（条件允许则用 Opus）**：撰写、Style Polish、QC — 基于计划的执行
+- 核心原则："用 Opus 制定计划 → 用 Sonnet 撰写也 OK"
 
 ### 冗余预防
 

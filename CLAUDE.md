@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.5.0)
+# Academic Paper Writing Project (v0.5.1)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -171,7 +171,8 @@ output/paper1_xxx/revision/REV1/
 | `data/analysis_plan.md` | Auto-generated analysis plan | Phase 2 (before running analysis) |
 | `data/py/` | Python analysis scripts | Phase 2 (statistical analysis) |
 | `results/` | Analysis output CSV files | Phase 2 (after analysis) |
-| `drafts/` | Individual section files, tables, figures | Phase 3-4 (drafting & polish) |
+| `drafts/draft_plan.md` | 원고 구성 계획 (key message, table/figure plan, outline) | Phase 3 (drafting 전 필수) |
+| `drafts/` | Individual section files, tables, figures | Phase 4-5 (drafting & polish) |
 | `drafts/table_*.md` | Individual formatted tables | Phase 3 (from results CSV) |
 | `drafts/figures/` | Generated figure files | Phase 3 (from analysis) |
 | `scripts/search_pubmed.py` | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) | Phase 1 (reference search) |
@@ -291,6 +292,96 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - 수정된 섹션만 revision 폴더에 저장 (변경 없는 파일은 복사하지 않음)
 - Response letter도 해당 revision 폴더에 포함
 - output도 동일하게 `output/{paper}/revision/REV1/` 구조
+
+### 7. Analysis Plan Mandatory (분석 계획 필수)
+
+> **통계 분석 전에 반드시 analysis_plan.md를 작성하고 확인받아야 한다**
+
+**규칙:**
+
+- **NEVER run statistical analysis without first creating `analysis_plan.md`**
+- `Analyze data` 명령 시 반드시 analysis_plan.md를 먼저 생성
+- 사용자가 analysis_plan.md를 확인한 후에만 스크립트 생성/실행 진행
+- analysis_plan.md가 존재하지 않으면 분석 스크립트 생성을 거부
+
+**논문별 개별 작성:**
+
+- **Single paper:** `data/analysis_plan.md`
+- **Multi-paper:** 각 논문 서브폴더에 개별 작성
+  - `data/paper1_xxx/analysis_plan.md`
+  - `data/paper2_yyy/analysis_plan.md`
+- 같은 데이터라도 논문마다 연구 질문·대상·분석이 다르므로 **반드시 별도 작성**
+- 공유 데이터(`data/raw_data.csv`)에 대한 공통 analysis_plan은 만들지 않음
+
+**analysis_plan.md 필수 포함 내용:**
+
+1. 연구 질문 및 가설
+2. 대상 선정/제외 기준 (해당 논문에 맞게)
+3. 변수 정의 (primary/secondary/exploratory endpoints)
+4. 통계 검정법 선택 및 근거
+5. 유의수준 및 다중비교 보정 계획
+
+### 8. Draft Plan Mandatory (원고 구성 계획 필수)
+
+> **원고 작성 전에 반드시 draft_plan.md를 작성하고 확인받아야 한다**
+
+**규칙:**
+
+- **NEVER start drafting sections without first creating `draft_plan.md`**
+- 분석 결과(results/)를 확인한 후, 원고 작성 전에 전체 구성을 먼저 계획
+- 사용자가 draft_plan.md를 확인한 후에만 섹션 작성 진행
+- draft_plan.md가 존재하지 않으면 섹션 작성을 거부
+
+**저장 위치:**
+
+- **Single paper:** `drafts/draft_plan.md`
+- **Multi-paper:** 각 논문 서브폴더에 개별 작성
+  - `drafts/paper1_xxx/draft_plan.md`
+  - `drafts/paper2_yyy/draft_plan.md`
+
+**draft_plan.md 필수 포함 내용:**
+
+1. **Key message** — 이 논문의 핵심 메시지 (1-2문장)
+2. **Tone & voice** — 논문의 논조/어조 설정
+   - 예: "conservative & evidence-based", "novel technique 강조", "기존 방법과 동등성 주장"
+   - 전체 원고에서 일관되게 유지할 톤 명시
+3. **Essential references** — 반드시 인용해야 할 핵심 참고문헌 목록
+   - evidence.md에서 선별하거나, 추가 검색이 필요한 주제 명시
+   - 각 reference의 인용 목적 기재 (배경, 방법론 근거, 비교 대상 등)
+4. **Evidence gap** — 추가로 필요한 근거 자료 (아직 evidence.md에 없는 것)
+   - 검색 키워드 또는 필요한 논문 유형 명시
+5. **Table/Figure plan** — 몇 개, 각각 어떤 내용, Table vs Figure 결정
+6. **Introduction outline** — Background → Gap → Purpose 흐름
+7. **Discussion outline** — 주요 논점 3-5개, 비교할 선행연구 목록
+8. **Limitation points** — 예상 한계점 및 대응 논리
+9. **Target word count** — 저널 기준에 맞춘 섹션별 목표 분량 (선택)
+
+### 9. Model Selection by Phase (단계별 모델 선택)
+
+> **계획 단계는 high-quality 모델, 작성 단계는 mid-quality 모델도 가능**
+
+**원칙:** Draft plan이 충분히 상세하면, 이후 작성은 plan을 따라가는 것이므로 비용 효율적 모델 사용 가능
+
+| Phase                    | 권장 모델           | 대안 모델         | 이유                                       |
+|--------------------------|---------------------|-------------------|--------------------------------------------|
+| Phase 1: Setup           | Opus/Sonnet         | —                 | 검색·정리 작업                             |
+| **Phase 2: Analysis**    | **Opus (권장)**     | Sonnet (가능)     | analysis_plan 작성은 Opus 권장             |
+| **Phase 3: Draft Plan**  | **Opus (권장)**     | —                 | 논문의 방향·논조·구성을 결정하는 핵심 단계 |
+| Phase 4: Draft           | Sonnet (기본)       | Opus (가능하면)   | draft_plan + evidence 기반 작성            |
+| Phase 5: Style Polish    | Sonnet (기본)       | Opus (가능하면)   | 규칙 기반 작업                             |
+| Phase 6: QC              | Sonnet (기본)       | Opus (가능하면)   | 체크리스트 기반 검증                       |
+| Phase 7: Finalize        | Sonnet              | —                 | DOCX 변환·서식 작업                        |
+| **Phase 8: Revision**    | **Opus (권장)**     | —                 | 리뷰어 대응은 전략적 판단 필요             |
+
+**사용자 안내 (모델 선택 가이드):**
+
+- **Opus 권장 단계:** Phase 2 (Analysis Plan), Phase 3 (Draft Plan), Phase 8 (Revision)
+  - 전략적 판단·설계가 필요한 단계 → Opus로 방향을 잡아야 이후 작업 품질이 보장됨
+  - Draft Plan 작성 시 Plan Mode(`/plan`) 활용을 권장하여 사용자와 충분한 논의 후 확정
+- **Sonnet 기본, Opus 가능하면 사용:** Phase 4-6 (Draft, Polish, QC)
+  - draft_plan.md + evidence.md가 잘 갖춰져 있으면 Sonnet으로도 충분
+  - 비용 여유가 있으면 Opus 사용이 더 좋은 결과를 냄
+- **핵심 원칙:** Plan은 Opus로 잘 잡고 → 작성은 Sonnet으로도 OK
 
 ---
 
@@ -414,7 +505,17 @@ Phase 2: Statistical Analysis
 ├── Generate drafts/table_*.md from results CSV
 └── Generate figures → drafts/figures/
 
-Phase 3: Draft (in this order)
+Phase 3: Draft Plan (원고 구성 계획)
+├── Create drafts/draft_plan.md
+│   ├── Key message (이 논문의 핵심 메시지 1-2문장)
+│   ├── Table/Figure plan (어떤 Table/Figure를 몇 개, 어떤 내용으로)
+│   ├── Introduction outline (background → gap → purpose 흐름)
+│   ├── Discussion outline (주요 논점 3-5개, 비교할 선행연구)
+│   └── Limitation points (예상 한계점)
+├── 사용자 확인 후 Phase 4 진행
+└── Multi-paper: drafts/paper{N}_xxx/draft_plan.md
+
+Phase 4: Draft (in this order)
 ├── 04_methods.md      → establishes framework
 │   └── Expert: Dr. Researcher B (methodology)
 ├── 05_results.md      → narrative (refer to drafts/table_*.md)
@@ -427,7 +528,7 @@ Phase 3: Draft (in this order)
 ├── 02_abstract.md     → summary (write LAST)
 └── 01_title.md        → finalize
 
-Phase 4: Style Polish
+Phase 5: Style Polish
 ├── Apply "Natural Academic Writing Style" rules
 │   ├── Upgrade transitions (but → nonetheless)
 │   ├── Upgrade verbs (showed → demonstrated)
@@ -435,7 +536,7 @@ Phase 4: Style Polish
 │   └── Verify statistical notation
 └── Expert: Dr. Editor (final polish)
 
-Phase 5: QC (minimum 3 rounds, 6 rounds recommended)
+Phase 6: QC (minimum 3 rounds, 6 rounds recommended)
 ├── Round 1: Number consistency (qc_guide.md)
 ├── Round 2: Reference verification (qc_guide.md)
 ├── Round 3: Logic & flow check (qc_guide.md)
@@ -445,7 +546,7 @@ Phase 5: QC (minimum 3 rounds, 6 rounds recommended)
 ├── Document in review/qc_log.md
 └── Run study-specific checklist (checklist_guide.md)
 
-Phase 6: Finalize
+Phase 7: Finalize
 ├── Read docs/docx_guide.md (DOCX 변환 규칙 확인)
 ├── Compile to DOCX (docs/docx_guide.md 규칙대로)
 │   ├── output/title_page_YYMMDD.docx (별도)
@@ -455,7 +556,7 @@ Phase 6: Finalize
 ├── Co-author review
 └── Final read-through
 
-Phase 7: Revision (리뷰어 코멘트 수신 후)
+Phase 8: Revision (리뷰어 코멘트 수신 후)
 ├── Read docs/revision_guide.md
 ├── Revision 폴더 생성: drafts/revision/REV1/, output/revision/REV1/
 ├── 수정된 섹션만 _REV1 접미사로 저장
@@ -474,12 +575,13 @@ Phase 7: Revision (리뷰어 코멘트 수신 후)
 |-------|-------------------|
 | 1 → 2 | knowledge/evidence.md has ≥10 verified refs, topic defined, data ready |
 | 2 → 3 | analysis_plan.md created, all analyses complete, tables generated |
-| 3 → 4 | All sections drafted, numbers match tables |
-| 4 → 5 | Writing style rules applied, Dr. Editor reviewed |
-| 5 → 6 | Minimum 3 QC rounds passed (6 recommended), checklist complete |
-| 6 → Submit | Co-author approved, journal requirements met, versioned files in output/ |
-| Submit → 7 | Reviewer comments received |
-| 7 → Resubmit | Revised manuscript + response letter complete, QC re-run passed |
+| 3 → 4 | draft_plan.md created & approved, key message·table/figure plan·outline 확정 |
+| 4 → 5 | All sections drafted, numbers match tables |
+| 5 → 6 | Writing style rules applied, Dr. Editor reviewed |
+| 6 → 7 | Minimum 3 QC rounds passed (6 recommended), checklist complete |
+| 7 → Submit | Co-author approved, journal requirements met, versioned files in output/ |
+| Submit → 8 | Reviewer comments received |
+| 8 → Resubmit | Revised manuscript + response letter complete, QC re-run passed |
 
 ---
 

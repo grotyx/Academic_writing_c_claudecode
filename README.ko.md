@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v0.5.0** (2026-04-14)
+**v0.5.1** (2026-04-15)
 
 ---
 
@@ -53,6 +53,7 @@ project/
 │   └── search_pubmed.py          # PubMed 검색 도구 (외부 의존성 없음)
 ├── results/                      # 분석 결과
 ├── drafts/                       # 원고 섹션, 테이블, 그림
+│   ├── draft_plan.md             # 원고 구성 계획 (작성 전 필수)
 │   ├── table_*.md
 │   └── figures/
 ├── review/                       # QC 문서
@@ -69,10 +70,11 @@ project/
 
 1. **설정**: `CLAUDE.md`에 연구 주제, 목표 저널, 연구 설계를 입력합니다
 2. **참고문헌**: `/search-evidence [검색어]` 또는 `python3 scripts/search_pubmed.py`로 PubMed를 검색하고 `knowledge/evidence.md`에 등록합니다
-3. **데이터 분석**: `data/` 폴더에 데이터를 배치하고 통계 분석을 실행합니다
-4. **초안 작성**: 권장 순서에 따라 섹션을 작성합니다 (Methods → Results → Introduction → Discussion)
-5. **품질 관리**: 제출 전 최소 3라운드의 QC를 수행합니다 (6라운드 권장)
-6. **최종화**: 원고를 DOCX로 컴파일합니다 (`docs/docx_guide.md` 참조)
+3. **데이터 분석**: `data/` 폴더에 데이터를 배치 → `analysis_plan.md` 작성 (필수) → 통계 분석 실행
+4. **원고 계획**: `drafts/draft_plan.md`에 핵심 메시지, 논조, 필수 참고문헌, 개요 작성 (Opus 권장)
+5. **초안 작성**: 권장 순서에 따라 섹션을 작성합니다 (Sonnet 가능, draft plan이 충실하면 OK)
+6. **품질 관리**: 제출 전 최소 3라운드의 QC를 수행합니다 (6라운드 권장)
+7. **최종화**: 원고를 DOCX로 컴파일합니다 (`docs/docx_guide.md` 참조)
 
 ---
 
@@ -83,6 +85,19 @@ project/
 - **Dr. Researcher B**: 방법론 (Methods, Results, Tables)
 - **Dr. Statistician**: 통계 검증, 절제 원칙, MCID/NNT 평가
 - **Dr. Editor**: 최종 교정, 일관성 검토
+
+### 작성 전 필수 계획 (Planning Before Writing)
+
+- **분석 계획** (`data/analysis_plan.md`): 통계 분석 전 필수 — 연구 질문, 평가 변수, 검정법 선택 정의
+- **원고 계획** (`drafts/draft_plan.md`): 섹션 작성 전 필수 — 핵심 메시지, 논조/어조, 필수 참고문헌, 근거 갭, Table/Figure 계획, 섹션별 개요
+- 두 계획 모두 사용자 승인 후 다음 단계 진행
+- 멀티 논문 시 논문별 개별 계획 작성
+
+### 단계별 모델 선택 (Model Selection by Phase)
+
+- **Opus 권장**: Analysis Plan, Draft Plan, Revision — 전략적 판단이 필요한 단계
+- **Sonnet 기본 (Opus 가능하면 사용)**: 초안 작성, Style Polish, QC — 계획 기반 실행
+- 핵심 원칙: "Plan은 Opus로 잡고 → 작성은 Sonnet으로도 OK"
 
 ### 중복 방지
 - 3중 중복 방지 (Results 본문 + Table + Figure)
