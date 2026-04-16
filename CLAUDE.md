@@ -465,11 +465,35 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 **Objectivity (객관성)**
 - ❌ "We believe that..."
 - ✅ "The findings suggest that..."
-- Avoid exaggeration: "dramatic" → "significant"
+- Avoid exaggeration — 과장 금지 표현 목록:
+  - ❌ "dramatic improvement", "remarkable difference", "overwhelming evidence"
+  - ❌ "most pronounced advantage", "four-fold reduction", "carries direct clinical significance"
+  - ❌ "striking", "unprecedented", "groundbreaking"
+  - ✅ "notable", "may be clinically relevant", "suggests a potential benefit"
+- 결과 해석은 근거에 비례하는 수준으로 제한 — hedging 표현 활용: "may", "suggests", "appears to"
+
+**Conciseness (간결성) — 강화**
+- 불필요한 수식어·반복·장황한 서술 삭제
+- 한 문장에 하나의 아이디어 — 길어지면 분리
+- Discussion에서 Results 숫자/p-value 반복 금지 (Table에 이미 있음); 단, 선행연구 수치와 직접 비교 시 해당 수치 인용은 허용
+- 유의하지 않은 p-value를 본문에 나열하지 않음 (Table 참조로 대체); 단, primary outcome의 n.s. 결과는 명시적으로 보고
+- ❌ "first-grade students, fifth-grade students, and sixth-grade students"
+- ✅ "first-, fifth-, and sixth-grade students"
 
 **Consistency (일관성)**
 - Same term for same concept throughout
 - Uniform abbreviations and formatting
+- 약어는 본문 최초 등장 시 1회만 정의, 이후 섹션에서 재정의하지 않음
+- **동의어 혼용 금지 (Terminology Consistency):**
+  - 같은 개념에 대해 동의어/유의어를 섞어 쓰지 않음 — 하나를 선택하면 전체 원고에서 일관되게 사용
+  - 초안 작성 전 draft_plan.md 또는 첫 사용 시 어떤 용어를 쓸지 결정
+  - 흔한 혼용 사례:
+    - dural tear ↔ durotomy → 하나만 선택
+    - complication ↔ adverse event → 맥락에 따라 선택 후 통일
+    - postoperative ↔ after surgery → 하나만 선택
+    - patient ↔ subject ↔ participant → 하나만 선택
+    - recurrence ↔ relapse → 하나만 선택
+  - 예외: Introduction에서 "durotomy (dural tear)"처럼 한 번 병기 후, 이후는 선택한 용어만 사용
 
 ### 7. Section-Specific Tips
 

@@ -3,8 +3,20 @@
 ## General Principles
 - Use past tense for completed actions (Methods, Results)
 - Use present tense for established facts and conclusions
-- Be concise - every sentence should add value
+- Be concise - every sentence should add value; 장황한 서술 지양, 불필요한 수식어 삭제
 - Follow IMRAD structure strictly
+- **No bold text in manuscript body** — 본문(Introduction~Conclusion)에서 **bold** 사용 금지. 강조는 문장 구조로 표현
+- **Abbreviation: define once, use thereafter** — 약어는 본문에서 최초 등장 시 1회만 정의하고, 이후 섹션에서 재정의하지 않음 (단, Abstract는 독립 문서이므로 별도 정의 필요)
+- **Clinical findings as subject** — 통계 분석 방법이 아닌 임상 결과가 문장의 주어가 되어야 함
+  - ❌ "The LMM analysis identified a significant difference..."
+  - ❌ "The Mann-Whitney U test revealed that..."
+  - ✅ "VAS scores improved significantly in Group A..."
+  - ✅ "Postoperative pain was significantly lower in the BESS group..."
+- **No synonym mixing (동의어 혼용 금지)** — 같은 개념에 대해 하나의 용어를 선택하면 전체 원고에서 일관되게 사용
+  - ❌ Methods에서 "dural tear", Discussion에서 "durotomy" → 혼용
+  - ✅ 하나를 선택하고 첫 등장 시 "durotomy (dural tear)"로 병기, 이후 선택한 용어만 사용
+  - 대상: 진단명, 합병증명, 수술 용어, 환자 호칭 등 모든 의학 용어에 적용
+  - Drafting 시작 전 draft_plan.md에서 주요 용어 선택을 확정할 것
 
 ---
 
@@ -274,12 +286,20 @@ Secondary Outcomes:
 - ❌ "The treatment failed to show improvement" (implies expected direction)
 - ❌ "The result was insignificant" ("insignificant" ≠ "not significant")
 
+**Non-significant p-values — 본문에서 생략 가능:**
+- 유의하지 않은 결과의 p-value를 Results 본문에 일일이 나열하지 않아도 됨
+- Table에 모든 p-value가 이미 있으므로, 본문에서는 유의미한 결과 위주로 기술
+- ✅ "No significant differences were observed in secondary outcomes (Table 3)"
+- ❌ "EQ-5D showed no difference (*p* = 0.382), ODI showed no difference (*p* = 0.541), ..."
+- 예외: primary outcome의 n.s. 결과는 p-value 포함하여 명시적으로 보고
+
 **Tips:**
 - Report what you found, not what it means
 - NO interpretation - save for Discussion
 - Report negative findings too (important for transparency)
 - Non-significant results: report CI to show precision of estimate
 - Past tense throughout
+- Clinical findings as subject (see General Principles) — 통계 방법이 아닌 임상 결과가 주어
 
 ---
 
@@ -353,6 +373,28 @@ Secondary Outcomes:
 | Current treatments | "Options include X, Y, Z" | "Our technique compares favorably to X" |
 | Previous studies | "Studies have shown..." | "Our findings extend those of..." |
 | Gap | "No study has compared..." | "We addressed this gap by showing..." |
+
+**No Specific Numbers or p-values in Discussion:**
+- Discussion은 해석의 공간 — 구체적 숫자와 p-value는 Results/Table에 이미 있으므로 반복하지 않음
+- ✅ "Postoperative pain improved significantly in the BESS group"
+- ✅ "The complication rate was comparable between groups"
+- ❌ "VAS decreased from 7.2±1.3 to 2.1±0.8 (*p*<0.001) in the BESS group"
+- ❌ "The infection rate was 2.3% vs 4.1% (*p*=0.34)"
+- 예외: 선행연구 수치와 직접 비교할 때는 상대방 수치 인용 가능 ("Kim et al. reported a rate of 3.5%, which aligns with our findings")
+
+**No "Directional Trend" for Non-significant Results:**
+- 유의하지 않은 결과를 "trend" 또는 "tendency"로 포장하지 않음
+- ❌ "Although not statistically significant, EQ-5D showed a directional trend favoring Group A (*p*=0.058)"
+- ❌ "A trend toward improvement was observed"
+- ✅ n.s. 결과는 Results에서 보고하고, Discussion에서 굳이 재강조하지 않음
+- 예외: 검정력 부족(underpowered)이 명확하고 Limitation에서 언급하는 경우에 한해 간결히 언급 가능
+
+**Neutral Tone — No Exaggeration:**
+- 과장 표현을 피하고 중립적 톤 유지
+- ❌ "most pronounced advantage", "four-fold reduction", "carries direct clinical significance"
+- ❌ "dramatic improvement", "remarkable difference", "overwhelming evidence"
+- ✅ "may be clinically relevant", "suggests a potential benefit", "the difference was notable"
+- 결과를 사실 그대로 기술하고, 해석은 근거에 비례하는 수준으로 제한
 
 **Tips:**
 - Don't introduce new data
