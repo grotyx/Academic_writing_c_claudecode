@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.5.2** (2026-04-15)
+**v0.6.0** (2026-04-18)
 
 ---
 
@@ -202,6 +202,46 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.6.0 (2026-04-18)
+
+**Writing Guide Major Refactor** — `docs/writing_guide.md` internal version v0.3.0 → v0.4.0
+
+- **Role separation** between CLAUDE.md (orchestrator) and writing_guide.md (rules)
+  - CLAUDE.md "Natural Academic Writing Style" section collapsed to pointer-only (~115 lines removed)
+  - All writing style rules, tables, and examples consolidated in writing_guide.md
+- **New section: Style Reference Tables** in writing_guide.md
+  - Voice & Tense by Section (6 sections: Abstract/Intro/Methods/Results/Discussion/Conclusion)
+  - Transition Words (but → nonetheless)
+  - Verb Upgrades (showed → demonstrated)
+  - Common Corrections (elderly → older adult, etc.)
+  - Statistical Notation (italic *p*, en-dash for ranges, never *p* = 0.000)
+  - Hedging Language (4-level guide: Strong/Moderate/Weak/Very weak for Discussion)
+- **New section: Writing Principles (4 Pillars)** in writing_guide.md
+  - Clarity, Conciseness, Objectivity, Consistency with expanded examples
+- **General Principles expanded** with 6 new rules:
+  - No bold text in manuscript body
+  - Abbreviation define-once rule
+  - Clinical findings as sentence subject (not statistical method)
+  - No synonym mixing (dural tear ↔ durotomy, etc.) with draft_plan.md term selection
+  - Numerical formatting consistency (decimals, units)
+  - No sentence-initial numbers (spell out or restructure)
+- **Results section**: added non-significant p-value omission guideline (primary outcome exception)
+- **Discussion section**: three new subsections
+  - No specific numbers/p-values (literature comparison exception)
+  - No directional-trend framing for non-significant results
+  - Neutral tone with banned exaggeration list
+- **Tables section**: 2 new Tips
+  - Methods Statistics vs Table footnote role separation
+  - Supplementary Table for pre-specified sensitivity analyses
+
+**Cross-file Consistency Fixes**
+
+- CLAUDE.md Phase 2: explicit reference to `docs/statistical_analysis_guide.md` + `analysis_plan.md` required items (endpoint hierarchy, tests, multiple comparison, missing data)
+- CLAUDE.md Phase 6 QC: per-round responsibility annotation (Claude / Dr. Editor / Dr. Statistician) with CRITICAL vs RECOMMENDED marking
+- CLAUDE.md Phase 3→4 Completion Criteria: expanded to list all 9 `draft_plan.md` required items
+- `docs/revision_guide.md`: new "QC Re-run for Revision" section with per-round re-run checklist and pre-submission checklist
+- `docs/evidence_guide.md`: Search Log query examples updated to actual PubMed syntax (field tags `[tiab]`/`[MeSH]`, boolean AND/OR/NOT, quoted phrases)
 
 ### v0.5.2 (2026-04-15)
 
