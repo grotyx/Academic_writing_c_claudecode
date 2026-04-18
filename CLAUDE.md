@@ -396,120 +396,23 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 
 ## Natural Academic Writing Style
 
-> 사람이 작성한 것처럼 자연스러운 학술 논문을 위한 작문 가이드
+> **상세 가이드: `docs/writing_guide.md`**
+> 규칙·표·예시는 writing_guide.md에 있음. CLAUDE.md는 워크플로·Phase 조정만 담당 (중복 방지).
 
-### 1. Transition Words (접속사/전환어)
+**Phase 5 (Style Polish)에서 적용할 writing_guide.md 섹션:**
 
-| Avoid | Use Instead |
-|-------|-------------|
-| but | nonetheless, nevertheless, however |
-| However (overused) | Nonetheless, Nevertheless |
-| In contrast | Conversely |
-| therefore | Thus, Accordingly |
-| so | Hence, Therefore |
+| 영역 | writing_guide.md 섹션 | 주요 내용 |
+|------|----------------------|-----------|
+| 전역 규칙 | General Principles | 시제, Bold 금지, 약어 1회 정의, 임상 결과 주어, 동의어 혼용 금지, 숫자 서식, 문두 숫자 |
+| 스타일 표 | Style Reference Tables | Voice & Tense / Transition / Verb Upgrades / Common Corrections / Statistical Notation / Hedging |
+| 작문 원칙 | Writing Principles (4 Pillars) | Clarity / Conciseness / Objectivity / Consistency |
+| 섹션별 규칙 | 01. Title ~ 10. Tables | 각 섹션 구조·구체 규칙·예시 |
 
-### 2. Verb Upgrades (동사 고급화)
-
-| Basic | Academic |
-|-------|----------|
-| showed | demonstrated, exhibited, revealed |
-| got | obtained, achieved, acquired |
-| used | employed, utilized, applied |
-| done | performed, conducted, executed |
-| is | remains, represents, constitutes |
-| has | possesses, exhibits, maintains |
-
-### 3. Common Corrections (빈출 교정 패턴)
-
-| Original | Corrected | Reason |
-|----------|-----------|--------|
-| is the gold standard | remains the gold standard | 현재 상태 강조 |
-| is lacking | remains limited | 부정적 표현 완화 |
-| The purpose of this study was to... | This study aimed to... | 더 직접적 (둘 다 사용 가능) |
-| are consistent with | align with | 더 간결 |
-| elderly patients | older adult patients | 현대적/중립적 (AMA) |
-| Due to | Because of | 문법적 정확성* |
-| compared to | compared with | AMA 스타일 |
-
-> *"Due to"는 형용사적, "Because of"는 원인을 나타내는 전치사구
-
-### 4. Voice by Section (섹션별 시제/태)
-
-| Section | Voice | Example |
-|---------|-------|---------|
-| Methods | Passive | "Patients were randomized..." |
-| Results | Passive (consistent) | "No significant differences were observed..." |
-| Discussion | Mixed | Active for interpretation, passive for facts |
-
-### 5. Statistical Notation (통계 표기)
-
-| Item | Format | Example |
-|------|--------|---------|
-| p-value | lowercase italic *p* | *p* = 0.382, *p* < 0.05 |
-| Percentage | no space | 83.3% |
-| CI | "to" for range | 95% CI: -8.0% to +16.7% |
-| Age range | en-dash | 19–80 years |
-
-### 6. Writing Principles (작문 원칙)
-
-**Clarity (명확성)**
-- One idea per sentence
-- Split long sentences
-- Avoid ambiguous pronouns
-
-**Conciseness (간결성)**
-- Remove redundancy
-- ❌ "first-grade students, fifth-grade students, and sixth-grade students"
-- ✅ "first-, fifth-, and sixth-grade students"
-
-**Objectivity (객관성)**
-- ❌ "We believe that..."
-- ✅ "The findings suggest that..."
-- Avoid exaggeration — 과장 금지 표현 목록:
-  - ❌ "dramatic improvement", "remarkable difference", "overwhelming evidence"
-  - ❌ "most pronounced advantage", "four-fold reduction", "carries direct clinical significance"
-  - ❌ "striking", "unprecedented", "groundbreaking"
-  - ✅ "notable", "may be clinically relevant", "suggests a potential benefit"
-- 결과 해석은 근거에 비례하는 수준으로 제한 — hedging 표현 활용: "may", "suggests", "appears to"
-
-**Conciseness (간결성) — 강화**
-- 불필요한 수식어·반복·장황한 서술 삭제
-- 한 문장에 하나의 아이디어 — 길어지면 분리
-- Discussion에서 Results 숫자/p-value 반복 금지 (Table에 이미 있음); 단, 선행연구 수치와 직접 비교 시 해당 수치 인용은 허용
-- 유의하지 않은 p-value를 본문에 나열하지 않음 (Table 참조로 대체); 단, primary outcome의 n.s. 결과는 명시적으로 보고
-- ❌ "first-grade students, fifth-grade students, and sixth-grade students"
-- ✅ "first-, fifth-, and sixth-grade students"
-
-**Consistency (일관성)**
-- Same term for same concept throughout
-- Uniform abbreviations and formatting
-- 약어는 본문 최초 등장 시 1회만 정의, 이후 섹션에서 재정의하지 않음
-- **동의어 혼용 금지 (Terminology Consistency):**
-  - 같은 개념에 대해 동의어/유의어를 섞어 쓰지 않음 — 하나를 선택하면 전체 원고에서 일관되게 사용
-  - 초안 작성 전 draft_plan.md 또는 첫 사용 시 어떤 용어를 쓸지 결정
-  - 흔한 혼용 사례:
-    - dural tear ↔ durotomy → 하나만 선택
-    - complication ↔ adverse event → 맥락에 따라 선택 후 통일
-    - postoperative ↔ after surgery → 하나만 선택
-    - patient ↔ subject ↔ participant → 하나만 선택
-    - recurrence ↔ relapse → 하나만 선택
-  - 예외: Introduction에서 "durotomy (dural tear)"처럼 한 번 병기 후, 이후는 선택한 용어만 사용
-
-### 7. Section-Specific Tips
-
-**Introduction**
-- Flow: Background → Problem → Gap → Purpose
-- End with clear study objective
-
-**Discussion**
-- Start with main findings summary
-- Structure limitations: "First, ... Second, ... Third, ..."
-- Compare with existing literature objectively
-
-**Conclusion**
-- Restate findings concisely
-- State clinical implications
-- Avoid overstatement
+**Phase 5 워크플로:**
+1. `docs/writing_guide.md` Style Reference Tables 읽기
+2. 섹션별로 Transition/Verb/Corrections 적용
+3. Writing Principles (4 Pillars) 기준으로 검토
+4. Dr. Editor 최종 polish
 
 ---
 
@@ -566,11 +469,15 @@ Phase 4: Draft (in this order)
 └── 01_title.md        → finalize
 
 Phase 5: Style Polish
-├── Apply "Natural Academic Writing Style" rules
-│   ├── Upgrade transitions (but → nonetheless)
-│   ├── Upgrade verbs (showed → demonstrated)
-│   ├── Check voice by section
-│   └── Verify statistical notation
+├── Apply writing_guide.md Style Reference Tables
+│   ├── Transition Words 업그레이드 (but → nonetheless)
+│   ├── Verb Upgrades (showed → demonstrated)
+│   ├── Voice & Tense by Section 확인
+│   ├── Common Corrections 적용
+│   ├── Statistical Notation 검증 (*p* italic, en-dash 등)
+│   └── Hedging Language 적정성 확인
+├── Apply writing_guide.md Writing Principles (4 Pillars)
+│   └── Clarity / Conciseness / Objectivity / Consistency
 └── Expert: Dr. Editor (final polish)
 
 Phase 6: QC (minimum 3 rounds, 6 rounds recommended)
@@ -740,12 +647,10 @@ When drafting, invoke experts from `docs/expert_roles.md`:
 - **Dr. Editor**: Final polish, consistency check
 
 ### Writing Style Priority
-Apply "Natural Academic Writing Style" (above) during Phase 5:
-1. Transitions: but → nonetheless
-2. Verbs: showed → demonstrated
-3. Corrections: elderly → older adult
-4. Voice: section-appropriate (passive for Methods/Results)
-5. Statistical notation: *p* < 0.05
+Phase 5에서 `docs/writing_guide.md` 참조:
+1. Style Reference Tables — Transition / Verb / Corrections / Voice / Notation / Hedging
+2. Writing Principles (4 Pillars) — Clarity / Conciseness / Objectivity / Consistency
+3. General Principles — 시제·Bold·약어·주어·동의어·숫자 서식
 
 ### Statistical Analysis (Phase 2)
 
