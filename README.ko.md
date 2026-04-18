@@ -20,8 +20,9 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **Revision 워크플로우** — 전용 revision 폴더 및 파일 네이밍
 - **전문가 팀 시뮬레이션** — 임상 전문가, 방법론 전문가, 통계학자, 편집자
 - **통계 분석 워크플로우** — Python 스크립트 자동 생성
-- **품질 관리 절차** — 최소 3라운드 검증 (6라운드 권장)
+- **품질 관리 절차** — 최소 3라운드 검증 (6라운드 권장) + Revision QC 재수행 워크플로
 - **연구 유형별 체크리스트** — STROBE, CONSORT, PRISMA, CARE 등
+- **학술 작문 스타일 시스템** — Style Reference Tables (Voice/Tense, Transition, Verb Upgrades, Common Corrections, Statistical Notation, Hedging) + Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
 - **PubMed 검색 도구** — 내장 Python 스크립트 (MCP 및 외부 패키지 불필요)
 - **슬래시 명령어** — 근거 문헌 등록 (`/search-evidence`, `/import-doi`)
 
@@ -144,13 +145,13 @@ Claude 통합 슬래시 명령어:
 | 문서 | 목적 |
 |------|------|
 | [CLAUDE.md](CLAUDE.md) | 핵심 규칙 및 프로젝트 설정 |
-| [docs/writing_guide.md](docs/writing_guide.md) | 섹션별 작성 지침 |
+| [docs/writing_guide.md](docs/writing_guide.md) | 섹션별 작성 가이드 + Style Reference Tables + Writing Principles (4 Pillars) |
 | [docs/expert_roles.md](docs/expert_roles.md) | 전문가 팀 설명 |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE 체크리스트 |
 | [docs/qc_guide.md](docs/qc_guide.md) | 품질 관리 절차 (6라운드) |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | 통계 분석 가이드 (절제 원칙, MCID, 하위군 분석) |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | 근거 문헌 작성 가이드 (형식, 요약 방법, 워크플로우) |
-| [docs/revision_guide.md](docs/revision_guide.md) | 리뷰어 응답 가이드 (응답서 작성, 외교적 표현) |
+| [docs/revision_guide.md](docs/revision_guide.md) | 리뷰어 응답 가이드 (응답서 작성, 외교적 표현, QC 재수행 체크리스트) |
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure 생성 가이드 (DPI, 팔레트, Python 템플릿) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) |

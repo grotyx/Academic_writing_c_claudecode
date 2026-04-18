@@ -20,8 +20,9 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Revision workflow** with dedicated revision folders and file naming
 - **Expert team simulation** (Clinical Expert, Methodology Expert, Statistician, Editor)
 - **Statistical analysis workflow** with Python script generation
-- **Quality control procedures** with minimum 3-round verification (6 rounds recommended)
+- **Quality control procedures** with minimum 3-round verification (6 rounds recommended) plus revision QC re-run workflow
 - **Study-type specific checklists** (STROBE, CONSORT, PRISMA, CARE, etc.)
+- **Natural Academic Writing Style system** with Style Reference Tables (Voice/Tense, Transition Words, Verb Upgrades, Common Corrections, Statistical Notation, Hedging Language) and Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
 - **PubMed search tool** with built-in Python script (no MCP or external packages required)
 - **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
 
@@ -148,13 +149,13 @@ Slash commands for Claude integration:
 | Document | Purpose |
 |----------|---------|
 | [CLAUDE.md](CLAUDE.md) | Core rules and project configuration |
-| [docs/writing_guide.md](docs/writing_guide.md) | Section-by-section writing instructions |
+| [docs/writing_guide.md](docs/writing_guide.md) | Section-by-section writing guide + Style Reference Tables + Writing Principles (4 Pillars) |
 | [docs/expert_roles.md](docs/expert_roles.md) | Expert team descriptions |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE checklists |
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence writing guide (format, summary methods, workflow) |
-| [docs/revision_guide.md](docs/revision_guide.md) | Reviewer response guide (response letter, diplomatic language) |
+| [docs/revision_guide.md](docs/revision_guide.md) | Reviewer response guide (response letter, diplomatic language, QC re-run checklist) |
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure generation guide (DPI, palettes, Python templates) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
