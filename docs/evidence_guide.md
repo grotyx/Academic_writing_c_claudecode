@@ -206,16 +206,23 @@ PubMed 검색 등으로 논문을 찾아 등록하는 경우:
 
 ## Search Log
 
-evidence.md 하단에 검색 기록을 남겨 중복 검색을 방지한다.
+evidence.md 하단에 검색 기록을 남겨 중복 검색을 방지한다. Query는 실제 PubMed에 입력한 문자열 그대로 기록 (field tag·boolean 포함).
 
 ```markdown
 ## Search Log
 
-| Date | Query | Database | Results | Notes |
-|------|-------|----------|---------|-------|
-| 2025-01-15 | ACDF vs arthroplasty long-term | PubMed | 45건 | [1]-[5] 등록 |
-| 2025-01-16 | cervical ROM preservation | PubMed | 23건 | [6]-[8] 등록 |
+| Date | Query | Database | Filters | Results | Notes |
+|------|-------|----------|---------|---------|-------|
+| 2026-04-15 | ("ACDF"[tiab] OR "anterior cervical discectomy"[tiab]) AND "arthroplasty"[tiab] AND "long-term"[tiab] | PubMed | 2015-2025, English, Humans | 45 | [1]-[5] 등록 |
+| 2026-04-16 | "cervical spine"[MeSH] AND "range of motion"[tiab] AND preservation | PubMed | RCT/meta, 2018- | 23 | [6]-[8] 등록 |
+| 2026-04-17 | (BESS OR "biportal endoscopic") AND "lumbar stenosis" | PubMed | Clinical Trial | 31 | [9]-[11] 등록 |
 ```
+
+**Query 작성 팁:**
+- Field tags: `[tiab]` (title/abstract), `[MeSH]` (MeSH term), `[pt]` (publication type)
+- Boolean: `AND`, `OR`, `NOT` (대문자)
+- 구문 검색: `"exact phrase"` (따옴표)
+- Filters는 Query에 넣지 말고 별도 컬럼에 기록 (복원 가능성 유지)
 
 ---
 

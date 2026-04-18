@@ -223,6 +223,39 @@ output/revision/
 
 ---
 
+## QC Re-run for Revision
+
+> Revision 제출 전에 QC를 재수행해야 함. 전체 Phase 6 QC (6 rounds)를 다시 할 필요는 없고, 변경 범위에 맞춰 선택적으로 실행.
+
+### QC Re-run 체크리스트
+
+| Round | 대상 범위 | 필수/선택 | 실행 조건 |
+|-------|-----------|-----------|-----------|
+| Round 1: Number consistency | 변경된 섹션 + Abstract/Tables (교차 검증) | **필수** | 항상 — 숫자 변경 시 연쇄 영향 확인 |
+| Round 2: Reference verification | 새로 추가된 reference만 | **조건부** | 새 reference 추가 시 |
+| Round 3: Logic & flow | 변경 섹션과 인접 섹션 (특히 Discussion ↔ Results) | **필수** | 항상 — 논리 흐름 파손 여부 확인 |
+| Round 4: Terminology/abbreviation | 변경 섹션 + 새 용어 도입 여부 | **조건부** | 새 용어·약어 추가 시 |
+| Round 5: Statistical quality | 재분석 결과만 | **조건부** | 리뷰어 요청으로 재분석 수행 시 |
+| Round 6: Critical review | 전체 원고 | **선택** | Major revision에 한해 권장 |
+
+### Revision QC 실행 원칙
+
+1. **Round 1·3은 항상 재수행** — 최소 변경도 연쇄 영향 가능
+2. **review/qc_log.md에 REV{N} 라운드 기록** — "QC Round 1 re-run for REV1, 2026-MM-DD, no discrepancies"
+3. **변경된 숫자는 Abstract·Methods·Results·Discussion·Tables 5곳에서 교차 검증**
+4. **응답서 제출 전 최종 Round 1 검증** — 응답서에 기록한 수정 숫자와 원고 숫자 일치
+
+### Revision 후 체크리스트 (제출 전)
+
+- [ ] Round 1 재수행 완료 (숫자 교차 검증)
+- [ ] Round 3 재수행 완료 (논리 흐름)
+- [ ] 새 reference 있으면 Round 2 재수행
+- [ ] Response letter의 인용 line 번호가 수정본과 일치
+- [ ] Tracked changes 파일 별도 준비 (저널 요구 시)
+- [ ] QC log 업데이트 (review/qc_log.md)
+
+---
+
 ## Quick Commands
 
 | Command | Action |

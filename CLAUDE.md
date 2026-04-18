@@ -429,9 +429,11 @@ Phase 1: Setup
 └── Read docs/writing_guide.md for target sections
 
 Phase 2: Statistical Analysis — Opus 권장 (analysis_plan)
+├── Read docs/statistical_analysis_guide.md (분석 설계 원칙·검정 선택·보정)
 ├── Place raw data (CSV/XLSX) in data/
 ├── Create data/analysis_plan.md (필수, 사용자 승인 후 진행)
-│   └── Claude reads CSV → creates analysis plan → 사용자 확인
+│   ├── Claude reads CSV → creates analysis plan → 사용자 확인
+│   └── 포함 항목: endpoint hierarchy, 검정법, 다중비교 보정, 결측 처리
 ├── Generate Python scripts in data/py/
 │   ├── 01_descriptive.py (demographics, baseline)
 │   ├── 02_comparative.py (group comparisons)
@@ -480,15 +482,15 @@ Phase 5: Style Polish
 │   └── Clarity / Conciseness / Objectivity / Consistency
 └── Expert: Dr. Editor (final polish)
 
-Phase 6: QC (minimum 3 rounds, 6 rounds recommended)
-├── Round 1: Number consistency (qc_guide.md)
-├── Round 2: Reference verification (qc_guide.md)
-├── Round 3: Logic & flow check (qc_guide.md)
-├── Round 4: Terminology, abbreviation & tense (권장)
-├── Round 5: Statistical quality check (권장)
-├── Round 6: Critical review — 비판적 검토 (권장)
-├── Document in review/qc_log.md
-└── Run study-specific checklist (checklist_guide.md)
+Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
+├── Round 1: Number consistency — Claude 자동 + 사용자 확인 (qc_guide.md)
+├── Round 2: Reference verification — Claude + 사용자 (evidence.md 대조)
+├── Round 3: Logic & flow check — Dr. Editor (section 간 흐름)
+├── Round 4: Terminology/abbreviation/tense — Dr. Editor (권장)
+├── Round 5: Statistical quality — Dr. Statistician (권장)
+├── Round 6: Critical review — Dr. Editor + Dr. Statistician (overclaiming/bias/일반화 범위, 권장)
+├── Document all rounds in review/qc_log.md
+└── Run study-specific checklist (checklist_guide.md — CONSORT/STROBE/PRISMA/CARE)
 
 Phase 7: Finalize
 ├── Read docs/docx_guide.md (DOCX 변환 규칙 확인)
@@ -520,7 +522,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 |-------|-------------------|
 | 1 → 2 | knowledge/evidence.md has ≥10 verified refs, topic defined, data ready |
 | 2 → 3 | analysis_plan.md created & approved, all analyses complete, tables generated |
-| 3 → 4 | draft_plan.md created & approved, key message·table/figure plan·outline 확정 |
+| 3 → 4 | draft_plan.md created & approved — 9개 필수 항목 완결 (key message, tone/voice, essential refs, evidence gap, table/figure plan, intro/discussion outline, limitation points, target word count) — Rule 8 참조 |
 | 4 → 5 | All sections drafted, numbers match tables |
 | 5 → 6 | Writing style rules applied, Dr. Editor reviewed |
 | 6 → 7 | Minimum 3 QC rounds passed (6 recommended), checklist complete |
