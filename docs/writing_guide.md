@@ -1,4 +1,4 @@
-# Section-by-Section Writing Guide (v0.3.0)
+# Section-by-Section Writing Guide (v0.4.0)
 
 ## General Principles
 - Use past tense for completed actions (Methods, Results)
@@ -15,8 +15,125 @@
 - **No synonym mixing (동의어 혼용 금지)** — 같은 개념에 대해 하나의 용어를 선택하면 전체 원고에서 일관되게 사용
   - ❌ Methods에서 "dural tear", Discussion에서 "durotomy" → 혼용
   - ✅ 하나를 선택하고 첫 등장 시 "durotomy (dural tear)"로 병기, 이후 선택한 용어만 사용
-  - 대상: 진단명, 합병증명, 수술 용어, 환자 호칭 등 모든 의학 용어에 적용
+  - 대상: 진단명, 합병증명, 수술 용어, 중재/그룹명, 환자 호칭 등 모든 의학 용어
   - Drafting 시작 전 draft_plan.md에서 주요 용어 선택을 확정할 것
+- **Numerical formatting consistency** — 전체 원고에서 숫자 서식 통일
+  - Decimal place: 같은 변수는 동일한 소수점 자리 (예: age를 54.3이면 어디서든 54.3, 54 아님)
+  - Units: mg/dL과 mmol/L 중 하나만 (SI 단위 권장, 저널 기준 확인)
+  - Tables와 본문 간 서식 일치 (예: Table에 mean±SD면 Abstract도 mean±SD)
+- **Sentence-initial numbers** — 숫자로 문장을 시작하지 않음
+  - ❌ "10 patients were enrolled."
+  - ✅ "Ten patients were enrolled." / "A total of 10 patients were enrolled."
+
+---
+
+## Style Reference Tables
+
+> Phase 5 (Style Polish)에서 주로 적용. Drafting 시에도 참조 가능.
+
+### Voice & Tense by Section
+
+| Section | Tense | Voice | Example |
+|---------|-------|-------|---------|
+| Abstract | Past (methods/results), Present (conclusions) | Passive preferred | "Patients were enrolled..." |
+| Introduction | Present (facts), Past (prior studies) | Mixed, active acceptable | "LSS remains a major issue..." |
+| Methods | Past | Passive | "Patients were randomized..." |
+| Results | Past | Passive (consistent) | "No significant differences were observed..." |
+| Discussion | Present (interpretation), Past (specific findings) | Mixed | "Our findings suggest..." / "The reduction was observed..." |
+| Conclusion | Present | Active acceptable | "This technique provides..." |
+
+### Transition Words (접속사/전환어)
+
+| Avoid | Use Instead |
+|-------|-------------|
+| but | nonetheless, nevertheless, however |
+| However (overused) | Nonetheless, Nevertheless |
+| In contrast | Conversely |
+| therefore | Thus, Accordingly |
+| so | Hence, Therefore |
+
+### Verb Upgrades (동사 고급화)
+
+| Basic | Academic |
+|-------|----------|
+| showed | demonstrated, exhibited, revealed |
+| got | obtained, achieved, acquired |
+| used | employed, utilized, applied |
+| done | performed, conducted, executed |
+| is | remains, represents, constitutes |
+| has | possesses, exhibits, maintains |
+
+### Common Corrections (빈출 교정 패턴)
+
+| Original | Corrected | Reason |
+|----------|-----------|--------|
+| is the gold standard | remains the gold standard | 현재 상태 강조 |
+| is lacking | remains limited | 부정적 표현 완화 |
+| The purpose of this study was to... | This study aimed to... | 더 직접적 (둘 다 사용 가능) |
+| are consistent with | align with | 더 간결 |
+| elderly patients | older adult patients | 현대적/중립적 (AMA) |
+| Due to | Because of | 문법적 정확성* |
+| compared to | compared with | AMA 스타일 |
+
+> *"Due to"는 형용사적, "Because of"는 원인을 나타내는 전치사구
+
+### Statistical Notation (통계 표기)
+
+| Item | Format | Example |
+|------|--------|---------|
+| p-value | lowercase italic *p* | *p* = 0.382, *p* < 0.05 |
+| Very small p | threshold notation | *p* < 0.001 (never *p* = 0.000) |
+| Exact p preferred | report exact when ≥0.001 | *p* = 0.023 (not *p* < 0.05) |
+| Percentage | no space | 83.3% |
+| CI | "to" for range | 95% CI: -8.0% to +16.7% |
+| Age range | en-dash | 19–80 years |
+| Effect size | report with CI | OR 2.3 (95% CI: 1.2–4.5) |
+
+### Hedging Language (Discussion 전용)
+
+Discussion에서 해석·추론을 기술할 때, 근거의 강도에 비례한 hedging 사용:
+
+| 수준 | 표현 | 언제 사용 |
+|------|------|-----------|
+| Strong | demonstrates, establishes, confirms | 확실한 직접 증거 |
+| Moderate | indicates, suggests, supports | 일반적 관찰 연구 결과 |
+| Weak | may, might, could, appears to, tends to | 제한점 있는 해석 |
+| Very weak | possibly, potentially | 탐색적/가설 생성 단계 |
+
+**원칙**: 관찰 연구·retrospective 연구·작은 표본은 Moderate~Weak hedging이 기본. Strong 주장은 RCT·대규모 연구·확실한 증거에 한함.
+
+---
+
+## Writing Principles (4 Pillars)
+
+### Clarity (명확성)
+- One idea per sentence
+- Split long sentences
+- Avoid ambiguous pronouns ("this" → "this finding", "this result")
+
+### Conciseness (간결성)
+- 불필요한 수식어·반복·장황한 서술 삭제
+- 한 문장에 하나의 아이디어 — 길어지면 분리
+- Discussion에서 Results 숫자/p-value 반복 금지 (Table에 이미 있음); 단, 선행연구 수치와 직접 비교 시 해당 수치 인용은 허용
+- 유의하지 않은 p-value를 본문에 나열하지 않음 (Table 참조로 대체); 단, primary outcome의 n.s. 결과는 명시적으로 보고
+- ❌ "first-grade students, fifth-grade students, and sixth-grade students"
+- ✅ "first-, fifth-, and sixth-grade students"
+
+### Objectivity (객관성)
+- ❌ "We believe that..."
+- ✅ "The findings suggest that..."
+- 과장 금지 표현 목록:
+  - ❌ "dramatic improvement", "remarkable difference", "overwhelming evidence"
+  - ❌ "most pronounced advantage", "four-fold reduction", "carries direct clinical significance"
+  - ❌ "striking", "unprecedented", "groundbreaking"
+  - ✅ "notable", "may be clinically relevant", "suggests a potential benefit"
+- 결과 해석은 근거에 비례하는 수준으로 제한 — Hedging Language 표 참조
+
+### Consistency (일관성)
+- Same term for same concept throughout (synonym mixing 금지 — General Principles 참조)
+- Uniform abbreviations and formatting
+- Numerical/unit formatting consistency (General Principles 참조)
+- Section 간 숫자·용어·약어 교차 검증은 QC Round 1에서 수행 (`docs/qc_guide.md`)
 
 ---
 
@@ -503,3 +620,16 @@ Data presented as mean±SD, median [IQR], or n (%).
 *Student's t-test; †Mann-Whitney U test; ‡Chi-square test
 Abbreviations: BMI, body mass index; VAS, visual analog scale
 ```
+
+**Tips:**
+
+> **Tip 1 — Table 각주와 Methods Statistics 역할 분리**
+> 통계 방법론(검정 선택 이유, 모델 가정, 보정 방법 등)은 Methods Statistics 섹션에만 기술. Table 각주에는 심볼 정의·수식 정의·약어·데이터 표기(mean±SD 등)만 포함하고, 통계 검정은 "See Methods for statistical tests" 또는 "Analyzed with linear mixed models (Methods)" 같은 참조 문구로 대체.
+> - 장점: 테이블이 가벼워지고, 방법론 중복 제거
+> - ✅ 각주: "*Analyzed with linear mixed models (see Methods)"
+> - ❌ 각주: "*Linear mixed model with random intercept for patient, adjusted for age, sex, and baseline VAS, with unstructured covariance matrix..."
+
+> **Tip 2 — Pre-specified Sensitivity Analyses는 Supplementary로 분리**
+> 사전 계획된 sensitivity analyses·per-protocol analyses·subgroup 세부 결과는 본문 테이블에 섞지 않고 Supplementary Table로 분리. 본문 테이블 각주에는 "see Supplementary Table S1" 참조만 남김.
+> - 장점: primary outcome table의 초점 유지, 본문 복잡도 감소
+> - Exception: 핵심 sensitivity analysis가 primary 해석을 바꾸는 경우에 한해 본문 포함 고려
