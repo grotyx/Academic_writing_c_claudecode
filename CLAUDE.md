@@ -173,9 +173,11 @@ output/paper1_xxx/revision/REV1/
 | `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2 (figure 생성 시) |
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿) | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
+| `profile/journals.md` | 저널별 인용 형식 (bracket vs superscript, et al. 기준, volume 형식) | 참고문헌 목록 작성 시 확인 |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
 | `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
+| `knowledge/own_papers/` | 본인 출판 논문 요약 (용어·톤·key claims) — 스타일 앵커 | Phase 3-5 (용어 일관성 확인, Discussion 비교 대상 논문 확인) |
 | `data/` | Raw data (CSV/XLSX) | Phase 2 (statistical analysis) |
 | `data/analysis_plan.md` | 분석 계획 (필수 작성·승인 후 분석 진행) | Phase 2 (before running analysis) |
 | `data/py/` | Python analysis scripts | Phase 2 (statistical analysis) |
@@ -365,6 +367,12 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 7. **Discussion outline** — 주요 논점 3-5개, 비교할 선행연구 목록
 8. **Limitation points** — 예상 한계점 및 대응 논리
 9. **Target word count** — 저널 기준에 맞춘 섹션별 목표 분량 (선택)
+10. **Claim→Citation mapping** — 핵심 주장 ~20개와 그 근거 논문 매핑 (쓰기 전에 확인 필수)
+    - Introduction background: 5–8 claims (배경 지식의 근거)
+    - Methods rationale: 2–3 claims (방법론 선택 근거)
+    - Discussion comparisons: 5–8 claims (선행연구와의 비교 및 contextualisation)
+    - 형식: `[Claim 요약] → Author Year (evidence.md 번호)`
+    - **규칙:** claim을 작성하기 전에 citation을 먼저 확보할 것 — 없으면 Phase 1로 돌아가 검색
 
 ### 9. Model Selection by Phase (단계별 모델 선택)
 
@@ -450,6 +458,7 @@ Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 │   ├── Tone & voice (논조/어조 설정)
 │   ├── Essential references (필수 인용 참고문헌 + 인용 목적)
 │   ├── Evidence gap (추가 필요 근거 자료)
+│   ├── Claim→Citation mapping (핵심 주장 ~20개 + 각 근거 논문 — knowledge/own_papers/ 참조)
 │   ├── Table/Figure plan (어떤 Table/Figure를 몇 개, 어떤 내용으로)
 │   ├── Introduction outline (background → gap → purpose 흐름)
 │   ├── Discussion outline (주요 논점 3-5개, 비교할 선행연구)
@@ -523,7 +532,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 |-------|-------------------|
 | 1 → 2 | knowledge/evidence.md has ≥10 verified refs, topic defined, data ready |
 | 2 → 3 | analysis_plan.md created & approved, all analyses complete, tables generated |
-| 3 → 4 | draft_plan.md created & approved — 9개 필수 항목 완결 (key message, tone/voice, essential refs, evidence gap, table/figure plan, intro/discussion outline, limitation points, target word count) — Rule 8 참조 |
+| 3 → 4 | draft_plan.md created & approved — 10개 필수 항목 완결 (key message, tone/voice, essential refs, evidence gap, claim→citation mapping, table/figure plan, intro/discussion outline, limitation points, target word count) — Rule 8 참조 |
 | 4 → 5 | All sections drafted, numbers match tables |
 | 5 → 6 | Writing style rules applied, Dr. Editor reviewed |
 | 6 → 7 | Minimum 3 QC rounds passed (6 recommended), checklist complete |
@@ -605,7 +614,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | Command | Action |
 |---------|--------|
 | `Compile manuscript` | Read `docs/docx_guide.md` → DOCX 변환 (규칙대로) |
-| `Format references for [journal]` | Apply journal citation style |
+| `Format references for [journal]` | Apply journal citation style (profile/journals.md 참조) |
 | `Generate submission checklist` | Pre-submission verification |
 
 ---
