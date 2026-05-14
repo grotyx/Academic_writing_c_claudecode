@@ -172,12 +172,14 @@ output/paper1_xxx/revision/REV1/
 | `docs/revision_guide.md` | Reviewer response guide (응답서 작성, 외교적 표현) | Revision (리뷰어 코멘트 수신 후) |
 | `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2 (figure 생성 시) |
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
+| `docs/draft_plan_template.md` | Draft plan 10개 항목 템플릿 (Phase 3에서 복사하여 사용) | Phase 3 시작 시 복사 → `drafts/draft_plan.md` |
 | `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿) | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
 | `profile/journals.md` | 저널별 인용 형식 (bracket vs superscript, et al. 기준, volume 형식) | 참고문헌 목록 작성 시 확인 |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
 | `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
 | `knowledge/own_papers/` | 본인 출판 논문 요약 (용어·톤·key claims) — 스타일 앵커 | Phase 3-5 (용어 일관성 확인, Discussion 비교 대상 논문 확인) |
+| `knowledge/terminology.md` | 분야 표준 용어 사전 (올바른 표현·금지 표현·약어 정의) | Phase 4-5 (용어 일관성 확인) |
 | `data/` | Raw data (CSV/XLSX) | Phase 2 (statistical analysis) |
 | `data/analysis_plan.md` | 분석 계획 (필수 작성·승인 후 분석 진행) | Phase 2 (before running analysis) |
 | `data/py/` | Python analysis scripts | Phase 2 (statistical analysis) |
@@ -430,6 +432,8 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 ```
 Phase 1: Setup
 ├── Define topic, journal, study design in CLAUDE.md
+├── Check profile/journals.md — 목표 저널 인용 형식 확인 (et al. 규칙, volume 형식 등)
+├── Check knowledge/own_papers/ — 관련 스타일 앵커 논문 확인 (용어·톤 일관성 참고)
 ├── Search references: /search-evidence [query] 또는 scripts/search_pubmed.py
 ├── Import by DOI: /import-doi [doi]
 ├── Save PDFs to knowledge/pdf/
@@ -453,7 +457,7 @@ Phase 2: Statistical Analysis — Opus 권장 (analysis_plan)
 └── Generate figures → drafts/figures/
 
 Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
-├── Create drafts/draft_plan.md
+├── Copy docs/draft_plan_template.md → drafts/draft_plan.md (또는 논문별 서브폴더)
 │   ├── Key message (이 논문의 핵심 메시지 1-2문장)
 │   ├── Tone & voice (논조/어조 설정)
 │   ├── Essential references (필수 인용 참고문헌 + 인용 목적)
@@ -567,7 +571,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 
 | Command              | Action                                      |
 |----------------------|---------------------------------------------|
-| `Create draft plan`  | Create drafts/draft_plan.md (Opus 권장)     |
+| `Create draft plan`  | Copy docs/draft_plan_template.md → drafts/draft_plan.md, 10개 항목 작성 (Opus 권장) |
 | `Review draft plan`  | draft_plan.md 검토 및 수정 제안             |
 
 ### Drafting
