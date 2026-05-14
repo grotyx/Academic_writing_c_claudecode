@@ -172,6 +172,7 @@ output/paper1_xxx/revision/REV1/
 | `docs/revision_guide.md` | Reviewer response guide (응답서 작성, 외교적 표현) | Revision (리뷰어 코멘트 수신 후) |
 | `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2 (figure 생성 시) |
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
+| `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿) | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
 | `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
@@ -468,7 +469,7 @@ Phase 4: Draft (in this order)
 │   └── Expert: Dr. Researcher A
 ├── 07_conclusion.md   → brief takeaway
 ├── 02_abstract.md     → summary (write LAST)
-└── 01_title.md        → finalize
+└── 01_title.md        → finalize (profile/authors.md 참조하여 저자·소속·ORCID·funding 기입)
 
 Phase 5: Style Polish
 ├── Apply writing_guide.md Style Reference Tables
