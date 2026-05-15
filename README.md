@@ -54,7 +54,8 @@ project/
 │   ├── terminology.md            # Field-standard term reference (correct vs incorrect)
 │   ├── pdf/                      # Original PDF files
 │   ├── summaries/                # Detailed full-text paper summaries
-│   └── own_papers/               # Published paper style anchors (terminology, claims)
+│   └── own_papers/               # Published paper style anchors — gitignored, local only
+│       └── example_YYYY_Journal_keyword.md  # Example template (public)
 ├── profile/                      # Personal info — gitignored, local only
 │   ├── authors.md                # Author affiliations, contacts, ORCIDs, funding
 │   └── journals.md               # Journal-specific citation formats (verified)
@@ -119,7 +120,11 @@ If a citation cannot be identified for a claim, go back to Phase 1 and search fi
 
 ### Style Anchor Library (`knowledge/own_papers/`)
 
-Summaries of previously published papers used as writing anchors:
+Summaries of previously published papers used as writing anchors.
+**Gitignored** — your actual paper summaries stay local only.
+A template is provided at `knowledge/own_papers/example_YYYY_Journal_keyword.md`.
+
+Each summary captures:
 
 - Field-specific terminology (correct vs incorrect)
 - Methods boilerplate patterns (reusable text)
@@ -189,7 +194,7 @@ Slash commands for Claude integration:
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10-item with claim→citation tables and approval checklist |
 | [knowledge/terminology.md](knowledge/terminology.md) | Field-standard term reference (BESS/spine surgery correct vs incorrect terms) |
-| [knowledge/own_papers/](knowledge/own_papers/) | Style-anchor summaries of published papers |
+| [knowledge/own_papers/example_YYYY_Journal_keyword.md](knowledge/own_papers/example_YYYY_Journal_keyword.md) | Style-anchor template (gitignored — your actual files stay local) |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
 
 ---

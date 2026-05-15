@@ -178,7 +178,7 @@ output/paper1_xxx/revision/REV1/
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `knowledge/pdf/` | Original reference PDFs | When verifying claims |
 | `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
-| `knowledge/own_papers/` | 본인 출판 논문 요약 (용어·톤·key claims) — 스타일 앵커 | Phase 3-5 (용어 일관성 확인, Discussion 비교 대상 논문 확인) |
+| `knowledge/own_papers/` | 본인 출판 논문 요약 (용어·톤·key claims) — 스타일 앵커 (**gitignored**, local only; `example_*.md`만 공개) | Phase 3-5 (용어 일관성 확인, Discussion 비교 대상 논문 확인) |
 | `knowledge/terminology.md` | 분야 표준 용어 사전 (올바른 표현·금지 표현·약어 정의) | Phase 4-5 (용어 일관성 확인) |
 | `data/` | Raw data (CSV/XLSX) | Phase 2 (statistical analysis) |
 | `data/analysis_plan.md` | 분석 계획 (필수 작성·승인 후 분석 진행) | Phase 2 (before running analysis) |

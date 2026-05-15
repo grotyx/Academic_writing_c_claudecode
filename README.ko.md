@@ -54,7 +54,8 @@ project/
 │   ├── terminology.md            # 분야 표준 용어 사전 (올바른 표현/금지 표현)
 │   ├── pdf/                      # 원본 PDF 파일
 │   ├── summaries/                # 개별 논문 상세 요약
-│   └── own_papers/               # 출판 논문 스타일 앵커 (용어·주장·문구 참조)
+│   └── own_papers/               # 출판 논문 스타일 앵커 — gitignored, 로컬 전용
+│       └── example_YYYY_Journal_keyword.md  # 예시 템플릿 (공개)
 ├── profile/                      # 개인 정보 — gitignored, 로컬 전용
 │   ├── authors.md                # 저자 소속·연락처·ORCID·funding
 │   └── journals.md               # 저널별 인용 형식 (실제 논문 검증)
@@ -118,7 +119,11 @@ citation을 확보할 수 없는 claim이 있으면 Phase 1로 돌아가 먼저 
 
 ### 스타일 앵커 라이브러리 (`knowledge/own_papers/`)
 
-출판 논문 요약을 활용한 작문 일관성 유지:
+출판 논문 요약을 활용한 작문 일관성 유지.
+**Gitignored** — 실제 논문 요약 파일은 로컬에만 보관됩니다.
+템플릿: `knowledge/own_papers/example_YYYY_Journal_keyword.md`
+
+각 요약 파일에는 다음이 포함됩니다:
 
 - 분야 표준 용어 (올바른 vs 잘못된 표현)
 - Methods 본문 재사용 패턴 (boilerplate)
@@ -185,7 +190,7 @@ Claude 통합 슬래시 명령어:
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan 템플릿 — 10개 항목 + claim→citation 테이블 + 승인 체크리스트 |
 | [knowledge/terminology.md](knowledge/terminology.md) | 분야 표준 용어 사전 (BESS/척추 수술 올바른 표현 vs 잘못된 표현) |
-| [knowledge/own_papers/](knowledge/own_papers/) | 출판 논문 스타일 앵커 요약 |
+| [knowledge/own_papers/example_YYYY_Journal_keyword.md](knowledge/own_papers/example_YYYY_Journal_keyword.md) | 스타일 앵커 템플릿 (gitignored — 실제 파일은 로컬 전용) |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) |
 
 ---
