@@ -176,3 +176,4 @@
 | MIS (단독 약어) | MISS (minimally invasive spine surgery) |
 | open surgery | microscopic surgery / microscopic discectomy |
 | orthopaedic vs orthopedic | 저널별 통일 (혼용 금지) |
+| em dash (—) / en dash (–) in sentences | 쉼표 또는 괄호로 대체 (숫자 범위의 en-dash는 허용) |

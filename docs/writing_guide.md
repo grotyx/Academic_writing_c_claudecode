@@ -24,6 +24,12 @@
 - **Sentence-initial numbers** — 숫자로 문장을 시작하지 않음
   - ❌ "10 patients were enrolled."
   - ✅ "Ten patients were enrolled." / "A total of 10 patients were enrolled."
+- **No em dash or en dash in running text** — 줄글 문장 내에서 em dash (—)·en dash (–)를 구두점으로 사용하지 않음
+  - ❌ "The BED group—which had lower CPK—showed better outcomes."
+  - ❌ "The advantage was notable–particularly in pain scores."
+  - ✅ "The BED group, which had lower CPK, showed better outcomes."
+  - ✅ "The advantage was notable, particularly in pain scores."
+  - 예외: 숫자 범위(page range, CI, age range)의 en dash는 허용 — "95% CI: 1.2–4.5", "pages 18–26"
 
 ---
 
