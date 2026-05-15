@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v0.6.0** (2026-04-18)
+**v0.7.1** (2026-05-15)
 
 ---
 
@@ -23,6 +23,10 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **품질 관리 절차** — 최소 3라운드 검증 (6라운드 권장) + Revision QC 재수행 워크플로
 - **연구 유형별 체크리스트** — STROBE, CONSORT, PRISMA, CARE 등
 - **학술 작문 스타일 시스템** — Style Reference Tables (Voice/Tense, Transition, Verb Upgrades, Common Corrections, Statistical Notation, Hedging) + Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
+- **인용 품질 관리** — Claim→Citation Mapping (작성 전 핵심 주장 ~20개와 근거 논문 매핑; write-first, cite-later 방지)
+- **스타일 앵커 라이브러리** (`knowledge/own_papers/`) — 출판 논문 요약으로 용어·톤 일관성 확보
+- **분야 표준 용어 사전** (`knowledge/terminology.md`) — 올바른 표현 vs 잘못된 표현, 흔한 실수
+- **Draft plan 템플릿** (`docs/draft_plan_template.md`) — 10개 항목 템플릿 + claim→citation 테이블 + 승인 체크리스트
 - **PubMed 검색 도구** — 내장 Python 스크립트 (MCP 및 외부 패키지 불필요)
 - **슬래시 명령어** — 근거 문헌 등록 (`/search-evidence`, `/import-doi`)
 
@@ -41,13 +45,19 @@ project/
 │   ├── qc_guide.md               # 품질 관리 절차
 │   ├── statistical_analysis_guide.md  # 통계 분석 가이드
 │   ├── evidence_guide.md         # 근거 문헌 작성 가이드
-│   ├── revision_guide.md        # 리뷰어 응답 가이드
-│   ├── figure_guide.md          # Figure 생성 가이드
-│   └── docx_guide.md            # DOCX 변환 가이드
+│   ├── revision_guide.md         # 리뷰어 응답 가이드
+│   ├── figure_guide.md           # Figure 생성 가이드
+│   ├── docx_guide.md             # DOCX 변환 가이드
+│   └── draft_plan_template.md    # Draft plan 템플릿 (Phase 3에서 복사하여 사용)
 ├── knowledge/                    # 참고 자료
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
+│   ├── terminology.md            # 분야 표준 용어 사전 (올바른 표현/금지 표현)
 │   ├── pdf/                      # 원본 PDF 파일
-│   └── summaries/                # 개별 논문 상세 요약
+│   ├── summaries/                # 개별 논문 상세 요약
+│   └── own_papers/               # 출판 논문 스타일 앵커 (용어·주장·문구 참조)
+├── profile/                      # 개인 정보 — gitignored, 로컬 전용
+│   ├── authors.md                # 저자 소속·연락처·ORCID·funding
+│   └── journals.md               # 저널별 인용 형식 (실제 논문 검증)
 ├── data/                         # 통계 분석
 │   ├── raw_data.csv              # 원본 데이터셋
 │   ├── analysis_plan.md          # 분석 계획 (분석 전 필수 작성)
@@ -71,13 +81,13 @@ project/
 
 ## 빠른 시작
 
-1. **설정**: `CLAUDE.md`에 연구 주제, 목표 저널, 연구 설계를 입력합니다
+1. **설정**: `CLAUDE.md`에 연구 주제, 목표 저널, 연구 설계를 입력합니다. `profile/journals.md`에서 인용 형식, `knowledge/own_papers/`에서 스타일 앵커를 확인합니다.
 2. **참고문헌**: `/search-evidence [검색어]` 또는 `python3 scripts/search_pubmed.py`로 PubMed를 검색하고 `knowledge/evidence.md`에 등록합니다
 3. **데이터 분석**: `data/` 폴더에 데이터를 배치 → `analysis_plan.md` 작성 (필수) → 통계 분석 실행
-4. **원고 계획**: `drafts/draft_plan.md`에 핵심 메시지, 논조, 필수 참고문헌, 개요 작성 (Opus 권장)
-5. **초안 작성**: 권장 순서에 따라 섹션을 작성합니다 (Sonnet 가능, draft plan이 충실하면 OK)
-6. **품질 관리**: 제출 전 최소 3라운드의 QC를 수행합니다 (6라운드 권장)
-7. **최종화**: 원고를 DOCX로 컴파일합니다 (`docs/docx_guide.md` 참조)
+4. **원고 계획**: `docs/draft_plan_template.md`를 `drafts/draft_plan.md`로 복사 → 10개 항목 작성 (**Claim→Citation Mapping 포함**) (Opus 권장)
+5. **초안 작성**: 권장 순서에 따라 섹션 작성 (draft plan이 충실하면 Sonnet으로도 OK)
+6. **품질 관리**: 제출 전 최소 3라운드 QC 수행 (6라운드 권장)
+7. **최종화**: 원고를 DOCX로 컴파일 (`docs/docx_guide.md` 참조)
 
 ---
 
@@ -92,9 +102,28 @@ project/
 ### 작성 전 필수 계획 (Planning Before Writing)
 
 - **분석 계획** (`data/analysis_plan.md`): 통계 분석 전 필수 — 연구 질문, 평가 변수, 검정법 선택 정의
-- **원고 계획** (`drafts/draft_plan.md`): 섹션 작성 전 필수 — 핵심 메시지, 논조/어조, 필수 참고문헌, 근거 갭, Table/Figure 계획, 섹션별 개요
+- **원고 계획** (`drafts/draft_plan.md`): 섹션 작성 전 필수 — 10개 항목 (핵심 메시지, 논조/어조, 필수 참고문헌, 근거 갭, **Claim→Citation Mapping**, Table/Figure 계획, 섹션별 개요)
 - 두 계획 모두 사용자 승인 후 다음 단계 진행
 - 멀티 논문 시 논문별 개별 계획 작성
+
+### Claim→Citation Mapping (v0.7.0 신규)
+
+초안 작성 전에 핵심 주장 ~20개와 근거 논문을 매핑하는 단계 (draft_plan.md 필수 항목):
+
+- **Introduction background**: 5–8 claims (역학, 선행 근거)
+- **Methods rationale**: 2–3 claims (결과 지표 선택 근거, 설계 근거)
+- **Discussion comparisons**: 5–8 claims (선행연구와의 비교)
+
+citation을 확보할 수 없는 claim이 있으면 Phase 1로 돌아가 먼저 검색. write-first, cite-later 패턴과 참고문헌 날조를 원천 차단.
+
+### 스타일 앵커 라이브러리 (`knowledge/own_papers/`)
+
+출판 논문 요약을 활용한 작문 일관성 유지:
+
+- 분야 표준 용어 (올바른 vs 잘못된 표현)
+- Methods 본문 재사용 패턴 (boilerplate)
+- 정확한 데이터가 포함된 핵심 주장 (cross-citation용)
+- 논문 간 톤·어조 일관성 유지
 
 ### 단계별 모델 선택 (Model Selection by Phase)
 
@@ -154,6 +183,9 @@ Claude 통합 슬래시 명령어:
 | [docs/revision_guide.md](docs/revision_guide.md) | 리뷰어 응답 가이드 (응답서 작성, 외교적 표현, QC 재수행 체크리스트) |
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure 생성 가이드 (DPI, 팔레트, Python 템플릿) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) |
+| [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan 템플릿 — 10개 항목 + claim→citation 테이블 + 승인 체크리스트 |
+| [knowledge/terminology.md](knowledge/terminology.md) | 분야 표준 용어 사전 (BESS/척추 수술 올바른 표현 vs 잘못된 표현) |
+| [knowledge/own_papers/](knowledge/own_papers/) | 출판 논문 스타일 앵커 요약 |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) |
 
 ---
@@ -195,3 +227,88 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 [![CC BY 4.0](https://licensebuttons.net/l/by/4.0/88x31.png)](https://creativecommons.org/licenses/by/4.0/)
 
 전체 라이선스 원문: https://creativecommons.org/licenses/by/4.0/legalcode
+
+---
+
+## 변경 이력
+
+### v0.7.1 (2026-05-15)
+
+**용어 사전 및 Draft Plan 템플릿**
+
+- `knowledge/terminology.md` 추가 — BESS/척추 수술 분야 표준 용어 사전
+  - 60개 이상 항목: 수술 기법명, 기구, 결과 지표, 연구 설계, 통계, 합병증 용어
+  - 흔한 실수 목록 (creatine phosphokinase vs creatinine kinase; assessor-blind vs double-blind; VAS vs NRS 등)
+- `docs/draft_plan_template.md` 추가 — 10개 항목 draft plan 완성형 템플릿
+  - Claim→Citation Mapping 테이블 (Introduction/Methods/Discussion)
+  - 승인 체크리스트 (Phase 4 진행 전 10개 항목 완결 확인)
+- CLAUDE.md Phase 1: 목표 저널 인용 형식 확인 및 own_papers 스타일 앵커 검토 단계 추가
+- CLAUDE.md: File Roles 테이블, Phase 3 워크플로우, Quick Commands 업데이트
+- 수정: `profile/journals.md` 인용 예시 오류 수정 — TSJ는 6명 후 et al. (기존 3명); BJJ는 전저자 나열, et al. 사용 안 함
+
+### v0.7.0 (2026-05-14)
+
+**인용 품질 및 스타일 일관성**
+
+- `knowledge/own_papers/` 추가 — 5개 출판 논문 스타일 앵커 요약
+  - 2018 Spine — 우울증과 만성 요통 단면 연구 (KNHANES)
+  - 2020 Spine J — 양방향 내시경 vs 현미경 감압 수술 RCT
+  - 2023 Spine J — 양방향 내시경 vs 현미경 디스크 수술 RCT
+  - 2024 Neurospine — BESS 안전성 프로파일: 2개 RCT 통합 분석
+  - 2025 Bone Joint J — ENDOBH 다기관 RCT (6개 기관)
+  - 각 파일: 전체 인용, 핵심 용어 표, methods boilerplate, 데이터 포함 핵심 주장
+- CLAUDE.md Rule 8: **Claim→Citation Mapping** 추가 — draft_plan.md 10번째 필수 항목
+  - 작성 전 핵심 주장 ~20개와 근거 논문 매핑
+  - Introduction background (5–8), Methods rationale (2–3), Discussion comparisons (5–8)
+- CLAUDE.md: Phase Completion Criteria 3→4 업데이트 (필수 항목 9→10개)
+- `profile/journals.md` 추가 (로컬 전용, gitignored) — 8개 목표 저널 인용 형식 (실제 논문 검증)
+  - The Spine Journal: bracket [N], 6명 후 et al.
+  - Spine (Phila Pa 1976): superscript, "(Phila Pa 1976)" 필수
+  - Bone Joint J: 전저자 나열, Vol-B(issue) 형식
+  - Neurospine: 3명 후 et al.
+  - 추가: J Neurosurg Spine, Global Spine J, Clin Orthop Relat Res, Asian Spine J
+- `profile/authors.md` 5명 ORCID 추가 (로컬 전용, gitignored)
+
+### v0.6.0 (2026-04-18)
+
+**Writing Guide 대규모 리팩터링** — `docs/writing_guide.md` 내부 버전 v0.3.0 → v0.4.0
+
+- CLAUDE.md와 writing_guide.md 역할 분리 (orchestrator vs rules)
+- Style Reference Tables 신규 추가 (Voice/Tense, Transition, Verb Upgrades, Common Corrections, Statistical Notation, Hedging)
+- Writing Principles (4 Pillars) 신규 추가 (Clarity/Conciseness/Objectivity/Consistency)
+- General Principles 6개 규칙 확장
+- Results/Discussion/Tables 섹션 가이드 강화
+- 전 파일 일관성 수정 (CLAUDE.md, revision_guide.md, evidence_guide.md)
+
+### v0.5.2 (2026-04-15)
+- 전 파일 교차 일관성 수정
+- Figure 형식 워크플로우 업데이트 (PNG 초안 300 DPI / TIFF LZW 최종 600+ DPI)
+
+### v0.5.1 (2026-04-15)
+- Analysis Plan Mandatory (Rule #7) 추가
+- Draft Plan Mandatory (Rule #8) 추가
+- Model Selection by Phase (Rule #9) 추가
+- 워크플로우 8단계로 재편 (Phase 3: Draft Plan 추가)
+
+### v0.5.0 (2026-04-14)
+- QC Round 2 강화 (4개 새 서브체크: placeholder, 등장순, 형식 일관성, 배포)
+- 파일 버전 관리 규칙 (Rule #5) 추가
+- 멀티 논문 조직화 규칙 (Rule #6) 추가
+- Revision 폴더 구조 추가
+
+### v0.4.0 (2026-04-09)
+- `docs/revision_guide.md` 추가 — 리뷰어 응답 및 개정 가이드
+- `docs/figure_guide.md` 추가 — 출판용 figure 생성 가이드
+
+### v0.3.0 (2026-03-09)
+- `docs/statistical_analysis_guide.md` 대규모 개정 (절제 원칙, 위계, 임상적 유의성, 하위군 분석)
+
+### v0.2.5 (2026-03-09)
+- `scripts/search_pubmed.py` 추가 (MCP 없는 PubMed 검색)
+- 슬래시 명령어 추가: `/search-evidence`, `/import-doi`
+
+### v0.2.4 ~ v0.2 (2026-02-03 ~ 2026-03-04)
+- DOCX 가이드, 근거 문헌 가이드, 통계 분석 가이드 등 기반 문서 구축
+
+### v0.1 (초기)
+- 기본 프로젝트 구조, Writing guide, Expert roles, Checklists, QC guide

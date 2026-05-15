@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.6.0** (2026-04-18)
+**v0.7.1** (2026-05-15)
 
 ---
 
@@ -23,6 +23,10 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Quality control procedures** with minimum 3-round verification (6 rounds recommended) plus revision QC re-run workflow
 - **Study-type specific checklists** (STROBE, CONSORT, PRISMA, CARE, etc.)
 - **Natural Academic Writing Style system** with Style Reference Tables (Voice/Tense, Transition Words, Verb Upgrades, Common Corrections, Statistical Notation, Hedging Language) and Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
+- **Citation quality control** — Claim→Citation Mapping (20 key claims mapped to citations before writing starts; prevents write-first, cite-later)
+- **Style anchor library** (`knowledge/own_papers/`) — summaries of published papers for terminology and tone consistency
+- **Field terminology guide** (`knowledge/terminology.md`) — standard vs incorrect terms, common mistakes
+- **Draft plan template** (`docs/draft_plan_template.md`) — 10-item template with claim→citation tables and approval checklist
 - **PubMed search tool** with built-in Python script (no MCP or external packages required)
 - **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
 
@@ -41,13 +45,19 @@ project/
 │   ├── qc_guide.md               # Quality control procedures
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence writing guide
-│   ├── revision_guide.md        # Reviewer response guide
-│   ├── figure_guide.md          # Figure generation guide
-│   └── docx_guide.md            # DOCX conversion guide
+│   ├── revision_guide.md         # Reviewer response guide
+│   ├── figure_guide.md           # Figure generation guide
+│   ├── docx_guide.md             # DOCX conversion guide
+│   └── draft_plan_template.md    # Draft plan template (copy to drafts/ for Phase 3)
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # Reference summary collection
+│   ├── terminology.md            # Field-standard term reference (correct vs incorrect)
 │   ├── pdf/                      # Original PDF files
-│   └── summaries/                # Detailed full-text paper summaries
+│   ├── summaries/                # Detailed full-text paper summaries
+│   └── own_papers/               # Published paper style anchors (terminology, claims)
+├── profile/                      # Personal info — gitignored, local only
+│   ├── authors.md                # Author affiliations, contacts, ORCIDs, funding
+│   └── journals.md               # Journal-specific citation formats (verified)
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset
 │   ├── analysis_plan.md          # Analysis plan (required before analysis)
@@ -71,10 +81,10 @@ project/
 
 ## Quick Start
 
-1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design
+1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design. Check `profile/journals.md` for citation format and `knowledge/own_papers/` for style anchors.
 2. **References**: Use `/search-evidence [query]` or `python3 scripts/search_pubmed.py` to search PubMed and register in `knowledge/evidence.md`
 3. **Data Analysis**: Place data in `data/` folder → create `analysis_plan.md` (required) → run statistical analysis
-4. **Draft Plan**: Create `drafts/draft_plan.md` with key message, tone, essential references, and outline (Opus recommended)
+4. **Draft Plan**: Copy `docs/draft_plan_template.md` → `drafts/draft_plan.md`, fill in all 10 items including **Claim→Citation Mapping** (Opus recommended)
 5. **Drafting**: Write sections in recommended order (Methods → Results → Introduction → Discussion) (Sonnet OK if draft plan is solid)
 6. **QC**: Run minimum 3 QC rounds before submission
 7. **Finalize**: Compile manuscript to DOCX (see `docs/docx_guide.md`)
@@ -93,9 +103,28 @@ project/
 ### Mandatory Planning Before Writing
 
 - **Analysis Plan** (`data/analysis_plan.md`): Required before any statistical analysis — defines research questions, endpoints, and test selection
-- **Draft Plan** (`drafts/draft_plan.md`): Required before any section drafting — defines key message, tone/voice, essential references, evidence gaps, table/figure plan, and section outlines
+- **Draft Plan** (`drafts/draft_plan.md`): Required before any section drafting — 10 required items including key message, tone/voice, essential references, evidence gaps, **Claim→Citation Mapping**, table/figure plan, and section outlines
 - Both plans require user approval before proceeding to the next phase
 - Per-paper plans for multi-paper projects
+
+### Claim→Citation Mapping (NEW in v0.7.0)
+
+A pre-writing step in the draft plan that maps ~20 key claims to their supporting citations before any writing begins:
+
+- **Introduction background**: 5–8 claims (epidemiology, prior evidence)
+- **Methods rationale**: 2–3 claims (why this outcome measure, why this design)
+- **Discussion comparisons**: 5–8 claims (how findings compare to prior work)
+
+If a citation cannot be identified for a claim, go back to Phase 1 and search first. This eliminates the write-first, cite-later anti-pattern and hallucinated references.
+
+### Style Anchor Library (`knowledge/own_papers/`)
+
+Summaries of previously published papers used as writing anchors:
+
+- Field-specific terminology (correct vs incorrect)
+- Methods boilerplate patterns (reusable text)
+- Key claims with exact data (ready for cross-citation)
+- Tone and voice consistency across papers
 
 ### Model Selection by Phase
 
@@ -158,6 +187,9 @@ Slash commands for Claude integration:
 | [docs/revision_guide.md](docs/revision_guide.md) | Reviewer response guide (response letter, diplomatic language, QC re-run checklist) |
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure generation guide (DPI, palettes, Python templates) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
+| [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10-item with claim→citation tables and approval checklist |
+| [knowledge/terminology.md](knowledge/terminology.md) | Field-standard term reference (BESS/spine surgery correct vs incorrect terms) |
+| [knowledge/own_papers/](knowledge/own_papers/) | Style-anchor summaries of published papers |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
 
 ---
@@ -203,6 +235,43 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.7.1 (2026-05-15)
+
+**Terminology & Template**
+
+- Added `knowledge/terminology.md` — field-standard term reference for BESS/spine surgery
+  - Correct vs incorrect usage for 60+ terms across: procedure names, instruments, outcome measures, study design, statistics, complications
+  - Common mistake list (creatine phosphokinase vs creatinine kinase; assessor-blind vs double-blind; VAS vs NRS; etc.)
+- Added `docs/draft_plan_template.md` — complete 10-item draft plan template
+  - Claim→Citation Mapping tables (Introduction/Methods/Discussion)
+  - Approval checklist (all 10 items must be complete before Phase 4)
+- CLAUDE.md Phase 1: Added journals format check and own_papers style anchor review at project setup
+- CLAUDE.md: Updated File Roles table, Phase 3 workflow, and Quick Commands to reference template
+- Fix: `profile/journals.md` citation examples corrected — TSJ now shows 6 authors before et al. (not 3); BJJ now lists all 8 authors without et al. (per BJJ policy)
+
+### v0.7.0 (2026-05-14)
+
+**Citation Quality & Style Consistency**
+
+- Added `knowledge/own_papers/` — style-anchor summaries of 5 key published papers
+  - 2018 Spine — Depression & chronic LBP cross-sectional (KNHANES)
+  - 2020 Spine J — Biportal endoscopic vs microscopic laminectomy RCT
+  - 2023 Spine J — Biportal endoscopic vs microscopic discectomy RCT
+  - 2024 Neurospine — BESS safety profile: pooled analysis of 2 RCTs
+  - 2025 Bone Joint J — ENDOBH multicentre RCT (6 hospitals)
+  - Each file: full citation, key terminology table, methods boilerplate, key claims with data
+- CLAUDE.md Rule 8: Added **Claim→Citation Mapping** as required item 10 in draft_plan.md
+  - ~20 key claims mapped to citations before writing starts
+  - Intro background (5–8), methods rationale (2–3), discussion comparisons (5–8)
+- CLAUDE.md: Phase Completion Criteria 3→4 updated (9 → 10 required draft_plan items)
+- Added `profile/journals.md` (local only, gitignored) — verified citation formats for 8 target journals
+  - The Spine Journal: bracket [N], 6 authors then et al.
+  - Spine (Phila Pa 1976): superscript, "(Phila Pa 1976)" required in citation
+  - Bone Joint J: all authors listed, Vol-B(issue) format
+  - Neurospine: superscript, et al. after 3 authors
+  - Also: J Neurosurg Spine, Global Spine J, Clin Orthop Relat Res, Asian Spine J
+- Added ORCIDs for 5 co-authors in `profile/authors.md` (local only, gitignored)
 
 ### v0.6.0 (2026-04-18)
 
@@ -291,17 +360,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ### v0.4.0 (2026-04-09)
 
 - Added `docs/revision_guide.md` - Reviewer response and revision guide
-  - Point-by-point response letter format and structure
-  - Comment classification system (Major/Minor/Editorial)
-  - 5 response templates (agree, partial agree, disagree, cannot implement, clarify)
-  - Diplomatic language guide with do/don't examples
-  - Revision tracking file structure and log template
 - Added `docs/figure_guide.md` - Publication-quality figure generation guide
-  - DPI/format requirements per journal standards
-  - Python (matplotlib/seaborn) journal-style configuration template
-  - Colorblind-friendly palettes (Okabe-Ito)
-  - Figure type guides: box plot, Kaplan-Meier, forest plot, line plot
-  - Panel labeling conventions and color strategy
 - Added `drafts/00_cover_letter.md` - Concise cover letter template
 - Updated CLAUDE.md: project structure, file roles, Quick Commands for revision and figures
 - Removed Spine GraphRAG project-specific references from project structure
@@ -309,85 +368,40 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ### v0.3.0 (2026-03-09)
 
 - Major rewrite of `docs/statistical_analysis_guide.md` (v0.2.1 → v0.3.0)
-  - Added Statistical Parsimony principle (NEJM 2019): RCT Table 1 no p-value, SMD alternative
-  - Added Analysis Hierarchy: Primary > Secondary > Exploratory with reporting rules
-  - Added Study Design → Statistics Matching: design-specific test selection, regression models, propensity score
-  - Added Clinical vs Statistical Significance: effect sizes (Cohen's d, OR, RR, HR), spine-specific MCID values, NNT
-  - Added Subgroup Analysis Guidelines: 5 rules, interaction test requirements
-  - Added Sensitivity Analysis: types and when required
-  - Added Methods Statistical Section Checklist (10 mandatory items per ICMJE/SAMPL)
-  - Enhanced table templates: separate RCT (no p-value) and observational (with p-value) formats
-  - Enhanced figure guidelines: study design-specific figures, forest plot guide, DPI requirements
-  - Updated Python template with Cohen's d and 95% CI calculation
-  - Expanded common errors from 6 to 13 items
-- Updated `docs/writing_guide.md` (v0.2.1 → v0.3.0)
-  - Added statistical_analysis_guide cross-reference, analysis hierarchy, effect size/CI to §4.6
-  - Added non-significant results reporting guide with correct/incorrect examples to §05
-  - Added RCT Table 1 p-value omission rule
-- Updated `docs/expert_roles.md` (v0.2.1 → v0.3.0)
-  - Expanded Dr. Statistician: parsimony, hierarchy, MCID, subgroup responsibilities
-  - Added 4 new common issues to flag (RCT Table 1, hierarchy, non-significant language, interaction test)
-- Updated `docs/qc_guide.md` (v0.2.1 → v0.3.0)
-  - Added Round 5: Statistical Quality Check (hierarchy, parsimony, effect size/CI, subgroup/sensitivity)
-  - Added Round 6: Critical Review (overclaiming, logical fallacy, bias, literature balance, generalizability, reviewer anticipation)
-  - Added effect size/CI-p-value consistency check to Round 1
+  - Statistical Parsimony, Analysis Hierarchy, Clinical Significance, Subgroup Analysis, Sensitivity Analysis
+  - Methods Statistical Section Checklist (10 mandatory items per ICMJE/SAMPL)
+- Updated `docs/writing_guide.md`, `docs/expert_roles.md`, `docs/qc_guide.md` for statistical consistency
 
 ### v0.2.5 (2026-03-09)
 
 - Added `scripts/search_pubmed.py` - PubMed search tool using NCBI E-utilities API (no MCP, no external packages)
-  - Supports: search, fetch by PMID, import by DOI, find related articles
-  - Output formats: table, evidence.md entry, JSON
 - Added slash commands: `/search-evidence [query]`, `/import-doi [doi]`
-- Replaced MCP-dependent PubMed integration with standalone Python script
-- Updated project structure, Quick Commands, and documentation
 
 ### v0.2.4 (2026-03-04)
 
 - Added `.gitattributes` for LF line ending normalization
 - Added `.gitignore` rules for `.DS_Store`, local settings, IDE config
-- Added version headers to `docs/evidence_guide.md` (v0.2.2) and `docs/docx_guide.md` (v0.2.3)
 
 ### v0.2.3 (2026-02-15)
 
-- Added `docs/docx_guide.md` for DOCX conversion rules (formatting, table style, file naming)
-- Output files now include date suffix: `manuscript_YYMMDD.docx`, `title_page_YYMMDD.docx`, `table_N_YYMMDD.docx`
-- Title page generated as separate DOCX file
-- Tables generated as individual DOCX files with three-line style (no background, no vertical borders)
-- Manuscript body: 10pt font, continuous line numbering, page numbers, no heading styles (prevents collapse/expand)
-- Updated CLAUDE.md Phase 6 workflow and Quick Commands to reference docx_guide.md
-- Added python-docx to requirements
+- Added `docs/docx_guide.md` for DOCX conversion rules
+- Date-suffixed output files, separate title page and table DOCX files
 
 ### v0.2.2 (2026-02-10)
+
 - Separated evidence guide from evidence registry
-- Added `docs/evidence_guide.md` with detailed summarization instructions (entry format, good/bad examples, checklist)
-- Refactored `knowledge/evidence.md` to pure data template (guide content moved to docs)
-- Updated `knowledge/` folder role hierarchy: PDF (original) → summaries (detailed) → evidence (consolidated)
+- Added `docs/evidence_guide.md` with detailed summarization instructions
 
 ### v0.2.1 (2026-02-07)
-- Fixed Introduction phrase contradiction (`"The purpose of this study was to..."` marked as both acceptable)
-- Removed unused `review/consistency_check.md` from project structure (merged into `qc_log.md`)
-- Renamed `data/statistical_guide.md` to `data/analysis_plan.md` for naming clarity
-- Moved tables and figures from `output/` to `drafts/` (`output/` now contains only final docx)
-- Created draft section templates (`drafts/01_title.md` ~ `09_figure_legends.md`)
-- Created table templates (`drafts/table_1.md` ~ `table_3.md`)
-- Upgraded QC Round 4 (Abbreviation/Tense) from Optional to RECOMMENDED (HIGH)
-- Added level tags (required/recommended/optional) to all checklists (STROBE, CONSORT, PRISMA, CARE)
-- Added level tags to General Submission Checklist
-- Added level tags to Statistical Analysis Guide quality checklist
-- Deleted stray `_ul` file
-- Fixed `claude.md` → `CLAUDE.md` case mismatch in CLAUDE.md project structure tree
-- Added missing `statistical_analysis_guide.md` to CLAUDE.md project structure tree
-- Fixed `statistical_analysis_guide.md` header version from v0.2 to v0.2.1
-- Fixed stale `output/` → `drafts/` path reference in `statistical_analysis_guide.md` Step 5
+
+- Various structural fixes and template improvements
 
 ### v0.2 (2026-02-03)
-- Added Statistical Analysis Guide (`docs/statistical_analysis_guide.md`)
+
+- Added Statistical Analysis Guide
 - Added Table/Figure/Results redundancy prevention rules
-- Added standard table structure guidelines
-- Updated expert roles with Dr. Statistician responsibilities
-- Reorganized documentation structure
 
 ### v0.1 (Initial)
+
 - Basic project structure
 - Writing guide, expert roles, checklists, QC guide
-- MCP integration for PubMed and references
