@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.6.0)
+# Academic Paper Writing Project (v0.7.1)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
