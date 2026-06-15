@@ -15,3 +15,19 @@ profile/
 # Exception: example file stays in repo as a template reference
 knowledge/own_papers/*.md
 !knowledge/own_papers/example_*.md
+knowledge/own_papers/*.pdf
+
+# Reference PDFs — copyright-protected, do not commit
+knowledge/pdf/
+
+# Style anchor PDFs — copyright-protected, local only
+Style/PDF/**/*.pdf
+Style/PDF/**/*.PDF
+
+# Style anchor markdown files may contain private/local analysis context
+Style/own/*.md
+!Style/own/example_*.md
+Style/landmark/*.md
+Style/target_journal/*.md
+!Style/style_guide.md
+!Style/terminology.md

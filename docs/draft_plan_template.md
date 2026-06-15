@@ -41,6 +41,21 @@
 
 ---
 
+## 2A. Terminology Decisions
+
+> `Style/terminology.md`를 확인하고, 이 논문에서 사용할 핵심 용어를 사전에 확정한다.
+> 예외적으로 forbidden/default-preferred와 다른 용어를 써야 하면 이유를 기록한다.
+
+| Concept | Term to Use | First Definition | Exception/Reason |
+|---|---|---|---|
+| Main intervention/exposure | | | |
+| Comparator/control | | | |
+| Primary outcome | | | |
+| Key complication/safety term | | | |
+| Study design term | | | |
+
+---
+
 ## 3. Essential References
 
 > evidence.md에서 선별한 필수 인용 참고문헌 + 각각의 인용 목적.
@@ -72,7 +87,7 @@
 > 핵심 주장(claim) ~20개와 그 근거 논문 매핑.
 > **규칙:** claim을 작성하기 전에 citation을 먼저 확보할 것.
 > 없으면 Phase 1로 돌아가 검색.
-> own_papers/에서 본인 논문도 확인.
+> Style/own/에서 본인 논문 스타일 앵커도 확인.
 
 ### Introduction Background (5–8 claims)
 

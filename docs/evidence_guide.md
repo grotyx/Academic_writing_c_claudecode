@@ -13,11 +13,13 @@
 ```
 knowledge/
 ├── evidence.md              ← 전체 참고문헌 요약 정리 (핵심 자료집)
-├── pdf/                     ← 원본 PDF 파일
+├── pdf/                     ← 원본 PDF 파일 (gitignored, local only)
 │   └── author_year_keyword.pdf
 └── summaries/               ← 개별 논문 full-text 상세 요약
     └── author_year_keyword.md
 ```
+
+Style anchor 자료는 `knowledge/`가 아니라 최상위 `Style/` 폴더에 보관한다. `knowledge/`는 참고문헌과 인용 근거 전용으로 유지한다.
 
 | 파일 | 성격 | 상세도 |
 |------|------|--------|

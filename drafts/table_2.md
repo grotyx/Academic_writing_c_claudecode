@@ -14,6 +14,6 @@
 | **Secondary Outcomes** | | | | |
 | | | | | |
 
-Data presented as mean ± SD or n (%).
+Data presented as mean (SD) or n (%).
 *Student's t-test; †Mann-Whitney U test
 Abbreviations:

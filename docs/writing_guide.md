@@ -16,7 +16,7 @@
   - ❌ Methods에서 "dural tear", Discussion에서 "durotomy" → 혼용
   - ✅ 하나를 선택하고 첫 등장 시 "durotomy (dural tear)"로 병기, 이후 선택한 용어만 사용
   - 대상: 진단명, 합병증명, 수술 용어, 중재/그룹명, 환자 호칭 등 모든 의학 용어
-  - Drafting 시작 전 draft_plan.md에서 주요 용어 선택을 확정할 것
+  - Drafting 시작 전 `Style/terminology.md`를 확인하고 `drafts/draft_plan.md`에서 주요 용어 선택을 확정할 것
 - **Numerical formatting consistency** — 전체 원고에서 숫자 서식 통일
   - Decimal place: 같은 변수는 동일한 소수점 자리 (예: age를 54.3이면 어디서든 54.3, 54 아님)
   - Units: mg/dL과 mmol/L 중 하나만 (SI 단위 권장, 저널 기준 확인)

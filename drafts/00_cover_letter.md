@@ -14,7 +14,7 @@ Dear [Editor Name / Dear Editor],
 
 We are pleased to submit our manuscript entitled "[TITLE]" for consideration for publication in [JOURNAL NAME].
 
-[1-2 sentences: what this study addresses and why it is important — do NOT summarize methods or results in detail.]
+[1-2 sentences: what this study addresses and why it is important; do NOT summarize methods or results in detail.]
 
 [1 sentence: what is novel about this work.]
 

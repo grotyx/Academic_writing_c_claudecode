@@ -2,7 +2,7 @@
 
 <!--
 - Data source: results/table1_demographics.csv
-- Continuous variables: mean ± SD (normal) or median [IQR] (non-normal)
+- Continuous variables: mean (SD) (normal) or median (IQR) (non-normal)
 - Categorical variables: n (%)
 - Define all abbreviations in footnotes
 - Indicate statistical tests in footnotes
@@ -17,6 +17,6 @@
 | **Clinical Features** | | | |
 | | | | |
 
-Data presented as mean ± SD, median [IQR], or n (%).
+Data presented as mean (SD), median (IQR), or n (%).
 *Student's t-test; †Mann-Whitney U test; ‡Chi-square test; §Fisher's exact test
 Abbreviations:

@@ -17,6 +17,8 @@ project/
 ├── CLAUDE.md                     # This file - core rules & config
 ├── docs/                         # Reference guides (read when needed)
 │   ├── writing_guide.md          # Section-by-section writing guide
+│   ├── drafting_protocol.md      # Mandatory drafting sequence
+│   ├── section_templates.md      # Section-specific sentence patterns
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists (STROBE, CONSORT, etc.)
 │   ├── qc_guide.md               # Quality control & consistency verification
@@ -31,6 +33,15 @@ project/
 │   │   └── author_year_keyword.pdf
 │   └── summaries/                # MD summaries of key papers
 │       └── author_year_keyword.md
+├── Style/                        # Writing-style anchors (separate from references)
+│   ├── PDF/                      # Source PDFs for style analysis (gitignored)
+│   │   ├── own/
+│   │   ├── landmark/
+│   │   └── target_journal/
+│   ├── own/                      # Own-paper style extraction md
+│   ├── landmark/                 # Argument/framing anchors
+│   ├── target_journal/           # Journal house-style anchors
+│   └── terminology.md            # Preferred/forbidden terminology registry
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset (CSV/XLSX)
 │   ├── analysis_plan.md          # Analysis plan (required before analysis)
@@ -164,6 +175,8 @@ output/paper1_xxx/revision/REV1/
 |-------------|---------|-------------|
 | `CLAUDE.md` | Core rules, project config, writing style | Auto-loaded every session |
 | `docs/writing_guide.md` | Detailed section guidelines | When drafting specific sections |
+| `docs/drafting_protocol.md` | Mandatory outline → evidence-bound draft → style pass → QC workflow | Before drafting any section |
+| `docs/section_templates.md` | Section-specific paragraph functions and sentence patterns | Phase 4 drafting |
 | `docs/expert_roles.md` | Expert team descriptions | When drafting or reviewing (Phase 4-5) |
 | `docs/checklist_guide.md` | Study-type checklists (STROBE, CONSORT, PRISMA, CARE) | Phase 6 (QC) and before submission |
 | `docs/qc_guide.md` | Consistency & accuracy verification procedures | Phase 6 (QC rounds) |
@@ -176,10 +189,10 @@ output/paper1_xxx/revision/REV1/
 | `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿) | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
 | `profile/journals.md` | 저널별 인용 형식 (bracket vs superscript, et al. 기준, volume 형식) | 참고문헌 목록 작성 시 확인 |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
-| `knowledge/pdf/` | Original reference PDFs | When verifying claims |
+| `knowledge/pdf/` | Original reference PDFs (**gitignored**; copyright-protected, local only) | When verifying claims |
 | `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
-| `knowledge/own_papers/` | 본인 출판 논문 요약 (용어·톤·key claims) — 스타일 앵커 (**gitignored**, local only; `example_*.md`만 공개) | Phase 3-5 (용어 일관성 확인, Discussion 비교 대상 논문 확인) |
-| `knowledge/terminology.md` | 분야 표준 용어 사전 (올바른 표현·금지 표현·약어 정의) | Phase 4-5 (용어 일관성 확인) |
+| `Style/` | 논문 스타일 앵커 전용 폴더. `own/`, `landmark/`, `target_journal/` md와 `PDF/` 원본을 분리 보관 | Phase 3-5 (저널 스타일, 팀 voice, 논증 구조 정렬) |
+| `Style/terminology.md` | Preferred/forbidden terminology registry (definition, context, notes) | Phase 3-6 (drafting, polish, lint/QC) |
 | `data/` | Raw data (CSV/XLSX) | Phase 2 (statistical analysis) |
 | `data/analysis_plan.md` | 분석 계획 (필수 작성·승인 후 분석 진행) | Phase 2 (before running analysis) |
 | `data/py/` | Python analysis scripts | Phase 2 (statistical analysis) |
@@ -203,6 +216,10 @@ output/paper1_xxx/revision/REV1/
 
 - **NEVER fabricate or hallucinate references**
 - **ALWAYS check `knowledge/evidence.md` first** before searching (avoid duplicate work)
+- **Reference PDFs are local only:** store PDFs under `knowledge/pdf/`; do not commit copyrighted PDFs.
+- **Style anchors are separate from references:** keep writing-style material under `Style/`, not `knowledge/`.
+- **Style anchor mirror rule:** use matching basenames between PDF and md (e.g., `Style/PDF/landmark/weber_2007_sciatica.pdf` ↔ `Style/landmark/weber_2007_sciatica.md`).
+- **Terminology enforcement:** use `Style/terminology.md` as the vocabulary registry. Preferred terms are required; forbidden terms must be replaced unless an exception is documented in `drafts/draft_plan.md`.
 - **New reference workflow:** (상세: `docs/evidence_guide.md`)
   1. Search → verify paper exists
   2. Save PDF to `knowledge/pdf/author_year_keyword.pdf`
@@ -433,7 +450,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 Phase 1: Setup
 ├── Define topic, journal, study design in CLAUDE.md
 ├── Check profile/journals.md — 목표 저널 인용 형식 확인 (et al. 규칙, volume 형식 등)
-├── Check knowledge/own_papers/ — 관련 스타일 앵커 논문 확인 (용어·톤 일관성 참고)
+├── Check Style/own/ — 관련 스타일 앵커 논문 확인 (용어·톤 일관성 참고)
 ├── Search references: /search-evidence [query] 또는 scripts/search_pubmed.py
 ├── Import by DOI: /import-doi [doi]
 ├── Save PDFs to knowledge/pdf/
@@ -462,7 +479,7 @@ Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 │   ├── Tone & voice (논조/어조 설정)
 │   ├── Essential references (필수 인용 참고문헌 + 인용 목적)
 │   ├── Evidence gap (추가 필요 근거 자료)
-│   ├── Claim→Citation mapping (핵심 주장 ~20개 + 각 근거 논문 — knowledge/own_papers/ 참조)
+│   ├── Claim→Citation mapping (핵심 주장 ~20개 + 각 근거 논문 — Style/own/ 참조 가능)
 │   ├── Table/Figure plan (어떤 Table/Figure를 몇 개, 어떤 내용으로)
 │   ├── Introduction outline (background → gap → purpose 흐름)
 │   ├── Discussion outline (주요 논점 3-5개, 비교할 선행연구)
@@ -472,6 +489,8 @@ Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 └── Multi-paper: drafts/paper{N}_xxx/draft_plan.md
 
 Phase 4: Draft (in this order)
+├── Read docs/drafting_protocol.md + docs/section_templates.md before drafting
+├── Apply Style/terminology.md and relevant Style anchors during drafting
 ├── 04_methods.md      → establishes framework
 │   └── Expert: Dr. Researcher B (methodology)
 ├── 05_results.md      → narrative (refer to drafts/table_*.md)
@@ -492,6 +511,9 @@ Phase 5: Style Polish
 │   ├── Common Corrections 적용
 │   ├── Statistical Notation 검증 (*p* italic, en-dash 등)
 │   └── Hedging Language 적정성 확인
+├── Apply docs/section_templates.md sentence-pattern pass
+├── Apply Style/terminology.md terminology pass
+├── Run `python scripts/lint_manuscript.py drafts/` and fix high-priority findings
 ├── Apply writing_guide.md Writing Principles (4 Pillars)
 │   └── Clarity / Conciseness / Objectivity / Consistency
 └── Expert: Dr. Editor (final polish)
@@ -500,7 +522,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 ├── Round 1: Number consistency — Claude 자동 + 사용자 확인 (qc_guide.md)
 ├── Round 2: Reference verification — Claude + 사용자 (evidence.md 대조)
 ├── Round 3: Logic & flow check — Dr. Editor (section 간 흐름)
-├── Round 4: Terminology/abbreviation/tense — Dr. Editor (권장)
+├── Round 4: Terminology/abbreviation/tense — Dr. Editor + lint script (권장)
 ├── Round 5: Statistical quality — Dr. Statistician (권장)
 ├── Round 6: Critical review — Dr. Editor + Dr. Statistician (overclaiming/bias/일반화 범위, 권장)
 ├── Document all rounds in review/qc_log.md

@@ -24,8 +24,10 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Study-type specific checklists** (STROBE, CONSORT, PRISMA, CARE, etc.)
 - **Natural Academic Writing Style system** with Style Reference Tables (Voice/Tense, Transition Words, Verb Upgrades, Common Corrections, Statistical Notation, Hedging Language) and Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
 - **Citation quality control** — Claim→Citation Mapping (20 key claims mapped to citations before writing starts; prevents write-first, cite-later)
-- **Style anchor library** (`knowledge/own_papers/`) — summaries of published papers for terminology and tone consistency
-- **Field terminology guide** (`knowledge/terminology.md`) — standard vs incorrect terms, common mistakes
+- **Style anchor library** (`Style/`) — own, landmark, and target-journal anchors for terminology, tone, framing, and house style
+- **Terminology registry** (`Style/terminology.md`) — preferred/forbidden terms with definitions and context
+- **Drafting protocol** (`docs/drafting_protocol.md`) — outline → evidence-bound draft → style pass → QC
+- **Manuscript linting** (`scripts/lint_manuscript.py`) — automated checks for terminology, placeholders, overclaiming, and section-specific issues
 - **Draft plan template** (`docs/draft_plan_template.md`) — 10-item template with claim→citation tables and approval checklist
 - **PubMed search tool** with built-in Python script (no MCP or external packages required)
 - **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
@@ -40,6 +42,8 @@ project/
 ├── README.md                     # This file
 ├── docs/                         # Reference guides
 │   ├── writing_guide.md          # Section-by-section writing guide
+│   ├── drafting_protocol.md      # Mandatory drafting sequence
+│   ├── section_templates.md      # Section-specific sentence patterns
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists
 │   ├── qc_guide.md               # Quality control procedures
@@ -51,11 +55,17 @@ project/
 │   └── draft_plan_template.md    # Draft plan template (copy to drafts/ for Phase 3)
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # Reference summary collection
-│   ├── terminology.md            # Field-standard term reference (correct vs incorrect)
-│   ├── pdf/                      # Original PDF files
+│   ├── pdf/                      # Original PDF files — gitignored, local only
 │   ├── summaries/                # Detailed full-text paper summaries
-│   └── own_papers/               # Published paper style anchors — gitignored, local only
-│       └── example_YYYY_Journal_keyword.md  # Example template (public)
+├── Style/                        # Writing-style anchors, separate from references
+│   ├── PDF/                      # Source PDFs for style analysis — gitignored, local only
+│   │   ├── own/
+│   │   ├── landmark/
+│   │   └── target_journal/
+│   ├── own/                      # Own-paper style anchors
+│   ├── landmark/                 # Argument/framing anchors
+│   ├── target_journal/           # Target-journal house-style anchors
+│   └── terminology.md            # Preferred/forbidden terminology registry
 ├── profile/                      # Personal info — gitignored, local only
 │   ├── authors.md                # Author affiliations, contacts, ORCIDs, funding
 │   └── journals.md               # Journal-specific citation formats (verified)
@@ -82,11 +92,11 @@ project/
 
 ## Quick Start
 
-1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design. Check `profile/journals.md` for citation format and `knowledge/own_papers/` for style anchors.
+1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design. Check `profile/journals.md` for citation format and `Style/` for style anchors.
 2. **References**: Use `/search-evidence [query]` or `python3 scripts/search_pubmed.py` to search PubMed and register in `knowledge/evidence.md`
 3. **Data Analysis**: Place data in `data/` folder → create `analysis_plan.md` (required) → run statistical analysis
 4. **Draft Plan**: Copy `docs/draft_plan_template.md` → `drafts/draft_plan.md`, fill in all 10 items including **Claim→Citation Mapping** (Opus recommended)
-5. **Drafting**: Write sections in recommended order (Methods → Results → Introduction → Discussion) (Sonnet OK if draft plan is solid)
+5. **Drafting**: Follow `docs/drafting_protocol.md` and write sections in recommended order (Methods → Results → Introduction → Discussion)
 6. **QC**: Run minimum 3 QC rounds before submission
 7. **Finalize**: Compile manuscript to DOCX (see `docs/docx_guide.md`)
 
@@ -118,11 +128,10 @@ A pre-writing step in the draft plan that maps ~20 key claims to their supportin
 
 If a citation cannot be identified for a claim, go back to Phase 1 and search first. This eliminates the write-first, cite-later anti-pattern and hallucinated references.
 
-### Style Anchor Library (`knowledge/own_papers/`)
+### Style Anchor Library (`Style/`)
 
-Summaries of previously published papers used as writing anchors.
-**Gitignored** — your actual paper summaries stay local only.
-A template is provided at `knowledge/own_papers/example_YYYY_Journal_keyword.md`.
+Style anchors are separated from reference management. Source PDFs stay under `Style/PDF/` and extracted style notes are stored under `Style/own/`, `Style/landmark/`, or `Style/target_journal/`.
+A template is provided at `Style/own/example_YYYY_Journal_keyword.md`.
 
 Each summary captures:
 
@@ -184,6 +193,8 @@ Slash commands for Claude integration:
 |----------|---------|
 | [CLAUDE.md](CLAUDE.md) | Core rules and project configuration |
 | [docs/writing_guide.md](docs/writing_guide.md) | Section-by-section writing guide + Style Reference Tables + Writing Principles (4 Pillars) |
+| [docs/drafting_protocol.md](docs/drafting_protocol.md) | Mandatory drafting workflow from outline to evidence-bound draft to style/QC pass |
+| [docs/section_templates.md](docs/section_templates.md) | Section-specific paragraph functions and sentence patterns |
 | [docs/expert_roles.md](docs/expert_roles.md) | Expert team descriptions |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE checklists |
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
@@ -193,8 +204,10 @@ Slash commands for Claude integration:
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure generation guide (DPI, palettes, Python templates) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10-item with claim→citation tables and approval checklist |
-| [knowledge/terminology.md](knowledge/terminology.md) | Field-standard term reference (BESS/spine surgery correct vs incorrect terms) |
-| [knowledge/own_papers/example_YYYY_Journal_keyword.md](knowledge/own_papers/example_YYYY_Journal_keyword.md) | Style-anchor template (gitignored — your actual files stay local) |
+| [Style/style_guide.md](Style/style_guide.md) | Style anchor workflow, extraction framework, and PDF-to-MD mirror rules |
+| [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry with definition and context |
+| [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
+| [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script for terminology, placeholders, overclaiming, and section issues |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
 
 ---
@@ -245,13 +258,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 **Terminology & Template**
 
-- Added `knowledge/terminology.md` — field-standard term reference for BESS/spine surgery
+- Added `Style/terminology.md` — field-standard terminology registry for BESS/spine surgery
   - Correct vs incorrect usage for 60+ terms across: procedure names, instruments, outcome measures, study design, statistics, complications
   - Common mistake list (creatine phosphokinase vs creatinine kinase; assessor-blind vs double-blind; VAS vs NRS; etc.)
 - Added `docs/draft_plan_template.md` — complete 10-item draft plan template
   - Claim→Citation Mapping tables (Introduction/Methods/Discussion)
   - Approval checklist (all 10 items must be complete before Phase 4)
-- CLAUDE.md Phase 1: Added journals format check and own_papers style anchor review at project setup
+- CLAUDE.md Phase 1: Added journals format check and Style anchor review at project setup
 - CLAUDE.md: Updated File Roles table, Phase 3 workflow, and Quick Commands to reference template
 - Fix: `profile/journals.md` citation examples corrected — TSJ now shows 6 authors before et al. (not 3); BJJ now lists all 8 authors without et al. (per BJJ policy)
 
@@ -259,7 +272,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 **Citation Quality & Style Consistency**
 
-- Added `knowledge/own_papers/` — style-anchor summaries of 5 key published papers
+- Added `Style/` — own, landmark, and target-journal style anchors
   - 2018 Spine — Depression & chronic LBP cross-sectional (KNHANES)
   - 2020 Spine J — Biportal endoscopic vs microscopic laminectomy RCT
   - 2023 Spine J — Biportal endoscopic vs microscopic discectomy RCT
