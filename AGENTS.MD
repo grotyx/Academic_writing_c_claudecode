@@ -1,6 +1,8 @@
 # Agent Instructions
 
-This repository is an academic manuscript-writing workflow. Treat `CLAUDE.md` as the source of truth for project structure, phase rules, citation integrity, statistical-analysis requirements, drafting order, QC, and finalization.
+Before doing any work, read `CLAUDE.md` in full. `CLAUDE.md` is the authoritative project instruction file; this `AGENTS.MD` file only summarizes non-negotiable rules for agent startup.
+
+This repository is an academic manuscript-writing workflow. Treat `CLAUDE.md` as the source of truth for project structure, phase rules, citation integrity, statistical-analysis requirements, drafting order, QC, and finalization. If this file and `CLAUDE.md` ever conflict, follow `CLAUDE.md`.
 
 ## Core Rules
 
