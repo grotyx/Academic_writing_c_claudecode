@@ -48,6 +48,7 @@ project/
 │   ├── expert_roles.md           # 전문가 팀 역할 및 책임
 │   ├── checklist_guide.md        # 연구 유형별 체크리스트
 │   ├── qc_guide.md               # 품질 관리 절차
+│   ├── verification_protocol.md  # 검증 게이트·3 Verifier·자율 루프·게이트 원장
 │   ├── statistical_analysis_guide.md  # 통계 분석 가이드
 │   ├── evidence_guide.md         # 근거 문헌 작성 가이드
 │   ├── revision_guide.md         # 리뷰어 응답 가이드
@@ -84,7 +85,8 @@ project/
 │   ├── table_*.md
 │   └── figures/
 ├── review/                       # QC 문서
-│   └── qc_log.md
+│   ├── qc_log.md
+│   └── gates/                    # 검증 게이트 원장 (phase_NN_*.GATE.md)
 └── output/                       # 최종 원고
     ├── title_page_YYMMDD.docx
     ├── manuscript_YYMMDD.docx
@@ -197,6 +199,7 @@ Claude 통합 슬래시 명령어:
 | [docs/expert_roles.md](docs/expert_roles.md) | 전문가 팀 설명 |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE 체크리스트 |
 | [docs/qc_guide.md](docs/qc_guide.md) | 품질 관리 절차 (6라운드) |
+| [docs/verification_protocol.md](docs/verification_protocol.md) | 검증 게이트·3 Verifier 헌장·자율 수정 루프·게이트 원장 |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | 통계 분석 가이드 (절제 원칙, MCID, 하위군 분석) |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | 근거 문헌 작성 가이드 (형식, 요약 방법, 워크플로우) |
 | [docs/revision_guide.md](docs/revision_guide.md) | 리뷰어 응답 가이드 (응답서 작성, 외교적 표현, QC 재수행 체크리스트) |

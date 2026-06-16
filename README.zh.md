@@ -47,6 +47,7 @@ project/
 │   ├── expert_roles.md           # 专家团队角色与职责
 │   ├── checklist_guide.md        # 研究类型专用清单
 │   ├── qc_guide.md               # 质量控制流程
+│   ├── verification_protocol.md  # 验证门·3 Verifier·自主循环·门台账
 │   ├── statistical_analysis_guide.md  # 统计分析指南
 │   ├── evidence_guide.md         # 证据文献编写指南
 │   ├── revision_guide.md        # 审稿人回复指南
@@ -77,7 +78,8 @@ project/
 │   ├── table_*.md
 │   └── figures/
 ├── review/                       # QC 文档
-│   └── qc_log.md
+│   ├── qc_log.md
+│   └── gates/                    # 验证门台账 (phase_NN_*.GATE.md)
 └── output/                       # 最终稿件
     ├── title_page_YYMMDD.docx
     ├── manuscript_YYMMDD.docx
@@ -178,6 +180,7 @@ Claude 集成斜杠命令：
 | [docs/figure_guide.md](docs/figure_guide.md) | 图表生成指南（DPI、调色板、Python模板） |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 转换指南（格式、表格样式、命名规则） |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10项内容、claim→citation tables、approval checklist |
+| [docs/verification_protocol.md](docs/verification_protocol.md) | 验证门·3 Verifier 章程·自主修正循环·门台账 |
 | [Style/style_guide.md](Style/style_guide.md) | Style anchor workflow、extraction framework、PDF-to-MD mirror rules |
 | [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry |
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |

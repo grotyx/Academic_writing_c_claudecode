@@ -33,6 +33,8 @@ Never stage or commit these unless the user explicitly overrides the rule:
 - Apply terminology rules from `Style/terminology.md` during drafting and polishing.
 - Use `docs/drafting_protocol.md`, `docs/section_templates.md`, and `docs/writing_guide.md` for manuscript work.
 - Run the manuscript lint script with `py scripts/lint_manuscript.py drafts --quiet` on Windows.
+- Pass the verification gate after each produce step (Phase 3/4/8): run the Constraint/Citation/Data verifier subagents per `docs/verification_protocol.md`. Never proceed past a gate without a recorded `status: PASS` in `review/gates/`. On FAIL, fix and re-verify (max 2 retries) before escalating to the user.
+- Tag citations as `[EVID:author_year]` during drafting; only cite evidence entries whose Source Status is `verified` or higher. Use only numbers present in `results/*.csv`.
 - Complete and document mandatory QC rounds before final submission files are prepared.
 
 ## Git Hygiene

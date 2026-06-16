@@ -47,6 +47,7 @@ project/
 │   ├── expert_roles.md           # 専門家チームの役割と責任
 │   ├── checklist_guide.md        # 研究タイプ別チェックリスト
 │   ├── qc_guide.md               # 品質管理手順
+│   ├── verification_protocol.md  # 検証ゲート・3 Verifier・自律ループ・ゲート台帳
 │   ├── statistical_analysis_guide.md  # 統計分析ガイド
 │   ├── evidence_guide.md         # エビデンス作成ガイド
 │   ├── revision_guide.md        # リビジョン・レビュアー対応ガイド
@@ -77,7 +78,8 @@ project/
 │   ├── table_*.md
 │   └── figures/
 ├── review/                       # QC 文書
-│   └── qc_log.md
+│   ├── qc_log.md
+│   └── gates/                    # 検証ゲート台帳 (phase_NN_*.GATE.md)
 └── output/                       # 最終原稿
     ├── title_page_YYMMDD.docx
     ├── manuscript_YYMMDD.docx
@@ -174,6 +176,7 @@ Claude 統合スラッシュコマンド：
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure作成ガイド（DPI、パレット、Pythonテンプレート） |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 変換ガイド（書式、テーブルスタイル、命名規則） |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10項目、claim→citation tables、approval checklist |
+| [docs/verification_protocol.md](docs/verification_protocol.md) | 検証ゲート・3 Verifier 憲章・自律修正ループ・ゲート台帳 |
 | [Style/style_guide.md](Style/style_guide.md) | Style anchor workflow、extraction framework、PDF-to-MD mirror rules |
 | [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry |
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |

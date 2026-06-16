@@ -23,11 +23,13 @@ project/
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists (STROBE, CONSORT, etc.)
 │   ├── qc_guide.md               # Quality control & consistency verification
+│   ├── verification_protocol.md  # 검증 게이트·3 Verifier·자율 루프·게이트 원장
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence 작성 가이드
 │   ├── revision_guide.md        # Revision & reviewer response guide
 │   ├── figure_guide.md          # Figure generation guide
-│   └── docx_guide.md            # DOCX 변환 가이드 (서식, 테이블, 네이밍)
+│   ├── docx_guide.md            # DOCX 변환 가이드 (서식, 테이블, 네이밍)
+│   └── draft_plan_template.md    # Draft plan 10개 항목 템플릿 (Phase 3에서 복사)
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # Original PDF files
@@ -65,7 +67,8 @@ project/
 │   ├── lint_manuscript.py        # Manuscript terminology/style lint checks
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── review/                       # Review & QC documents
-│   └── qc_log.md                 # QC round tracking
+│   ├── qc_log.md                 # QC round tracking
+│   └── gates/                    # 검증 게이트 원장 (phase_NN_*.GATE.md)
 └── output/                       # Final compiled manuscript
     ├── title_page_YYMMDD.docx
     ├── manuscript_YYMMDD.docx
@@ -207,6 +210,7 @@ output/paper1_xxx/revision/REV1/
 | `drafts/figures/` | Generated figure files | Phase 2 (from analysis) |
 | `scripts/search_pubmed.py` | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) | Phase 1 (reference search) |
 | `review/qc_log.md` | QC round documentation | Phase 6 (track all QC iterations) |
+| `review/gates/` | 검증 게이트 원장 (Verifier PASS/FAIL 기록) | Phase 3·4·8 (게이트 통과 기록) |
 | `output/` | Final compiled manuscript (docx only) | Phase 7 (finalize) |
 | `review/reviewer_comments_REV{N}.md` | 리뷰어 코멘트 원문 | Phase 8 (revision) |
 | `drafts/revision/REV{N}/` | Revision별 수정 원고 | Phase 8 (revision) |

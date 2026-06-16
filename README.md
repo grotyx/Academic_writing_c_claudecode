@@ -48,6 +48,7 @@ project/
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists
 │   ├── qc_guide.md               # Quality control procedures
+│   ├── verification_protocol.md  # Verification gates, 3 verifiers, autonomous loop
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence writing guide
 │   ├── revision_guide.md         # Reviewer response guide
@@ -84,7 +85,8 @@ project/
 │   ├── table_*.md
 │   └── figures/
 ├── review/                       # QC documents
-│   └── qc_log.md
+│   ├── qc_log.md
+│   └── gates/                    # Verification gate ledger (phase_NN_*.GATE.md)
 └── output/                       # Final compiled manuscript
     ├── title_page_YYMMDD.docx
     ├── manuscript_YYMMDD.docx
@@ -201,6 +203,7 @@ Slash commands for Claude integration:
 | [docs/expert_roles.md](docs/expert_roles.md) | Expert team descriptions |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE checklists |
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
+| [docs/verification_protocol.md](docs/verification_protocol.md) | Verification gates, 3 verifier charters, autonomous fix loop, gate ledger |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence writing guide (format, summary methods, workflow) |
 | [docs/revision_guide.md](docs/revision_guide.md) | Reviewer response guide (response letter, diplomatic language, QC re-run checklist) |
