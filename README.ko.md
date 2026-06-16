@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v0.8.1** (2026-06-16)
+**v0.9.0** (2026-06-16)
 
 ---
 
@@ -252,6 +252,17 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v0.9.0 (2026-06-16)
+
+**검증 하네스** — 각 산출 단계 뒤 인라인 produce→verify→fix→re-verify 게이트 (신규 `docs/verification_protocol.md`)
+
+- 각 산출 단계(Phase 3/4/8) 뒤 인라인 검증 게이트 — 끝에 몰린 수동 QC를 produce→verify→fix→re-verify 루프로 전환
+- 3개 Verifier 서브에이전트: Constraint(지시 준수), Citation(evidence.md 대조 인용 검증), Data(results CSV 대조 수치 검증)
+- 자율 수정 루프(최대 2회) 후 사용자 에스컬레이션
+- `[EVID:author_year]` 인용 태그 + results CSV 단일 진실 grounding
+- 게이트 원장(`review/gates/`)이 `status: PASS` 기록 전 진행을 차단
+- `evidence.md` 엔트리에 Source Status 필드 추가; Phase 6 QC는 최종 확인용으로 경량화
 
 ### v0.8.1 (2026-06-16)
 

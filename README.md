@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.8.1** (2026-06-16)
+**v0.9.0** (2026-06-16)
 
 ---
 
@@ -256,6 +256,17 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.9.0 (2026-06-16)
+
+**Verification Harness** — inline produce→verify→fix→re-verify gates (new `docs/verification_protocol.md`)
+
+- Inline verification gates after each produce step (Phase 3/4/8) — replaces end-loaded manual QC with a produce→verify→fix→re-verify loop
+- Three Verifier subagents: Constraint (instruction compliance), Citation (citation grounding vs evidence.md), Data (numbers vs results CSV)
+- Autonomous fix loop (max 2 retries) then user escalation
+- `[EVID:author_year]` citation tags and results-CSV-as-single-source grounding
+- Gate ledger (`review/gates/`) blocks progress until `status: PASS` is recorded
+- `evidence.md` entries gain a Source Status field; Phase 6 QC lightened to a final-confirmation pass
 
 ### v0.8.1 (2026-06-16)
 

@@ -1,7 +1,7 @@
 # Verification Harness Design (검증 하네스 설계)
 
 **Date:** 2026-06-16
-**Status:** Approved (design) — pending implementation plan
+**Status:** Implemented — see docs/superpowers/plans/2026-06-16-verification-harness.md
 **Topic:** Academic paper writing workflow에 harness-engineering식 write→verify→write→verify 자동 루프 도입
 
 ---
