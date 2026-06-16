@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.8.1)
+# Academic Paper Writing Project (v0.9.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -186,6 +186,7 @@ output/paper1_xxx/revision/REV1/
 | `docs/statistical_analysis_guide.md` | Statistical methods, test selection, templates | Phase 2 (analysis) |
 | `docs/evidence_guide.md` | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) | Phase 1 (setup) |
 | `docs/revision_guide.md` | Reviewer response guide (응답서 작성, 외교적 표현) | Revision (리뷰어 코멘트 수신 후) |
+| `docs/verification_protocol.md` | 검증 게이트·3 Verifier 헌장·자율 루프·게이트 원장 정의 | Phase 3·4·6·8 (게이트 수행 시 **반드시** 참조) |
 | `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2 (figure 생성 시) |
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `docs/draft_plan_template.md` | Draft plan 10개 항목 템플릿 (Phase 3에서 복사하여 사용) | Phase 3 시작 시 복사 → `drafts/draft_plan.md` |
@@ -396,6 +397,29 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
     - 형식: `[Claim 요약] → Author Year (evidence.md 번호)`
     - **규칙:** claim을 작성하기 전에 citation을 먼저 확보할 것 — 없으면 Phase 1로 돌아가 검색
 
+### 10. Verification Gates Mandatory (검증 게이트 필수)
+
+> **각 산출 단계 뒤에 검증 게이트를 통과해야 다음으로 진행할 수 있다.**
+> 상세: `docs/verification_protocol.md`
+
+**규칙:**
+
+- **NEVER proceed past a gate without a recorded PASS.** `review/gates/`의 해당 산출물 항목에 `status: PASS`가 없으면 다음 섹션/단계 진행을 거부한다.
+- 검증은 **Verifier 서브에이전트**로 수행한다 (Constraint / Citation / Data 3종). 외부지식 금지, 소스 오브 트루스(draft_plan·analysis_plan·evidence.md·results CSV)와만 대조.
+- FAIL 시 **자율 수정 루프**: 지적사항을 고쳐 재검증. 최대 **2회(N=2)**, 이후 사용자에게 에스컬레이션.
+- **Verifier 모델:** Opus 기본. Opus 불가 시 또는 사용자 요청 시 다른 모델(예: GPT-5.5) 허용.
+- **인용 grounding:** 초안에서 모든 인용은 `[EVID:author_year]` 태그로 표기 (Phase 7에서 저널 형식 변환).
+- **수치 grounding:** 원고 결과 수치는 `results/*.csv`에 존재하는 값만 사용.
+
+**게이트 배치:**
+
+| Phase | 게이트 | Verifier |
+|-------|--------|----------|
+| 3 (Draft Plan) | Claim→Citation 사전검증 | Citation |
+| 4 (Draft) | 섹션 단위 (자율 루프) | Constraint + Citation + Data |
+| 6 (QC) | 최종 확인 (경량) | 인라인 게이트가 이미 수행 |
+| 8 (Revision) | 응답 단위 (자율 루프) | Constraint + Citation + Data + ghost-revision |
+
 ### 9. Model Selection by Phase (단계별 모델 선택)
 
 > **계획 단계는 high-quality 모델, 작성 단계는 mid-quality 모델도 가능**
@@ -412,6 +436,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 | Phase 6: QC              | Sonnet (기본)       | Opus (가능하면)   | 체크리스트 기반 검증                       |
 | Phase 7: Finalize        | Sonnet              | —                 | DOCX 변환·서식 작업                        |
 | **Phase 8: Revision**    | **Opus (권장)**     | —                 | 리뷰어 대응은 전략적 판단 필요             |
+| **Verifier (모든 Phase)** | **Opus (기본)**    | GPT-5.5 등 (Opus 불가/요청 시) | 검증 품질이 하네스 신뢰성을 좌우          |
 
 **사용자 안내 (모델 선택 가이드):**
 
@@ -488,6 +513,7 @@ Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 │   ├── Discussion outline (주요 논점 3-5개, 비교할 선행연구)
 │   ├── Limitation points (예상 한계점)
 │   └── Target word count (저널 기준, 선택)
+├── 🔒 GATE: Claim→Citation 사전검증 (Citation Verifier) — 근거 없는 claim은 글쓰기 전 차단
 ├── 사용자 확인 후 Phase 4 진행
 └── Multi-paper: drafts/paper{N}_xxx/draft_plan.md
 
@@ -504,7 +530,8 @@ Phase 4: Draft (in this order)
 │   └── Expert: Dr. Researcher A
 ├── 07_conclusion.md   → brief takeaway
 ├── 02_abstract.md     → summary (write LAST)
-└── 01_title.md        → finalize (profile/authors.md 참조하여 저자·소속·ORCID·funding 기입)
+├── 01_title.md        → finalize (profile/authors.md 참조하여 저자·소속·ORCID·funding 기입)
+└── 🔒 GATE (각 섹션마다): Constraint + Citation + Data Verifier 자율 루프 (최대 2회) → review/gates/ 기록
 
 Phase 5: Style Polish
 ├── Apply writing_guide.md Style Reference Tables
@@ -547,6 +574,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 ├── Revision 폴더 생성: drafts/revision/REV1/, output/revision/REV1/
 ├── 수정된 섹션만 _REV1 접미사로 저장
 ├── Response letter 작성 → drafts/revision/REV1/response_letter_REV1.md
+├── 🔒 GATE (각 응답마다): ghost-revision 검증 (응답 주장 ↔ 원고 diff 대조) 자율 루프
 ├── QC re-run (최소 Round 1-2 재수행)
 ├── Compile revised DOCX → output/revision/REV1/
 │   ├── manuscript_REV1_YYMMDD.docx
