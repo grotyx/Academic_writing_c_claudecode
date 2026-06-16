@@ -90,7 +90,7 @@ Rules:
 Run the manuscript lint script:
 
 ```bash
-python scripts/lint_manuscript.py drafts/
+py scripts/lint_manuscript.py drafts --quiet
 ```
 
 Address high-priority findings before considering the section complete.

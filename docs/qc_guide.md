@@ -344,7 +344,7 @@ Conclusion이 Results에 의해 지지되는지 확인
 
 > Round 1-3이 내용과 숫자에 집중한다면, Round 4는 표현의 일관성을 검증합니다.
 > Abbreviation과 Tense 오류는 리뷰어가 자주 지적하는 항목이므로 반드시 수행을 권장합니다.
-> 용어 검증 기준은 `Style/terminology.md`이며, 자동 점검은 `python scripts/lint_manuscript.py drafts/`로 수행합니다.
+> 용어 검증 기준은 `Style/terminology.md`이며, 자동 점검은 Windows에서 `py scripts/lint_manuscript.py drafts --quiet`로 수행합니다.
 
 ### 4.1 Terminology Consistency
 동일한 개념에 동일한 용어 사용 확인
@@ -353,7 +353,7 @@ Conclusion이 Results에 의해 지지되는지 확인
 - [ ] `Style/terminology.md`의 Preferred Term을 사용했는가?
 - [ ] Forbidden Terms가 남아 있지 않은가?
 - [ ] target journal 또는 연구 특성상 예외가 필요한 경우 `drafts/draft_plan.md`에 기록했는가?
-- [ ] `python scripts/lint_manuscript.py drafts/`를 실행했는가?
+- [ ] `py scripts/lint_manuscript.py drafts --quiet`를 실행했는가?
 
 **Common Issues:**
 | Check | Consistent? |

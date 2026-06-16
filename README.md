@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.7.1** (2026-05-15)
+**v0.8.0** (2026-06-16)
 
 ---
 
@@ -39,6 +39,7 @@ This project provides a comprehensive framework for writing academic medical pap
 ```
 project/
 ├── CLAUDE.md                     # Core rules & configuration
+├── AGENTS.MD                     # Agent bootstrap rules; points to CLAUDE.md as source of truth
 ├── README.md                     # This file
 ├── docs/                         # Reference guides
 │   ├── writing_guide.md          # Section-by-section writing guide
@@ -65,6 +66,7 @@ project/
 │   ├── own/                      # Own-paper style anchors
 │   ├── landmark/                 # Argument/framing anchors
 │   ├── target_journal/           # Target-journal house-style anchors
+│   ├── style_guide.md            # Style anchor workflow and extraction rules
 │   └── terminology.md            # Preferred/forbidden terminology registry
 ├── profile/                      # Personal info — gitignored, local only
 │   ├── authors.md                # Author affiliations, contacts, ORCIDs, funding
@@ -74,6 +76,7 @@ project/
 │   ├── analysis_plan.md          # Analysis plan (required before analysis)
 │   └── py/                       # Python analysis scripts
 ├── scripts/                      # Utility scripts
+│   ├── lint_manuscript.py        # Manuscript terminology/style lint checks
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── results/                      # Analysis outputs
 ├── drafts/                       # Manuscript sections, tables & figures
@@ -253,6 +256,18 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.8.0 (2026-06-16)
+
+**Style Workflow, Linting, and Agent Instructions**
+
+- Promoted writing-style material into the top-level `Style/` workflow, separate from reference evidence under `knowledge/`.
+- Added `Style/style_guide.md` for style-anchor extraction rules, PDF-to-MD mirror rules, and publisher generic filename handling.
+- Expanded `Style/terminology.md` into the project terminology registry for preferred/forbidden terms across spine surgery, trials, AI/radiomics, and reporting contexts.
+- Added `docs/drafting_protocol.md` and `docs/section_templates.md` to enforce outline → evidence-bound draft → style pass → QC drafting.
+- Added `scripts/lint_manuscript.py` and updated draft/table templates so manuscript linting passes with `py scripts/lint_manuscript.py drafts --quiet` on Windows.
+- Added `AGENTS.MD` as agent bootstrap instructions, with `CLAUDE.md` as the authoritative source of truth.
+- Updated `.gitignore` so copyrighted PDFs and private style-anchor summaries remain local, while public workflow files and examples remain commit-eligible.
 
 ### v0.7.1 (2026-05-15)
 

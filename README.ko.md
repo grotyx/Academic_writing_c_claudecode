@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v0.7.1** (2026-05-15)
+**v0.8.0** (2026-06-16)
 
 ---
 
@@ -39,6 +39,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 ```
 project/
 ├── CLAUDE.md                     # 핵심 규칙 및 설정
+├── AGENTS.MD                     # agent 시작 규칙; CLAUDE.md를 source of truth로 참조
 ├── README.md                     # 영문 README
 ├── docs/                         # 참조 가이드
 │   ├── writing_guide.md          # 섹션별 작성 가이드
@@ -65,6 +66,7 @@ project/
 │   ├── own/                      # 본인 논문 스타일 앵커
 │   ├── landmark/                 # 논증/프레이밍 앵커
 │   ├── target_journal/           # 목표 저널 house-style 앵커
+│   ├── style_guide.md            # 스타일 앵커 workflow 및 추출 규칙
 │   └── terminology.md            # preferred/forbidden 용어 registry
 ├── profile/                      # 개인 정보 — gitignored, 로컬 전용
 │   ├── authors.md                # 저자 소속·연락처·ORCID·funding
@@ -74,6 +76,7 @@ project/
 │   ├── analysis_plan.md          # 분석 계획 (분석 전 필수 작성)
 │   └── py/                       # Python 분석 스크립트
 ├── scripts/                      # 유틸리티 스크립트
+│   ├── lint_manuscript.py        # 원고 terminology/style lint 점검
 │   └── search_pubmed.py          # PubMed 검색 도구 (외부 의존성 없음)
 ├── results/                      # 분석 결과
 ├── drafts/                       # 원고 섹션, 테이블, 그림
@@ -249,6 +252,18 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v0.8.0 (2026-06-16)
+
+**Style Workflow, Linting, Agent 지침 정리**
+
+- writing-style 자료를 `knowledge/` reference evidence와 분리하여 최상위 `Style/` workflow로 정리.
+- `Style/style_guide.md` 추가: style-anchor 추출 규칙, PDF-to-MD mirror 규칙, publisher generic filename 처리 규칙.
+- `Style/terminology.md`를 spine surgery, trial, AI/radiomics, reporting context 전반의 preferred/forbidden terminology registry로 확장.
+- `docs/drafting_protocol.md`, `docs/section_templates.md` 추가: outline → evidence-bound draft → style pass → QC 작성 순서 강제.
+- `scripts/lint_manuscript.py` 추가 및 draft/table template 수정: Windows에서 `py scripts/lint_manuscript.py drafts --quiet` 통과.
+- `AGENTS.MD` 추가: agent bootstrap 지침이며 `CLAUDE.md`를 authoritative source of truth로 명시.
+- `.gitignore` 업데이트: 저작권 PDF와 private style-anchor summary는 local-only로 유지하고, 공개 workflow 파일과 예시는 commit 가능하게 정리.
 
 ### v0.7.1 (2026-05-15)
 

@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v0.6.0** (2026-04-18)
+**v0.8.0** (2026-06-16)
 
 ---
 
@@ -23,6 +23,11 @@
 - **质量控制流程** — 至少3轮验证（推荐6轮）+ Revision QC 重跑工作流
 - **研究类型专用清单** — STROBE、CONSORT、PRISMA、CARE 等
 - **学术写作风格系统** — Style Reference Tables（Voice/Tense、Transition、Verb Upgrades、Common Corrections、Statistical Notation、Hedging）+ Writing Principles（Clarity/Conciseness/Objectivity/Consistency）
+- **引用质量控制** — Claim→Citation Mapping（写作前将关键 claim 与证据文献对应）
+- **Style anchor library**（`Style/`）— own、landmark、target-journal anchors，用于术语、语气、论证结构和期刊 house style
+- **术语 registry**（`Style/terminology.md`）— preferred/forbidden terms、定义和使用 context
+- **Drafting protocol**（`docs/drafting_protocol.md`）— outline → evidence-bound draft → style pass → QC
+- **Manuscript linting**（`scripts/lint_manuscript.py`）— 自动检查术语、placeholder、过度声明和分节问题
 - **PubMed 搜索工具** — 内置 Python 脚本（无需 MCP 或外部包）
 - **斜杠命令** — 证据文献注册（`/search-evidence`、`/import-doi`）
 
@@ -33,9 +38,12 @@
 ```text
 project/
 ├── CLAUDE.md                     # 核心规则与配置
+├── AGENTS.MD                     # agent 启动规则；以 CLAUDE.md 为 source of truth
 ├── README.md                     # 英文 README
 ├── docs/                         # 参考指南
 │   ├── writing_guide.md          # 分节写作指南
+│   ├── drafting_protocol.md      # 必须遵循的 drafting sequence
+│   ├── section_templates.md      # 分节 sentence patterns
 │   ├── expert_roles.md           # 专家团队角色与职责
 │   ├── checklist_guide.md        # 研究类型专用清单
 │   ├── qc_guide.md               # 质量控制流程
@@ -43,16 +51,25 @@ project/
 │   ├── evidence_guide.md         # 证据文献编写指南
 │   ├── revision_guide.md        # 审稿人回复指南
 │   ├── figure_guide.md          # 图表生成指南
-│   └── docx_guide.md            # DOCX 转换指南
+│   ├── docx_guide.md            # DOCX 转换指南
+│   └── draft_plan_template.md    # Draft plan template
 ├── knowledge/                    # 参考资料
 │   ├── evidence.md               # 参考文献摘要汇编
-│   ├── pdf/                      # 原始 PDF 文件
+│   ├── pdf/                      # 原始 PDF 文件（gitignored, local only）
 │   └── summaries/                # 单篇论文详细摘要
+├── Style/                        # 与参考文献分离的 writing-style anchors
+│   ├── PDF/                      # style analysis source PDFs（gitignored, local only）
+│   ├── own/                      # 自己论文的 style anchors
+│   ├── landmark/                 # 论证/framing anchors
+│   ├── target_journal/           # target journal house-style anchors
+│   ├── style_guide.md            # style anchor workflow and extraction rules
+│   └── terminology.md            # preferred/forbidden terminology registry
 ├── data/                         # 统计分析
 │   ├── raw_data.csv              # 原始数据集
 │   ├── analysis_plan.md          # 分析计划（分析前必须创建）
 │   └── py/                       # Python 分析脚本
 ├── scripts/                      # 实用脚本
+│   ├── lint_manuscript.py        # manuscript terminology/style lint checks
 │   └── search_pubmed.py          # PubMed 搜索工具（无外部依赖）
 ├── results/                      # 分析输出
 ├── drafts/                       # 稿件章节、表格、图表
@@ -74,8 +91,8 @@ project/
 1. **设置**：在 `CLAUDE.md` 中填写研究主题、目标期刊和研究设计
 2. **参考文献**：使用 `/search-evidence [关键词]` 或 `python3 scripts/search_pubmed.py` 搜索 PubMed 并注册到 `knowledge/evidence.md`
 3. **数据分析**：将数据放入 `data/` 文件夹 → 创建 `analysis_plan.md`（必须）→ 运行统计分析
-4. **稿件计划**：在 `drafts/draft_plan.md` 中撰写核心信息、论调、必要参考文献和大纲（推荐 Opus）
-5. **撰写初稿**：按推荐顺序撰写各章节（Draft Plan 充实的情况下 Sonnet 也可）
+4. **稿件计划**：将 `docs/draft_plan_template.md` 复制到 `drafts/draft_plan.md`，填写包含 Claim→Citation Mapping 的10项内容（推荐 Opus）
+5. **撰写初稿**：遵循 `docs/drafting_protocol.md`，按推荐顺序撰写各章节
 6. **质量控制**：提交前至少进行3轮 QC 检查（推荐6轮）
 7. **最终定稿**：将稿件编译为 DOCX（参见 `docs/docx_guide.md`）
 
@@ -150,6 +167,8 @@ Claude 集成斜杠命令：
 | ---- | ---- |
 | [CLAUDE.md](CLAUDE.md) | 核心规则与项目配置 |
 | [docs/writing_guide.md](docs/writing_guide.md) | 分节写作指南 + Style Reference Tables + Writing Principles (4 Pillars) |
+| [docs/drafting_protocol.md](docs/drafting_protocol.md) | outline → evidence-bound draft → style/QC pass 的必须 drafting workflow |
+| [docs/section_templates.md](docs/section_templates.md) | 分节 paragraph function 和 sentence patterns |
 | [docs/expert_roles.md](docs/expert_roles.md) | 专家团队说明 |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE、CONSORT、PRISMA、CARE 清单 |
 | [docs/qc_guide.md](docs/qc_guide.md) | 质量控制流程（6轮） |
@@ -158,6 +177,11 @@ Claude 集成斜杠命令：
 | [docs/revision_guide.md](docs/revision_guide.md) | 审稿人回复指南（回复信撰写、外交措辞、QC 重跑清单） |
 | [docs/figure_guide.md](docs/figure_guide.md) | 图表生成指南（DPI、调色板、Python模板） |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 转换指南（格式、表格样式、命名规则） |
+| [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10项内容、claim→citation tables、approval checklist |
+| [Style/style_guide.md](Style/style_guide.md) | Style anchor workflow、extraction framework、PDF-to-MD mirror rules |
+| [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry |
+| [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
+| [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 搜索脚本（NCBI E-utilities，无需外部包） |
 
 ---

@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.7.1)
+# Academic Paper Writing Project (v0.8.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -15,6 +15,7 @@
 ```
 project/
 ├── CLAUDE.md                     # This file - core rules & config
+├── AGENTS.MD                     # Agent bootstrap rules; points to CLAUDE.md as source of truth
 ├── docs/                         # Reference guides (read when needed)
 │   ├── writing_guide.md          # Section-by-section writing guide
 │   ├── drafting_protocol.md      # Mandatory drafting sequence
@@ -41,6 +42,7 @@ project/
 │   ├── own/                      # Own-paper style extraction md
 │   ├── landmark/                 # Argument/framing anchors
 │   ├── target_journal/           # Journal house-style anchors
+│   ├── style_guide.md            # Style anchor workflow and extraction rules
 │   └── terminology.md            # Preferred/forbidden terminology registry
 ├── data/                         # Statistical analysis
 │   ├── raw_data.csv              # Original dataset (CSV/XLSX)
@@ -60,6 +62,7 @@ project/
 │   ├── table_*.md               # Table templates
 │   └── figures/                 # Generated figures
 ├── scripts/                      # Utility scripts
+│   ├── lint_manuscript.py        # Manuscript terminology/style lint checks
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── review/                       # Review & QC documents
 │   └── qc_log.md                 # QC round tracking
@@ -513,7 +516,7 @@ Phase 5: Style Polish
 │   └── Hedging Language 적정성 확인
 ├── Apply docs/section_templates.md sentence-pattern pass
 ├── Apply Style/terminology.md terminology pass
-├── Run `python scripts/lint_manuscript.py drafts/` and fix high-priority findings
+├── Run `py scripts/lint_manuscript.py drafts --quiet` on Windows and fix high-priority findings
 ├── Apply writing_guide.md Writing Principles (4 Pillars)
 │   └── Clarity / Conciseness / Objectivity / Consistency
 └── Expert: Dr. Editor (final polish)
