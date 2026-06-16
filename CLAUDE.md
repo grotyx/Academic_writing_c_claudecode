@@ -118,9 +118,11 @@ project/
 │       └── figures/
 ├── review/
 │   ├── paper1_xxx/
-│   │   └── qc_log.md
+│   │   ├── qc_log.md
+│   │   └── gates/
 │   └── paper2_yyy/
-│       └── qc_log.md
+│       ├── qc_log.md
+│       └── gates/
 └── output/
     ├── paper1_xxx/               # 논문1 최종 DOCX
     │   ├── manuscript_YYMMDD.docx
@@ -154,6 +156,7 @@ drafts/
 
 review/
 ├── qc_log.md
+├── gates/                        # 검증 게이트 원장 (phase_08_revision.GATE.md 등)
 ├── reviewer_comments_REV1.md     # 리뷰어 코멘트 원문
 └── reviewer_comments_REV2.md     # (필요 시)
 
