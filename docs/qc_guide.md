@@ -1,7 +1,12 @@
-# Quality Control Guide (v0.4.0)
+# Quality Control Guide (v0.5.0)
 
 ## Overview
 논문 제출 전 **최소 3라운드**의 QC를 수행해야 합니다. 각 라운드는 서로 다른 측면에 집중하며, 모든 검증 결과는 `review/qc_log.md`에 기록합니다.
+
+> **인라인 게이트 연동 (v0.5.0):** Phase 4 드래프팅 중 섹션마다 Constraint/Citation/Data Verifier 게이트가 이미 수행된다 (`docs/verification_protocol.md`). 따라서 Phase 6 QC는 처음부터 다시 검사하는 단계가 아니라, **인라인 게이트 결과를 전제로 한 최종 확인**이다.
+> - Round 1 (숫자) · Round 2 (인용)은 인라인 Data/Citation 게이트가 통과된 섹션에 대해 **교차·전체 일관성**만 확인한다 (게이트가 잡지 못한 섹션 간 불일치).
+> - `review/gates/`에 PASS 기록이 없는 섹션이 있으면 QC를 진행하지 말고 해당 섹션의 게이트를 먼저 통과시킨다.
+> - Round 3–6은 종전대로 수행한다.
 
 ---
 
