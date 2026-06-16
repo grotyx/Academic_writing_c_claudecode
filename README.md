@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.8.0** (2026-06-16)
+**v0.8.1** (2026-06-16)
 
 ---
 
@@ -256,6 +256,19 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.8.1 (2026-06-16)
+
+**Response Letter Formatting Rules** — `docs/revision_guide.md` internal version v0.3.0 → v0.4.0
+
+- Reworked the response letter format to a minimal-formatting standard:
+  - Bold only the words **"Comment x.x"** and **"Response"**; all other formatting removed (no headings, colors, indentation, tables, or bullet/numbered lists)
+  - Quoted revised manuscript text is set in *italic*
+  - Responses are written as prose (no numbered/itemized points), flowing thanks → position → rationale → action in a single paragraph
+  - No hyphens or em-dashes
+  - Persuasive, reviewer-convincing tone
+- Added a **minimal change principle** for manuscript edits — make only the smallest sentence changes needed to address each comment, keeping revisions concise rather than verbose
+- Updated the "during writing" checklist to match the new formatting rules
 
 ### v0.8.0 (2026-06-16)
 

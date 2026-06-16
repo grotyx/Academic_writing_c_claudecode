@@ -1,4 +1,4 @@
-# Revision & Reviewer Response Guide (v0.3.0)
+# Revision & Reviewer Response Guide (v0.4.0)
 
 > 리뷰어 코멘트 대응 및 수정 원고 작성을 위한 가이드
 
@@ -21,33 +21,30 @@
 
 ### 기본 형식
 
+> **서식 원칙:** 응답서에는 별도 서식을 넣지 않는다. **"Comment x.x"** 와 **"Response"** 단어만 Bold 처리하고, 응답 중에 직접 인용한 수정 본문만 *italic* 으로 표기한다. 그 외에는 모든 서식을 제거한다 (heading, 색상, 들여쓰기, 표, bullet 모두 사용하지 않음).
+
 ```markdown
 Dear Editor,
 
 Thank you for the opportunity to revise our manuscript entitled "[TITLE]"
 (Manuscript No. [NUMBER]). We appreciate the constructive comments from
-the reviewers, which have helped us improve the manuscript. Below, we
-provide a point-by-point response to each comment.
+the reviewers, which have helped us improve the manuscript. We provide a
+point-by-point response to each comment below.
 
----
+Reviewer 1
 
-## Reviewer 1
-
-### Comment 1.1
+**Comment 1.1**
 [리뷰어 코멘트 원문 그대로 복사]
 
-**Response:**
-[응답 내용]
+**Response**
+[응답을 줄글로 작성. 동의·근거·조치를 자연스럽게 한 문단으로 이어서 서술한다.
+변경된 본문을 인용할 때는 italic 으로 표기한다. 예: The revised sentence now
+reads, *"[수정된 문장]."*]
 
-**Changes made:**
-[수정 내용 및 위치 — 페이지/줄번호 또는 섹션명]
-
-### Comment 1.2
+**Comment 1.2**
 ...
 
----
-
-## Reviewer 2
+Reviewer 2
 ...
 ```
 
@@ -55,11 +52,20 @@ provide a point-by-point response to each comment.
 
 | 항목 | 규칙 |
 |------|------|
+| Bold 사용 | **"Comment x.x"** 와 **"Response"** 단어에만 적용. 그 외 Bold 금지 |
+| 인용 본문 | 응답서에 직접 인용한 수정 본문만 *italic* 으로 표기 |
+| 그 외 서식 | 서식 없음 — heading, 색상, 들여쓰기, 표, bullet/번호 목록 모두 사용 금지 |
+| 응답 형식 | 번호를 붙여 항목화하지 않고 **줄글(prose)** 로 작성. 감사 → 입장 → 근거 → 조치를 한 문단으로 이어서 서술 |
+| 문장 부호 | hyphen, em-dash 사용 금지. 쉼표·마침표로 문장을 끊어서 처리 |
+| 문체 | reviewer를 **설득하는** 어조 — 근거를 들어 차분하게 납득시키되 방어적이지 않게 |
 | 리뷰어 코멘트 | 원문 그대로 복사 (수정 금지) |
-| 응답 | 코멘트와 시각적으로 구분 (Bold, 색상, 들여쓰기 등) |
 | 수정 위치 | 구체적으로 명시 ("Methods, paragraph 2", "Table 2", "Page 8, line 15") |
-| 수정 텍스트 | 가능하면 변경된 문장을 응답서에 직접 인용 |
+| 수정 텍스트 | 변경된 문장을 응답서에 직접 인용하되 *italic* 으로 표기 |
 | 호칭 | 3인칭 사용 ("We agree with the reviewer..." ✅, "We agree with you..." ❌) |
+
+### 본문 수정 원칙
+
+> **최소 변경(minimal change) 원칙:** 리뷰어 지적에 대응할 때 본문을 장황하게 다시 쓰지 않는다. 지적을 해소하는 데 필요한 **최소한의 문장 변경**만 가하여 concise 하게 처리한다. 기존 문장 구조를 최대한 유지하고, 필요한 부분만 정확히 수정한다.
 
 ---
 
@@ -167,10 +173,14 @@ We have revised the relevant text to better convey this point.
 ### 작성 중
 - [ ] 모든 코멘트에 빠짐없이 응답했는가?
 - [ ] 리뷰어 코멘트 원문을 그대로 복사했는가?
-- [ ] 응답이 시각적으로 구분되는가?
+- [ ] "Comment x.x"와 "Response"만 Bold 처리했는가? (그 외 서식 없음)
+- [ ] 인용한 수정 본문을 italic 으로 표기했는가?
+- [ ] 응답을 번호 없이 줄글(prose)로 작성했는가?
+- [ ] hyphen·em-dash 를 사용하지 않았는가?
+- [ ] 본문 수정이 최소한·concise 한가? (장황하지 않은가)
 - [ ] 수정 위치가 구체적으로 명시되었는가?
 - [ ] 3인칭으로 작성되었는가? ("the reviewer")
-- [ ] 감정적/방어적 표현이 없는가?
+- [ ] 감정적/방어적 표현이 없고 설득하는 어조인가?
 - [ ] 거부한 항목에 대해 충분한 근거를 제시했는가?
 
 ### 작성 후
