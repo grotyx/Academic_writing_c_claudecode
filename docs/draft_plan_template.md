@@ -88,6 +88,7 @@
 > **규칙:** claim을 작성하기 전에 citation을 먼저 확보할 것.
 > 없으면 Phase 1로 돌아가 검색.
 > Style/own/에서 본인 논문 스타일 앵커도 확인.
+> **인용 형식:** citation은 `[EVID:author_year]` 태그로 적는다 (evidence.md id와 일치). 존재하지 않는 id는 게이트에서 차단된다.
 
 ### Introduction Background (5–8 claims)
 
@@ -212,7 +213,7 @@
 - [ ] 2. Tone & voice — 선택 완료
 - [ ] 3. Essential references — evidence.md에 등록됨
 - [ ] 4. Evidence gap — 추가 검색 완료 또는 필요 없음 확인
-- [ ] 5. Claim→Citation mapping — ~20개 claim에 citation 모두 확보
+- [ ] 5. Claim→Citation mapping — ~20개 claim에 citation 모두 확보 (`[EVID:id]` 형식, evidence.md 존재 확인)
 - [ ] 6. Table/Figure plan — 개수·형식·내용 결정
 - [ ] 7. Introduction outline — 단락별 흐름 설계
 - [ ] 8. Discussion outline — 논점 3–5개 + 비교 대상 확정

@@ -30,6 +30,7 @@
   - ✅ "The BED group, which had lower CPK, showed better outcomes."
   - ✅ "The advantage was notable, particularly in pain scores."
   - 예외: 숫자 범위(page range, CI, age range)의 en dash는 허용 — "95% CI: 1.2–4.5", "pages 18–26"
+- **인용 태그(EVID):** 초안 단계에서 모든 인용은 `[EVID:author_year]` 형식으로 표기한다 (예: `[EVID:lee_2019]`). 이 id는 `knowledge/evidence.md` 엔트리와 일치해야 하며, Phase 7(Finalize)에서 목표 저널 형식(번호 또는 저자-연도)으로 변환한다. 상세: `docs/verification_protocol.md`.
 
 ---
 
