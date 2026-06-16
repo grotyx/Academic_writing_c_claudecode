@@ -1,4 +1,4 @@
-# Revision & Reviewer Response Guide (v0.4.0)
+# Revision & Reviewer Response Guide (v0.4.1)
 
 > 리뷰어 코멘트 대응 및 수정 원고 작성을 위한 가이드
 
@@ -38,8 +38,8 @@ Reviewer 1
 
 **Response**
 [응답을 줄글로 작성. 동의·근거·조치를 자연스럽게 한 문단으로 이어서 서술한다.
-변경된 본문을 인용할 때는 italic 으로 표기한다. 예: The revised sentence now
-reads, *"[수정된 문장]."*]
+수정 위치는 문장 앞쪽에 먼저 밝힌 뒤 변경된 본문을 italic 으로 인용한다.
+예: In the Methods (paragraph 2), the revised sentence now reads, *"[수정된 문장]."*]
 
 **Comment 1.2**
 ...
@@ -59,8 +59,8 @@ Reviewer 2
 | 문장 부호 | hyphen, em-dash 사용 금지. 쉼표·마침표로 문장을 끊어서 처리 |
 | 문체 | reviewer를 **설득하는** 어조 — 근거를 들어 차분하게 납득시키되 방어적이지 않게 |
 | 리뷰어 코멘트 | 원문 그대로 복사 (수정 금지) |
-| 수정 위치 | 구체적으로 명시 ("Methods, paragraph 2", "Table 2", "Page 8, line 15") |
-| 수정 텍스트 | 변경된 문장을 응답서에 직접 인용하되 *italic* 으로 표기 |
+| 수정 위치 | **문장 앞쪽에 먼저** 명시한 뒤 수정문을 인용 (lead-in 방식). 위치는 수정 원고 기준으로 구체적으로 ("In the Methods (paragraph 2), the revised text now reads...", "Table 2", "Page 8, line 15"). 뒤에 괄호로 "(See ...)"를 붙이는 방식은 사용하지 않음 |
+| 수정 텍스트 | 위치를 밝힌 직후 변경된 문장을 직접 인용하되 *italic* 으로 표기 |
 | 호칭 | 3인칭 사용 ("We agree with the reviewer..." ✅, "We agree with you..." ❌) |
 
 ### 본문 수정 원칙
@@ -83,12 +83,14 @@ Reviewer 2
 
 ### 대응 유형별 템플릿
 
+> 모든 템플릿에서 수정 위치는 문장 앞쪽에 먼저 밝힌 뒤 수정문을 인용한다 (lead-in 방식).
+
 #### 1. 동의하고 수정 (Agree & Revise) — 가장 흔함
 
 ```
-We thank the reviewer for this insightful comment. We have revised
-the [section] accordingly. Specifically, [description of change].
-(See [location])
+We thank the reviewer for this insightful comment. In the [location],
+we have revised the text accordingly, and the relevant sentence now
+reads, "[revised sentence]."
 ```
 
 #### 2. 부분 동의 (Partial Agreement)
@@ -96,7 +98,8 @@ the [section] accordingly. Specifically, [description of change].
 ```
 We appreciate the reviewer's suggestion. While we agree that [agreed part],
 we believe [different part] because [evidence/reasoning]. To address the
-reviewer's concern, we have [compromise action]. (See [location])
+reviewer's concern, in the [location] we have [compromise action], which
+now reads, "[revised sentence]."
 ```
 
 #### 3. 정중한 반론 (Respectful Disagreement)
@@ -105,8 +108,8 @@ reviewer's concern, we have [compromise action]. (See [location])
 We appreciate the reviewer raising this important point. After careful
 consideration, we respectfully maintain our original approach because
 [evidence-based reasoning]. [Optional: cite supporting literature].
-However, we have added a discussion of this issue in the Limitations
-section to acknowledge this perspective. (See [location])
+To acknowledge this perspective, in the Limitations section we have
+added the following sentence, "[added sentence]."
 ```
 
 #### 4. 할 수 없는 요청 (Cannot Implement)
@@ -114,8 +117,8 @@ section to acknowledge this perspective. (See [location])
 ```
 We thank the reviewer for this suggestion. Unfortunately, [reason:
 data not available / retrospective design limitation / beyond scope /
-IRB constraints]. We acknowledge this as a limitation and have added
-a statement in the Discussion section. (See [location])
+IRB constraints]. We acknowledge this as a limitation, and in the
+Discussion section we have added the following statement, "[added sentence]."
 ```
 
 #### 5. 오해 해소 (Clarify Misunderstanding)
@@ -123,8 +126,8 @@ a statement in the Discussion section. (See [location])
 ```
 We appreciate the reviewer's comment. We realize that our original
 description may not have been sufficiently clear. To clarify, [explanation].
-We have revised the relevant text to better convey this point.
-(See [location])
+In the [location], we have revised the relevant text, which now reads,
+"[revised sentence]."
 ```
 
 ---

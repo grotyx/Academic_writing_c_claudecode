@@ -265,6 +265,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
   - Bold only the words **"Comment x.x"** and **"Response"**; all other formatting removed (no headings, colors, indentation, tables, or bullet/numbered lists)
   - Quoted revised manuscript text is set in *italic*
   - Responses are written as prose (no numbered/itemized points), flowing thanks → position → rationale → action in a single paragraph
+  - Revision locations use lead-in placement — state the location first, then quote the revised text (no trailing "(See ...)")
   - No hyphens or em-dashes
   - Persuasive, reviewer-convincing tone
 - Added a **minimal change principle** for manuscript edits — make only the smallest sentence changes needed to address each comment, keeping revisions concise rather than verbose
