@@ -95,6 +95,20 @@ py scripts/lint_manuscript.py drafts --quiet
 
 Address high-priority findings before considering the section complete.
 
+### Step 7. Verification Gate (자율 루프)
+
+섹션 작성이 끝나면 다음 단계로 넘어가기 전에 검증 게이트를 통과해야 한다.
+상세: `docs/verification_protocol.md`.
+
+1. 세 Verifier 서브에이전트를 투입한다 (모델: Opus 기본):
+   - **Constraint** — draft_plan·analysis_plan·사용자 제약 준수
+   - **Citation** — `[EVID:id]` 인용이 evidence.md로 지지되는지 (방향·대상·비교군·결과 일치)
+   - **Data** — 모든 결과 수치가 `results/*.csv`로 추적되는지
+2. 모두 PASS → `review/gates/phase_04_draft.GATE.md`에 `status: PASS` 기록 → 다음 섹션.
+3. FAIL → 지적사항을 수정하고 재검증. 최대 2회(N=2), 이후 사용자에게 에스컬레이션.
+
+게이트 PASS가 원장에 기록되기 전에는 다음 섹션을 시작하지 않는다.
+
 ---
 
 ## Section-Specific Guardrails
@@ -118,3 +132,4 @@ Address high-priority findings before considering the section complete.
 - [ ] Section follows `docs/section_templates.md`.
 - [ ] Style anchors were applied without copying source text.
 - [ ] `scripts/lint_manuscript.py` was run and findings were addressed or documented.
+- [ ] Verification gate (Constraint/Citation/Data) passed and recorded in `review/gates/`.
