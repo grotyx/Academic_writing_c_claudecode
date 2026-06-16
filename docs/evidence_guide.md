@@ -1,4 +1,4 @@
-# Evidence 작성 가이드 (v0.2.2)
+# Evidence 작성 가이드 (v0.3.0)
 
 > `knowledge/evidence.md` 작성 방법 및 문헌 관리 워크플로우
 
@@ -107,6 +107,7 @@ PubMed 검색 등으로 논문을 찾아 등록하는 경우:
 - **DOI:** 10.xxxx/xxxxx
 - **PMID:** xxxxxxxx
 - **PDF:** knowledge/pdf/파일명.pdf (또는 "No PDF - abstract only")
+- **Source Status:** verified | abstract-only | full-text-reviewed | todo
 
 - **Study Design:** 연구 유형, 대상 수, 추적 기간
 - **Objective:** 연구 목적 (1-2문장)
@@ -123,6 +124,19 @@ PubMed 검색 등으로 논문을 찾아 등록하는 경우:
 - **Relevance:** 우리 논문 어디에 어떻게 활용할지
   - 예: Introduction (배경), Discussion (비교), Methods (참고)
 ```
+
+### Source Status 필드 (검증 게이트 연동)
+
+> Citation-Grounding Verifier가 이 필드를 확인한다. 상세: `docs/verification_protocol.md`.
+
+| 값 | 의미 | 인용 가능 여부 |
+|----|------|----------------|
+| `verified` | 서지정보·핵심 주장 확인 완료 | 인용 가능 |
+| `abstract-only` | 초록만 확인 (전문 미확인) | 초록이 지지하는 범위 내에서만 인용 |
+| `full-text-reviewed` | 전문 정독 완료 | 인용 가능 (가장 신뢰) |
+| `todo` | 미확인 (등록만 됨) | **인용 금지** — 게이트에서 FAIL |
+
+`todo` 상태의 문헌을 인용하면 검증 게이트가 차단한다. 인용 전 반드시 `verified` 이상으로 올린다.
 
 ### 작성 원칙
 
@@ -240,3 +254,4 @@ evidence.md 하단에 검색 기록을 남겨 중복 검색을 방지한다. Que
 - [ ] Key Points가 우리 연구 관점에서 작성되었는가?
 - [ ] Relevance에 활용 섹션과 맥락이 구체적으로 기술되었는가?
 - [ ] PDF 파일명이 규칙에 맞게 저장되었는가?
+- [ ] Source Status가 기록되었는가? (인용하려면 `verified` 이상)
