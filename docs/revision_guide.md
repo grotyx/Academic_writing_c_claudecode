@@ -1,4 +1,4 @@
-# Revision & Reviewer Response Guide (v0.4.1)
+# Revision & Reviewer Response Guide (v0.5.0)
 
 > 리뷰어 코멘트 대응 및 수정 원고 작성을 위한 가이드
 
@@ -62,6 +62,24 @@ Reviewer 2
 | 수정 위치 | **문장 앞쪽에 먼저** 명시한 뒤 수정문을 인용 (lead-in 방식). 위치는 수정 원고 기준으로 구체적으로 ("In the Methods (paragraph 2), the revised text now reads...", "Table 2", "Page 8, line 15"). 뒤에 괄호로 "(See ...)"를 붙이는 방식은 사용하지 않음 |
 | 수정 텍스트 | 위치를 밝힌 직후 변경된 문장을 직접 인용하되 *italic* 으로 표기 |
 | 호칭 | 3인칭 사용 ("We agree with the reviewer..." ✅, "We agree with you..." ❌) |
+
+### 변경 추적 마커 ([CHANGE]) — 검증 게이트용
+
+> ghost-revision(응답서는 "고쳤다"는데 원고는 안 바뀐 경우)을 검증 게이트가 잡아내기 위한 머신리더블 마커.
+> 응답서의 **최종본**에서는 이 마커를 제거하고, 작업·검증 중에만 유지한다 (또는 주석으로 보관).
+
+응답에서 원고 변경을 주장할 때마다 아래 마커를 첨부한다:
+
+```
+[CHANGE]
+comment_id: R1-C3
+claim: eligibility criteria를 명확히 하는 문장 추가
+section: 04_methods
+expected_terms: eligibility criteria; excluded; prior surgery
+[/CHANGE]
+```
+
+검증 게이트는 (a) 해당 revised 섹션 파일 존재, (b) diff에 `expected_terms`가 실제로 추가되었는지 대조한다. 불일치 시 FAIL → 원고를 고치거나 응답 문구를 수정한다 (최대 2회).
 
 ### 본문 수정 원칙
 
@@ -257,6 +275,7 @@ output/revision/
 2. **review/qc_log.md에 REV{N} 라운드 기록** — "QC Round 1 re-run for REV1, 2026-MM-DD, no discrepancies"
 3. **변경된 숫자는 Abstract·Methods·Results·Discussion·Tables 5곳에서 교차 검증**
 4. **응답서 제출 전 최종 Round 1 검증** — 응답서에 기록한 수정 숫자와 원고 숫자 일치
+5. **Ghost-revision 게이트 (필수):** 각 응답의 `[CHANGE]` 마커마다 원고 diff를 대조하여 주장한 변경이 실제로 반영됐는지 확인한다. Constraint/Citation/Data Verifier도 변경된 섹션에 재투입한다. 결과를 `review/gates/phase_08_revision.GATE.md`에 기록한다. 상세: `docs/verification_protocol.md`.
 
 ### Revision 후 체크리스트 (제출 전)
 
@@ -266,6 +285,7 @@ output/revision/
 - [ ] Response letter의 인용 line 번호가 수정본과 일치
 - [ ] Tracked changes 파일 별도 준비 (저널 요구 시)
 - [ ] QC log 업데이트 (review/qc_log.md)
+- [ ] Ghost-revision 게이트 통과 — 모든 [CHANGE] 주장이 원고 diff로 확인됨 (`review/gates/phase_08_revision.GATE.md`)
 
 ---
 
