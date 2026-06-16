@@ -11,12 +11,6 @@ presentation/
 # Personal profile (author info, contacts, funding)
 profile/
 
-# Own papers (private — published paper summaries with personal research context)
-# Exception: example file stays in repo as a template reference
-knowledge/own_papers/*.md
-!knowledge/own_papers/example_*.md
-knowledge/own_papers/*.pdf
-
 # Reference PDFs — copyright-protected, do not commit
 knowledge/pdf/
 
