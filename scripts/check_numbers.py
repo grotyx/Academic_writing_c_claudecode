@@ -25,7 +25,7 @@ INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 NUMBER_RE = re.compile(
     r"(?<![A-Za-z0-9_])"
     r"(?:(?P<p>\*?p\*?)\s*(?P<comp><=|>=|<|>|=)\s*)?"
-    r"(?P<num>[-+]?\d+(?:,\d{3})*(?:\.\d+)?)"
+    r"(?P<num>[-+]?(?:\d+(?:,\d{3})*(?:\.\d+)?|\.\d+))"
     r"(?P<pct>%)?"
 )
 P_VALUE_COLUMNS = frozenset(
@@ -134,6 +134,12 @@ def is_structural_number(
     # Confidence-level percentages (e.g. "95% CI", "95 % confidence interval")
     # state the interval level, not a result value.
     if re.match(r"\s*%?\s*(?:CI\b|confidence)", after, flags=re.IGNORECASE):
+        return True
+
+    # Hyphenated time spans (e.g. "90-day", "36-month", "5-year") are
+    # time-point modifiers, not result values. Spaced forms ("63 years") are
+    # left alone so ages and durations that ARE results stay checked.
+    if re.match(r"-(?:year|month|week|day|hour|min(?:ute)?|second)s?\b", after, flags=re.IGNORECASE):
         return True
 
     if STRUCTURAL_LABEL_RE.search(before):

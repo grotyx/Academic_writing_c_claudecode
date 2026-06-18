@@ -57,6 +57,32 @@ TABLE2_CSV = (
 )
 
 
+RESULTS_MD_EXTENDED = """# Results
+
+Median follow-up was 5 years (IQR 2 to 8). The 90-day readmission rate was
+11.0%, and 36-month survival was 82.0%. The mean change from baseline was
+-2.1 points (SD 3.4).
+
+The hazard ratio was 1.23 (95% CI 0.98 to 1.54; *p*=0.071), and the adjusted
+odds ratio was 0.85 (95% CI 0.72 to 1.01). A total of n = 1,234 patients with
+a median age of 63 years contributed data.
+"""
+
+EXTENDED_CSV = (
+    "metric,value,low,high,p_value\n"
+    "followup_years,5,,,\n"
+    "iqr,,2,8,\n"
+    "readmission_rate,11.0,,,\n"
+    "survival,82.0,,,\n"
+    "mean_change,-2.1,,,\n"
+    "sd,3.4,,,\n"
+    "hazard_ratio,1.23,0.98,1.54,0.071\n"
+    "odds_ratio,0.85,0.72,1.01,\n"
+    "n_total,1234,,,\n"
+    "age_median,63,,,\n"
+)
+
+
 class NumbersE2ETests(unittest.TestCase):
     def _run(self, manuscript: str, table1: str = TABLE1_CSV, table2: str = TABLE2_CSV):
         module = _load("check_numbers")
@@ -86,6 +112,18 @@ class NumbersE2ETests(unittest.TestCase):
         result = self._run(manuscript)
         self.assertFalse(result.passed)
         self.assertIn("9.99", [failure.number for failure in result.failures])
+
+    def test_extended_corpus_passes(self) -> None:
+        # Broader idioms: hyphenated time spans (90-day, 36-month), spaced
+        # durations/ages (5 years, 63 years), IQR range, negative change, SD,
+        # hazard/odds ratios with CI and p-value, and a thousands separator.
+        result = self._run(
+            RESULTS_MD_EXTENDED,
+            table1=EXTENDED_CSV,
+            table2="metric,value\n",
+        )
+        self.assertEqual([failure.number for failure in result.failures], [])
+        self.assertTrue(result.passed)
 
 
 class CitationsE2ETests(unittest.TestCase):

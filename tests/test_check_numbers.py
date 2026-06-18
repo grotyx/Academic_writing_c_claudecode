@@ -315,6 +315,57 @@ class CheckNumbersTests(unittest.TestCase):
             self.assertNotIn("95", [failure.number for failure in result.failures])
             self.assertEqual(result.checked_numbers, 3)
 
+    def test_check_numbers_ignores_hyphenated_time_spans(self) -> None:
+        # "90-day", "36-month", "5-year" are time-point modifiers, not result
+        # values; only the genuine result (the rate) should be checked.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table2_outcomes.csv").write_text(
+                "metric,value\nreadmission,11.0\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The 90-day readmission rate was 11.0% over 36-month follow-up.",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertTrue(result.passed)
+            self.assertNotIn("90", [failure.number for failure in result.failures])
+            self.assertNotIn("36", [failure.number for failure in result.failures])
+            self.assertEqual(result.checked_numbers, 1)
+
+    def test_check_numbers_validates_pvalue_without_leading_zero(self) -> None:
+        # APA / journal style omits the leading zero ("p<.001"). The value must
+        # still be parsed and validated, not silently skipped. With no
+        # supporting p-value in results, this must FAIL (not pass vacuously).
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table1_demographics.csv").write_text(
+                "variable,n\nsample,42\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The effect was statistically significant (*p*<.001).",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertFalse(result.passed)
+            self.assertIn(".001", [failure.number for failure in result.failures])
+
 
 if __name__ == "__main__":
     unittest.main()
