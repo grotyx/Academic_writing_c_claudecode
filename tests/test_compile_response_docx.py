@@ -5,7 +5,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from docx import Document
+import pytest
+
+Document = pytest.importorskip("docx").Document
 
 
 ROOT = Path(__file__).resolve().parents[1]

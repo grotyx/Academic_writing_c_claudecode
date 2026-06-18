@@ -28,3 +28,8 @@ Style/landmark/*.md
 Style/target_journal/*.md
 !Style/style_guide.md
 !Style/terminology.md
+
+# Python caches
+__pycache__/
+*.pyc
+.pytest_cache/

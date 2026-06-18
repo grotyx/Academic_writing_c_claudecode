@@ -20,11 +20,16 @@ from typing import NamedTuple
 ROOT = Path(__file__).resolve().parents[1]
 FENCE_RE = re.compile(r"```.*?```", flags=re.DOTALL)
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", flags=re.DOTALL)
+DATE_RE = re.compile(r"\b\d{4}-\d{1,2}-\d{1,2}\b|\b\d{1,2}/\d{1,2}/\d{2,4}\b")
+INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 NUMBER_RE = re.compile(
     r"(?<![A-Za-z0-9_])"
     r"(?:(?P<p>\*?p\*?)\s*(?P<comp><=|>=|<|>|=)\s*)?"
-    r"(?P<num>[-+]?\d+(?:\.\d+)?)"
+    r"(?P<num>[-+]?\d+(?:,\d{3})*(?:\.\d+)?)"
     r"(?P<pct>%)?"
+)
+P_VALUE_COLUMNS = frozenset(
+    {"p", "p value", "p_value", "p-value", "pval", "pvalue", "p val"}
 )
 STRUCTURAL_LABEL_RE = re.compile(
     r"\b(?:Table|Figure|Fig\.?|Section|Phase|Round|Reviewer|Comment|Line|Page|REV)\s*$",
@@ -64,11 +69,20 @@ class NumberCheckResult(NamedTuple):
     checked_numbers: int
     failures: list[NumberIssue]
     warnings: list[NumberIssue]
+    result_count: int = 0
 
 
 def strip_ignored_text(text: str) -> str:
     text = FENCE_RE.sub("", text)
-    return HTML_COMMENT_RE.sub("", text)
+    text = HTML_COMMENT_RE.sub("", text)
+    # Blank inline code spans and dates length-preservingly so example tokens
+    # inside them are ignored without shifting line numbers or column offsets.
+    text = INLINE_CODE_RE.sub(lambda match: " " * len(match.group()), text)
+    return DATE_RE.sub(lambda match: " " * len(match.group()), text)
+
+
+def to_float(number_text: str) -> float:
+    return float(number_text.replace(",", ""))
 
 
 def decimal_places(number_text: str) -> int:
@@ -78,13 +92,7 @@ def decimal_places(number_text: str) -> int:
 
 
 def extract_numbers_from_text(text: str) -> list[float]:
-    values: list[float] = []
-    for match in NUMBER_RE.finditer(text):
-        if match.group("p"):
-            values.append(float(match.group("num")))
-            continue
-        values.append(float(match.group("num")))
-    return values
+    return [to_float(match.group("num")) for match in NUMBER_RE.finditer(text)]
 
 
 def load_result_numbers(results_dir: Path) -> list[ResultNumber]:
@@ -112,13 +120,14 @@ def load_result_numbers(results_dir: Path) -> list[ResultNumber]:
     return numbers
 
 
-def is_structural_number(line: str, start: int, token: str, is_p_value: bool) -> bool:
+def is_structural_number(
+    line: str, start: int, token: str, is_p_value: bool, value: float
+) -> bool:
     if is_p_value:
         return False
 
     before = line[:start]
     after = line[start + len(token) :]
-    value = float(token)
     if value.is_integer() and 1900 <= int(value) <= 2099:
         return True
 
@@ -149,11 +158,12 @@ def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
             raw_number = match.group("num")
             full_token = match.group(0)
             is_p_value = bool(match.group("p"))
-            if is_structural_number(line, match.start(), full_token, is_p_value):
+            value = to_float(raw_number)
+            if is_structural_number(line, match.start(), full_token, is_p_value, value):
                 continue
             tokens.append(
                 NumberToken(
-                    value=float(raw_number),
+                    value=value,
                     number=raw_number,
                     line=line_number,
                     comparator=match.group("comp") or "",
@@ -165,8 +175,20 @@ def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
     return tokens
 
 
+def result_is_p_value(result_number: ResultNumber) -> bool:
+    # A directional p-value claim (e.g. p<0.001) may only be satisfied by a
+    # result value that is itself plausibly a p-value: either it comes from a
+    # p-value column, or it falls in the (0, 1] probability range. This stops an
+    # unrelated value such as a count of 0 from satisfying the inequality.
+    if result_number.column.strip().casefold() in P_VALUE_COLUMNS:
+        return True
+    return 0.0 < result_number.value <= 1.0
+
+
 def matches_number(token: NumberToken, result_number: ResultNumber) -> bool:
     if token.is_p_value and token.comparator:
+        if not result_is_p_value(result_number):
+            return False
         if token.comparator == "<":
             return result_number.value < token.value
         if token.comparator == "<=":
@@ -231,7 +253,7 @@ def check_numbers(
                 )
             )
 
-    return NumberCheckResult(not failures, checked_numbers, failures, warnings)
+    return NumberCheckResult(not failures, checked_numbers, failures, warnings, len(result_numbers))
 
 
 def format_result(result: NumberCheckResult, artifacts: list[Path], results_dir: Path) -> str:
@@ -243,6 +265,11 @@ def format_result(result: NumberCheckResult, artifacts: list[Path], results_dir:
         f"artifacts: {len(artifacts)}",
         f"checked: {result.checked_numbers} number token(s), {len(result.failures)} failure(s)",
     ]
+    if result.result_count == 0:
+        lines.append(
+            "note: no result numbers were loaded from the results directory; "
+            "ensure results/*.csv exist and --results points to them"
+        )
 
     if result.passed:
         return "\n".join(lines)

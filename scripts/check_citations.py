@@ -20,6 +20,7 @@ EVID_RE = re.compile(r"\[EVID:([A-Za-z0-9_.-]+)\]")
 HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", flags=re.MULTILINE)
 FIELD_RE = re.compile(r"^-\s+\*\*(.+?):\*\*\s*(.*)$")
 FENCE_RE = re.compile(r"```.*?```", flags=re.DOTALL)
+INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 
 
 class EvidenceEntry(NamedTuple):
@@ -53,7 +54,8 @@ def normalize_status(value: str) -> str:
 
 
 def strip_code_fences(text: str) -> str:
-    return FENCE_RE.sub("", text)
+    text = FENCE_RE.sub("", text)
+    return INLINE_CODE_RE.sub("", text)
 
 
 def slugify_id(value: str) -> str:

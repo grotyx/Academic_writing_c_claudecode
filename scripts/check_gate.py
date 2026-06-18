@@ -45,6 +45,13 @@ def normalize_status(value: str) -> str:
     return value.strip().upper()
 
 
+def strip_inline_comment(value: str) -> str:
+    # Gate fields may carry a trailing "# ..." annotation, e.g.
+    # "status: PASS  # PASS | FAIL" or "round: 2  # max 2 attempts".
+    # Keep only the value before the comment marker.
+    return value.split("#", 1)[0].strip()
+
+
 def parse_gate_entry(text: str) -> GateEntry:
     fields: dict[str, str] = {}
     checks: dict[str, str] = {}
@@ -58,7 +65,7 @@ def parse_gate_entry(text: str) -> GateEntry:
         top_match = FIELD_RE.match(line)
         if top_match and not raw_line.startswith((" ", "\t")):
             key = normalize_key(top_match.group(1))
-            value = top_match.group(2).strip()
+            value = strip_inline_comment(top_match.group(2))
             fields[key] = value
             in_checks = key == "checks"
             continue
@@ -66,7 +73,9 @@ def parse_gate_entry(text: str) -> GateEntry:
         if in_checks:
             check_match = CHECK_RE.match(line)
             if check_match:
-                checks[normalize_key(check_match.group(1))] = normalize_status(check_match.group(2))
+                checks[normalize_key(check_match.group(1))] = normalize_status(
+                    strip_inline_comment(check_match.group(2))
+                )
                 continue
 
             if raw_line and not raw_line.startswith((" ", "\t")):

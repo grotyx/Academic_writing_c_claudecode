@@ -153,6 +153,143 @@ class CheckNumbersTests(unittest.TestCase):
             self.assertTrue(result.passed)
             self.assertEqual(result.checked_numbers, 0)
 
+    def test_check_numbers_matches_percentage_value(self) -> None:
+        # Regression: a percentage like 42.5% must trace to 42.5 in the CSV and
+        # must not crash the script (float("42.5%") previously raised ValueError).
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table2_outcomes.csv").write_text(
+                "endpoint,rate\nprimary,42.5\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The response rate was 42.5% in the treatment group.",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertTrue(result.passed)
+            self.assertEqual(result.failures, [])
+
+    def test_check_numbers_rejects_pvalue_backed_only_by_unrelated_value(self) -> None:
+        # Regression: *p*<0.001 must NOT pass just because some unrelated number
+        # (here a count of 0) happens to satisfy the inequality.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table2_outcomes.csv").write_text(
+                "endpoint,event_count\nprimary,0\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The between-group difference was significant (*p*<0.001).",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertFalse(result.passed)
+
+    def test_check_numbers_matches_thousands_separator(self) -> None:
+        # Regression: "1,234" must trace to 1234 in the CSV instead of being
+        # tokenized into "1" and "234".
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table1_demographics.csv").write_text(
+                "variable,n\nenrolled,1234\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "A total of 1,234 patients were enrolled.",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertTrue(result.passed)
+            self.assertEqual(result.checked_numbers, 1)
+
+    def test_check_numbers_ignores_iso_dates_in_prose(self) -> None:
+        # Regression: ISO dates in prose must not be read as result numbers; only
+        # the genuine result value (42) should be checked.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "04_methods.md"
+            (results_dir / "table1_demographics.csv").write_text(
+                "variable,n\nanalyzed,42\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "Patients enrolled between 2020-01-01 and 2026-06-18 were assessed; "
+                "42 were analyzed.",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertTrue(result.passed)
+            self.assertEqual(result.checked_numbers, 1)
+
+    def test_check_numbers_ignores_inline_code_spans(self) -> None:
+        # Numbers inside inline `code` spans are illustrative and must be ignored.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table1_demographics.csv").write_text(
+                "variable,n\nanalyzed,42\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The placeholder `n=99` is illustrative; 42 patients were analyzed.",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertTrue(result.passed)
+            self.assertEqual(result.checked_numbers, 1)
+
+    def test_check_numbers_flags_empty_results_directory(self) -> None:
+        # A missing/empty results set must be reported clearly, not as a wall of
+        # "not found" failures with no explanation.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            artifact.write_text("The mean improvement was 54.3 points.", encoding="utf-8")
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+            output = module.format_result(result, [artifact], results_dir)
+
+            self.assertFalse(result.passed)
+            self.assertIn("no result numbers", output.lower())
+
 
 if __name__ == "__main__":
     unittest.main()

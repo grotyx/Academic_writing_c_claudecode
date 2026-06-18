@@ -122,6 +122,26 @@ class CheckCitationsTests(unittest.TestCase):
             self.assertEqual(result.warnings[0].citation_id, "park_2022")
             self.assertIn("abstract-only", result.warnings[0].reason)
 
+    def test_check_citations_ignores_inline_code_spans(self) -> None:
+        # An [EVID:...] token inside an inline `code` span is an example, not a
+        # real citation, and must not be verified against the registry.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmpdir = Path(tmp)
+            evidence_path = tmpdir / "evidence.md"
+            artifact_path = tmpdir / "03_introduction.md"
+            evidence_path.write_text(SAMPLE_EVIDENCE, encoding="utf-8")
+            artifact_path.write_text(
+                "Cite using the `[EVID:made_up_0000]` format; the finding holds [EVID:smith_2020].",
+                encoding="utf-8",
+            )
+
+            result = module.check_citations([artifact_path], evidence_path=evidence_path)
+
+            self.assertTrue(result.passed)
+            self.assertEqual(result.checked_tokens, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

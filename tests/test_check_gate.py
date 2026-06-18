@@ -100,6 +100,57 @@ class CheckGateTests(unittest.TestCase):
             self.assertFalse(result.passed)
             self.assertIn("artifact mismatch", result.failures[0].reason)
 
+    def test_check_gate_passes_despite_inline_comments(self) -> None:
+        # Regression: the documented template keeps inline "# ..." comments on
+        # status/round. The parser must strip them, not read "PASS  # PASS | FAIL".
+        module = load_module()
+
+        gate_text = (
+            "phase: Phase 4 - Draft Sections\n"
+            "artifact: drafts/05_results.md\n"
+            "status: PASS              # PASS | FAIL\n"
+            "checks:\n"
+            "  constraint: PASS\n"
+            "  citation: PASS\n"
+            "  numbers: PASS\n"
+            "  logic: PASS\n"
+            "round: 2                  # max 2 fix/re-verify attempts\n"
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            gate_path = Path(tmp) / "phase_04_draft.GATE.md"
+            gate_path.write_text(gate_text, encoding="utf-8")
+
+            result = module.check_gate(
+                gate_path,
+                required_checks=["constraint", "citation", "numbers", "logic"],
+                artifact="drafts/05_results.md",
+            )
+
+            self.assertTrue(result.passed)
+            self.assertEqual(result.failures, [])
+
+    def test_check_gate_flags_round_overflow_despite_inline_comment(self) -> None:
+        # Regression: "round: 5  # exceeded" must trigger escalation, not be
+        # silently swallowed to 0 by int() raising on the trailing comment.
+        module = load_module()
+
+        gate_text = (
+            "artifact: drafts/05_results.md\n"
+            "status: PASS              # PASS | FAIL\n"
+            "round: 5  # exceeded the limit\n"
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            gate_path = Path(tmp) / "phase_04_draft.GATE.md"
+            gate_path.write_text(gate_text, encoding="utf-8")
+
+            result = module.check_gate(gate_path, max_round=2)
+
+            self.assertFalse(result.passed)
+            reasons = [failure.reason for failure in result.failures]
+            self.assertTrue(any("round 5 exceeds" in reason for reason in reasons))
+
 
 if __name__ == "__main__":
     unittest.main()
