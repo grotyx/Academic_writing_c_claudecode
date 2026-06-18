@@ -1,37 +1,73 @@
 # Gate Ledger Template
 
-> 각 게이트 통과/실패를 기록한다. Phase별로 복사하여 사용:
-> `review/gates/phase_04_draft.GATE.md` 등.
-> 규칙: 어떤 섹션/단계도 여기에 status: PASS 줄이 없으면 다음으로 진행 금지.
+Copy this file for each phase or artifact gate, for example:
 
-## Entry 형식
+- `review/gates/phase_03_draft_plan.GATE.md`
+- `review/gates/phase_04_draft.GATE.md`
+- `review/gates/phase_08_revision.GATE.md`
 
-```
-phase: Phase 4 — Draft Sections
+Do not proceed to the next section or phase until the relevant gate file passes
+`scripts/check_gate.py`.
+
+## Required Machine-Readable Block
+
+Use one key-value block per artifact. Keep field names unchanged.
+
+```yaml
+phase: Phase 4 - Draft Sections
 artifact: drafts/05_results.md
 status: PASS              # PASS | FAIL
 checks:
   constraint: PASS
   citation: PASS
   numbers: PASS
-round: 2                  # 1차 FAIL → 수정 → 2차 PASS (최대 2회)
-blocking_failures: none   # FAIL 시 미해결 지적사항 요약
+  logic: PASS
+round: 2                  # max 2 fix/re-verify attempts
+blocking_failures: none
 verifier_model: opus
-timestamp: 2026-06-16T14:30:00+09:00
+timestamp: 2026-06-18T10:30:00+09:00
 ```
 
-## 예시 (FAIL 후 에스컬레이션)
+## Required Check Names
 
+Use these exact keys so `check_gate.py --require-check <name>` can verify them:
+
+| Check key | Source |
+|---|---|
+| `constraint` | Constraint-Compliance verifier |
+| `citation` | `scripts/check_citations.py` plus semantic citation verifier when needed |
+| `numbers` | `scripts/check_numbers.py` |
+| `logic` | Logic/redundancy verifier |
+| `revision_claims` | `scripts/check_revision_claims.py` |
+| `response_alignment` | reviewer response vs manuscript alignment verifier |
+
+## Command Examples
+
+Draft section gate:
+
+```powershell
+py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic
 ```
-phase: Phase 4 — Draft Sections
+
+Revision gate:
+
+```powershell
+py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers
+```
+
+## FAIL Example
+
+```yaml
+phase: Phase 4 - Draft Sections
 artifact: drafts/06_discussion.md
 status: FAIL
 checks:
   constraint: PASS
   citation: FAIL
   numbers: PASS
+  logic: FAIL
 round: 2
-blocking_failures: EVID:lee_2019 direction mismatch (UNSUPPORTED) — 사용자 확인 필요
+blocking_failures: unsupported citation in paragraph 3; repeated Results sentence in Discussion
 verifier_model: opus
-timestamp: 2026-06-16T15:10:00+09:00
+timestamp: 2026-06-18T11:10:00+09:00
 ```

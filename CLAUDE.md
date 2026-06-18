@@ -24,6 +24,7 @@ project/
 │   ├── checklist_guide.md        # Study-type specific checklists (STROBE, CONSORT, etc.)
 │   ├── qc_guide.md               # Quality control & consistency verification
 │   ├── verification_protocol.md  # 검증 게이트·3 Verifier·자율 루프·게이트 원장
+│   ├── verifier_prompt_templates.md  # LLM semantic verifier prompts/output schema
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence 작성 가이드
 │   ├── revision_guide.md        # Revision & reviewer response guide
@@ -65,6 +66,10 @@ project/
 │   └── figures/                 # Generated figures
 ├── scripts/                      # Utility scripts
 │   ├── lint_manuscript.py        # Manuscript terminology/style lint checks
+│   ├── check_citations.py        # Evidence citation gate
+│   ├── check_numbers.py          # Results CSV number gate
+│   ├── check_gate.py             # Phase gate ledger check
+│   ├── check_revision_claims.py  # Revision claim gate
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── review/                       # Review & QC documents
 │   ├── qc_log.md                 # QC round tracking
@@ -193,6 +198,8 @@ output/paper1_xxx/revision/REV1/
 | `docs/evidence_guide.md` | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) | Phase 1 (setup) |
 | `docs/revision_guide.md` | Reviewer response guide (응답서 작성, 외교적 표현) | Revision (리뷰어 코멘트 수신 후) |
 | `docs/verification_protocol.md` | 검증 게이트·3 Verifier 헌장·자율 루프·게이트 원장 정의 | Phase 3·4·6·8 (게이트 수행 시 **반드시** 참조) |
+| `docs/verifier_prompt_templates.md` | LLM semantic verifier prompt와 구조화 출력 schema | Constraint/logic/semantic citation/revision alignment 검증 시 |
+| `docs/response_letter_template.md` | Author_response 양식으로 DOCX 변환하기 쉬운 response letter Markdown 템플릿 | Revision 응답서 작성 시작 시 복사 |
 | `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2 (figure 생성 시) |
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `docs/draft_plan_template.md` | Draft plan 10개 항목 템플릿 (Phase 3에서 복사하여 사용) | Phase 3 시작 시 복사 → `drafts/draft_plan.md` |
@@ -212,6 +219,11 @@ output/paper1_xxx/revision/REV1/
 | `drafts/table_*.md` | Individual formatted tables | Phase 2 (from results CSV) |
 | `drafts/figures/` | Generated figure files | Phase 2 (from analysis) |
 | `scripts/search_pubmed.py` | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) | Phase 1 (reference search) |
+| `scripts/compile_response_docx.py` | `response_letter_REV*.md`를 Author_response 양식 DOCX로 변환 | Phase 8 response letter finalize |
+| `scripts/check_revision_claims.py` | `response_letter_REV*.md`의 `[CHANGE]` claims를 revised manuscript 파일과 대조 | Phase 8 ghost-revision gate |
+| `scripts/check_citations.py` | `[EVID:id]` citations를 `knowledge/evidence.md`와 대조 | Phase 3·4·6 citation gate |
+| `scripts/check_numbers.py` | manuscript/table 수치를 `results/*.csv`와 대조 | Phase 4·6 data gate |
+| `scripts/check_gate.py` | `review/gates/*.GATE.md` 원장의 `status: PASS`와 필수 check를 검증 | 모든 phase gate 통과 직전 |
 | `review/qc_log.md` | QC round documentation | Phase 6 (track all QC iterations) |
 | `review/gates/` | 검증 게이트 원장 (Verifier PASS/FAIL 기록) | Phase 3·4·8 (게이트 통과 기록) |
 | `output/` | Final compiled manuscript (docx only) | Phase 7 (finalize) |
@@ -654,8 +666,9 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | Command | Action |
 |---------|--------|
 | `Run QC round [1-6]` | Execute specific QC round per qc_guide.md |
-| `Check number consistency` | Cross-section number verification |
-| `Verify references` | Check all citations against evidence.md |
+| `Check number consistency` | `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results` 실행 |
+| `Verify references` | `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md` 실행 |
+| `Check phase gate` | `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --require-check constraint --require-check citation --require-check numbers --require-check logic` 실행 |
 | `Check logic flow` | Verify narrative consistency |
 | `Run checklist for [study type]` | STROBE/CONSORT/PRISMA/CARE checklist |
 
@@ -666,7 +679,8 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `Draft response to reviewer [N]` | 특정 리뷰어 응답서 초안 작성 |
 | `Draft response letter` | 전체 응답서 초안 작성 |
 | `Review response letter` | Dr. Editor 관점에서 응답서 검토 |
-| `Check response completeness` | 응답서 ↔ 원고 수정 일치 확인 |
+| `Check response completeness` | `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict` 실행 |
+| `Compile response letter` | `py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md` 실행 |
 
 ### Figures
 | Command | Action |

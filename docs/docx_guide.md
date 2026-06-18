@@ -26,10 +26,29 @@ python-docx를 사용하여 서식을 정밀하게 제어합니다.
 | `output/title_page_YYMMDD.docx` | 타이틀 페이지 (별도 파일) |
 | `output/manuscript_YYMMDD.docx` | 본문 전체 (Abstract ~ Figure Legends, 테이블 제외) |
 | `output/table_N_YYMMDD.docx` | 각 테이블 별도 파일 (table_1, table_2, ...) |
+| `output/revision/REV1/response_letter_REV1_YYMMDD.docx` | revision 응답서 (Author_response_220803_Final.docx 양식) |
 
 ---
 
 ## 실행 순서
+
+### Revision 응답서 DOCX 생성
+
+Revision 응답서는 `docs/response_letter_template.md` 형식으로 작성한 뒤 전용 스크립트로 변환한다. 작업용 Markdown의 `[CHANGE]` 블록은 ghost-revision 검증에만 사용하며, DOCX 생성 시 기본적으로 제거된다.
+
+DOCX 생성 전에는 먼저 ghost-revision gate를 실행한다:
+
+```powershell
+py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict
+```
+
+`GATE PASS`가 출력된 뒤 DOCX를 생성한다:
+
+```powershell
+py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md
+```
+
+입력이 `drafts/revision/REV1/` 아래에 있으면 기본 출력은 `output/revision/REV1/response_letter_REV1_YYMMDD.docx`이다. 다른 위치의 입력 파일은 같은 폴더에 `*_YYMMDD.docx`로 출력한다.
 
 ### 1단계: 드래프트 파일 스캔
 

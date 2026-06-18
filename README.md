@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.9.0** (2026-06-16)
+**v0.9.1** (2026-06-18)
 
 ---
 
@@ -28,6 +28,13 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Terminology registry** (`Style/terminology.md`) — preferred/forbidden terms with definitions and context
 - **Drafting protocol** (`docs/drafting_protocol.md`) — outline → evidence-bound draft → style pass → QC
 - **Manuscript linting** (`scripts/lint_manuscript.py`) — automated checks for terminology, placeholders, overclaiming, and section-specific issues
+- **Citation evidence checking** (`scripts/check_citations.py`) — verifies `[EVID:id]` tags against `knowledge/evidence.md`
+- **Data number checking** (`scripts/check_numbers.py`) — verifies manuscript/table numbers against `results/*.csv`
+- **Phase gate ledger checking** (`scripts/check_gate.py`) — blocks progression unless `review/gates/*.GATE.md` records required PASS checks
+- **Revision claim checking** (`scripts/check_revision_claims.py`) — verifies response-letter `[CHANGE]` claims against revised manuscript files
+- **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — structured prompts for constraint, semantic citation, data, logic/redundancy, and revision-alignment checks
+- **Author response DOCX generation** (`scripts/compile_response_docx.py`) — converts DOCX-ready Markdown to the `Author_response_220803_Final.docx` reference style
+- **Author response Markdown template** (`docs/response_letter_template.md`) — keeps reviewer responses, manuscript locations, and machine-readable `[CHANGE]` blocks aligned
 - **Draft plan template** (`docs/draft_plan_template.md`) — 10-item template with claim→citation tables and approval checklist
 - **PubMed search tool** with built-in Python script (no MCP or external packages required)
 - **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
@@ -49,9 +56,11 @@ project/
 │   ├── checklist_guide.md        # Study-type specific checklists
 │   ├── qc_guide.md               # Quality control procedures
 │   ├── verification_protocol.md  # Verification gates, 3 verifiers, autonomous loop
+│   ├── verifier_prompt_templates.md  # LLM verifier prompts and output schema
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence writing guide
 │   ├── revision_guide.md         # Reviewer response guide
+│   ├── response_letter_template.md  # DOCX-ready author response template
 │   ├── figure_guide.md           # Figure generation guide
 │   ├── docx_guide.md             # DOCX conversion guide
 │   └── draft_plan_template.md    # Draft plan template (copy to drafts/ for Phase 3)
@@ -78,6 +87,11 @@ project/
 │   └── py/                       # Python analysis scripts
 ├── scripts/                      # Utility scripts
 │   ├── lint_manuscript.py        # Manuscript terminology/style lint checks
+│   ├── check_citations.py        # Evidence citation gate
+│   ├── check_numbers.py          # Results CSV number gate
+│   ├── check_gate.py             # Phase gate ledger check
+│   ├── check_revision_claims.py  # Revision claim gate
+│   ├── compile_response_docx.py  # Author response DOCX compiler
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
 ├── results/                      # Analysis outputs
 ├── drafts/                       # Manuscript sections, tables & figures
@@ -102,8 +116,10 @@ project/
 3. **Data Analysis**: Place data in `data/` folder → create `analysis_plan.md` (required) → run statistical analysis
 4. **Draft Plan**: Copy `docs/draft_plan_template.md` → `drafts/draft_plan.md`, fill in all 10 items including **Claim→Citation Mapping** (Opus recommended)
 5. **Drafting**: Follow `docs/drafting_protocol.md` and write sections in recommended order (Methods → Results → Introduction → Discussion)
-6. **QC**: Run minimum 3 QC rounds before submission
-7. **Finalize**: Compile manuscript to DOCX (see `docs/docx_guide.md`)
+6. **Verification gates**: Run citation, number, phase-gate, and revision-claim checks; record PASS in `review/gates/`
+7. **Revision response**: Use `docs/response_letter_template.md` and compile with `scripts/compile_response_docx.py` when reviewer responses are needed
+8. **QC**: Run minimum 3 QC rounds before submission
+9. **Finalize**: Compile manuscript to DOCX (see `docs/docx_guide.md`)
 
 ---
 
@@ -174,6 +190,26 @@ Each summary captures:
 - Round 5: Statistical quality
 - Round 6: Critical review (overclaiming, logical fallacy, bias, generalizability)
 
+### Verification Harness
+
+The harness combines deterministic checks with constrained LLM verifier prompts:
+
+- `scripts/check_citations.py` verifies every `[EVID:id]` citation against `knowledge/evidence.md` and fails unverified or unknown evidence.
+- `scripts/check_numbers.py` verifies manuscript and table numbers against `results/*.csv`.
+- `scripts/check_gate.py` verifies that phase gate ledgers contain `status: PASS` and required checks.
+- `scripts/check_revision_claims.py` verifies reviewer-response `[CHANGE]` blocks against revised manuscript files.
+- `docs/verifier_prompt_templates.md` provides structured prompts for semantic support, logic, redundancy, and revision-response alignment.
+
+### Author Response DOCX Workflow
+
+Reviewer responses should be drafted in `docs/response_letter_template.md` format, with each manuscript edit recorded as a `[CHANGE]` block. Final response letters can be compiled with:
+
+```powershell
+py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md
+```
+
+When `Author_response_220803_Final.docx` is present, the compiler uses it as the reference style document.
+
 ### PubMed Search Tool
 
 Built-in Python script (`scripts/search_pubmed.py`) for reference search without MCP:
@@ -204,9 +240,11 @@ Slash commands for Claude integration:
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE checklists |
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
 | [docs/verification_protocol.md](docs/verification_protocol.md) | Verification gates, 3 verifier charters, autonomous fix loop, gate ledger |
+| [docs/verifier_prompt_templates.md](docs/verifier_prompt_templates.md) | LLM semantic verifier prompts and structured output schema |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence writing guide (format, summary methods, workflow) |
 | [docs/revision_guide.md](docs/revision_guide.md) | Reviewer response guide (response letter, diplomatic language, QC re-run checklist) |
+| [docs/response_letter_template.md](docs/response_letter_template.md) | DOCX-ready author response Markdown template |
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure generation guide (DPI, palettes, Python templates) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10-item with claim→citation tables and approval checklist |
@@ -214,6 +252,11 @@ Slash commands for Claude integration:
 | [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry with definition and context |
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script for terminology, placeholders, overclaiming, and section issues |
+| [scripts/check_citations.py](scripts/check_citations.py) | Verify `[EVID:id]` citations against `knowledge/evidence.md` |
+| [scripts/check_numbers.py](scripts/check_numbers.py) | Verify manuscript/table numbers against `results/*.csv` |
+| [scripts/check_gate.py](scripts/check_gate.py) | Verify `review/gates/*.GATE.md` status and required checks |
+| [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | Verify response-letter `[CHANGE]` claims against revised manuscript files |
+| [scripts/compile_response_docx.py](scripts/compile_response_docx.py) | Compile `response_letter_REV*.md` to Author_response-style DOCX |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
 
 ---
@@ -260,6 +303,15 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 ## Changelog
 
+### v0.9.1 (2026-06-18)
+
+**Multilingual README and Author Response DOCX Completion**
+
+- Synchronized English, Korean, Japanese, and Chinese READMEs with the verification harness scripts and DOCX response workflow.
+- Added Author response Markdown template documentation and `compile_response_docx.py` usage.
+- Added deterministic checker references for citation evidence, numeric grounding, phase gates, and revision claims.
+- Added LLM verifier prompt-template documentation for hallucination control, redundancy control, logic checks, and revision alignment.
+
 ### v0.9.0 (2026-06-16)
 
 **Verification Harness** — inline produce→verify→fix→re-verify gates (new `docs/verification_protocol.md`)
@@ -270,6 +322,11 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 - `[EVID:author_year]` citation tags and results-CSV-as-single-source grounding
 - Gate ledger (`review/gates/`) blocks progress until `status: PASS` is recorded
 - `evidence.md` entries gain a Source Status field; Phase 6 QC lightened to a final-confirmation pass
+- Programmatic citation checker: `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md`
+- Programmatic number checker: `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results`
+- Programmatic phase gate checker: `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --require-check constraint --require-check citation --require-check numbers --require-check logic`
+- Programmatic ghost-revision checker: `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict`
+- LLM semantic verifier schema: `docs/verifier_prompt_templates.md` for logic, redundancy, semantic citation support, and revision-response alignment
 
 ### v0.8.1 (2026-06-16)
 

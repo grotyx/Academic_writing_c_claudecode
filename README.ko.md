@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v0.9.0** (2026-06-16)
+**v0.9.1** (2026-06-18)
 
 ---
 
@@ -28,6 +28,13 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **분야 표준 용어 registry** (`Style/terminology.md`) — preferred/forbidden 용어, 정의, context
 - **Drafting protocol** (`docs/drafting_protocol.md`) — outline → evidence-bound draft → style pass → QC 강제
 - **Manuscript linting** (`scripts/lint_manuscript.py`) — 용어, placeholder, 과장 표현, 섹션별 위반 자동 점검
+- **Citation evidence checking** (`scripts/check_citations.py`) — `[EVID:id]` 태그를 `knowledge/evidence.md`와 대조
+- **Data number checking** (`scripts/check_numbers.py`) — 원고/표의 숫자를 `results/*.csv`와 대조
+- **Phase gate ledger checking** (`scripts/check_gate.py`) — `review/gates/*.GATE.md`에 필수 PASS가 없으면 진행 차단
+- **Revision claim checking** (`scripts/check_revision_claims.py`) — response letter의 `[CHANGE]` claim을 revised manuscript와 대조
+- **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — constraint, semantic citation, data, logic/redundancy, revision-alignment 검증 prompt/schema
+- **Author response DOCX generation** (`scripts/compile_response_docx.py`) — DOCX-ready Markdown을 `Author_response_220803_Final.docx` 참조 양식에 맞춰 변환
+- **Author response Markdown template** (`docs/response_letter_template.md`) — reviewer response, 수정 위치, machine-readable `[CHANGE]` block을 정렬
 - **Draft plan 템플릿** (`docs/draft_plan_template.md`) — 10개 항목 템플릿 + claim→citation 테이블 + 승인 체크리스트
 - **PubMed 검색 도구** — 내장 Python 스크립트 (MCP 및 외부 패키지 불필요)
 - **슬래시 명령어** — 근거 문헌 등록 (`/search-evidence`, `/import-doi`)
@@ -49,9 +56,11 @@ project/
 │   ├── checklist_guide.md        # 연구 유형별 체크리스트
 │   ├── qc_guide.md               # 품질 관리 절차
 │   ├── verification_protocol.md  # 검증 게이트·3 Verifier·자율 루프·게이트 원장
+│   ├── verifier_prompt_templates.md  # LLM verifier prompt와 출력 schema
 │   ├── statistical_analysis_guide.md  # 통계 분석 가이드
 │   ├── evidence_guide.md         # 근거 문헌 작성 가이드
 │   ├── revision_guide.md         # 리뷰어 응답 가이드
+│   ├── response_letter_template.md  # DOCX-ready author response 템플릿
 │   ├── figure_guide.md           # Figure 생성 가이드
 │   ├── docx_guide.md             # DOCX 변환 가이드
 │   └── draft_plan_template.md    # Draft plan 템플릿 (Phase 3에서 복사하여 사용)
@@ -78,6 +87,11 @@ project/
 │   └── py/                       # Python 분석 스크립트
 ├── scripts/                      # 유틸리티 스크립트
 │   ├── lint_manuscript.py        # 원고 terminology/style lint 점검
+│   ├── check_citations.py        # evidence citation gate
+│   ├── check_numbers.py          # results CSV number gate
+│   ├── check_gate.py             # phase gate ledger check
+│   ├── check_revision_claims.py  # revision claim gate
+│   ├── compile_response_docx.py  # Author response DOCX compiler
 │   └── search_pubmed.py          # PubMed 검색 도구 (외부 의존성 없음)
 ├── results/                      # 분석 결과
 ├── drafts/                       # 원고 섹션, 테이블, 그림
@@ -102,8 +116,10 @@ project/
 3. **데이터 분석**: `data/` 폴더에 데이터를 배치 → `analysis_plan.md` 작성 (필수) → 통계 분석 실행
 4. **원고 계획**: `docs/draft_plan_template.md`를 `drafts/draft_plan.md`로 복사 → 10개 항목 작성 (**Claim→Citation Mapping 포함**) (Opus 권장)
 5. **초안 작성**: `docs/drafting_protocol.md`를 따르고 권장 순서에 따라 섹션 작성
-6. **품질 관리**: 제출 전 최소 3라운드 QC 수행 (6라운드 권장)
-7. **최종화**: 원고를 DOCX로 컴파일 (`docs/docx_guide.md` 참조)
+6. **검증 게이트**: citation, number, phase-gate, revision-claim checker를 실행하고 `review/gates/`에 PASS 기록
+7. **Revision response**: reviewer response가 필요하면 `docs/response_letter_template.md`로 작성하고 `scripts/compile_response_docx.py`로 DOCX 변환
+8. **품질 관리**: 제출 전 최소 3라운드 QC 수행 (6라운드 권장)
+9. **최종화**: 원고를 DOCX로 컴파일 (`docs/docx_guide.md` 참조)
 
 ---
 
@@ -170,6 +186,26 @@ citation을 확보할 수 없는 claim이 있으면 Phase 1로 돌아가 먼저 
 - Round 5: 통계적 품질
 - Round 6: 비판적 검토 (과장, 논리적 오류, 편향, 일반화 가능성)
 
+### 검증 하네스
+
+이 하네스는 deterministic checker와 제한된 LLM verifier prompt를 함께 사용합니다:
+
+- `scripts/check_citations.py`: 모든 `[EVID:id]` citation을 `knowledge/evidence.md`와 대조하고, 미확인/알 수 없는 근거를 실패 처리합니다.
+- `scripts/check_numbers.py`: 원고와 표의 숫자를 `results/*.csv`와 대조합니다.
+- `scripts/check_gate.py`: phase gate ledger에 `status: PASS`와 필수 check가 있는지 확인합니다.
+- `scripts/check_revision_claims.py`: reviewer response의 `[CHANGE]` block을 revised manuscript 파일과 대조합니다.
+- `docs/verifier_prompt_templates.md`: semantic support, logic, redundancy, revision-response alignment 검증 prompt/schema를 제공합니다.
+
+### Author Response DOCX Workflow
+
+Reviewer response는 `docs/response_letter_template.md` 형식으로 작성하고, 각 원고 수정은 `[CHANGE]` block으로 기록합니다. 최종 response letter는 다음 명령으로 컴파일합니다:
+
+```powershell
+py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md
+```
+
+`Author_response_220803_Final.docx`가 있으면 compiler가 이 파일을 reference style document로 사용합니다.
+
 ### PubMed 검색 도구
 
 MCP 없이 참고문헌을 검색할 수 있는 내장 Python 스크립트 (`scripts/search_pubmed.py`):
@@ -200,9 +236,11 @@ Claude 통합 슬래시 명령어:
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE 체크리스트 |
 | [docs/qc_guide.md](docs/qc_guide.md) | 품질 관리 절차 (6라운드) |
 | [docs/verification_protocol.md](docs/verification_protocol.md) | 검증 게이트·3 Verifier 헌장·자율 수정 루프·게이트 원장 |
+| [docs/verifier_prompt_templates.md](docs/verifier_prompt_templates.md) | LLM semantic verifier prompt와 구조화된 출력 schema |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | 통계 분석 가이드 (절제 원칙, MCID, 하위군 분석) |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | 근거 문헌 작성 가이드 (형식, 요약 방법, 워크플로우) |
 | [docs/revision_guide.md](docs/revision_guide.md) | 리뷰어 응답 가이드 (응답서 작성, 외교적 표현, QC 재수행 체크리스트) |
+| [docs/response_letter_template.md](docs/response_letter_template.md) | DOCX-ready author response Markdown 템플릿 |
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure 생성 가이드 (DPI, 팔레트, Python 템플릿) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan 템플릿 — 10개 항목 + claim→citation 테이블 + 승인 체크리스트 |
@@ -210,6 +248,11 @@ Claude 통합 슬래시 명령어:
 | [Style/terminology.md](Style/terminology.md) | preferred/forbidden 용어 registry, 정의, context |
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | 본인 논문 스타일 앵커 템플릿 |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | 용어, placeholder, 과장 표현, 섹션별 위반 점검 lint 스크립트 |
+| [scripts/check_citations.py](scripts/check_citations.py) | `[EVID:id]` citation을 `knowledge/evidence.md`와 대조 |
+| [scripts/check_numbers.py](scripts/check_numbers.py) | 원고/표의 숫자를 `results/*.csv`와 대조 |
+| [scripts/check_gate.py](scripts/check_gate.py) | `review/gates/*.GATE.md`의 status와 필수 check 검증 |
+| [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | response-letter `[CHANGE]` claim을 revised manuscript와 대조 |
+| [scripts/compile_response_docx.py](scripts/compile_response_docx.py) | `response_letter_REV*.md`를 Author_response 양식 DOCX로 변환 |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) |
 
 ---
@@ -255,6 +298,15 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v0.9.1 (2026-06-18)
+
+**다국어 README 및 Author Response DOCX 완료**
+
+- 영어, 한국어, 일본어, 중국어 README를 검증 하네스 스크립트와 DOCX response workflow 기준으로 동기화.
+- Author response Markdown template과 `compile_response_docx.py` 사용법 추가.
+- citation evidence, numeric grounding, phase gate, revision claim deterministic checker 문서화.
+- hallucination control, redundancy control, logic check, revision alignment를 위한 LLM verifier prompt-template 문서화.
 
 ### v0.9.0 (2026-06-16)
 

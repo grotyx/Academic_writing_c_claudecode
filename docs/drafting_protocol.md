@@ -132,4 +132,19 @@ Address high-priority findings before considering the section complete.
 - [ ] Section follows `docs/section_templates.md`.
 - [ ] Style anchors were applied without copying source text.
 - [ ] `scripts/lint_manuscript.py` was run and findings were addressed or documented.
-- [ ] Verification gate (Constraint/Citation/Data) passed and recorded in `review/gates/`.
+- [ ] Verification gate (Constraint/Citation/Data/Logic) passed, recorded in `review/gates/`, and passed `scripts/check_gate.py`.
+
+---
+
+## Machine Gate Sequence
+
+Use this sequence after each produce step:
+
+1. Run deterministic helpers first: `check_citations.py`, `check_numbers.py`, and for revision `check_revision_claims.py`.
+2. Run LLM semantic verifiers using `docs/verifier_prompt_templates.md`.
+3. Record the result in `review/gates/phase_NN_<name>.GATE.md`.
+4. Confirm the ledger before proceeding:
+
+```powershell
+py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic
+```

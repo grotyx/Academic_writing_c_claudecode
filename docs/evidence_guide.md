@@ -104,6 +104,7 @@ PubMed 검색 등으로 논문을 찾아 등록하는 경우:
 ```markdown
 ### [번호] 첫저자 et al., 연도
 - **Citation:** 전체 서지정보 (저자, 제목, 저널, 연도, 권호, 페이지)
+- **Evidence ID:** author_year_keyword
 - **DOI:** 10.xxxx/xxxxx
 - **PMID:** xxxxxxxx
 - **PDF:** knowledge/pdf/파일명.pdf (또는 "No PDF - abstract only")
@@ -246,6 +247,7 @@ evidence.md 하단에 검색 기록을 남겨 중복 검색을 방지한다. Que
 
 - [ ] 번호가 순서대로 부여되었는가?
 - [ ] Citation 정보가 완전한가? (저자, 제목, 저널, 연도, 권호, 페이지)
+- [ ] Evidence ID가 기록되었는가? (`[EVID:id]` citation tag와 정확히 일치)
 - [ ] DOI 또는 PMID가 기록되었는가?
 - [ ] Study Design이 명확한가? (연구 유형, 대상 수, 추적 기간)
 - [ ] Objective가 1-2문장으로 기술되었는가?

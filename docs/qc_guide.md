@@ -26,6 +26,8 @@
 
 ## Round 1: Number Consistency Check
 
+**Deterministic helper:** run `py scripts\check_numbers.py drafts\02_abstract.md drafts\05_results.md drafts\table_1.md drafts\table_2.md --results results` first, then manually review any remaining cross-section issues.
+
 ### 1.1 Patient/Sample Numbers
 모든 섹션에서 환자/샘플 수가 일치하는지 확인
 
@@ -644,7 +646,7 @@ Q6: Missing data가 결과에 영향을 줄 수 있는가?
 
 | Command | Action |
 |---------|--------|
-| `Run QC Round 1` | Number consistency check |
+| `Run QC Round 1` | Number consistency check (`py scripts\check_numbers.py ... --results results`) |
 | `Run QC Round 2` | Reference verification |
 | `Run QC Round 3` | Logic and flow check |
 | `Run QC Round 4` | Terminology, abbreviation & tense check |

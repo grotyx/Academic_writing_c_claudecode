@@ -2,7 +2,9 @@
 
 > harness-engineering식 produce→verify→fix→re-verify 자동 루프 정의.
 > 각 산출 단계 뒤에 검증 게이트를 두어 제약 무시·인용 환각·수치 조작을 차단한다.
-> 검증은 **Verifier 서브에이전트 + 프로토콜 규칙**으로만 수행한다 (검증 전용 스크립트 없음).
+> 검증은 **Verifier 서브에이전트 + 프로토콜 규칙**을 기본으로 수행하되, deterministic helper script가 있는 경우 먼저 실행한다.
+> Phase 8 ghost-revision 검증은 `scripts/check_revision_claims.py`로 response-letter `[CHANGE]` claims를 revised manuscript 파일과 대조한다.
+> Semantic checks that require LLM judgment must use `docs/verifier_prompt_templates.md`.
 
 ---
 
@@ -42,6 +44,7 @@
 ### 2.2 Citation-Grounding Verifier (인용 환각 F2)
 
 - **소스 오브 트루스:** `knowledge/evidence.md` (+ 해당 시 `knowledge/summaries/`).
+- **Deterministic helper:** `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md`
 - **임무:** 인용한 각 문장의 주장이 인용된 evidence 엔트리로 지지되는지 판정.
 - **판정 기준 (모두 일치해야 SUPPORTED):** direction(방향), population(대상), intervention(중재), comparator(비교군), outcome(결과), statistical certainty(통계적 확실성).
 - **추가 FAIL 조건:**
@@ -67,6 +70,23 @@
   | 효과크기(OR/HR/RR) | 표기 정밀도로 반올림 일치 |
   | timepoint | analysis_plan/result label과 정확 일치 |
 - **FAIL 조건:** CSV로 추적 불가능하거나 허용오차를 벗어난 수치 발견 시.
+
+**Deterministic helper:** run `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results` before LLM review.
+
+---
+
+### 2.4 Ghost-Revision Checker (Phase 8)
+
+- **입력:** `drafts/revision/REV{N}/response_letter_REV{N}.md`의 `[CHANGE]` blocks, original section files, revised section files.
+- **명령:** `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict`
+- **임무:** 응답서가 주장한 manuscript change가 실제 revised manuscript에 반영되었는지 확인한다.
+- **확인 기준:**
+  - `[CHANGE]` block에 `comment_id`, `section`, `expected_terms`가 있어야 한다.
+  - revised section file이 존재해야 한다.
+  - `expected_terms`가 revised section에 포함되어야 한다.
+  - 응답서의 `Revised text:` 문구가 revised section에 실제로 있어야 한다.
+  - original section file이 있으면 revised section이 original과 동일하지 않아야 한다.
+- **FAIL 조건:** 위 조건 중 하나라도 불일치하면 `GATE FAIL`을 출력하고 Phase 8 gate를 통과시키지 않는다.
 
 ---
 
@@ -146,6 +166,8 @@ required_action: replace with 54.3 or remove
 - **기록 주체:** Verifier 판정 후 메인 에이전트가 기록 (Verifier 출력을 옮김).
 - **형식:** `review/gates/_TEMPLATE.GATE.md` 참조.
 - **규칙:** 어떤 섹션/단계도 게이트 원장에 해당 산출물의 `status: PASS`가 없으면 다음으로 진행 금지.
+- **Deterministic ledger check:** `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic`
+- **Required order:** deterministic helpers (`check_citations.py`, `check_numbers.py`, `check_revision_claims.py`) → LLM verifier schema (`docs/verifier_prompt_templates.md`) → gate ledger entry → `check_gate.py`.
 
 ---
 
@@ -154,6 +176,6 @@ required_action: replace with 54.3 or remove
 | Phase | 게이트 | Verifier | 루프 단위 |
 |---|---|---|---|
 | 3 Draft Plan | Claim→Citation 사전검증 | Citation | 매핑 전체 |
-| 4 Draft | 섹션 게이트 | Constraint + Citation + Data | 섹션 단위 (자율) |
+| 4 Draft | 섹션 게이트 | Constraint + Citation + Data + Logic | 섹션 단위 (자율) |
 | 6 QC | 최종 확인 (경량) | — (인라인 게이트가 이미 수행) | 원고 전체 |
-| 8 Revision | 응답 게이트 | Constraint + Citation + Data + ghost-revision diff | 응답 단위 (자율) |
+| 8 Revision | 응답 게이트 | Constraint + Citation + Data + ghost-revision diff + Response alignment | 응답 단위 (자율) |

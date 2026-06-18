@@ -21,7 +21,7 @@
 
 ### 기본 형식
 
-> **서식 원칙:** 응답서에는 별도 서식을 넣지 않는다. **"Comment x.x"** 와 **"Response"** 단어만 Bold 처리하고, 응답 중에 직접 인용한 수정 본문만 *italic* 으로 표기한다. 그 외에는 모든 서식을 제거한다 (heading, 색상, 들여쓰기, 표, bullet 모두 사용하지 않음).
+> **서식 원칙:** `Author_response_220803_Final.docx` 양식을 따른다. 작업용 Markdown은 `docs/response_letter_template.md` 형식을 사용하고, `scripts/compile_response_docx.py`로 DOCX를 생성한다. Reviewer heading, Response 문단, 수정 위치, 수정 본문 인용은 Bold로 출력하고, reviewer comment는 일반체로 둔다. `[CHANGE]` 마커는 작업용 Markdown에만 남기며 DOCX 생성 시 기본적으로 제거한다.
 
 ```markdown
 Dear Editor,
@@ -31,20 +31,28 @@ Thank you for the opportunity to revise our manuscript entitled "[TITLE]"
 the reviewers, which have helped us improve the manuscript. We provide a
 point-by-point response to each comment below.
 
-Reviewer 1
+Reviewer #1:
 
-**Comment 1.1**
-[리뷰어 코멘트 원문 그대로 복사]
+Comment 1) [리뷰어 코멘트 원문 그대로 복사]
 
-**Response**
-[응답을 줄글로 작성. 동의·근거·조치를 자연스럽게 한 문단으로 이어서 서술한다.
-수정 위치는 문장 앞쪽에 먼저 밝힌 뒤 변경된 본문을 italic 으로 인용한다.
-예: In the Methods (paragraph 2), the revised sentence now reads, *"[수정된 문장]."*]
+[CHANGE]
+comment_id: R1-C1
+claim: [원고 변경 사항 요약]
+section: [수정된 섹션 파일명]
+expected_terms: [diff에서 확인할 핵심 용어]
+[/CHANGE]
 
-**Comment 1.2**
+Response: [응답을 줄글로 작성. 감사, 입장, 근거, 조치를 자연스럽게 한 문단으로 이어서 서술한다.]
+
+Location: Page X, Line Y
+
+Revised text:
+"[수정된 원고 문장을 그대로 인용한다.]"
+
+Comment 2) ...
 ...
 
-Reviewer 2
+Reviewer #2:
 ...
 ```
 
@@ -52,15 +60,15 @@ Reviewer 2
 
 | 항목 | 규칙 |
 |------|------|
-| Bold 사용 | **"Comment x.x"** 와 **"Response"** 단어에만 적용. 그 외 Bold 금지 |
-| 인용 본문 | 응답서에 직접 인용한 수정 본문만 *italic* 으로 표기 |
+| Bold 사용 | DOCX 생성 시 제목, reviewer heading, Response 문단, 수정 위치, 수정 본문 인용, reviewer closing에 적용 |
+| 인용 본문 | `Revised text:` 다음에 수정 원고 문장을 그대로 적는다. DOCX에서는 bold로 출력된다 |
 | 그 외 서식 | 서식 없음 — heading, 색상, 들여쓰기, 표, bullet/번호 목록 모두 사용 금지 |
 | 응답 형식 | 번호를 붙여 항목화하지 않고 **줄글(prose)** 로 작성. 감사 → 입장 → 근거 → 조치를 한 문단으로 이어서 서술 |
 | 문장 부호 | hyphen, em-dash 사용 금지. 쉼표·마침표로 문장을 끊어서 처리 |
 | 문체 | reviewer를 **설득하는** 어조 — 근거를 들어 차분하게 납득시키되 방어적이지 않게 |
 | 리뷰어 코멘트 | 원문 그대로 복사 (수정 금지) |
 | 수정 위치 | **문장 앞쪽에 먼저** 명시한 뒤 수정문을 인용 (lead-in 방식). 위치는 수정 원고 기준으로 구체적으로 ("In the Methods (paragraph 2), the revised text now reads...", "Table 2", "Page 8, line 15"). 뒤에 괄호로 "(See ...)"를 붙이는 방식은 사용하지 않음 |
-| 수정 텍스트 | 위치를 밝힌 직후 변경된 문장을 직접 인용하되 *italic* 으로 표기 |
+| 수정 텍스트 | 위치를 밝힌 직후 변경된 문장을 직접 인용한다. DOCX에서는 bold로 출력된다 |
 | 호칭 | 3인칭 사용 ("We agree with the reviewer..." ✅, "We agree with you..." ❌) |
 
 ### 변경 추적 마커 ([CHANGE]) — 검증 게이트용
@@ -79,7 +87,17 @@ expected_terms: eligibility criteria; excluded; prior surgery
 [/CHANGE]
 ```
 
-검증 게이트는 (a) 해당 revised 섹션 파일 존재, (b) diff에 `expected_terms`가 실제로 추가되었는지 대조한다. 불일치 시 FAIL → 원고를 고치거나 응답 문구를 수정한다 (최대 2회).
+검증 게이트는 `scripts/check_revision_claims.py`로 실행한다. 이 스크립트는 (a) 해당 revised 섹션 파일 존재, (b) `expected_terms`가 revised 섹션에 포함되는지, (c) 응답서의 `Revised text:` 문구가 revised 섹션에 실제로 있는지, (d) 원본 섹션 파일이 있으면 revised 섹션이 원본과 동일하지 않은지 확인한다. 불일치 시 `GATE FAIL`을 출력하므로 원고를 고치거나 응답 문구를 수정한다 (최대 2회).
+
+```powershell
+py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict
+```
+
+After deterministic revision-claim checking, run the Revision-Alignment verifier in `docs/verifier_prompt_templates.md` to confirm that the response directly answers the reviewer and that the manuscript is not written in response-letter style. Record `revision_claims: PASS` and `response_alignment: PASS` in `review/gates/phase_08_revision.GATE.md`, then confirm the ledger:
+
+```powershell
+py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers
+```
 
 ### 본문 수정 원칙
 
@@ -297,4 +315,6 @@ output/revision/
 | `Draft response to reviewer [N]` | 특정 리뷰어 응답서 초안 작성 |
 | `Draft response letter` | 전체 응답서 초안 작성 |
 | `Review response letter` | Dr. Editor 관점에서 응답서 검토 |
-| `Check response completeness` | 응답서 ↔ 원고 수정 일치 확인 |
+| `Check response completeness` | `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict` 실행 |
+| `Check revision gate` | `py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers` 실행 |
+| `Compile response letter` | `py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md` 실행 |

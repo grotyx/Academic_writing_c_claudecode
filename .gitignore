@@ -11,6 +11,9 @@ presentation/
 # Personal profile (author info, contacts, funding)
 profile/
 
+# Local DOCX style references may contain private reviewer-response text
+Author_response_220803_Final.docx
+
 # Reference PDFs — copyright-protected, do not commit
 knowledge/pdf/
 

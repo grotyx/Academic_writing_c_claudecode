@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v0.9.0** (2026-06-16)
+**v0.9.1** (2026-06-18)
 
 ---
 
@@ -28,6 +28,13 @@
 - **术语 registry**（`Style/terminology.md`）— preferred/forbidden terms、定义和使用 context
 - **Drafting protocol**（`docs/drafting_protocol.md`）— outline → evidence-bound draft → style pass → QC
 - **Manuscript linting**（`scripts/lint_manuscript.py`）— 自动检查术语、placeholder、过度声明和分节问题
+- **Citation evidence checking**（`scripts/check_citations.py`）— 将 `[EVID:id]` 标签与 `knowledge/evidence.md` 对照
+- **Data number checking**（`scripts/check_numbers.py`）— 将稿件/表格中的数字与 `results/*.csv` 对照
+- **Phase gate ledger checking**（`scripts/check_gate.py`）— 如果 `review/gates/*.GATE.md` 没有必要的 PASS，则阻止进入下一步
+- **Revision claim checking**（`scripts/check_revision_claims.py`）— 将 response letter 中的 `[CHANGE]` claim 与 revised manuscript 对照
+- **LLM verifier prompt templates**（`docs/verifier_prompt_templates.md`）— constraint、semantic citation、data、logic/redundancy、revision-alignment 验证 prompt/schema
+- **Author response DOCX generation**（`scripts/compile_response_docx.py`）— 将 DOCX-ready Markdown 转换为 `Author_response_220803_Final.docx` 参考样式
+- **Author response Markdown template**（`docs/response_letter_template.md`）— 对齐 reviewer response、修改位置和 machine-readable `[CHANGE]` block
 - **PubMed 搜索工具** — 内置 Python 脚本（无需 MCP 或外部包）
 - **斜杠命令** — 证据文献注册（`/search-evidence`、`/import-doi`）
 
@@ -48,9 +55,11 @@ project/
 │   ├── checklist_guide.md        # 研究类型专用清单
 │   ├── qc_guide.md               # 质量控制流程
 │   ├── verification_protocol.md  # 验证门·3 Verifier·自主循环·门台账
+│   ├── verifier_prompt_templates.md  # LLM verifier prompts and output schema
 │   ├── statistical_analysis_guide.md  # 统计分析指南
 │   ├── evidence_guide.md         # 证据文献编写指南
 │   ├── revision_guide.md        # 审稿人回复指南
+│   ├── response_letter_template.md  # DOCX-ready author response template
 │   ├── figure_guide.md          # 图表生成指南
 │   ├── docx_guide.md            # DOCX 转换指南
 │   └── draft_plan_template.md    # Draft plan template
@@ -71,6 +80,11 @@ project/
 │   └── py/                       # Python 分析脚本
 ├── scripts/                      # 实用脚本
 │   ├── lint_manuscript.py        # manuscript terminology/style lint checks
+│   ├── check_citations.py        # evidence citation gate
+│   ├── check_numbers.py          # results CSV number gate
+│   ├── check_gate.py             # phase gate ledger check
+│   ├── check_revision_claims.py  # revision claim gate
+│   ├── compile_response_docx.py  # Author response DOCX compiler
 │   └── search_pubmed.py          # PubMed 搜索工具（无外部依赖）
 ├── results/                      # 分析输出
 ├── drafts/                       # 稿件章节、表格、图表
@@ -95,8 +109,10 @@ project/
 3. **数据分析**：将数据放入 `data/` 文件夹 → 创建 `analysis_plan.md`（必须）→ 运行统计分析
 4. **稿件计划**：将 `docs/draft_plan_template.md` 复制到 `drafts/draft_plan.md`，填写包含 Claim→Citation Mapping 的10项内容（推荐 Opus）
 5. **撰写初稿**：遵循 `docs/drafting_protocol.md`，按推荐顺序撰写各章节
-6. **质量控制**：提交前至少进行3轮 QC 检查（推荐6轮）
-7. **最终定稿**：将稿件编译为 DOCX（参见 `docs/docx_guide.md`）
+6. **验证门**：运行 citation、number、phase-gate、revision-claim checker，并在 `review/gates/` 中记录 PASS
+7. **Revision response**：需要审稿人回复时，使用 `docs/response_letter_template.md` 撰写，并用 `scripts/compile_response_docx.py` 转换为 DOCX
+8. **质量控制**：提交前至少进行3轮 QC 检查（推荐6轮）
+9. **最终定稿**：将稿件编译为 DOCX（参见 `docs/docx_guide.md`）
 
 ---
 
@@ -145,6 +161,26 @@ project/
 - Round 5：统计质量
 - Round 6：批判性审查（过度声明、逻辑谬误、偏倚、可推广性）
 
+### 验证哈尼斯
+
+该哈尼斯将确定性 checker 与受约束的 LLM verifier prompt 结合使用：
+
+- `scripts/check_citations.py`：将所有 `[EVID:id]` citation 与 `knowledge/evidence.md` 对照，并对未验证或未知 evidence 判定失败。
+- `scripts/check_numbers.py`：将稿件和表格中的数字与 `results/*.csv` 对照。
+- `scripts/check_gate.py`：确认 phase gate ledger 中存在 `status: PASS` 和必要 check。
+- `scripts/check_revision_claims.py`：将 reviewer response 中的 `[CHANGE]` block 与 revised manuscript files 对照。
+- `docs/verifier_prompt_templates.md`：提供 semantic support、logic、redundancy、revision-response alignment 的验证 prompt/schema。
+
+### Author Response DOCX Workflow
+
+Reviewer response 应按照 `docs/response_letter_template.md` 格式撰写，每一处稿件修改都记录为 `[CHANGE]` block。最终 response letter 可用以下命令编译：
+
+```powershell
+py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md
+```
+
+如果存在 `Author_response_220803_Final.docx`，compiler 会将其作为 reference style document。
+
 ### PubMed 搜索工具
 
 无需 MCP 即可搜索参考文献的内置 Python 脚本（`scripts/search_pubmed.py`）：
@@ -174,17 +210,24 @@ Claude 集成斜杠命令：
 | [docs/expert_roles.md](docs/expert_roles.md) | 专家团队说明 |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE、CONSORT、PRISMA、CARE 清单 |
 | [docs/qc_guide.md](docs/qc_guide.md) | 质量控制流程（6轮） |
+| [docs/verification_protocol.md](docs/verification_protocol.md) | 验证门·3 Verifier 章程·自主修正循环·门台账 |
+| [docs/verifier_prompt_templates.md](docs/verifier_prompt_templates.md) | LLM semantic verifier prompts and structured output schema |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | 统计分析指南（节约原则、MCID、亚组分析） |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | 证据文献编写指南（格式、摘要方法、工作流） |
 | [docs/revision_guide.md](docs/revision_guide.md) | 审稿人回复指南（回复信撰写、外交措辞、QC 重跑清单） |
+| [docs/response_letter_template.md](docs/response_letter_template.md) | DOCX-ready author response Markdown template |
 | [docs/figure_guide.md](docs/figure_guide.md) | 图表生成指南（DPI、调色板、Python模板） |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 转换指南（格式、表格样式、命名规则） |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10项内容、claim→citation tables、approval checklist |
-| [docs/verification_protocol.md](docs/verification_protocol.md) | 验证门·3 Verifier 章程·自主修正循环·门台账 |
 | [Style/style_guide.md](Style/style_guide.md) | Style anchor workflow、extraction framework、PDF-to-MD mirror rules |
 | [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry |
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script |
+| [scripts/check_citations.py](scripts/check_citations.py) | 将 `[EVID:id]` citations 与 `knowledge/evidence.md` 对照 |
+| [scripts/check_numbers.py](scripts/check_numbers.py) | 将稿件/表格中的数字与 `results/*.csv` 对照 |
+| [scripts/check_gate.py](scripts/check_gate.py) | 验证 `review/gates/*.GATE.md` 的 status 和必要 check |
+| [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | 将 response-letter `[CHANGE]` claims 与 revised manuscript files 对照 |
+| [scripts/compile_response_docx.py](scripts/compile_response_docx.py) | 将 `response_letter_REV*.md` 转换为 Author_response-style DOCX |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 搜索脚本（NCBI E-utilities，无需外部包） |
 
 ---
@@ -228,3 +271,25 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 [![CC BY 4.0](https://licensebuttons.net/l/by/4.0/88x31.png)](https://creativecommons.org/licenses/by/4.0/)
 
 许可协议全文：<https://creativecommons.org/licenses/by/4.0/legalcode>
+
+---
+
+## 变更记录
+
+### v0.9.1 (2026-06-18)
+
+**多语言 README 与 Author Response DOCX 完成**
+
+- 将英文、韩文、日文、中文 README 与验证哈尼斯 scripts 和 DOCX response workflow 同步。
+- 添加 Author response Markdown template 与 `compile_response_docx.py` 用法。
+- 文档化 citation evidence、numeric grounding、phase gate、revision claim 的 deterministic checker。
+- 文档化用于 hallucination control、redundancy control、logic check、revision alignment 的 LLM verifier prompt-template。
+
+### v0.9.0 (2026-06-16)
+
+**验证哈尼斯** — 在每个 produce step 后执行 inline produce→verify→fix→re-verify gate
+
+- 在 Phase 3/4/8 的每个产出物后设置验证 gate。
+- 引入 Constraint、Citation、Data Verifier 与 gate ledger。
+- 标准化 `[EVID:author_year]` citation tags 和 results CSV grounding。
+- 通过 ghost-revision checker 检查 revision response 与 manuscript edit 的一致性。
