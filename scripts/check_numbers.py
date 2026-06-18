@@ -131,6 +131,11 @@ def is_structural_number(
     if value.is_integer() and 1900 <= int(value) <= 2099:
         return True
 
+    # Confidence-level percentages (e.g. "95% CI", "95 % confidence interval")
+    # state the interval level, not a result value.
+    if re.match(r"\s*%?\s*(?:CI\b|confidence)", after, flags=re.IGNORECASE):
+        return True
+
     if STRUCTURAL_LABEL_RE.search(before):
         return True
 

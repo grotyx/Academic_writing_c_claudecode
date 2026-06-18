@@ -290,6 +290,31 @@ class CheckNumbersTests(unittest.TestCase):
             self.assertFalse(result.passed)
             self.assertIn("no result numbers", output.lower())
 
+    def test_check_numbers_ignores_confidence_level_percentage(self) -> None:
+        # "95% CI" states the confidence level, not a result value; only the
+        # interval bounds and other genuine results should be checked.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table2_outcomes.csv").write_text(
+                "metric,value,ci_low,ci_high\ndiff,8.7,3.2,14.2\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The mean difference was 8.7 (95% CI 3.2 to 14.2).",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertTrue(result.passed)
+            self.assertNotIn("95", [failure.number for failure in result.failures])
+            self.assertEqual(result.checked_numbers, 3)
+
 
 if __name__ == "__main__":
     unittest.main()
