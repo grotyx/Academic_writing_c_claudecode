@@ -4,9 +4,11 @@
 
 **Goal:** academic paper writing 워크플로에 harness-engineering식 produce→verify→fix→re-verify 자동 루프(검증 게이트)를 도입하여, 제약 무시(F1)·인용 환각(F2)·수치 조작(F3)을 각 단계에서 구조적으로 차단한다.
 
-**Architecture:** 새 스크립트 없이 **Verifier 서브에이전트 + 프로토콜 규칙**으로 구현. 신규 키스톤 문서 `docs/verification_protocol.md`가 3개 Verifier 헌장·게이트 정의·자율 루프(N=2)·게이트 원장 형식을 정의하고, 기존 문서들(CLAUDE.md, drafting_protocol, evidence_guide, draft_plan_template, writing_guide, qc_guide, revision_guide)이 이를 참조하도록 수정. 차단은 `review/gates/` 원장에 `status: PASS`가 없으면 진행 금지하는 규칙으로 강제.
+**Architecture:** **Verifier 서브에이전트 + 프로토콜 규칙 + 결정론적 helper 스크립트**로 구현. 신규 키스톤 문서 `docs/verification_protocol.md`가 Verifier 헌장·게이트 정의·자율 루프(N=2)·게이트 원장 형식을 정의하고, 기존 문서들(CLAUDE.md, drafting_protocol, evidence_guide, draft_plan_template, writing_guide, qc_guide, revision_guide)이 이를 참조하도록 수정. 차단은 `review/gates/` 원장에 `status: PASS`가 없으면 진행 금지하는 규칙으로 강제.
 
-**Tech Stack:** Markdown 문서, Claude Code 서브에이전트(Agent tool), git. 코드/테스트 없음 — "테스트" 단계는 일관성 grep·lint 실행·교차 확인으로 대체.
+> **[2026-06-18 갱신]** 초기 '새 스크립트 없음 / 코드·테스트 없음' 결정은 번복됨 — 결정론적 helper 스크립트 5종(`scripts/check_citations.py`, `check_gate.py`, `check_numbers.py`, `check_revision_claims.py`, `compile_response_docx.py`)과 `tests/` pytest 스위트를 하네스에 추가했다 (deterministic-first: 스크립트가 먼저 돌고 그 뒤 LLM 판정). 아래 Architecture·Tech Stack의 "스크립트 없음 / 코드·테스트 없음" 서술은 이 갱신으로 대체된다.
+
+**Tech Stack:** Markdown 문서, Claude Code 서브에이전트(Agent tool), Python 결정론적 helper 스크립트 + `tests/` pytest 스위트, git. (~~코드/테스트 없음~~ 번복 — 위 갱신 참조; pytest와 더불어 일관성 grep·lint 실행·교차 확인을 병행한다.)
 
 **Source spec:** `docs/superpowers/specs/2026-06-16-verification-harness-design.md`
 

@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.9.0)
+# Academic Paper Writing Project (v0.9.2)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -70,7 +70,10 @@ project/
 │   ├── check_numbers.py          # Results CSV number gate
 │   ├── check_gate.py             # Phase gate ledger check
 │   ├── check_revision_claims.py  # Revision claim gate
+│   ├── compile_response_docx.py  # Author response DOCX compiler
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
+├── tests/                        # pytest suite for the verification scripts
+│   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
 ├── review/                       # Review & QC documents
 │   ├── qc_log.md                 # QC round tracking
 │   └── gates/                    # 검증 게이트 원장 (phase_NN_*.GATE.md)
@@ -424,7 +427,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 **규칙:**
 
 - **NEVER proceed past a gate without a recorded PASS.** `review/gates/`의 해당 산출물 항목에 `status: PASS`가 없으면 다음 섹션/단계 진행을 거부한다.
-- 검증은 **Verifier 서브에이전트**로 수행한다 (Constraint / Citation / Data 3종). 외부지식 금지, 소스 오브 트루스(draft_plan·analysis_plan·evidence.md·results CSV)와만 대조.
+- 검증은 **Verifier 서브에이전트**로 수행한다 (Constraint / Citation / Data / Logic 4종; Revision 단계는 Revision-claims·Response-alignment 추가). 외부지식 금지, 소스 오브 트루스(draft_plan·analysis_plan·evidence.md·results CSV)와만 대조.
 - FAIL 시 **자율 수정 루프**: 지적사항을 고쳐 재검증. 최대 **2회(N=2)**, 이후 사용자에게 에스컬레이션.
 - **Verifier 모델:** Opus 기본. Opus 불가 시 또는 사용자 요청 시 다른 모델(예: GPT-5.5) 허용.
 - **인용 grounding:** 초안에서 모든 인용은 `[EVID:author_year]` 태그로 표기 (Phase 7에서 저널 형식 변환).
@@ -435,9 +438,9 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 | Phase | 게이트 | Verifier |
 |-------|--------|----------|
 | 3 (Draft Plan) | Claim→Citation 사전검증 | Citation |
-| 4 (Draft) | 섹션 단위 (자율 루프) | Constraint + Citation + Data |
+| 4 (Draft) | 섹션 단위 (자율 루프) | Constraint + Citation + Data + Logic |
 | 6 (QC) | 최종 확인 (경량) | 인라인 게이트가 이미 수행 |
-| 8 (Revision) | 응답 단위 (자율 루프) | Constraint + Citation + Data + ghost-revision |
+| 8 (Revision) | 응답 단위 (자율 루프) | Citation + Data + Revision-claims + Response-alignment |
 
 ### 9. Model Selection by Phase (단계별 모델 선택)
 

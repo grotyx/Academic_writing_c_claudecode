@@ -28,6 +28,10 @@ verifier_model: opus
 timestamp: 2026-06-18T10:30:00+09:00
 ```
 
+> Note: `check_gate.py` only parses `status`, `artifact`, `round`, and the `checks.*` keys.
+> `blocking_failures`, `verifier_model`, and `timestamp` are human-audit fields only — keep
+> them for the record, but the script does not read or validate them.
+
 ## Required Check Names
 
 Use these exact keys so `check_gate.py --require-check <name>` can verify them:

@@ -23,9 +23,9 @@
 
 ---
 
-## 2. 세 개의 Verifier (헌장)
+## 2. Verifier 헌장
 
-모든 Verifier는 공통 규칙을 따른다:
+Draft 게이트는 네 개의 Verifier(Constraint / Citation / Data / Logic)를 투입하고, Revision 게이트는 여기에 Ghost-Revision(revision_claims) + Response-alignment를 더한다. 모든 Verifier는 공통 규칙을 따른다:
 - **외부지식 사용 금지.** 주어진 소스(소스 오브 트루스)와 산출물만으로 판정한다.
 - **불확실하면 FAIL 기본값.** 지지 여부가 모호하면 PASS로 넘기지 않는다.
 - **판정 결과를 구조화 출력**한다 (3.2 형식).
@@ -75,7 +75,16 @@
 
 ---
 
-### 2.4 Ghost-Revision Checker (Phase 8)
+### 2.4 Logic/Redundancy Verifier (논리·중복)
+
+- **소스 오브 트루스:** 산출 섹션 자신과 인접 섹션(예: Results ↔ Discussion), `CLAUDE.md`의 Redundancy Prevention 규칙.
+- **임무:** 섹션 간 논리 흐름과 중복을 점검한다. Results 수치가 Discussion에 그대로 반복되거나, Introduction에 결과 해석이 섞이는 등 섹션 역할 위반을 잡는다.
+- **FAIL 조건:** 동일 데이터의 삼중 중복, 섹션 역할 위반, 또는 논리적 비약이 발견되면 FAIL.
+- **게이트 원장 check key:** `logic`.
+
+---
+
+### 2.5 Ghost-Revision Checker (Phase 8)
 
 - **입력:** `drafts/revision/REV{N}/response_letter_REV{N}.md`의 `[CHANGE]` blocks, original section files, revised section files.
 - **명령:** `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict`

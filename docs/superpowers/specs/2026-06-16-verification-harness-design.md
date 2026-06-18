@@ -28,14 +28,16 @@
 - 게이트 통과 전 진행을 **막는다** (fail-loudly).
 
 **Non-Goals**
-- 새 Python 검증 스크립트는 만들지 않는다. (사용자 결정: 에이전트 + 프로토콜로만 구현)
+- ~~새 Python 검증 스크립트는 만들지 않는다. (사용자 결정: 에이전트 + 프로토콜로만 구현)~~ *(superseded — 아래 갱신 참조)*
 - 기존 `scripts/lint_manuscript.py`는 유지하되, 이번 하네스의 차단 메커니즘으로 삼지 않는다.
+
+> **[2026-06-18 갱신]** 초기 '스크립트 없음' 결정은 번복됨 — 결정론적 helper 스크립트 5종(`scripts/check_citations.py`, `check_gate.py`, `check_numbers.py`, `check_revision_claims.py`, `compile_response_docx.py`)과 `tests/` pytest 스위트를 하네스에 추가했다. Verifier 서브에이전트는 이 스크립트를 먼저 실행한 뒤 LLM 판정을 수행한다 (deterministic-first). 아래 §3 D1, §4의 "스크립트 없음" 서술은 이 갱신으로 대체된다.
 
 ## 3. Decisions (확정)
 
 | # | 결정 | 값 |
 |---|------|-----|
-| D1 | 강제 메커니즘 | Verifier 서브에이전트 + 프로토콜 규칙 (스크립트 없음) |
+| D1 | 강제 메커니즘 | Verifier 서브에이전트 + 프로토콜 규칙 + 결정론적 helper 스크립트 5종 (deterministic-first; ~~스크립트 없음~~ 번복 — §2 갱신 참조) |
 | D2 | 루프 세밀도 / 자율성 | 섹션 단위 + 자율 루프 |
 | D3 | 인용 grounding | 초안 작성 시 `[EVID:author_year]` 태그 사용, 최종 단계에서 저널 형식으로 변환 |
 | D4 | 자율 루프 최대 재시도 | N = 2 (FAIL→fix→re-verify 2회까지, 이후 사용자 에스컬레이션) |
@@ -59,7 +61,7 @@
 [게이트 원장에 PASS 기록] ──► 다음 섹션/단계 진행 허용
 ```
 
-- 스크립트가 없으므로 "차단"은 **게이트 원장(`review/gates/`) + 프로토콜 규칙**이 수행한다.
+- "차단"은 **게이트 원장(`review/gates/`) + 프로토콜 규칙**이 수행한다 (결정론적 helper 스크립트는 게이트 입력 신호를 만들고, 최종 차단은 원장의 `status: PASS` 유무로 강제).
 - 원장에 해당 산출물의 `status: PASS`가 없으면 다음 단계 진행 금지.
 
 ## 5. The Three Verifiers (3대 실패에 매핑)
@@ -116,7 +118,7 @@
 
 ## 9. Fail-Loudly Enforcement — Gate Ledger
 
-스크립트 없이 차단을 구현하는 핵심 장치.
+차단을 구현하는 핵심 장치. (원장 자체는 `status: PASS` 규칙으로 진행을 막고, `scripts/check_gate.py`가 원장 항목을 결정론적으로 검증한다 — §2 갱신 참조.)
 
 - **위치:** `review/gates/phase_NN_*.GATE.md` (단계별 원장)
 - **기록 주체:** Verifier 서브에이전트가 판정을 기록.
@@ -139,8 +141,10 @@
 ## 10. Files to Create / Modify
 
 **신규**
-- `docs/verification_protocol.md` — 게이트 정의, 3 Verifier 헌장, 판정 출력 형식, 자율 루프 규칙(N=2), Verifier 모델 정책(Opus 기본/대체 허용), gate ledger 형식
+- `docs/verification_protocol.md` — 게이트 정의, Verifier 헌장(3종), 판정 출력 형식, 자율 루프 규칙(N=2), Verifier 모델 정책(Opus 기본/대체 허용), gate ledger 형식
 - `review/gates/` 디렉터리 + 게이트 파일 템플릿 (+ `.gitkeep`)
+- 결정론적 helper 스크립트 5종 — `scripts/check_citations.py`, `scripts/check_gate.py`, `scripts/check_numbers.py`, `scripts/check_revision_claims.py`, `scripts/compile_response_docx.py` (§2 갱신으로 추가; deterministic-first)
+- `tests/` pytest 스위트 — helper 스크립트 회귀 테스트
 
 **수정**
 - `CLAUDE.md` — Critical Rules에 "게이트 통과 전 진행 금지" 추가; Recommended Workflow의 Phase 3/4/6/8에 게이트 명시; 모델 선택 표에 Verifier 모델 정책 추가; EVID 태그 규칙 추가

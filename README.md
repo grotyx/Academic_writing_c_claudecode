@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.9.1** (2026-06-18)
+**v0.9.2** (2026-06-18)
 
 ---
 
@@ -33,7 +33,7 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Phase gate ledger checking** (`scripts/check_gate.py`) — blocks progression unless `review/gates/*.GATE.md` records required PASS checks
 - **Revision claim checking** (`scripts/check_revision_claims.py`) — verifies response-letter `[CHANGE]` claims against revised manuscript files
 - **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — structured prompts for constraint, semantic citation, data, logic/redundancy, and revision-alignment checks
-- **Author response DOCX generation** (`scripts/compile_response_docx.py`) — converts DOCX-ready Markdown to the `Author_response_220803_Final.docx` reference style
+- **Author response DOCX generation** (`scripts/compile_response_docx.py`) — converts DOCX-ready Markdown to the `Author_response_220803_Final.docx` house style
 - **Author response Markdown template** (`docs/response_letter_template.md`) — keeps reviewer responses, manuscript locations, and machine-readable `[CHANGE]` blocks aligned
 - **Draft plan template** (`docs/draft_plan_template.md`) — 10-item template with claim→citation tables and approval checklist
 - **PubMed search tool** with built-in Python script (no MCP or external packages required)
@@ -93,6 +93,7 @@ project/
 │   ├── check_revision_claims.py  # Revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
 │   └── search_pubmed.py          # PubMed search tool (no external deps)
+├── tests/                        # Pytest suite for the verification scripts
 ├── results/                      # Analysis outputs
 ├── drafts/                       # Manuscript sections, tables & figures
 │   ├── draft_plan.md             # Manuscript outline & strategy (required before drafting)
@@ -208,7 +209,7 @@ Reviewer responses should be drafted in `docs/response_letter_template.md` forma
 py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md
 ```
 
-When `Author_response_220803_Final.docx` is present, the compiler uses it as the reference style document.
+The compiler reproduces the `Author_response_220803_Final.docx` house style — Times New Roman 11 pt, with bold response / location / revised-text lines and a justified body. It does not read that .docx file as a template; the formatting is built in.
 
 ### PubMed Search Tool
 
@@ -303,6 +304,15 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 ## Changelog
 
+### v0.9.2 (2026-06-18)
+
+**Verification harness hardening** (bug fixes + doc consistency)
+
+- `check_numbers.py`: no longer crashes on percentages (e.g. 42.5%); rejects p-values backed only by an unrelated value (e.g. a count of 0); handles thousands separators (1,234) and ignores ISO dates and inline `code` spans.
+- `check_gate.py`: strips inline `# ...` comments so the documented gate template passes and round-overflow escalation works.
+- Added `requirements.txt` (python-docx) and a `tests/` pytest suite (run with `pytest`).
+- Docs: verifier set corrected to Constraint / Citation / Data / Logic (Revision adds Revision-claims and Response-alignment); response compiler description corrected (it reproduces formatting, it does not read a reference .docx).
+
 ### v0.9.1 (2026-06-18)
 
 **Multilingual README and Author Response DOCX Completion**
@@ -317,7 +327,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 **Verification Harness** — inline produce→verify→fix→re-verify gates (new `docs/verification_protocol.md`)
 
 - Inline verification gates after each produce step (Phase 3/4/8) — replaces end-loaded manual QC with a produce→verify→fix→re-verify loop
-- Three Verifier subagents: Constraint (instruction compliance), Citation (citation grounding vs evidence.md), Data (numbers vs results CSV)
+- Verifier subagents: Constraint (instruction compliance), Citation (citation grounding vs evidence.md), Data (numbers vs results CSV), Logic (cross-section logic/redundancy); the Revision gate adds Revision-claims and Response-alignment
 - Autonomous fix loop (max 2 retries) then user escalation
 - `[EVID:author_year]` citation tags and results-CSV-as-single-source grounding
 - Gate ledger (`review/gates/`) blocks progress until `status: PASS` is recorded

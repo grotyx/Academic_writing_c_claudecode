@@ -100,10 +100,11 @@ Address high-priority findings before considering the section complete.
 섹션 작성이 끝나면 다음 단계로 넘어가기 전에 검증 게이트를 통과해야 한다.
 상세: `docs/verification_protocol.md`.
 
-1. 세 Verifier 서브에이전트를 투입한다 (모델: Opus 기본):
+1. 네 Verifier 서브에이전트를 투입한다 (모델: Opus 기본):
    - **Constraint** — draft_plan·analysis_plan·사용자 제약 준수
    - **Citation** — `[EVID:id]` 인용이 evidence.md로 지지되는지 (방향·대상·비교군·결과 일치)
    - **Data** — 모든 결과 수치가 `results/*.csv`로 추적되는지
+   - **Logic** — 섹션 간 논리 흐름·중복 (Results 해석이 Discussion으로 새지 않는지 등)
 2. 모두 PASS → `review/gates/phase_04_draft.GATE.md`에 `status: PASS` 기록 → 다음 섹션.
 3. FAIL → 지적사항을 수정하고 재검증. 최대 2회(N=2), 이후 사용자에게 에스컬레이션.
 
