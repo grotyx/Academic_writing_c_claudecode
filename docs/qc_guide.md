@@ -424,6 +424,7 @@ Conclusion이 Results에 의해 지지되는지 확인
 
 > 리뷰어의 시각에서 논문의 논리적 취약점과 과장을 점검합니다.
 > "만약 내가 이 논문의 리뷰어라면 무엇을 지적할까?"
+> 외부 강화: `/critical-review`로 여러 모델(Claude 서브·Codex·OpenRouter)이 적대적으로 공격하게 할 수 있다 (선택). 절차: `docs/critical_review_protocol.md`.
 
 ### 6.1 Overclaiming Check (과장 여부)
 
