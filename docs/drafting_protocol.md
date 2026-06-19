@@ -147,5 +147,5 @@ Use this sequence after each produce step:
 4. Confirm the ledger before proceeding:
 
 ```powershell
-py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic
+py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md --verify-hash results=results\table2_outcomes.csv
 ```

@@ -36,3 +36,6 @@ Style/target_journal/*.md
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Local archives/backups (not part of the workflow)
+*.zip

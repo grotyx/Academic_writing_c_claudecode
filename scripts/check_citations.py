@@ -249,6 +249,7 @@ def format_result(result: CitationCheckResult, artifacts: list[Path], evidence_p
 
     lines = [
         "GATE FAIL",
+        "failure_code: GATE_FAIL CITATIONS",
         "verifier: Citation-Grounding",
         f"evidence: {evidence_path}",
         f"artifacts: {len(artifacts)}",

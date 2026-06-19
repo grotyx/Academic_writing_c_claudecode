@@ -90,6 +90,21 @@ class CheckCitationsTests(unittest.TestCase):
             self.assertEqual(result.failures[0].citation_id, "missing_2024")
             self.assertIn("not found", result.failures[0].reason)
 
+    def test_format_failure_includes_machine_readable_failure_code(self) -> None:
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmpdir = Path(tmp)
+            evidence_path = tmpdir / "evidence.md"
+            artifact_path = tmpdir / "06_discussion.md"
+            evidence_path.write_text(SAMPLE_EVIDENCE, encoding="utf-8")
+            artifact_path.write_text("Unsupported citation [EVID:missing_2024].", encoding="utf-8")
+
+            result = module.check_citations([artifact_path], evidence_path=evidence_path)
+            output = module.format_result(result, [artifact_path], evidence_path)
+
+            self.assertIn("failure_code: GATE_FAIL CITATIONS", output)
+
     def test_check_citations_fails_todo_source_status(self) -> None:
         module = load_module()
 

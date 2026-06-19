@@ -31,6 +31,7 @@ NUMBER_RE = re.compile(
 P_VALUE_COLUMNS = frozenset(
     {"p", "p value", "p_value", "p-value", "pval", "pvalue", "p val"}
 )
+P_VALUE_TEXT_RE = re.compile(r"\b\*?p\*?\s*(?:<=|>=|<|>|=)", flags=re.IGNORECASE)
 STRUCTURAL_LABEL_RE = re.compile(
     r"\b(?:Table|Figure|Fig\.?|Section|Phase|Round|Reviewer|Comment|Line|Page|REV)\s*$",
     flags=re.IGNORECASE,
@@ -188,12 +189,11 @@ def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
 
 def result_is_p_value(result_number: ResultNumber) -> bool:
     # A directional p-value claim (e.g. p<0.001) may only be satisfied by a
-    # result value that is itself plausibly a p-value: either it comes from a
-    # p-value column, or it falls in the (0, 1] probability range. This stops an
-    # unrelated value such as a count of 0 from satisfying the inequality.
+    # result value that is explicitly a p-value. A generic 0-1 proportion/rate
+    # is not enough; otherwise clinical rates can falsely satisfy p<threshold.
     if result_number.column.strip().casefold() in P_VALUE_COLUMNS:
         return True
-    return 0.0 < result_number.value <= 1.0
+    return bool(P_VALUE_TEXT_RE.search(result_number.raw))
 
 
 def matches_number(token: NumberToken, result_number: ResultNumber) -> bool:

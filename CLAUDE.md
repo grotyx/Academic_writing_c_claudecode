@@ -23,7 +23,7 @@ project/
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists (STROBE, CONSORT, etc.)
 │   ├── qc_guide.md               # Quality control & consistency verification
-│   ├── verification_protocol.md  # 검증 게이트·3 Verifier·자율 루프·게이트 원장
+│   ├── verification_protocol.md  # 검증 게이트·4 Verifier·자율 루프·게이트 원장
 │   ├── verifier_prompt_templates.md  # LLM semantic verifier prompts/output schema
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence 작성 가이드
@@ -75,7 +75,8 @@ project/
 │   ├── compile_response_docx.py  # Author response DOCX compiler
 │   ├── search_pubmed.py          # PubMed search tool (no external deps)
 │   ├── critical_review.py        # OpenRouter 멀티모델 적대적 검토 호출
-│   └── critical_models.txt       # OpenRouter 모델 목록 (외부화)
+│   ├── critical_models.txt       # OpenRouter 모델 목록 (외부화)
+│   └── critical_prompts/         # 적대적 검토 프롬프트 (manuscript.txt, response.txt)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
 ├── review/                       # Review & QC documents
@@ -206,7 +207,7 @@ output/paper1_xxx/revision/REV1/
 | `docs/statistical_analysis_guide.md` | Statistical methods, test selection, templates | Phase 2 (analysis) |
 | `docs/evidence_guide.md` | Evidence 작성 가이드 (형식, 요약 방법, 워크플로우) | Phase 1 (setup) |
 | `docs/revision_guide.md` | Reviewer response guide (응답서 작성, 외교적 표현) | Revision (리뷰어 코멘트 수신 후) |
-| `docs/verification_protocol.md` | 검증 게이트·3 Verifier 헌장·자율 루프·게이트 원장 정의 | Phase 3·4·6·8 (게이트 수행 시 **반드시** 참조) |
+| `docs/verification_protocol.md` | 검증 게이트·4 Verifier 헌장·자율 루프·게이트 원장 정의 | Phase 3·4·6·8 (게이트 수행 시 **반드시** 참조) |
 | `docs/verifier_prompt_templates.md` | LLM semantic verifier prompt와 구조화 출력 schema | Constraint/logic/semantic citation/revision alignment 검증 시 |
 | `docs/response_letter_template.md` | Author_response 양식으로 DOCX 변환하기 쉬운 response letter Markdown 템플릿 | Revision 응답서 작성 시작 시 복사 |
 | `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2 (figure 생성 시) |
@@ -429,7 +430,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
     - 형식: `[Claim 요약] → Author Year (evidence.md 번호)`
     - **규칙:** claim을 작성하기 전에 citation을 먼저 확보할 것 — 없으면 Phase 1로 돌아가 검색
 
-### 10. Verification Gates Mandatory (검증 게이트 필수)
+### 9. Verification Gates Mandatory (검증 게이트 필수)
 
 > **각 산출 단계 뒤에 검증 게이트를 통과해야 다음으로 진행할 수 있다.**
 > 상세: `docs/verification_protocol.md`
@@ -437,7 +438,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 **규칙:**
 
 - **NEVER proceed past a gate without a recorded PASS.** `review/gates/`의 해당 산출물 항목에 `status: PASS`가 없으면 다음 섹션/단계 진행을 거부한다.
-- 검증은 **Verifier 서브에이전트**로 수행한다 (Constraint / Citation / Data / Logic 4종; Revision 단계는 Revision-claims·Response-alignment 추가). 외부지식 금지, 소스 오브 트루스(draft_plan·analysis_plan·evidence.md·results CSV)와만 대조.
+- 검증은 **Verifier 서브에이전트**로 수행한다 (Draft: Constraint / Citation / Data / Logic 4종. Revision: Logic을 빼고 Revision-claims·Response-alignment를 더해 Constraint / Citation / Data / Revision-claims / Response-alignment). 외부지식 금지, 소스 오브 트루스(draft_plan·analysis_plan·evidence.md·results CSV)와만 대조.
 - FAIL 시 **자율 수정 루프**: 지적사항을 고쳐 재검증. 최대 **2회(N=2)**, 이후 사용자에게 에스컬레이션.
 - **Verifier 모델:** Opus 기본. Opus 불가 시 또는 사용자 요청 시 다른 모델(예: GPT-5.5) 허용.
 - **인용 grounding:** 초안에서 모든 인용은 `[EVID:author_year]` 태그로 표기 (Phase 7에서 저널 형식 변환).
@@ -454,7 +455,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 
 **병렬 검출 + freshness:** 섹션 게이트의 네 Verifier는 검출 단계에서 **병렬**로 투입한다(산출물을 먼저 고정). 검증 중에는 산출물을 수정하지 않고, 모든 판정을 모은 뒤 한 번에 수정한다. PASS 기록 시 산출물의 sha256를 게이트 원장 `provenance:`에 적고, 산출물이 바뀌면 그 PASS는 **stale(무효)** 로 보고 재검증한다 (`check_gate.py --verify-hash`). 상세: `docs/verification_protocol.md`.
 
-### 11. STOP Signals (자기기만 차단)
+### 10. STOP Signals (자기기만 차단)
 
 > Verifier가 잡는 것은 산출물의 결함이다. 이 표는 그 **앞단** — 사람·에이전트가 검증을 건너뛰려는 *합리화의 순간*을 차단한다. 아래 생각이 들면 멈추고(STOP) 오른쪽 행동을 한다.
 
@@ -469,7 +470,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 | "Constraint는 나중에 봐도 돼" | 명세(scope/tone/forbidden) 위반은 1순위. 곧 폐기될 문장을 다듬지 않는다. |
 | "PASS 받았으니 이제 안전해" | 산출물을 바꿨다면 그 PASS는 stale. `provenance` 해시로 재검증. |
 
-### 9. Model Selection by Phase (단계별 모델 선택)
+### 11. Model Selection by Phase (단계별 모델 선택)
 
 > **계획 단계는 high-quality 모델, 작성 단계는 mid-quality 모델도 가능**
 
@@ -586,7 +587,7 @@ Phase 4: Draft (in this order)
 ├── 07_conclusion.md   → brief takeaway
 ├── 02_abstract.md     → summary (write LAST)
 ├── 01_title.md        → finalize (profile/authors.md 참조하여 저자·소속·ORCID·funding 기입)
-└── 🔒 GATE (각 섹션마다): Constraint + Citation + Data Verifier 자율 루프 (최대 2회) → review/gates/ 기록
+└── 🔒 GATE (각 섹션마다): Constraint + Citation + Data + Logic Verifier 자율 루프 (최대 2회) → review/gates/ 기록
 
 Phase 5: Style Polish
 ├── Apply writing_guide.md Style Reference Tables

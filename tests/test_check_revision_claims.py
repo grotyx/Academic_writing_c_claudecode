@@ -101,6 +101,26 @@ class CheckRevisionClaimsTests(unittest.TestCase):
             self.assertIn("missing expected term", result.failures[0].reason)
             self.assertEqual(result.failures[0].comment_id, "R1-C1")
 
+    def test_format_failure_includes_machine_readable_failure_code(self) -> None:
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            draft_root = root / "drafts"
+            rev_dir = draft_root / "revision" / "REV1"
+            rev_dir.mkdir(parents=True)
+            (rev_dir / "04_methods_REV1.md").write_text(
+                "Patients were eligible if they met the eligibility criteria.",
+                encoding="utf-8",
+            )
+            response_path = rev_dir / "response_letter_REV1.md"
+            response_path.write_text(SAMPLE_RESPONSE, encoding="utf-8")
+
+            result = module.check_revision_claims(response_path, draft_root=draft_root)
+            output = module.format_result(result, response_path)
+
+            self.assertIn("failure_code: GATE_FAIL REVISION_CLAIMS", output)
+
     def test_check_revision_claims_fails_when_revised_section_matches_original(self) -> None:
         module = load_module()
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -45,6 +47,14 @@ class CheckGateTests(unittest.TestCase):
         self.assertEqual(entry.checks["constraint"], "PASS")
         self.assertEqual(entry.checks["citation"], "PASS")
         self.assertEqual(entry.checks["numbers"], "PASS")
+
+    def test_parse_gate_entry_tolerates_utf8_bom_on_first_key(self) -> None:
+        module = load_module()
+
+        entry = module.parse_gate_entry("\ufeffartifact: drafts/05_results.md\nstatus: PASS\n")
+
+        self.assertEqual(entry.fields["artifact"], "drafts/05_results.md")
+        self.assertEqual(entry.fields["status"], "PASS")
 
     def test_check_gate_passes_when_status_and_required_checks_pass(self) -> None:
         module = load_module()
@@ -327,6 +337,148 @@ class FreshnessTests(unittest.TestCase):
         pairs = module.parse_verify_hash(["artifact=drafts/05_results.md"], parser)
         self.assertEqual(pairs[0][0], "artifact")
         self.assertEqual(str(pairs[0][1]).replace("\\", "/"), "drafts/05_results.md")
+
+    def test_cli_verify_hash_resolves_relative_paths_from_project_root(self) -> None:
+        module = load_module()
+
+        artifact = ROOT / "drafts" / "05_results.md"
+        digest = module.sha256_file(artifact)
+        gate_text = (
+            "phase: Phase 4 - Draft Sections\n"
+            "artifact: drafts/05_results.md\n"
+            "status: PASS\n"
+            "checks:\n"
+            "  constraint: PASS\n"
+            "provenance:\n"
+            f"  artifact: {digest}\n"
+            "round: 1\n"
+        )
+
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as other_cwd:
+            gate_path = Path(tmp) / "phase_04_draft.GATE.md"
+            gate_path.write_text(gate_text, encoding="utf-8")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_PATH),
+                    str(gate_path),
+                    "--artifact",
+                    "drafts/05_results.md",
+                    "--require-check",
+                    "constraint",
+                    "--verify-hash",
+                    "artifact=drafts/05_results.md",
+                ],
+                cwd=other_cwd,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            self.assertIn("GATE PASS", completed.stdout)
+
+    def test_verify_hash_fails_cleanly_on_directory(self) -> None:
+        # A directory passes exists() but is not hashable; the gate must FAIL
+        # cleanly, not crash with IsADirectoryError/PermissionError.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            a_dir = Path(tmp) / "a_directory"
+            a_dir.mkdir()
+            gate_path = Path(tmp) / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate_with_provenance("0" * 64), encoding="utf-8")
+
+            result = module.check_gate(gate_path, verify_hashes=[("artifact", a_dir)])
+
+            self.assertFalse(result.passed)
+            self.assertTrue(
+                any("not found" in f.reason or "regular file" in f.reason for f in result.failures)
+            )
+
+    def test_verify_hash_blank_value_reports_not_recorded(self) -> None:
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact = Path(tmp) / "05_results.md"
+            artifact.write_text("x\n", encoding="utf-8")
+            gate_text = (
+                "artifact: drafts/05_results.md\n"
+                "status: PASS\n"
+                "provenance:\n"
+                "  artifact:\n"  # key present, value blank
+            )
+            gate_path = Path(tmp) / "phase_04_draft.GATE.md"
+            gate_path.write_text(gate_text, encoding="utf-8")
+
+            result = module.check_gate(gate_path, verify_hashes=[("artifact", artifact)])
+
+            self.assertFalse(result.passed)
+            self.assertTrue(any("not recorded" in f.reason for f in result.failures))
+
+    def test_verify_hash_rejects_placeholder_digest(self) -> None:
+        # An un-replaced template placeholder must report a malformed hash,
+        # not a misleading "stale gate" against an unchanged file.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact = Path(tmp) / "05_results.md"
+            artifact.write_text("real content\n", encoding="utf-8")
+            gate_path = Path(tmp) / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate_with_provenance("0d6f...e3a1"), encoding="utf-8")
+
+            result = module.check_gate(gate_path, verify_hashes=[("artifact", artifact)])
+
+            self.assertFalse(result.passed)
+            reasons = " ".join(f.reason for f in result.failures)
+            self.assertIn("not a 64-char sha256", reasons)
+            self.assertNotIn("stale gate", reasons)
+
+    def test_pass_output_reports_provenance_verified(self) -> None:
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact = Path(tmp) / "05_results.md"
+            artifact.write_text("payload\n", encoding="utf-8")
+            digest = module.sha256_file(artifact)
+            gate_path = Path(tmp) / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate_with_provenance(digest), encoding="utf-8")
+
+            result = module.check_gate(gate_path, verify_hashes=[("artifact", artifact)])
+            self.assertTrue(result.passed)
+            self.assertEqual(result.verified, ("artifact",))
+
+            out = module.format_result(result, gate_path)
+            self.assertIn("provenance_verified: artifact", out)
+
+    def test_pass_output_flags_unverified_provenance(self) -> None:
+        # A gate that records provenance but is checked WITHOUT --verify-hash
+        # still passes, but the output must surface the un-checked freshness.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            gate_path = Path(tmp) / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate_with_provenance("0" * 64), encoding="utf-8")
+
+            result = module.check_gate(gate_path, required_checks=["constraint"])
+            self.assertTrue(result.passed)
+
+            out = module.format_result(result, gate_path)
+            self.assertIn("provenance_verified: none", out)
+            self.assertIn("provenance_unverified: artifact", out)
+
+    def test_compute_hash_on_directory_errors_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT_PATH), "--compute-hash", tmp],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(completed.returncode, 0)
+            self.assertNotIn("Traceback", completed.stderr)
+            self.assertIn("not a readable file", completed.stderr)
 
 
 if __name__ == "__main__":

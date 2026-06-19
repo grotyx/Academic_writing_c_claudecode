@@ -98,7 +98,7 @@ py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md
 After deterministic revision-claim checking, run the Revision-Alignment verifier in `docs/verifier_prompt_templates.md` to confirm that the response directly answers the reviewer and that the manuscript is not written in response-letter style. Record `revision_claims: PASS` and `response_alignment: PASS` in `review/gates/phase_08_revision.GATE.md`, then confirm the ledger:
 
 ```powershell
-py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers
+py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv
 ```
 
 ### 본문 수정 원칙
@@ -330,5 +330,5 @@ output/revision/
 | `Draft response letter` | 전체 응답서 초안 작성 |
 | `Review response letter` | Dr. Editor 관점에서 응답서 검토 |
 | `Check response completeness` | `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict` 실행 |
-| `Check revision gate` | `py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers` 실행 |
+| `Check revision gate` | `py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv` 실행 |
 | `Compile response letter` | `py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md` 실행 |

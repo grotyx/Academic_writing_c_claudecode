@@ -110,7 +110,7 @@ def iter_markdown_files(paths: list[Path]) -> list[Path]:
     for path in paths:
         if path.is_dir():
             files.extend(sorted(path.rglob("*.md")))
-        elif path.suffix.lower() == ".md":
+        elif path.is_file() and path.suffix.lower() == ".md":
             files.append(path)
     return files
 

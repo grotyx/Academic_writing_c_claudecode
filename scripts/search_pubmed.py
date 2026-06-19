@@ -237,12 +237,16 @@ def format_evidence_entry(a, ref_num):
     year = a["year"]
     citation = format_citation(a)
     design = guess_study_design(a.get("pub_types", []))
+    evidence_id = f"{fa}_{year}" if year else fa
+    source_status = "abstract-only" if a.get("abstract", "") else "todo"
 
     entry = f"""### [{ref_num}] {a['first_author']} et al., {year}
+- **Evidence ID:** {evidence_id}
 - **Citation:** {citation}
 - **DOI:** {a.get('doi', '')}
 - **PMID:** {a.get('pmid', '')}
 - **PDF:** knowledge/pdf/{fa}_{year}_KEYWORD.pdf
+- **Source Status:** {source_status}
 
 - **Study Design:** {design}
 - **Objective:** [TODO]

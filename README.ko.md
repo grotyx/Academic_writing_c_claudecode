@@ -59,7 +59,7 @@ project/
 │   ├── expert_roles.md           # 전문가 팀 역할 및 책임
 │   ├── checklist_guide.md        # 연구 유형별 체크리스트
 │   ├── qc_guide.md               # 품질 관리 절차
-│   ├── verification_protocol.md  # 검증 게이트·3 Verifier·자율 루프·게이트 원장
+│   ├── verification_protocol.md  # 검증 게이트·4 Verifier·자율 루프·게이트 원장
 │   ├── verifier_prompt_templates.md  # LLM verifier prompt와 출력 schema
 │   ├── statistical_analysis_guide.md  # 통계 분석 가이드
 │   ├── evidence_guide.md         # 근거 문헌 작성 가이드
@@ -96,7 +96,10 @@ project/
 │   ├── check_gate.py             # phase gate ledger check
 │   ├── check_revision_claims.py  # revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
-│   └── search_pubmed.py          # PubMed 검색 도구 (외부 의존성 없음)
+│   ├── search_pubmed.py          # PubMed 검색 도구 (외부 의존성 없음)
+│   ├── critical_review.py        # OpenRouter 멀티모델 적대적 검토 호출
+│   ├── critical_models.txt       # OpenRouter 모델 목록 (외부화)
+│   └── critical_prompts/         # 적대적 프롬프트 단일 정본 (manuscript.txt, response.txt)
 ├── tests/                        # 검증 스크립트용 pytest 스위트
 ├── results/                      # 분석 결과
 ├── drafts/                       # 원고 섹션, 테이블, 그림
@@ -201,6 +204,19 @@ citation을 확보할 수 없는 claim이 있으면 Phase 1로 돌아가 먼저 
 - `scripts/check_revision_claims.py`: reviewer response의 `[CHANGE]` block을 revised manuscript 파일과 대조합니다.
 - `docs/verifier_prompt_templates.md`: semantic support, logic, redundancy, revision-response alignment 검증 prompt/schema를 제공합니다.
 
+### 공동 저자 협업 (v0.9.3 신규)
+
+Codex/멀티모델을 활용한 두 가지 상호 보완적 기능이 작성 과정의 앞뒤를 감쌉니다:
+
+- **`/paper-debate <주제>`** — 작성 *전*. Claude와 Codex가 공동 저자로서 분석 접근, draft plan의 key message, 논증 구조, 리뷰어 응답 전략을 제한된 라운드(합의 상한 3) 안에서 토론합니다. 토론 로그는 `review/debates/`에 저장되고, 합의된 결론이 다음 산출 단계로 연결됩니다. Codex를 사용할 수 없으면 Claude 단독으로 폴백합니다. `docs/debate_protocol.md` 참조.
+- **`/critical-review <대상>`** — 작성 *후*. 완성된 원고(또는 response letter)를 새로운 Claude 서브에이전트, Codex, OpenRouter 모델(기본 `minimax/minimax-m3`, `z-ai/glm-5.2`)의 임의 조합으로 병렬 공격합니다. 각 리뷰어는 **senior peer-reviewer / editor-in-chief 수준**으로 프롬프트되어, 표면적 결함을 넘어 설계 견고성, 데이터가 결론을 뒷받침하는지, 출판 가치를 따집니다. 지적사항은 **합의도 × 심각도**(Critical / Important / Minor)로 통합·정렬되어 `review/critical/`에 저장됩니다. `docs/critical_review_protocol.md` 참조.
+
+적대적 프롬프트는 `scripts/critical_prompts/`(`manuscript.txt`, `response.txt`)에 단일 정본으로 존재하며, OpenRouter 스크립트·Claude 서브에이전트·Codex가 모두 같은 파일을 읽습니다. OpenRouter 접근은 `OPENROUTER_API_KEY`(`.claude/settings.local.json`에 설정, gitignored)를 사용하며, 키가 없으면 OpenRouter만 건너뛰고 나머지 리뷰어로 진행합니다.
+
+### AI-Draft De-bloat (v0.9.3 신규)
+
+AI 산문의 흔적 — 피상적인 `-ing` "표면 분석" 절, AI가 선호하는 어휘, 과도한 신호어(over-signposting) — 을 제거하되, 정당하게 충돌하는 패턴(필요한 hedging, copula, passive voice)은 명시적으로 **제외**하는 `docs/writing_guide.md` 패스입니다 (AI가 작성한 초안에 대해 Phase 5에서 적용). AI 작성 사실은 그대로 disclosure하며, 이 패스는 disclosure된 보조 작성물이 장황하고 지루하게 읽히지 않도록 할 뿐입니다.
+
 ### Verification Hardening (v1.0.0 신규)
 
 "superpowers" 스킬 프레임워크에서 가져와 검증 게이트에 맞게 적용한 개선 사항입니다:
@@ -251,7 +267,7 @@ Claude 통합 슬래시 명령어:
 | [docs/expert_roles.md](docs/expert_roles.md) | 전문가 팀 설명 |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE 체크리스트 |
 | [docs/qc_guide.md](docs/qc_guide.md) | 품질 관리 절차 (6라운드) |
-| [docs/verification_protocol.md](docs/verification_protocol.md) | 검증 게이트·3 Verifier 헌장·자율 수정 루프·게이트 원장 |
+| [docs/verification_protocol.md](docs/verification_protocol.md) | 검증 게이트·4 Verifier 헌장·자율 수정 루프·게이트 원장 |
 | [docs/verifier_prompt_templates.md](docs/verifier_prompt_templates.md) | LLM semantic verifier prompt와 구조화된 출력 schema |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | 통계 분석 가이드 (절제 원칙, MCID, 하위군 분석) |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | 근거 문헌 작성 가이드 (형식, 요약 방법, 워크플로우) |
@@ -270,6 +286,7 @@ Claude 통합 슬래시 명령어:
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | response-letter `[CHANGE]` claim을 revised manuscript와 대조 |
 | [scripts/compile_response_docx.py](scripts/compile_response_docx.py) | `response_letter_REV*.md`를 Author_response 양식 DOCX로 변환 |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 검색 스크립트 (NCBI E-utilities, 외부 패키지 불필요) |
+| [scripts/critical_review.py](scripts/critical_review.py) | OpenRouter 멀티모델 적대적 리뷰어 호출 (모델 1개 실패가 전체를 중단시키지 않음) |
 
 ---
 
@@ -319,9 +336,9 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 
 **검증 하네스 강화 (superpowers 기반)**
 
-- **Gate freshness / provenance** — `check_gate.py`에 `provenance:` block(산출물/evidence/results의 sha256), `--verify-hash LABEL=PATH`(검증된 파일이 PASS 이후 변경되면 게이트를 *stale*로 실패 처리), `--compute-hash PATH` 추가. 병렬 검증으로 생긴 stale-PASS 허점을 차단; 하위 호환(opt-in 플래그). `review/gates/_TEMPLATE.GATE.md`와 `docs/verification_protocol.md`(v0.2.0)에 문서화; pytest 커버리지 56개 테스트로 확장.
+- **Gate freshness / provenance** — `check_gate.py`에 `provenance:` block(산출물/evidence/results의 sha256), `--verify-hash LABEL=PATH`(검증된 파일이 PASS 이후 변경되면 게이트를 *stale*로 실패 처리), `--compute-hash PATH` 추가. 병렬 검증으로 생긴 stale-PASS 허점을 차단; 하위 호환(opt-in 플래그). `review/gates/_TEMPLATE.GATE.md`와 `docs/verification_protocol.md`(v0.2.0)에 문서화; pytest 커버리지 70개 테스트로 확장.
 - **병렬 verifier + Constraint 우선** — 4개의 섹션 게이트 verifier가 동결된 산출물에 대해 동시에 실행; 수정은 Constraint(spec) 위반을 우선; 편집이 발생하면 모든 PASS를 폐기하고 재실행 (`docs/verification_protocol.md`).
-- **STOP 신호** — verifier가 놓치는 사람 수준의 지름길을 막는 CLAUDE.md anti-rationalization 표(§11).
+- **STOP 신호** — verifier가 놓치는 사람 수준의 지름길을 막는 CLAUDE.md anti-rationalization 표(§10).
 - **Socratic draft-plan 브레인스토밍** — `docs/draft_plan_template.md` Step 0(한 번에 한 질문; `/paper-debate`와 구분되며 토론의 R0 사전 준비로 연결), CLAUDE.md Phase 3 + Rule 8에 연결.
 - **리뷰어 응답 triage** — `docs/revision_guide.md`의 코멘트별 accept/partial/rebut 입장, `[CHANGE]` + ghost-revision과 연계; Phase 8 verifier set에 Constraint 포함하도록 정렬.
 - 각 `.claude/commands/*.md`에 **`use-when`** 줄 추가; TodoWrite를 비권위적(non-authoritative) QC/게이트 추적 수단으로 문서화 (CLAUDE.md Rule 4).
@@ -435,42 +452,131 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 
 **Writing Guide 대규모 리팩터링** — `docs/writing_guide.md` 내부 버전 v0.3.0 → v0.4.0
 
-- CLAUDE.md와 writing_guide.md 역할 분리 (orchestrator vs rules)
-- Style Reference Tables 신규 추가 (Voice/Tense, Transition, Verb Upgrades, Common Corrections, Statistical Notation, Hedging)
-- Writing Principles (4 Pillars) 신규 추가 (Clarity/Conciseness/Objectivity/Consistency)
-- General Principles 6개 규칙 확장
-- Results/Discussion/Tables 섹션 가이드 강화
-- 전 파일 일관성 수정 (CLAUDE.md, revision_guide.md, evidence_guide.md)
+- CLAUDE.md(orchestrator)와 writing_guide.md(rules)의 **역할 분리**
+  - CLAUDE.md "Natural Academic Writing Style" 섹션을 pointer 전용으로 축소 (~115줄 제거)
+  - 모든 작문 스타일 규칙, 표, 예시를 writing_guide.md로 통합
+- **신규 섹션: Style Reference Tables** (writing_guide.md)
+  - Voice & Tense by Section (Abstract/Intro/Methods/Results/Discussion/Conclusion 6개 섹션)
+  - Transition Words (but → nonetheless)
+  - Verb Upgrades (showed → demonstrated)
+  - Common Corrections (elderly → older adult 등)
+  - Statistical Notation (italic *p*, 범위에 en-dash, *p* = 0.000 금지)
+  - Hedging Language (Discussion용 4단계 가이드: Strong/Moderate/Weak/Very weak)
+- **신규 섹션: Writing Principles (4 Pillars)** (writing_guide.md)
+  - Clarity, Conciseness, Objectivity, Consistency 및 확장 예시
+- **General Principles 6개 규칙 확장**:
+  - 원고 본문 bold 텍스트 금지
+  - 약어 1회 정의 규칙
+  - 통계 방법이 아닌 임상 소견을 문장 주어로
+  - 동의어 혼용 금지 (dural tear ↔ durotomy 등) + draft_plan.md 용어 선택
+  - 숫자 서식 일관성 (소수점, 단위)
+  - 문두 숫자 금지 (풀어 쓰거나 재구성)
+- **Results 섹션**: 비유의 p-value 생략 가이드 추가 (primary outcome 예외)
+- **Discussion 섹션**: 3개 신규 하위 섹션
+  - 구체적 숫자/p-value 금지 (문헌 비교 예외)
+  - 비유의 결과에 대한 방향성 추세 프레이밍 금지
+  - 과장 금지 목록과 함께 중립적 어조
+- **Tables 섹션**: 2개 신규 Tip
+  - Methods Statistics와 Table 각주의 역할 분리
+  - 사전 지정 민감도 분석은 Supplementary Table로
+
+**파일 간 일관성 수정**
+
+- CLAUDE.md Phase 2: `docs/statistical_analysis_guide.md` 명시적 참조 + `analysis_plan.md` 필수 항목(endpoint 위계, 검정법, 다중비교, 결측 처리)
+- CLAUDE.md Phase 6 QC: 라운드별 책임 주석 (Claude / Dr. Editor / Dr. Statistician) + CRITICAL vs RECOMMENDED 표기
+- CLAUDE.md Phase 3→4 Completion Criteria: `draft_plan.md` 9개 필수 항목 전체 나열로 확장
+- `docs/revision_guide.md`: 라운드별 재수행 체크리스트와 제출 전 체크리스트를 갖춘 "QC Re-run for Revision" 섹션 신규
+- `docs/evidence_guide.md`: Search Log 쿼리 예시를 실제 PubMed 문법으로 업데이트 (field tag `[tiab]`/`[MeSH]`, boolean AND/OR/NOT, 따옴표 구문)
 
 ### v0.5.2 (2026-04-15)
-- 전 파일 교차 일관성 수정
-- Figure 형식 워크플로우 업데이트 (PNG 초안 300 DPI / TIFF LZW 최종 600+ DPI)
+
+- 전체 문서의 파일 간 불일치 수정
+- Figure 형식 워크플로우 업데이트: 초안용 PNG (300 DPI), 최종 제출용 LZW 압축 TIFF (600+ DPI), PPT/vector는 옵션
+- `save_figure()` 템플릿 업데이트: `draft=True`(PNG) / `final=True`(TIFF LZW) 파라미터 분리
+- CLAUDE.md revision 구조와 File Roles 표에 `review/reviewer_comments_REV{N}.md` 추가
+- `analysis_plan.md` placeholder를 `[FROM CLAUDE.md]`에서 사용자 친화적인 `[연구 설계 입력]`으로 변경
+- `revision_guide.md` 파일 구조를 CLAUDE.md와 정렬 (R1→REV1 네이밍 규칙)
+- `qc_guide.md` QC 로그와 Final Sign-off에 Round 4 템플릿 추가
+- `statistical_analysis_guide.md` figure 출력 형식에 TIFF 포함하도록 업데이트
+- `checklist_guide.md` figure 제출 요건 업데이트 (TIFF LZW 600+ DPI)
 
 ### v0.5.1 (2026-04-15)
-- Analysis Plan Mandatory (Rule #7) 추가
-- Draft Plan Mandatory (Rule #8) 추가
-- Model Selection by Phase (Rule #9) 추가
-- 워크플로우 8단계로 재편 (Phase 3: Draft Plan 추가)
+
+- Analysis Plan Mandatory (Critical Rule #7) 추가 — 통계 분석 실행 전 `analysis_plan.md`를 작성·승인해야 함
+  - 멀티 논문 시 논문별 analysis plan (`data/paper{N}_xxx/analysis_plan.md`)
+  - 필수 내용: 연구 질문, 선정/제외 기준, 변수 정의, 검정법 선택 근거, 유의수준
+- Draft Plan Mandatory (Critical Rule #8) 추가 — 섹션 작성 전 `drafts/draft_plan.md`를 작성·승인해야 함
+  - 필수 내용: key message, 톤/voice, 필수 참고문헌, 근거 갭, table/figure 계획, introduction/discussion 개요, limitation point
+  - 멀티 논문 시 논문별 draft plan
+- Model Selection by Phase (Critical Rule #9) 추가 — 비용 효율적 모델 가이드
+  - Opus 권장: Analysis Plan, Draft Plan, Revision (전략적 단계)
+  - Sonnet 기본 + Opus 선택: 초안 작성, Style Polish, QC (계획 기반 실행)
+  - Draft Plan 작성 시 Plan Mode(`/plan`) 권장
+- 워크플로우 단계 재번호 (7 → 8단계): Analysis와 Drafting 사이에 Phase 3 (Draft Plan) 추가
+- Phase Completion Criteria에 draft_plan.md 승인 게이트 업데이트
 
 ### v0.5.0 (2026-04-14)
-- QC Round 2 강화 (4개 새 서브체크: placeholder, 등장순, 형식 일관성, 배포)
-- 파일 버전 관리 규칙 (Rule #5) 추가
-- 멀티 논문 조직화 규칙 (Rule #6) 추가
-- Revision 폴더 구조 추가
+
+- QC Round 2 (참고문헌 검증)에 4개 신규 서브체크 강화:
+  - 2.5 Placeholder Reference Detection — 가짜/임시 인용 감지 ([ref1], [TBD], [X] 등)
+  - 2.6 Order of Appearance Check — Vancouver 스타일 순서대로 인용 번호 부여 검증
+  - 2.7 Reference Format Consistency — 전체 참고문헌의 서지 형식 통일성 점검
+  - 2.8 Citation Distribution Check — 섹션별 인용 균형, 자기인용 비율, 최신성
+- Reference List Integrity (2.4) 강화 — 번호 연속성 및 중복 번호 점검 추가
+- QC 로그 템플릿에 Round 2 강화 섹션 업데이트
+- 파일 버전 관리 규칙 (Critical Rule #5) 추가 — 날짜 기본(`_YYMMDD`), `_v1`, `_REV1`, `_FINAL`
+- 멀티 논문 조직화 (Critical Rule #6) 추가 — data, results, drafts, output, review의 논문별 서브폴더
+- 멀티 논문 프로젝트 구조 다이어그램 추가 (docs/knowledge/scripts 공유, 논문별 폴더 분리)
+- Revision 폴더 구조 추가 — `drafts/revision/REV{N}/`, `output/revision/REV{N}/`
+- Recommended Workflow에 Phase 7 (Revision)과 QC 재수행 요건 추가
+- Phase Completion Criteria에 Submit → Revision 경로 업데이트
+- File Roles 표에 revision 폴더 엔트리 업데이트
 
 ### v0.4.0 (2026-04-09)
+
 - `docs/revision_guide.md` 추가 — 리뷰어 응답 및 개정 가이드
-- `docs/figure_guide.md` 추가 — 출판용 figure 생성 가이드
+- `docs/figure_guide.md` 추가 — 출판 품질 figure 생성 가이드
+- `drafts/00_cover_letter.md` 추가 — 간결한 cover letter 템플릿
+- CLAUDE.md 업데이트: 프로젝트 구조, file roles, revision 및 figure용 Quick Commands
+- 프로젝트 구조에서 Spine GraphRAG 프로젝트 고유 참조 제거
 
 ### v0.3.0 (2026-03-09)
-- `docs/statistical_analysis_guide.md` 대규모 개정 (절제 원칙, 위계, 임상적 유의성, 하위군 분석)
+
+- `docs/statistical_analysis_guide.md` 대규모 재작성 (v0.2.1 → v0.3.0)
+  - Statistical Parsimony, Analysis Hierarchy, Clinical Significance, Subgroup Analysis, Sensitivity Analysis
+  - Methods Statistical Section Checklist (ICMJE/SAMPL 기준 10개 필수 항목)
+- 통계 일관성을 위해 `docs/writing_guide.md`, `docs/expert_roles.md`, `docs/qc_guide.md` 업데이트
 
 ### v0.2.5 (2026-03-09)
-- `scripts/search_pubmed.py` 추가 (MCP 없는 PubMed 검색)
-- 슬래시 명령어 추가: `/search-evidence`, `/import-doi`
 
-### v0.2.4 ~ v0.2 (2026-02-03 ~ 2026-03-04)
-- DOCX 가이드, 근거 문헌 가이드, 통계 분석 가이드 등 기반 문서 구축
+- `scripts/search_pubmed.py` 추가 — NCBI E-utilities API 사용 PubMed 검색 도구 (MCP 불필요, 외부 패키지 불필요)
+- 슬래시 명령어 추가: `/search-evidence [query]`, `/import-doi [doi]`
+
+### v0.2.4 (2026-03-04)
+
+- LF 줄바꿈 정규화를 위한 `.gitattributes` 추가
+- `.DS_Store`, 로컬 설정, IDE 설정에 대한 `.gitignore` 규칙 추가
+
+### v0.2.3 (2026-02-15)
+
+- DOCX 변환 규칙을 위한 `docs/docx_guide.md` 추가
+- 날짜 접미사 output 파일, title page와 table DOCX 파일 분리
+
+### v0.2.2 (2026-02-10)
+
+- evidence registry에서 evidence guide 분리
+- 상세 요약 지침을 갖춘 `docs/evidence_guide.md` 추가
+
+### v0.2.1 (2026-02-07)
+
+- 다양한 구조적 수정 및 템플릿 개선
+
+### v0.2 (2026-02-03)
+
+- Statistical Analysis Guide 추가
+- Table/Figure/Results 중복 방지 규칙 추가
 
 ### v0.1 (초기)
-- 기본 프로젝트 구조, Writing guide, Expert roles, Checklists, QC guide
+
+- 기본 프로젝트 구조
+- Writing guide, expert roles, checklists, QC guide

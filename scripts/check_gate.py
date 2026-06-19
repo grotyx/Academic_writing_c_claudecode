@@ -20,6 +20,9 @@ FIELD_RE = re.compile(r"^([A-Za-z0-9_-]+):\s*(.*?)\s*$")
 CHECK_RE = re.compile(r"^\s{2,}([A-Za-z0-9_-]+):\s*(.*?)\s*$")
 # Top-level keys whose indented children form a nested key/value block.
 NESTED_BLOCKS = ("checks", "provenance")
+# A recorded provenance value must be a full sha256 hex digest (optionally
+# prefixed with "sha256:"); anything else is a placeholder/typo, not a hash.
+HEX64_RE = re.compile(r"[0-9a-f]{64}")
 
 
 class GateEntry(NamedTuple):
@@ -39,6 +42,7 @@ class GateCheckResult(NamedTuple):
     passed: bool
     failures: list[GateIssue]
     entry: GateEntry | None
+    verified: tuple[str, ...] = ()
 
 
 def normalize_key(value: str) -> str:
@@ -72,6 +76,7 @@ def parse_gate_entry(text: str) -> GateEntry:
     current_block: str | None = None
 
     for raw_line in text.splitlines():
+        raw_line = raw_line.lstrip("\ufeff")
         line = raw_line.rstrip()
         if not line or line.lstrip().startswith("#") or line.lstrip().startswith(">"):
             continue
@@ -91,7 +96,7 @@ def parse_gate_entry(text: str) -> GateEntry:
                 nested_value = strip_inline_comment(nested_match.group(2))
                 if current_block == "checks":
                     checks[nested_key] = normalize_status(nested_value)
-                else:  # provenance: keep the raw value (hex digest)
+                elif current_block == "provenance":  # keep the raw value (hex digest)
                     provenance[nested_key] = nested_value
                 continue
 
@@ -202,10 +207,11 @@ def check_gate(
     # recorded against. Re-hash each tracked file and compare to the digest the
     # gate stored under `provenance:`. A mismatch means the file changed after the
     # PASS (stale gate) -- the verifiers must run again.
+    verified: list[str] = []
     for label, file_path in verify_hashes or []:
         prov_key = normalize_key(label)
         recorded = entry.provenance.get(prov_key)
-        if recorded is None:
+        if not recorded:  # missing key or blank value -- nothing to compare against
             failures.append(
                 GateIssue(
                     gate_path,
@@ -218,20 +224,32 @@ def check_gate(
 
         resolved = file_path
         if not resolved.is_absolute():
-            resolved = (base_dir or Path.cwd()) / resolved
-        if not resolved.exists():
+            resolved = (base_dir or ROOT) / resolved
+        if not resolved.is_file():
             failures.append(
                 GateIssue(
                     gate_path,
                     f"provenance.{prov_key}",
-                    f"cannot verify freshness: {resolved} not found",
+                    f"cannot verify freshness: {resolved} not found (or not a regular file)",
                     f"Point --verify-hash {prov_key}=<path> at the file that was verified.",
                 )
             )
             continue
 
         recorded_hex = recorded.split(":", 1)[-1].strip().casefold()
-        actual_hex = sha256_file(resolved).casefold()
+        if not HEX64_RE.fullmatch(recorded_hex):
+            failures.append(
+                GateIssue(
+                    gate_path,
+                    f"provenance.{prov_key}",
+                    f"provenance hash for {prov_key} is not a 64-char sha256: {recorded.strip()[:24]!r}",
+                    "Replace the placeholder/typo with a real digest: "
+                    "py scripts/check_gate.py --compute-hash <path>.",
+                )
+            )
+            continue
+
+        actual_hex = sha256_file(resolved)
         if actual_hex != recorded_hex:
             failures.append(
                 GateIssue(
@@ -242,24 +260,36 @@ def check_gate(
                     f"Re-run the verifiers against the current {prov_key} and update the gate.",
                 )
             )
+        else:
+            verified.append(prov_key)
 
-    return GateCheckResult(not failures, failures, entry)
+    return GateCheckResult(not failures, failures, entry, tuple(verified))
 
 
 def format_result(result: GateCheckResult, gate_path: Path) -> str:
     phase_code = phase_code_from_path(gate_path)
     if result.passed:
         checks = ", ".join(sorted(result.entry.checks)) if result.entry else ""
-        return "\n".join(
-            [
-                "GATE PASS",
-                "verifier: Phase-Gate-Ledger",
-                f"gate: {gate_path}",
-                f"phase_code: {phase_code}",
-                f"status: {result.entry.fields.get('status', '') if result.entry else ''}",
-                f"checks: {checks}",
-            ]
-        )
+        recorded = set(result.entry.provenance) if result.entry else set()
+        unverified = sorted(recorded - set(result.verified))
+        lines = [
+            "GATE PASS",
+            "verifier: Phase-Gate-Ledger",
+            f"gate: {gate_path}",
+            f"phase_code: {phase_code}",
+            f"status: {result.entry.fields.get('status', '') if result.entry else ''}",
+            f"checks: {checks}",
+        ]
+        # Surface freshness only for gates that use it, so plain gates stay terse.
+        if result.verified or recorded:
+            verified = ", ".join(sorted(result.verified)) if result.verified else "none"
+            lines.append(f"provenance_verified: {verified}")
+        if unverified:
+            lines.append(
+                f"provenance_unverified: {', '.join(unverified)} "
+                "(pass --verify-hash to check freshness)"
+            )
+        return "\n".join(lines)
 
     lines = [
         "GATE FAIL",
@@ -316,9 +346,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def parse_verify_hash(items: list[str], parser: argparse.ArgumentParser) -> list[tuple[str, Path]]:
     pairs: list[tuple[str, Path]] = []
     for item in items:
-        if "=" not in item:
-            parser.error(f"--verify-hash expects LABEL=PATH, got {item!r}")
-        label, path_str = item.split("=", 1)
+        label, _, path_str = item.partition("=")
         label = label.strip()
         path_str = path_str.strip()
         if not label or not path_str:
@@ -332,6 +360,8 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.compute_hash is not None:
+        if not args.compute_hash.is_file():
+            parser.error(f"--compute-hash: {args.compute_hash} is not a readable file")
         print(sha256_file(args.compute_hash))
         return 0
 
@@ -345,6 +375,7 @@ def main() -> int:
         artifact=args.artifact,
         max_round=args.max_round,
         verify_hashes=verify_hashes,
+        base_dir=ROOT,
     )
     print(format_result(result, args.gate))
     return 0 if result.passed else 1

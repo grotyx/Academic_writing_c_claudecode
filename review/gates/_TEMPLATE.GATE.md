@@ -92,7 +92,7 @@ py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\0
 Revision gate (evidence + results freshness required — a revision round changes both):
 
 ```powershell
-py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv
+py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv
 ```
 
 ## FAIL Example

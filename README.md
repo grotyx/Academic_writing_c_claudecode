@@ -59,7 +59,7 @@ project/
 │   ├── expert_roles.md           # Expert team roles & responsibilities
 │   ├── checklist_guide.md        # Study-type specific checklists
 │   ├── qc_guide.md               # Quality control procedures
-│   ├── verification_protocol.md  # Verification gates, 3 verifiers, autonomous loop
+│   ├── verification_protocol.md  # Verification gates, 4 verifiers, autonomous loop
 │   ├── verifier_prompt_templates.md  # LLM verifier prompts and output schema
 │   ├── statistical_analysis_guide.md  # Statistical analysis guide
 │   ├── evidence_guide.md         # Evidence writing guide
@@ -275,7 +275,7 @@ Slash commands for Claude integration:
 | [docs/expert_roles.md](docs/expert_roles.md) | Expert team descriptions |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE checklists |
 | [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
-| [docs/verification_protocol.md](docs/verification_protocol.md) | Verification gates, 3 verifier charters, autonomous fix loop, gate ledger |
+| [docs/verification_protocol.md](docs/verification_protocol.md) | Verification gates, 4 verifier charters, autonomous fix loop, gate ledger |
 | [docs/verifier_prompt_templates.md](docs/verifier_prompt_templates.md) | LLM semantic verifier prompts and structured output schema |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence writing guide (format, summary methods, workflow) |
@@ -346,9 +346,9 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 **Verification hardening (superpowers-inspired)**
 
-- **Gate freshness / provenance** — `check_gate.py` gains a `provenance:` block (sha256 of artifact/evidence/results), `--verify-hash LABEL=PATH` (fails a gate as *stale* when a verified file changed after PASS), and `--compute-hash PATH`. Closes the stale-PASS hole opened by parallel verification; backward compatible (opt-in flag). `review/gates/_TEMPLATE.GATE.md` and `docs/verification_protocol.md` (v0.2.0) document it; pytest coverage expanded to 56 tests.
+- **Gate freshness / provenance** — `check_gate.py` gains a `provenance:` block (sha256 of artifact/evidence/results), `--verify-hash LABEL=PATH` (fails a gate as *stale* when a verified file changed after PASS), and `--compute-hash PATH`. Closes the stale-PASS hole opened by parallel verification; backward compatible (opt-in flag). `review/gates/_TEMPLATE.GATE.md` and `docs/verification_protocol.md` (v0.2.0) document it; pytest coverage expanded to 70 tests.
 - **Parallel verifiers + Constraint-first** — the four section-gate verifiers run concurrently against a frozen artifact; fixes prioritize Constraint (spec) violations; all PASSes are discarded and re-run after any edit (`docs/verification_protocol.md`).
-- **STOP signals** — CLAUDE.md anti-rationalization table (§11) guarding the human-level shortcuts verifiers miss.
+- **STOP signals** — CLAUDE.md anti-rationalization table (§10) guarding the human-level shortcuts verifiers miss.
 - **Socratic draft-plan brainstorming** — `docs/draft_plan_template.md` Step 0 (one question at a time; distinct from `/paper-debate`, feeds it as R0 prep), wired into CLAUDE.md Phase 3 + Rule 8.
 - **Reviewer-response triage** — `docs/revision_guide.md` accept/partial/rebut posture per comment, tied to `[CHANGE]` + ghost-revision; Phase 8 verifier set aligned to include Constraint.
 - **Command `use-when` lines** added to `.claude/commands/*.md`; TodoWrite documented as non-authoritative QC/gate tracking (CLAUDE.md Rule 4).
@@ -396,7 +396,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 - `evidence.md` entries gain a Source Status field; Phase 6 QC lightened to a final-confirmation pass
 - Programmatic citation checker: `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md`
 - Programmatic number checker: `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results`
-- Programmatic phase gate checker: `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --require-check constraint --require-check citation --require-check numbers --require-check logic`
+- Programmatic phase gate checker: `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md`
 - Programmatic ghost-revision checker: `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict`
 - LLM semantic verifier schema: `docs/verifier_prompt_templates.md` for logic, redundancy, semantic citation support, and revision-response alignment
 

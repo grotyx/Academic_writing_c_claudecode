@@ -25,7 +25,7 @@
 
 ## 2. Verifier 헌장
 
-Draft 게이트는 네 개의 Verifier(Constraint / Citation / Data / Logic)를 투입하고, Revision 게이트는 여기에 Ghost-Revision(revision_claims) + Response-alignment를 더한다. 모든 Verifier는 공통 규칙을 따른다:
+Draft 게이트는 네 개의 Verifier(Constraint / Citation / Data / Logic)를 투입한다. Revision 게이트는 Logic을 제외하고 Ghost-Revision(revision_claims) + Response-alignment를 더한다 — 즉 Constraint / Citation / Data / Revision-claims / Response-alignment. 모든 Verifier는 공통 규칙을 따른다:
 - **외부지식 사용 금지.** 주어진 소스(소스 오브 트루스)와 산출물만으로 판정한다.
 - **불확실하면 FAIL 기본값.** 지지 여부가 모호하면 PASS로 넘기지 않는다.
 - **판정 결과를 구조화 출력**한다 (3.2 형식).

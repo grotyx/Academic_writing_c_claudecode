@@ -1,7 +1,7 @@
 # Debate Protocol (Claude–Codex Co-Author 토론)
 
 > 논문 작성의 사고 단계에서 Claude와 Codex가 **co-author**로 작성 전에 방향을 토론·합의하는 절차의 단일 기준 문서. `/paper-debate` command와 Phase 가이드는 이 문서를 참조한다.
-> 설계 근거: `docs/superpowers/specs/2026-06-19-paper-debate-design.md`.
+> 공개 운영 기준은 이 문서가 원본입니다. 내부 설계 노트 경로는 런타임 의존성으로 두지 않습니다.
 
 ## 0. 원칙
 

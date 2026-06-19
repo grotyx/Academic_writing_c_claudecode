@@ -58,7 +58,7 @@ project/
 │   ├── expert_roles.md           # 专家团队角色与职责
 │   ├── checklist_guide.md        # 研究类型专用清单
 │   ├── qc_guide.md               # 质量控制流程
-│   ├── verification_protocol.md  # 验证门·3 Verifier·自主循环·门台账
+│   ├── verification_protocol.md  # 验证门·4 Verifier·自主循环·门台账
 │   ├── verifier_prompt_templates.md  # LLM verifier prompts and output schema
 │   ├── statistical_analysis_guide.md  # 统计分析指南
 │   ├── evidence_guide.md         # 证据文献编写指南
@@ -89,7 +89,10 @@ project/
 │   ├── check_gate.py             # phase gate ledger check
 │   ├── check_revision_claims.py  # revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
-│   └── search_pubmed.py          # PubMed 搜索工具（无外部依赖）
+│   ├── search_pubmed.py          # PubMed 搜索工具（无外部依赖）
+│   ├── critical_review.py        # OpenRouter multi-model adversarial caller
+│   ├── critical_models.txt       # OpenRouter model list (externalized)
+│   └── critical_prompts/         # Adversarial prompt single-source (manuscript.txt, response.txt)
 ├── tests/                        # 验证脚本的 pytest 测试套件
 ├── results/                      # 分析输出
 ├── drafts/                       # 稿件章节、表格、图表
@@ -176,6 +179,19 @@ project/
 - `scripts/check_revision_claims.py`：将 reviewer response 中的 `[CHANGE]` block 与 revised manuscript files 对照。
 - `docs/verifier_prompt_templates.md`：提供 semantic support、logic、redundancy、revision-response alignment 的验证 prompt/schema。
 
+### 合著者协作（v0.9.3 新增）
+
+两个互补的 Codex/多模型功能分别置于写作过程的前后：
+
+- **`/paper-debate <主题>`** — 写作*之前*。Claude 与 Codex 作为合著者，在有界的若干轮内（共识上限 3）就分析方法、draft-plan 核心信息、论证结构或审稿人回应策略展开辩论。辩论日志保存于 `review/debates/`，达成一致的结论作为下一步产出的输入。Codex 不可用时回退为 Claude 单独执行。参见 `docs/debate_protocol.md`。
+- **`/critical-review <对象>`** — 写作*之后*。完成的稿件（或 response letter）由全新的 Claude 子代理、Codex 和 OpenRouter 模型（默认 `minimax/minimax-m3`、`z-ai/glm-5.2`）的任意组合并行攻击。每位评审者均以 **senior peer-reviewer / editor-in-chief 级别** 受提示 — 越过表层缺陷，追问设计是否稳健、数据是否支持结论、是否值得发表。发现结果按 **共识度 × 严重度**（Critical / Important / Minor）合并排序，保存于 `review/critical/`。参见 `docs/critical_review_protocol.md`。
+
+对抗性提示作为单一正本置于 `scripts/critical_prompts/`（`manuscript.txt`、`response.txt`）；OpenRouter 脚本、Claude 子代理和 Codex 均读取同一组文件。OpenRouter 访问使用 `OPENROUTER_API_KEY`（设置于 `.claude/settings.local.json`，gitignored）；缺失时跳过 OpenRouter，其余评审者继续。
+
+### AI-Draft De-bloat（v0.9.3 新增）
+
+`docs/writing_guide.md` 中的一道流程（在 Phase 5 对 AI 撰写的初稿应用），用于去除 AI 文风的痕迹 — 空洞的 `-ing`「表层分析」从句、AI 偏好的词汇以及过度的 signposting — 同时明确 **排除** 那些会合理冲突的模式（必要的 hedging、copula、被动语态）。AI 参与仍会被声明；此流程只是让已声明的 AI 协助不至于读起来臃肿乏味。
+
 ### 验证加固（v1.0.0 新增）
 
 借鉴 "superpowers" skills 框架、聚焦于验证门的改进：
@@ -226,7 +242,7 @@ Claude 集成斜杠命令：
 | [docs/expert_roles.md](docs/expert_roles.md) | 专家团队说明 |
 | [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE、CONSORT、PRISMA、CARE 清单 |
 | [docs/qc_guide.md](docs/qc_guide.md) | 质量控制流程（6轮） |
-| [docs/verification_protocol.md](docs/verification_protocol.md) | 验证门·3 Verifier 章程·自主修正循环·门台账 |
+| [docs/verification_protocol.md](docs/verification_protocol.md) | 验证门·4 Verifier 章程·自主修正循环·门台账 |
 | [docs/verifier_prompt_templates.md](docs/verifier_prompt_templates.md) | LLM semantic verifier prompts and structured output schema |
 | [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | 统计分析指南（节约原则、MCID、亚组分析） |
 | [docs/evidence_guide.md](docs/evidence_guide.md) | 证据文献编写指南（格式、摘要方法、工作流） |
@@ -296,9 +312,9 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 **验证加固（受 superpowers 启发）**
 
-- **门时效性 / provenance** — `check_gate.py` 新增 `provenance:` 区块（产出物/evidence/results 的 sha256）、`--verify-hash LABEL=PATH`（当被验证文件在 PASS 之后发生变更时，将该门判定为 *stale* 并失败）以及 `--compute-hash PATH`。堵住了并行验证所打开的 stale-PASS 漏洞；向后兼容（可选启用的 flag）。`review/gates/_TEMPLATE.GATE.md` 与 `docs/verification_protocol.md`（v0.2.0）对其进行了文档化；pytest 覆盖扩展至 56 个测试。
+- **门时效性 / provenance** — `check_gate.py` 新增 `provenance:` 区块（产出物/evidence/results 的 sha256）、`--verify-hash LABEL=PATH`（当被验证文件在 PASS 之后发生变更时，将该门判定为 *stale* 并失败）以及 `--compute-hash PATH`。堵住了并行验证所打开的 stale-PASS 漏洞；向后兼容（可选启用的 flag）。`review/gates/_TEMPLATE.GATE.md` 与 `docs/verification_protocol.md`（v0.2.0）对其进行了文档化；pytest 覆盖扩展至 70 个测试。
 - **并行 verifier + Constraint 优先** — 四个章节门 verifier 针对冻结的产出物并发执行；修复时优先处理 Constraint（spec）违规；任何编辑之后，所有 PASS 均作废并重新执行（`docs/verification_protocol.md`）。
-- **STOP 信号** — CLAUDE.md anti-rationalization 表格（§11），防范 verifier 遗漏的、人类层面的偷懒。
+- **STOP 信号** — CLAUDE.md anti-rationalization 表格（§10），防范 verifier 遗漏的、人类层面的偷懒。
 - **苏格拉底式 draft-plan 头脑风暴** — `docs/draft_plan_template.md` Step 0（每次一个问题；与 `/paper-debate` 不同，作为其 R0 准备提供输入），并接入 CLAUDE.md Phase 3 + Rule 8。
 - **审稿人回复分诊** — `docs/revision_guide.md` 为每条意见指定 accept/partial/rebut 立场，绑定到 `[CHANGE]` + ghost-revision；Phase 8 的 verifier 集合对齐为包含 Constraint。
 - 为 `.claude/commands/*.md` 添加 **命令 `use-when` 行**；将 TodoWrite 文档化为非权威的 QC/门追踪手段（CLAUDE.md Rule 4）。
@@ -338,7 +354,210 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 **验证哈尼斯** — 在每个 produce step 后执行 inline produce→verify→fix→re-verify gate
 
-- 在 Phase 3/4/8 的每个产出物后设置验证 gate。
-- 引入 Constraint、Citation、Data、Logic Verifier 与 gate ledger（Revision gate 增加 Revision-claims 与 Response-alignment）。
-- 标准化 `[EVID:author_year]` citation tags 和 results CSV grounding。
-- 通过 ghost-revision checker 检查 revision response 与 manuscript edit 的一致性。
+- 在每个 produce step 后设置 inline 验证 gate（Phase 3/4/8）— 以 produce→verify→fix→re-verify 循环取代集中于末端的手动 QC。
+- Verifier 子代理：Constraint（指令合规性）、Citation（与 evidence.md 对照的 citation grounding）、Data（与 results CSV 对照的数字）、Logic（跨章节逻辑/冗余）；Revision gate 增加 Revision-claims 与 Response-alignment。
+- 自主修正循环（最多 2 次重试），之后升级给用户。
+- `[EVID:author_year]` citation tags 与「results CSV 作为单一正本」的 grounding。
+- gate ledger（`review/gates/`）在记录 `status: PASS` 之前阻止进度推进。
+- `evidence.md` 条目新增 Source Status 字段；Phase 6 QC 减轻为一次最终确认 pass。
+- 程序化 citation checker：`py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md`
+- 程序化 number checker：`py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results`
+- 程序化 phase gate checker：`py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md`
+- 程序化 ghost-revision checker：`py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict`
+- LLM semantic verifier schema：`docs/verifier_prompt_templates.md`，用于 logic、redundancy、semantic citation support 与 revision-response alignment。
+
+### v0.8.1 (2026-06-16)
+
+**Response Letter 格式规则** — `docs/revision_guide.md` 内部版本 v0.3.0 → v0.4.0
+
+- 将 response letter 格式改为最小化格式标准：
+  - 仅对 **"Comment x.x"** 与 **"Response"** 加粗；移除其他所有格式（无标题、颜色、缩进、表格或项目符号/编号列表）
+  - 引用的修改后稿件文本以 *斜体* 呈现
+  - response 以连续散文撰写（无编号/逐项要点），在单一段落中按 致谢 → 立场 → 理由 → 行动 的顺序展开
+  - 修改位置采用前置说明 — 先陈述位置，再引用修改后文本（不再使用结尾的「(See ...)」）
+  - 不使用连字符或破折号
+  - 具说服力、能说服审稿人的语气
+- 为稿件修改新增 **最小改动原则** — 仅做应对每条意见所需的最小句子改动，使修订简洁而非冗长
+- 更新「during writing」检查清单以匹配新的格式规则
+
+### v0.8.0 (2026-06-16)
+
+**Style Workflow、Linting 与 Agent Instructions**
+
+- 将 writing-style 材料提升至顶层 `Style/` workflow，与 `knowledge/` 下的 reference evidence 分离。
+- 新增 `Style/style_guide.md`，用于 style-anchor 提取规则、PDF-to-MD mirror rules，以及出版商通用文件名处理。
+- 将 `Style/terminology.md` 扩展为项目术语 registry，涵盖脊柱外科、试验、AI/radiomics 与报告语境中的 preferred/forbidden terms。
+- 新增 `docs/drafting_protocol.md` 与 `docs/section_templates.md`，以强制执行 outline → evidence-bound draft → style pass → QC 的撰写流程。
+- 新增 `scripts/lint_manuscript.py` 并更新 draft/table 模板，使 manuscript linting 在 Windows 上以 `py scripts/lint_manuscript.py drafts --quiet` 通过。
+- 新增 `AGENTS.MD` 作为 agent 启动指令，以 `CLAUDE.md` 为权威的 source of truth。
+- 更新 `.gitignore`，使受版权保护的 PDF 和私有 style-anchor 摘要保持 local，而公开的 workflow 文件与示例仍可提交。
+
+### v0.7.1 (2026-05-15)
+
+**术语与模板**
+
+- 新增 `Style/terminology.md` — 面向 BESS/脊柱外科的领域标准术语 registry
+  - 涵盖术式名称、器械、评价指标、研究设计、统计、并发症等 60+ 术语的正确 vs 错误用法
+  - 常见错误清单（creatine phosphokinase vs creatinine kinase；assessor-blind vs double-blind；VAS vs NRS 等）
+- 新增 `docs/draft_plan_template.md` — 完整的 10 项 draft plan 模板
+  - Claim→Citation Mapping 表（Introduction/Methods/Discussion）
+  - Approval checklist（进入 Phase 4 之前 10 项必须全部完成）
+- CLAUDE.md Phase 1：在项目设置时新增 journals 格式检查与 Style anchor 复查
+- CLAUDE.md：更新 File Roles 表、Phase 3 workflow 与 Quick Commands 以引用模板
+- 修复：更正 `profile/journals.md` 的 citation 示例 — TSJ 现为 et al. 前列出 6 位作者（而非 3 位）；BJJ 现按 BJJ 政策列出全部 8 位作者且不加 et al.
+
+### v0.7.0 (2026-05-14)
+
+**Citation 质量与风格一致性**
+
+- 新增 `Style/` — own、landmark 与 target-journal style anchors
+  - 2018 Spine — Depression & chronic LBP 横断面研究（KNHANES）
+  - 2020 Spine J — Biportal endoscopic vs microscopic laminectomy RCT
+  - 2023 Spine J — Biportal endoscopic vs microscopic discectomy RCT
+  - 2024 Neurospine — BESS safety profile：2 项 RCT 的 pooled analysis
+  - 2025 Bone Joint J — ENDOBH 多中心 RCT（6 家医院）
+  - 每个文件：完整 citation、关键术语表、methods boilerplate、带数据的 key claims
+- CLAUDE.md Rule 8：将 **Claim→Citation Mapping** 作为 draft_plan.md 的必需第 10 项
+  - 写作开始前将约 20 个 key claims 与 citations 对应
+  - Intro background（5–8）、methods rationale（2–3）、discussion comparisons（5–8）
+- CLAUDE.md：更新 Phase Completion Criteria 3→4（draft_plan 必需项由 9 → 10）
+- 新增 `profile/journals.md`（local only，gitignored）— 8 种目标期刊的已验证 citation 格式
+  - The Spine Journal：bracket [N]，6 位作者后加 et al.
+  - Spine (Phila Pa 1976)：superscript，citation 中需包含「(Phila Pa 1976)」
+  - Bone Joint J：列出全部作者，Vol-B(issue) 格式
+  - Neurospine：superscript，3 位作者后加 et al.
+  - 另含：J Neurosurg Spine、Global Spine J、Clin Orthop Relat Res、Asian Spine J
+- 在 `profile/authors.md`（local only，gitignored）中为 5 位合著者新增 ORCID
+
+### v0.6.0 (2026-04-18)
+
+**Writing Guide 重大重构** — `docs/writing_guide.md` 内部版本 v0.3.0 → v0.4.0
+
+- CLAUDE.md（orchestrator）与 writing_guide.md（rules）之间的 **角色分离**
+  - CLAUDE.md「Natural Academic Writing Style」章节收缩为仅指针（移除约 115 行）
+  - 所有写作风格规则、表格与示例统一整合至 writing_guide.md
+- **新章节：Style Reference Tables**（位于 writing_guide.md）
+  - Voice & Tense by Section（6 个章节：Abstract/Intro/Methods/Results/Discussion/Conclusion）
+  - Transition Words（but → nonetheless）
+  - Verb Upgrades（showed → demonstrated）
+  - Common Corrections（elderly → older adult 等）
+  - Statistical Notation（斜体 *p*、范围用 en-dash、绝不使用 *p* = 0.000）
+  - Hedging Language（4 级指南：Discussion 的 Strong/Moderate/Weak/Very weak）
+- **新章节：Writing Principles (4 Pillars)**（位于 writing_guide.md）
+  - Clarity、Conciseness、Objectivity、Consistency，并配以扩充的示例
+- **General Principles 扩充** 6 条新规则：
+  - 稿件正文不使用粗体
+  - 缩写仅定义一次规则
+  - 以临床发现而非统计方法作为句子主语
+  - 不混用同义词（dural tear ↔ durotomy 等），并在 draft_plan.md 中进行术语选择
+  - 数值格式一致性（小数、单位）
+  - 句首不使用数字（拼写或重构）
+- **Results 章节**：新增非显著 p 值省略指南（primary outcome 例外）
+- **Discussion 章节**：三个新子章节
+  - 不使用具体数字/p 值（文献比较例外）
+  - 非显著结果不使用方向性趋势表述
+  - 中性语气，并附被禁止的夸张用语清单
+- **Tables 章节**：2 条新 Tips
+  - Methods Statistics 与 Table footnote 的角色分离
+  - 预设敏感性分析使用 Supplementary Table
+
+**跨文件一致性修复**
+
+- CLAUDE.md Phase 2：显式引用 `docs/statistical_analysis_guide.md` + `analysis_plan.md` 必需项（endpoint hierarchy、tests、multiple comparison、missing data）
+- CLAUDE.md Phase 6 QC：逐轮责任标注（Claude / Dr. Editor / Dr. Statistician），并标记 CRITICAL vs RECOMMENDED
+- CLAUDE.md Phase 3→4 Completion Criteria：扩充为列出全部 9 个 `draft_plan.md` 必需项
+- `docs/revision_guide.md`：新增「QC Re-run for Revision」章节，含逐轮 re-run 清单与提交前清单
+- `docs/evidence_guide.md`：Search Log 查询示例更新为实际 PubMed 语法（field tags `[tiab]`/`[MeSH]`、boolean AND/OR/NOT、带引号短语）
+
+### v0.5.2 (2026-04-15)
+
+- 修复所有文档之间的跨文件不一致
+- 更新 figure 格式 workflow：draft 用 PNG（300 DPI），最终提交用带 LZW 压缩的 TIFF（600+ DPI），PPT/vector 作为可选
+- 更新 `save_figure()` 模板：拆分为 `draft=True`（PNG）/ `final=True`（TIFF LZW）参数
+- 在 CLAUDE.md revision 结构与 File Roles 表中新增 `review/reviewer_comments_REV{N}.md`
+- 将 `analysis_plan.md` 占位符由 `[FROM CLAUDE.md]` 改为更友好的 `[연구 설계 입력]`
+- 使 `revision_guide.md` 文件结构与 CLAUDE.md 对齐（R1→REV1 命名约定）
+- 在 `qc_guide.md` 的 QC log 与 Final Sign-off 中新增 Round 4 模板
+- 更新 `statistical_analysis_guide.md` 的 figure 输出格式以包含 TIFF
+- 更新 `checklist_guide.md` 的 figure 提交要求（TIFF LZW 600+ DPI）
+
+### v0.5.1 (2026-04-15)
+
+- 新增 Analysis Plan Mandatory（Critical Rule #7）— 运行任何统计分析前必须创建并批准 `analysis_plan.md`
+  - 多论文项目的逐篇 analysis plan（`data/paper{N}_xxx/analysis_plan.md`）
+  - 必需内容：研究问题、纳入/排除标准、变量定义、检验选择理由、显著性水平
+- 新增 Draft Plan Mandatory（Critical Rule #8）— 撰写任何章节前必须创建并批准 `drafts/draft_plan.md`
+  - 必需内容：核心信息、tone/voice、必要参考文献、证据缺口、table/figure 计划、introduction/discussion 大纲、limitation 要点
+  - 多论文项目的逐篇 draft plan
+- 新增 Model Selection by Phase（Critical Rule #9）— 经济高效的模型指引
+  - 推荐 Opus：Analysis Plan、Draft Plan、Revision（战略性阶段）
+  - 默认 Sonnet、可选 Opus：Drafting、Style Polish、QC（基于计划的执行）
+  - 推荐使用 Plan Mode（`/plan`）创建 Draft Plan
+- workflow 阶段重新编号（7 → 8 个阶段）：在 Analysis 与 Drafting 之间新增 Phase 3（Draft Plan）
+- 更新 Phase Completion Criteria，加入 draft_plan.md 批准 gate
+
+### v0.5.0 (2026-04-14)
+
+- 增强 QC Round 2（Reference Verification），新增 4 项子检查：
+  - 2.5 Placeholder Reference Detection — 检测假/临时 citation（[ref1]、[TBD]、[X] 等）
+  - 2.6 Order of Appearance Check — 验证 citation 编号是否遵循 Vancouver 风格顺序
+  - 2.7 Reference Format Consistency — 检查所有 reference 的书目风格一致性
+  - 2.8 Citation Distribution Check — 分节 citation 平衡、self-citation 率、时效性
+- 强化 Reference List Integrity（2.4）— 新增编号连续性与重复编号检查
+- 更新 QC Log 模板，加入 Round 2 增强章节
+- 新增 File Versioning 规则（Critical Rule #5）— 日期默认（`_YYMMDD`）、`_v1`、`_REV1`、`_FINAL`
+- 新增 Multi-Paper Organization（Critical Rule #6）— data、results、drafts、output、review 的逐篇子文件夹
+- 新增 Multi-Paper Project 结构图（共享 docs/knowledge/scripts，逐篇独立文件夹）
+- 新增 Revision 文件夹结构 — `drafts/revision/REV{N}/`、`output/revision/REV{N}/`
+- 在 Recommended Workflow 中新增 Phase 7（Revision），含 QC re-run 要求
+- 更新 Phase Completion Criteria，加入 Submit → Revision 路径
+- 更新 File Roles 表，加入 revision 文件夹条目
+
+### v0.4.0 (2026-04-09)
+
+- 新增 `docs/revision_guide.md` - 审稿人回复与 revision 指南
+- 新增 `docs/figure_guide.md` - 出版级 figure 生成指南
+- 新增 `drafts/00_cover_letter.md` - 简洁的 cover letter 模板
+- 更新 CLAUDE.md：项目结构、file roles、revision 与 figures 的 Quick Commands
+- 从项目结构中移除 Spine GraphRAG 项目专属引用
+
+### v0.3.0 (2026-03-09)
+
+- 重大重写 `docs/statistical_analysis_guide.md`（v0.2.1 → v0.3.0）
+  - Statistical Parsimony、Analysis Hierarchy、Clinical Significance、Subgroup Analysis、Sensitivity Analysis
+  - Methods Statistical Section Checklist（依 ICMJE/SAMPL 的 10 项必需内容）
+- 更新 `docs/writing_guide.md`、`docs/expert_roles.md`、`docs/qc_guide.md` 以保持统计一致性
+
+### v0.2.5 (2026-03-09)
+
+- 新增 `scripts/search_pubmed.py` - 使用 NCBI E-utilities API 的 PubMed 搜索工具（无 MCP、无外部包）
+- 新增斜杠命令：`/search-evidence [query]`、`/import-doi [doi]`
+
+### v0.2.4 (2026-03-04)
+
+- 新增 `.gitattributes`，用于 LF 行尾规范化
+- 新增针对 `.DS_Store`、本地设置、IDE config 的 `.gitignore` 规则
+
+### v0.2.3 (2026-02-15)
+
+- 新增 `docs/docx_guide.md`，用于 DOCX 转换规则
+- 日期后缀的输出文件，分离的 title page 与 table DOCX 文件
+
+### v0.2.2 (2026-02-10)
+
+- 将 evidence guide 与 evidence registry 分离
+- 新增 `docs/evidence_guide.md`，含详细的摘要撰写说明
+
+### v0.2.1 (2026-02-07)
+
+- 各类结构修复与模板改进
+
+### v0.2 (2026-02-03)
+
+- 新增 Statistical Analysis Guide
+- 新增 Table/Figure/Results 冗余预防规则
+
+### v0.1 (Initial)
+
+- 基础项目结构
+- writing guide、expert roles、checklists、QC guide

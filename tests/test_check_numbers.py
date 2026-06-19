@@ -200,6 +200,52 @@ class CheckNumbersTests(unittest.TestCase):
 
             self.assertFalse(result.passed)
 
+    def test_check_numbers_rejects_pvalue_backed_only_by_proportion(self) -> None:
+        # A generic proportion/rate in the 0-1 range is not enough to support a
+        # p-value claim; otherwise clinical rates can falsely satisfy p<threshold.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table2_outcomes.csv").write_text(
+                "endpoint,complication_rate\nprimary,0.2\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The between-group difference was significant (*p*<0.3).",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertFalse(result.passed)
+
+    def test_check_numbers_accepts_pvalue_embedded_in_non_pvalue_column_text(self) -> None:
+        # Some exported result tables store "p=..." in a generic statistics
+        # column. That text is still explicitly a p-value and should be usable.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table2_outcomes.csv").write_text(
+                "endpoint,statistic\nprimary,p=0.012\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The between-group difference was significant (*p*=0.012).",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertTrue(result.passed)
+
     def test_check_numbers_matches_thousands_separator(self) -> None:
         # Regression: "1,234" must trace to 1234 in the CSV instead of being
         # tokenized into "1" and "234".

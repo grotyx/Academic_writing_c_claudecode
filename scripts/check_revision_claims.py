@@ -405,6 +405,7 @@ def format_result(result: CheckResult, response_path: Path) -> str:
     lines.extend(
         [
             "GATE FAIL",
+            "failure_code: GATE_FAIL REVISION_CLAIMS",
             "verifier: Ghost-Revision",
             f"artifact: {response_path}",
             f"checked: {len(result.claims)} change claim(s), {len(result.failures)} failure(s)",
