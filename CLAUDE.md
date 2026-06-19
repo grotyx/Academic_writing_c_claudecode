@@ -483,14 +483,16 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 |------|----------------------|-----------|
 | 전역 규칙 | General Principles | 시제, Bold 금지, 약어 1회 정의, 임상 결과 주어, 동의어 혼용 금지, 숫자 서식, 문두 숫자 |
 | 스타일 표 | Style Reference Tables | Voice & Tense / Transition / Verb Upgrades / Common Corrections / Statistical Notation / Hedging |
+| AI 군살빼기 | AI-Draft De-bloat | -ing 피상분석·AI어휘·신호어 제거; 충돌 패턴(hedging/copula/passive) 적용 제외 |
 | 작문 원칙 | Writing Principles (4 Pillars) | Clarity / Conciseness / Objectivity / Consistency |
 | 섹션별 규칙 | 01. Title ~ 10. Tables | 각 섹션 구조·구체 규칙·예시 |
 
 **Phase 5 워크플로:**
 1. `docs/writing_guide.md` Style Reference Tables 읽기
 2. 섹션별로 Transition/Verb/Corrections 적용
-3. Writing Principles (4 Pillars) 기준으로 검토
-4. Dr. Editor 최종 polish
+3. AI 초안인 경우 AI-Draft De-bloat 적용 (-ing 피상분석·AI어휘·신호어 제거; 충돌 패턴 제외)
+4. Writing Principles (4 Pillars) 기준으로 검토
+5. Dr. Editor 최종 polish
 
 ---
 

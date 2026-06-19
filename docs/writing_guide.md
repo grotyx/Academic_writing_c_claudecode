@@ -1,4 +1,4 @@
-# Section-by-Section Writing Guide (v0.4.0)
+# Section-by-Section Writing Guide (v0.5.0)
 
 ## General Principles
 - Use past tense for completed actions (Methods, Results)
@@ -108,6 +108,49 @@ Discussion에서 해석·추론을 기술할 때, 근거의 강도에 비례한 
 | Very weak | possibly, potentially | 탐색적/가설 생성 단계 |
 
 **원칙**: 관찰 연구·retrospective 연구·작은 표본은 Moderate~Weak hedging이 기본. Strong 주장은 RCT·대규모 연구·확실한 증거에 한함.
+
+---
+
+## AI-Draft De-bloat (AI 초안 군살빼기)
+
+> AI가 생성한 초안에서 "AI 냄새"와 군살(장황·피상)을 걷어내는 패스. **Phase 5 (Style Polish)에서 적용.** AI 사용은 disclosure로 투명하게 밝히되, 글의 직접성·간결성은 별개로 끌어올린다.
+> 일반 글쓰기용 패턴(blader/humanizer)을 의학 학술 문체에 맞게 선별한 것으로, 아래 **적용 제외** 항목은 따르지 않는다.
+
+### 핵심 3가지 (효과 大, 우선 적용)
+
+| Watch for | 문제 | 교정 |
+|-----------|------|------|
+| **`-ing` 피상 분석**: highlighting, underscoring, reflecting, emphasizing, contributing to, demonstrating the importance of | 내용 없이 깊이 있어 보이게 만드는 장식구 | 구체적 관찰·결과로 대체 |
+| **AI 어휘**: delve (into), crucial, pivotal, intricate, leverage, nuanced, comprehensive, realm, robust(남용) | 2023년 이후 텍스트에 과다 출현 → AI 냄새 | 평이한 단어로: delve into→examine, crucial/pivotal→important(또는 삭제), leverage→use |
+| **신호어(signposting)**: "In this section, we…", "It is worth noting that", "Importantly," | 본론 지연·군더더기 | 군더더기 제거 후 바로 내용 진술 |
+
+예:
+- ❌ "...thereby highlighting the crucial importance of early intervention in this patient population."
+- ✅ "Early intervention reduced reoperation rates in this population."
+
+### 추가 패턴
+
+| Watch for | 교정 |
+|-----------|------|
+| 정형 "Challenges and future prospects" 단락 | 구체적 사실·예시로 대체 |
+| 부정 병렬 "not just X but Y" / 억지 삼분(rule of three) | 자연스러운 문장 구조로 |
+| 권위 수사 "at its core", "fundamentally", "the real question is" | 평이한 진술로 |
+| 경구 공식 "X is not merely Y but Z" (Discussion 첫 문장 과장) | 사실 진술로 |
+| 하이픈 합성어 남용 (data-driven, high-quality) | attributive 위치만 하이픈: "a high-quality study" (O) / "the study was high quality" (하이픈 X) |
+| 챗봇 잔재 "I hope this helps", "Let me know" · 대화체 오프너 "Honestly,", "Look," | 초안에서 완전 삭제 |
+
+### ⚠️ 적용 제외 — 학술 문체상 따르지 않음
+
+> 일반 글쓰기용 규칙 중 다음은 학술 논문에 **역효과**이므로 적용하지 않는다.
+
+| 일반 규칙 | 제외 이유 |
+|-----------|-----------|
+| Hedging 제거 | 근거 비례 hedging은 **필수** (과잉주장 방지) — 위 Hedging Language 표 유지. 단 중첩 과잉("might possibly could")만 정리 |
+| Copula 회피 제거 (전부 is/has로) | Verb Upgrades(is→remains/represents/constitutes)가 학술 격식 — 유지 |
+| 수동태 제거 | Methods/Results는 수동태 선호 — 위 Voice & Tense 표 유지 |
+| "align with"를 AI어휘로 간주 | 본 가이드 권장 표현(Common Corrections) — 유지 |
+
+> **이미 다른 규칙으로 처리됨** (여기서 중복 적용 불필요): 동의어 돌려쓰기 → "동의어 혼용 금지"(General Principles), em/en dash·Bold → General Principles, 중요성 부풀리기·광고성 형용사 → Objectivity, 모호한 귀속(weasel words) → EVID 인용 검증.
 
 ---
 
