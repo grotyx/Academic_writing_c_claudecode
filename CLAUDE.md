@@ -30,7 +30,8 @@ project/
 │   ├── revision_guide.md        # Revision & reviewer response guide
 │   ├── figure_guide.md          # Figure generation guide
 │   ├── docx_guide.md            # DOCX 변환 가이드 (서식, 테이블, 네이밍)
-│   └── draft_plan_template.md    # Draft plan 10개 항목 템플릿 (Phase 3에서 복사)
+│   ├── draft_plan_template.md    # Draft plan 10개 항목 템플릿 (Phase 3에서 복사)
+│   └── debate_protocol.md        # Claude–Codex co-author 토론 절차
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # Original PDF files
@@ -76,7 +77,8 @@ project/
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
 ├── review/                       # Review & QC documents
 │   ├── qc_log.md                 # QC round tracking
-│   └── gates/                    # 검증 게이트 원장 (phase_NN_*.GATE.md)
+│   ├── gates/                    # 검증 게이트 원장 (phase_NN_*.GATE.md)
+│   └── debates/                  # Claude–Codex 토론 로그
 └── output/                       # Final compiled manuscript
     ├── title_page_YYMMDD.docx
     ├── manuscript_YYMMDD.docx
@@ -206,6 +208,7 @@ output/paper1_xxx/revision/REV1/
 | `docs/figure_guide.md` | Figure generation guide (DPI, 팔레트, Python 템플릿) | Phase 2 (figure 생성 시) |
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `docs/draft_plan_template.md` | Draft plan 10개 항목 템플릿 (Phase 3에서 복사하여 사용) | Phase 3 시작 시 복사 → `drafts/draft_plan.md` |
+| `docs/debate_protocol.md` | Claude–Codex co-author 토론 절차 (라운드·역할·로그·폴백) | Phase 2·3·4·8 (`/paper-debate` 토론 시) |
 | `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿) | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
 | `profile/journals.md` | 저널별 인용 형식 (bracket vs superscript, et al. 기준, volume 형식) | 참고문헌 목록 작성 시 확인 |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
@@ -513,6 +516,7 @@ Phase 1: Setup
 Phase 2: Statistical Analysis — Opus 권장 (analysis_plan)
 ├── Read docs/statistical_analysis_guide.md (분석 설계 원칙·검정 선택·보정)
 ├── Place raw data (CSV/XLSX) in data/
+├── (선택) /paper-debate — 분석 접근을 통계 담당 공동 저자(Codex)와 토론 후 plan 작성
 ├── Create data/analysis_plan.md (필수, 사용자 승인 후 진행)
 │   ├── Claude reads CSV → creates analysis plan → 사용자 확인
 │   └── 포함 항목: endpoint hierarchy, 검정법, 다중비교 보정, 결측 처리
@@ -526,6 +530,7 @@ Phase 2: Statistical Analysis — Opus 권장 (analysis_plan)
 └── Generate figures → drafts/figures/
 
 Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
+├── (선택) /paper-debate — key message·구조를 전략 담당 공동 저자(Codex)와 토론 후 plan 작성
 ├── Copy docs/draft_plan_template.md → drafts/draft_plan.md (또는 논문별 서브폴더)
 │   ├── Key message (이 논문의 핵심 메시지 1-2문장)
 │   ├── Tone & voice (논조/어조 설정)
@@ -544,6 +549,7 @@ Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 Phase 4: Draft (in this order)
 ├── Read docs/drafting_protocol.md + docs/section_templates.md before drafting
 ├── Apply Style/terminology.md and relevant Style anchors during drafting
+├── (선택) /paper-debate — 핵심 섹션 논증 골격을 논리 담당 공동 저자(Codex)와 토론 후 작성
 ├── 04_methods.md      → establishes framework
 │   └── Expert: Dr. Researcher B (methodology)
 ├── 05_results.md      → narrative (refer to drafts/table_*.md)
@@ -597,6 +603,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 ├── 리뷰어 코멘트 저장: review/reviewer_comments_REV1.md
 ├── Revision 폴더 생성: drafts/revision/REV1/, output/revision/REV1/
 ├── 수정된 섹션만 _REV1 접미사로 저장
+├── (선택) /paper-debate — 대응 전략을 공동 저자(Codex)와 토론 후 response 작성
 ├── Response letter 작성 → drafts/revision/REV1/response_letter_REV1.md
 ├── 🔒 GATE (각 응답마다): ghost-revision 검증 (응답 주장 ↔ 원고 diff 대조) 자율 루프
 ├── QC re-run (최소 Round 1-2 재수행)
@@ -650,6 +657,11 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 |----------------------|---------------------------------------------|
 | `Create draft plan`  | Copy docs/draft_plan_template.md → drafts/draft_plan.md, 10개 항목 작성 (Opus 권장) |
 | `Review draft plan`  | draft_plan.md 검토 및 수정 제안             |
+
+### Collaboration (Codex)
+| Command | Action |
+|---------|--------|
+| `/paper-debate <주제>` | Claude–Codex co-author 토론 (작성 전, `docs/debate_protocol.md`) |
 
 ### Drafting
 | Command | Action |
