@@ -8,6 +8,8 @@
 
 > **[2026-06-18 갱신]** 초기 '새 스크립트 없음 / 코드·테스트 없음' 결정은 번복됨 — 결정론적 helper 스크립트 5종(`scripts/check_citations.py`, `check_gate.py`, `check_numbers.py`, `check_revision_claims.py`, `compile_response_docx.py`)과 `tests/` pytest 스위트를 하네스에 추가했다 (deterministic-first: 스크립트가 먼저 돌고 그 뒤 LLM 판정). 아래 Architecture·Tech Stack의 "스크립트 없음 / 코드·테스트 없음" 서술은 이 갱신으로 대체된다.
 
+> **[2026-06-19 갱신]** 본 문서의 'Verifier 3종 / 3 Verifier 헌장'은 초기 설계 기준이다. 구현에서 Logic이 추가되어 draft gate는 4종(Constraint·Citation·Data·Logic), Revision gate는 Revision-claims·Response-alignment를 더한다. 최신 verifier 세트 정의는 `docs/verification_protocol.md`·`CLAUDE.md` Rule 10을 따른다.
+
 **Tech Stack:** Markdown 문서, Claude Code 서브에이전트(Agent tool), Python 결정론적 helper 스크립트 + `tests/` pytest 스위트, git. (~~코드/테스트 없음~~ 번복 — 위 갱신 참조; pytest와 더불어 일관성 grep·lint 실행·교차 확인을 병행한다.)
 
 **Source spec:** `docs/superpowers/specs/2026-06-16-verification-harness-design.md`

@@ -33,6 +33,8 @@
 
 > **[2026-06-18 갱신]** 초기 '스크립트 없음' 결정은 번복됨 — 결정론적 helper 스크립트 5종(`scripts/check_citations.py`, `check_gate.py`, `check_numbers.py`, `check_revision_claims.py`, `compile_response_docx.py`)과 `tests/` pytest 스위트를 하네스에 추가했다. Verifier 서브에이전트는 이 스크립트를 먼저 실행한 뒤 LLM 판정을 수행한다 (deterministic-first). 아래 §3 D1, §4의 "스크립트 없음" 서술은 이 갱신으로 대체된다.
 
+> **[2026-06-19 갱신]** 본 문서의 'Verifier 3종 / The Three Verifiers(Constraint·Citation·Data)'는 초기 설계(3대 실패 F1/F2/F3 매핑) 기준이다. 구현에서 Logic verifier가 추가되어 draft gate는 **4종**(Constraint·Citation·Data·Logic)이며, Revision gate는 **Revision-claims·Response-alignment**를 더한다. 아래 §5의 '3 Verifier' 서술은 설계 시점 기록으로 보존하되, 운영 기준 verifier 세트는 `docs/verification_protocol.md`·`CLAUDE.md` Rule 10을 따른다.
+
 ## 3. Decisions (확정)
 
 | # | 결정 | 값 |
