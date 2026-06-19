@@ -18,25 +18,18 @@ import requests
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-PROMPTS = {
-    "manuscript": (
-        "You are an adversarial peer reviewer for a medical research paper. "
-        "Attack the text below: find overclaiming, methodological flaws, "
-        "logical leaps, overgeneralization, and reproducibility problems. "
-        "Be specific and cite the passage. Do not be polite.\n\n---\n{target}"
-    ),
-    "response": (
-        "You are a peer reviewer reading an author rebuttal. Is it "
-        "satisfactory? Where would you push back further, and what would you "
-        "still reject? Be specific.\n\n---\n{target}"
-    ),
-}
+# Adversarial prompts live in scripts/critical_prompts/<role>.txt so that this
+# script, the protocol doc, and the Claude/Codex reviewers all share one source.
+PROMPT_DIR = Path(__file__).resolve().parent / "critical_prompts"
+ROLES = ("manuscript", "response")
 
 
 def build_prompt(role: str, target_text: str) -> str:
-    if role not in PROMPTS:
+    prompt_file = PROMPT_DIR / f"{role}.txt"
+    if not prompt_file.exists():
         raise ValueError(f"unknown role: {role}")
-    return PROMPTS[role].format(target=target_text)
+    template = prompt_file.read_text(encoding="utf-8")
+    return template.format(target=target_text)
 
 
 def call_model(model_id: str, prompt: str, api_key: str, timeout: int = 120) -> str:
@@ -78,7 +71,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--target", required=True, type=Path, help="Target text file")
     parser.add_argument("--models", help="Comma-separated OpenRouter model IDs")
     parser.add_argument("--models-file", type=Path, help="File with one model ID per line")
-    parser.add_argument("--role", choices=sorted(PROMPTS), default="manuscript")
+    parser.add_argument("--role", choices=ROLES, default="manuscript")
     parser.add_argument("--out", type=Path, help="Directory to write per-model raw responses")
     return parser
 

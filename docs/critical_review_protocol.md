@@ -26,10 +26,12 @@
 
 ## 2. 적대 프롬프트 (대상별)
 
-- 원고(manuscript): "동료 심사자로서 overclaiming·방법론 허점·논리 비약·일반화 오류·재현성 문제를 최대한 공격하라. 구체적으로 해당 구절을 인용하라."
-- response: "심사자로서 이 답변이 만족스러운가, 어디를 재반박하겠는가."
+프롬프트 본문은 `scripts/critical_prompts/<role>.txt`에 **단일 정본**으로 둔다 (`manuscript.txt`, `response.txt`). OpenRouter 스크립트·Claude 서브·Codex 모두 이 파일을 출처로 쓴다. 프롬프트를 바꾸려면 이 파일만 수정한다.
 
-(스크립트 호출 시 `--role manuscript|response`로 선택. Claude/Codex 호출 시 같은 취지를 프롬프트에 담는다.)
+- `manuscript.txt` — 원고를 적대적으로 공격 (overclaiming·방법론·논리 비약·일반화·재현성).
+- `response.txt` — reviewer rebuttal 검토 (만족 여부·재반박 지점).
+
+(스크립트: `--role manuscript|response`로 해당 파일 선택. Claude/Codex 호출 시에도 같은 `.txt` 본문을 프롬프트로 사용.)
 
 ## 3. 종합 — 합의도 × 심각도
 

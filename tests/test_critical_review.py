@@ -78,5 +78,13 @@ class LoadModelsTests(unittest.TestCase):
             )
 
 
+class PromptFileTests(unittest.TestCase):
+    def test_prompt_files_are_the_single_source(self) -> None:
+        # Prompts must live as files (the single source), not hardcoded.
+        m = load_module()
+        self.assertTrue((m.PROMPT_DIR / "manuscript.txt").exists())
+        self.assertTrue((m.PROMPT_DIR / "response.txt").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
