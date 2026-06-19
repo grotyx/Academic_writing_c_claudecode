@@ -29,7 +29,9 @@ def build_prompt(role: str, target_text: str) -> str:
     if not prompt_file.exists():
         raise ValueError(f"unknown role: {role}")
     template = prompt_file.read_text(encoding="utf-8")
-    return template.format(target=target_text)
+    # Use replace (not str.format) so literal braces in the prompt or target
+    # text -- e.g. JSON or LaTeX examples -- never crash the substitution.
+    return template.replace("{target}", target_text)
 
 
 def call_model(model_id: str, prompt: str, api_key: str, timeout: int = 120) -> str:

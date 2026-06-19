@@ -30,6 +30,13 @@ class BuildPromptTests(unittest.TestCase):
         self.assertIn("We added a sentence.", out)
         self.assertIn("reviewer", out.lower())
 
+    def test_braces_in_target_do_not_break_substitution(self) -> None:
+        # Target text with literal braces (JSON, LaTeX) must be inserted verbatim.
+        m = load_module()
+        target = 'Cohort {n=120} with \\cite{smith} and {"k": 1}.'
+        out = m.build_prompt("manuscript", target)
+        self.assertIn(target, out)
+
 
 class CallModelTests(unittest.TestCase):
     def test_call_model_posts_and_parses_choice(self) -> None:
