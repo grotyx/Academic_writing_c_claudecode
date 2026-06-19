@@ -1,5 +1,7 @@
 # Statistical Analysis Guide (v0.3.0)
 
+> 분석 접근을 확정하기 전에 `/paper-debate <분석 주제> stats`로 통계 담당 공동 저자(Codex)와 토론할 수 있다 (작성 전, 선택). 절차: `docs/debate_protocol.md`.
+
 > 통계 분석 수행 및 결과 정리를 위한 상세 가이드
 > Dr. Statistician의 역할을 기반으로 작성됨
 

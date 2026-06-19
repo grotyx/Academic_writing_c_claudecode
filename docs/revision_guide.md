@@ -1,5 +1,7 @@
 # Revision & Reviewer Response Guide (v0.5.0)
 
+> 대응 전략을 정하기 전에 `/paper-debate <코멘트 주제> revision`으로 공동 저자(Codex)와 함께 reviewer 대응을 설계할 수 있다 (선택). 절차: `docs/debate_protocol.md`.
+
 > 리뷰어 코멘트 대응 및 수정 원고 작성을 위한 가이드
 
 ---

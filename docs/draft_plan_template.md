@@ -1,5 +1,7 @@
 # Draft Plan Template
 
+> draft plan을 확정하기 전에 `/paper-debate <논문 방향> planning`으로 전략 담당 공동 저자(Codex)와 토론할 수 있다 (선택). 절차: `docs/debate_protocol.md`.
+
 > Phase 3에서 이 파일을 복사하여 사용:
 > `cp docs/draft_plan_template.md drafts/draft_plan.md`  (single paper)
 > `cp docs/draft_plan_template.md drafts/paper1_xxx/draft_plan.md`  (multi-paper)
