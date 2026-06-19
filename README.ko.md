@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v0.9.2** (2026-06-18)
+**v0.9.3** (2026-06-19)
 
 ---
 
@@ -37,6 +37,9 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **Author response Markdown template** (`docs/response_letter_template.md`) — reviewer response, 수정 위치, machine-readable `[CHANGE]` block을 정렬
 - **Draft plan 템플릿** (`docs/draft_plan_template.md`) — 10개 항목 템플릿 + claim→citation 테이블 + 승인 체크리스트
 - **PubMed 검색 도구** — 내장 Python 스크립트 (MCP 및 외부 패키지 불필요)
+- **공동 저자 토론** (`/paper-debate`) — 작성 전 Claude–Codex 토론으로 분석 계획·draft plan·논증 구조·리뷰어 응답 설계 (`docs/debate_protocol.md`)
+- **멀티모델 비판적 검토** (`/critical-review`) — 작성 후 Claude 서브에이전트·Codex·OpenRouter 모델로 senior reviewer/editor 수준의 적대적 검토, 합의도 × 심각도로 정렬 (`docs/critical_review_protocol.md`)
+- **AI-Draft De-bloat** — AI 흔적(피상적 `-ing` 분석·AI 어휘·신호어)을 제거해 disclosure를 유지하면서도 자연스럽게 읽히게 하는 writing-guide 패스 (`docs/writing_guide.md`)
 - **슬래시 명령어** — 근거 문헌 등록 (`/search-evidence`, `/import-doi`)
 
 ---
@@ -299,6 +302,19 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v0.9.3 (2026-06-19)
+
+**공동 저자 협업 및 멀티모델 비판적 검토**
+
+- **`/paper-debate`** 추가 (`docs/debate_protocol.md`, `.claude/commands/paper-debate.md`) — 작성 전 Claude–Codex 공동 저자 토론(분석 계획·draft plan·논증 구조·리뷰어 응답). 합의 상한 3, 토론 로그 `review/debates/`, Codex 불가 시 Claude 단독 폴백.
+- **`/critical-review`** 추가 (`docs/critical_review_protocol.md`, `.claude/commands/critical-review.md`) — 작성 후 Claude 서브에이전트·Codex·OpenRouter 모델(기본 `minimax/minimax-m3`, `z-ai/glm-5.2`)의 적대적 검토. 합의도 × 심각도로 통합·정렬, 리포트 `review/critical/`.
+- `scripts/critical_review.py`(OpenRouter 호출; 모델 1개 실패는 skip, 비치명), `scripts/critical_models.txt`(모델 목록 외부화), `scripts/critical_prompts/`(스크립트·Claude 서브·Codex가 공유하는 단일 정본 프롬프트 `manuscript.txt`/`response.txt`) 추가.
+- critical-review 프롬프트를 **senior reviewer / editor-in-chief 수준**으로 — 표면 결함이 아니라 설계 견고성·데이터의 결론 지지 여부·출판 가치를 묻도록 구성.
+- `build_prompt`를 `str.format` 대신 `str.replace`로 변경 — 프롬프트/대상 텍스트의 중괄호(JSON·LaTeX 예시)가 치환을 깨뜨리지 않음. 회귀 테스트 추가.
+- `docs/writing_guide.md`에 **AI-Draft De-bloat** 섹션 추가 — AI 흔적(피상적 `-ing` 분석·AI 어휘·신호어) 제거, 충돌 패턴(hedging/copula/passive)은 제외.
+- OpenRouter 접근은 `.claude/settings.local.json`의 `OPENROUTER_API_KEY`(gitignored). 키가 없으면 OpenRouter만 skip하고 나머지 리뷰어로 진행.
+- CLAUDE.md에 두 명령어 통합(Collaboration 명령어, Phase 2/3/4/8 토론, Round 6 2단 비판적 검토, File Roles, 구조 트리).
 
 ### v0.9.2 (2026-06-18)
 

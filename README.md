@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.9.2** (2026-06-18)
+**v0.9.3** (2026-06-19)
 
 ---
 
@@ -37,6 +37,9 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Author response Markdown template** (`docs/response_letter_template.md`) — keeps reviewer responses, manuscript locations, and machine-readable `[CHANGE]` blocks aligned
 - **Draft plan template** (`docs/draft_plan_template.md`) — 10-item template with claim→citation tables and approval checklist
 - **PubMed search tool** with built-in Python script (no MCP or external packages required)
+- **Co-author debate** (`/paper-debate`) — pre-writing Claude–Codex discussion for analysis plans, draft plans, argument structure, and reviewer responses (`docs/debate_protocol.md`)
+- **Multi-model critical review** (`/critical-review`) — post-writing adversarial review at senior reviewer/editor level via Claude subagent, Codex, and/or OpenRouter models, ranked by consensus × severity (`docs/critical_review_protocol.md`)
+- **AI-Draft De-bloat** — writing-guide pass that strips AI tells (hollow `-ing` analysis, AI vocabulary, signposting) so disclosed AI assistance still reads naturally (`docs/writing_guide.md`)
 - **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
 
 ---
@@ -63,7 +66,9 @@ project/
 │   ├── response_letter_template.md  # DOCX-ready author response template
 │   ├── figure_guide.md           # Figure generation guide
 │   ├── docx_guide.md             # DOCX conversion guide
-│   └── draft_plan_template.md    # Draft plan template (copy to drafts/ for Phase 3)
+│   ├── draft_plan_template.md    # Draft plan template (copy to drafts/ for Phase 3)
+│   ├── debate_protocol.md        # Claude–Codex co-author debate procedure
+│   └── critical_review_protocol.md  # External multi-model adversarial review
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # Reference summary collection
 │   ├── pdf/                      # Original PDF files — gitignored, local only
@@ -92,7 +97,10 @@ project/
 │   ├── check_gate.py             # Phase gate ledger check
 │   ├── check_revision_claims.py  # Revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
-│   └── search_pubmed.py          # PubMed search tool (no external deps)
+│   ├── search_pubmed.py          # PubMed search tool (no external deps)
+│   ├── critical_review.py        # OpenRouter multi-model adversarial caller
+│   ├── critical_models.txt       # OpenRouter model list (externalized)
+│   └── critical_prompts/         # Adversarial prompt single-source (manuscript.txt, response.txt)
 ├── tests/                        # Pytest suite for the verification scripts
 ├── results/                      # Analysis outputs
 ├── drafts/                       # Manuscript sections, tables & figures
@@ -101,7 +109,9 @@ project/
 │   └── figures/
 ├── review/                       # QC documents
 │   ├── qc_log.md
-│   └── gates/                    # Verification gate ledger (phase_NN_*.GATE.md)
+│   ├── gates/                    # Verification gate ledger (phase_NN_*.GATE.md)
+│   ├── debates/                  # Claude–Codex debate logs
+│   └── critical/                 # External multi-model critical-review reports
 └── output/                       # Final compiled manuscript
     ├── title_page_YYMMDD.docx
     ├── manuscript_YYMMDD.docx
@@ -189,7 +199,7 @@ Each summary captures:
 - Round 3: Logic and flow
 - Round 4: Terminology, abbreviation, and tense consistency
 - Round 5: Statistical quality
-- Round 6: Critical review (overclaiming, logical fallacy, bias, generalizability)
+- Round 6: Critical review (overclaiming, logical fallacy, bias, generalizability) — internal experts plus optional external multi-model `/critical-review`
 
 ### Verification Harness
 
@@ -200,6 +210,19 @@ The harness combines deterministic checks with constrained LLM verifier prompts:
 - `scripts/check_gate.py` verifies that phase gate ledgers contain `status: PASS` and required checks.
 - `scripts/check_revision_claims.py` verifies reviewer-response `[CHANGE]` blocks against revised manuscript files.
 - `docs/verifier_prompt_templates.md` provides structured prompts for semantic support, logic, redundancy, and revision-response alignment.
+
+### Co-author Collaboration (NEW in v0.9.3)
+
+Two complementary Codex/multi-model features bracket the writing process:
+
+- **`/paper-debate <topic>`** — *before* writing. Claude and Codex act as co-authors and debate analysis approach, draft-plan key message, argument structure, or reviewer-response strategy across bounded rounds (consensus cap 3). The debate log is saved under `review/debates/` and the agreed conclusion feeds the next produce step. Falls back to Claude-solo if Codex is unavailable. See `docs/debate_protocol.md`.
+- **`/critical-review <target>`** — *after* writing. The finished manuscript (or response letter) is attacked in parallel by any combination of a fresh Claude subagent, Codex, and OpenRouter models (default `minimax/minimax-m3`, `z-ai/glm-5.2`). Each reviewer is prompted at **senior peer-reviewer / editor-in-chief level** — pushing past surface defects to design soundness, whether the data support the conclusions, and publication-worthiness. Findings are merged and ranked by **consensus × severity** (Critical / Important / Minor) and stored under `review/critical/`. See `docs/critical_review_protocol.md`.
+
+The adversarial prompts live as a single source under `scripts/critical_prompts/` (`manuscript.txt`, `response.txt`); the OpenRouter script, the Claude subagent, and Codex all read the same files. OpenRouter access uses `OPENROUTER_API_KEY` (set in `.claude/settings.local.json`, gitignored); when absent, OpenRouter is skipped and the other reviewers proceed.
+
+### AI-Draft De-bloat (NEW in v0.9.3)
+
+A `docs/writing_guide.md` pass (applied in Phase 5 for AI-written drafts) that removes the tells of AI prose — hollow `-ing` "surface analysis" clauses, AI-favored vocabulary, and over-signposting — while explicitly **excluding** patterns that legitimately conflict (necessary hedging, copula, passive voice). AI authorship is still disclosed; this only keeps disclosed assistance from reading as bloated and tedious.
 
 ### Author Response DOCX Workflow
 
@@ -249,6 +272,8 @@ Slash commands for Claude integration:
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure generation guide (DPI, palettes, Python templates) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10-item with claim→citation tables and approval checklist |
+| [docs/debate_protocol.md](docs/debate_protocol.md) | Claude–Codex co-author debate procedure (rounds, roles, logging, fallback) |
+| [docs/critical_review_protocol.md](docs/critical_review_protocol.md) | External multi-model adversarial review (reviewer pool, consensus × severity, fallback) |
 | [Style/style_guide.md](Style/style_guide.md) | Style anchor workflow, extraction framework, and PDF-to-MD mirror rules |
 | [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry with definition and context |
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
@@ -259,6 +284,7 @@ Slash commands for Claude integration:
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | Verify response-letter `[CHANGE]` claims against revised manuscript files |
 | [scripts/compile_response_docx.py](scripts/compile_response_docx.py) | Compile `response_letter_REV*.md` to Author_response-style DOCX |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
+| [scripts/critical_review.py](scripts/critical_review.py) | OpenRouter multi-model adversarial reviewer caller (one model failure does not abort) |
 
 ---
 
@@ -303,6 +329,19 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v0.9.3 (2026-06-19)
+
+**Co-author collaboration and multi-model critical review**
+
+- Added **`/paper-debate`** (`docs/debate_protocol.md`, `.claude/commands/paper-debate.md`) — pre-writing Claude–Codex co-author debate for analysis plans, draft plans, argument structure, and reviewer responses; bounded rounds with consensus cap 3, debate logs under `review/debates/`, Claude-solo fallback.
+- Added **`/critical-review`** (`docs/critical_review_protocol.md`, `.claude/commands/critical-review.md`) — post-writing adversarial review by any combination of a fresh Claude subagent, Codex, and OpenRouter models (default `minimax/minimax-m3`, `z-ai/glm-5.2`), merged and ranked by consensus × severity, reports under `review/critical/`.
+- Added `scripts/critical_review.py` (OpenRouter caller; one model's failure is skipped, not fatal), `scripts/critical_models.txt` (externalized model list), and `scripts/critical_prompts/` (single-source adversarial prompts `manuscript.txt` / `response.txt` shared by the script, the Claude subagent, and Codex).
+- Critical-review prompts framed at **senior peer-reviewer / editor-in-chief level** — design soundness, data-to-conclusion support, and publication-worthiness, not just surface defects.
+- `build_prompt` uses `str.replace` (not `str.format`) so literal braces (JSON/LaTeX examples) in a prompt or target text cannot crash substitution; regression test added.
+- Added **AI-Draft De-bloat** section to `docs/writing_guide.md` — strips AI tells (hollow `-ing` analysis, AI vocabulary, signposting) while excluding legitimately conflicting patterns (hedging/copula/passive).
+- OpenRouter access via `OPENROUTER_API_KEY` in `.claude/settings.local.json` (gitignored); absent key skips OpenRouter and proceeds with the other reviewers.
+- CLAUDE.md integrates both commands (Collaboration commands, Phase 2/3/4/8 debate prompts, Round 6 two-layer critical review, File Roles, structure trees).
 
 ### v0.9.2 (2026-06-18)
 

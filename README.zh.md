@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v0.9.2** (2026-06-18)
+**v0.9.3** (2026-06-19)
 
 ---
 
@@ -36,6 +36,9 @@
 - **Author response DOCX generation**（`scripts/compile_response_docx.py`）— 将 DOCX-ready Markdown 转换为 `Author_response_220803_Final.docx` house style
 - **Author response Markdown template**（`docs/response_letter_template.md`）— 对齐 reviewer response、修改位置和 machine-readable `[CHANGE]` block
 - **PubMed 搜索工具** — 内置 Python 脚本（无需 MCP 或外部包）
+- **合著者辩论**（`/paper-debate`）— 写作前的 Claude–Codex 讨论，用于分析计划、draft plan、论证结构与审稿人回应（`docs/debate_protocol.md`）
+- **多模型批判性评审**（`/critical-review`）— 写作后由 Claude 子代理、Codex、OpenRouter 模型进行 senior reviewer/editor 级别的对抗性评审，按共识度 × 严重度排序（`docs/critical_review_protocol.md`）
+- **AI-Draft De-bloat** — 去除 AI 痕迹（空洞的 `-ing` 分析、AI 词汇、signposting）的 writing-guide 流程，在保留 disclosure 的同时让文本读起来自然（`docs/writing_guide.md`）
 - **斜杠命令** — 证据文献注册（`/search-evidence`、`/import-doi`）
 
 ---
@@ -276,6 +279,19 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v0.9.3 (2026-06-19)
+
+**合著者协作与多模型批判性评审**
+
+- 新增 **`/paper-debate`**（`docs/debate_protocol.md`、`.claude/commands/paper-debate.md`）— 写作前的 Claude–Codex 合著者辩论（分析计划、draft plan、论证结构、审稿人回应）。共识上限 3，辩论日志位于 `review/debates/`，Codex 不可用时回退为 Claude 单独执行。
+- 新增 **`/critical-review`**（`docs/critical_review_protocol.md`、`.claude/commands/critical-review.md`）— 写作后由 Claude 子代理、Codex、OpenRouter 模型（默认 `minimax/minimax-m3`、`z-ai/glm-5.2`）进行对抗性评审。按共识度 × 严重度合并排序，报告位于 `review/critical/`。
+- 新增 `scripts/critical_review.py`（OpenRouter 调用；单个模型失败则跳过，不致命）、`scripts/critical_models.txt`（模型列表外部化）、`scripts/critical_prompts/`（脚本、Claude 子代理与 Codex 共享的单一正本提示 `manuscript.txt`/`response.txt`）。
+- 将 critical-review 提示提升至 **senior reviewer / editor-in-chief 级别** — 追问设计是否稳健、数据是否支持结论、是否值得发表，而非仅停留在表层缺陷。
+- `build_prompt` 由 `str.format` 改为 `str.replace` — 提示或目标文本中的花括号（JSON、LaTeX 示例）不会破坏替换。新增回归测试。
+- 在 `docs/writing_guide.md` 新增 **AI-Draft De-bloat** 章节 — 去除 AI 痕迹（空洞的 `-ing` 分析、AI 词汇、signposting），排除会冲突的模式（hedging/copula/passive）。
+- OpenRouter 访问通过 `.claude/settings.local.json` 中的 `OPENROUTER_API_KEY`（gitignored）；缺少密钥时仅跳过 OpenRouter，其余评审者继续。
+- CLAUDE.md 集成两个命令（Collaboration 命令、Phase 2/3/4/8 辩论、Round 6 双层批判性评审、File Roles、结构树）。
 
 ### v0.9.2 (2026-06-18)
 
