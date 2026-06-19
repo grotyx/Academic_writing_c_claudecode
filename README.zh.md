@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v0.9.3** (2026-06-19)
+**v1.0.0** (2026-06-20)
 
 ---
 
@@ -31,6 +31,7 @@
 - **Citation evidence checking**（`scripts/check_citations.py`）— 将 `[EVID:id]` 标签与 `knowledge/evidence.md` 对照
 - **Data number checking**（`scripts/check_numbers.py`）— 将稿件/表格中的数字与 `results/*.csv` 对照
 - **Phase gate ledger checking**（`scripts/check_gate.py`）— 如果 `review/gates/*.GATE.md` 没有必要的 PASS，则阻止进入下一步
+- **门时效性 / provenance**（`scripts/check_gate.py --verify-hash`）— PASS 时记录被验证产出物（以及 evidence/results）的 sha256；之后的编辑会使该门变为 **stale** 并强制重新验证，从而堵住 parallel-verifier 漏洞
 - **Revision claim checking**（`scripts/check_revision_claims.py`）— 将 response letter 中的 `[CHANGE]` claim 与 revised manuscript 对照
 - **LLM verifier prompt templates**（`docs/verifier_prompt_templates.md`）— constraint、semantic citation、data、logic/redundancy、revision-alignment 验证 prompt/schema
 - **Author response DOCX generation**（`scripts/compile_response_docx.py`）— 将 DOCX-ready Markdown 转换为 `Author_response_220803_Final.docx` house style
@@ -175,6 +176,17 @@ project/
 - `scripts/check_revision_claims.py`：将 reviewer response 中的 `[CHANGE]` block 与 revised manuscript files 对照。
 - `docs/verifier_prompt_templates.md`：提供 semantic support、logic、redundancy、revision-response alignment 的验证 prompt/schema。
 
+### 验证加固（v1.0.0 新增）
+
+借鉴 "superpowers" skills 框架、聚焦于验证门的改进：
+
+- **并行 verifier + Constraint 优先。** 四个章节门 verifier（Constraint / Citation / Data / Logic）针对冻结的产出物并发执行；验证过程中不编辑该产出物，FAIL 时优先修复 Constraint（spec 合规性）发现的问题。参见 `docs/verification_protocol.md`（v0.2.0）。
+- **门时效性 / provenance**（`scripts/check_gate.py`）。PASS 时，门台账记录被验证产出物的 sha256（对于承载 citation 和 number 的门，还记录 `evidence` / `results`；revision 时必需）。`check_gate.py --verify-hash LABEL=PATH` 会重新计算哈希，若文件在 PASS 之后发生变更，则将该门判定为 **stale** 并失败 — 从而堵住「PASS 之后的编辑悄无声息地通过重新检查」的漏洞。`--compute-hash PATH` 用于填充 provenance 字段。在工具层面为可选启用，在文档化的门命令中为标准用法。
+- **STOP 信号。** CLAUDE.md 中的 anti-rationalization 表格捕捉 verifier 无法发现的、人类层面的偷懒（「这个数字大概没问题」→ 去查 CSV；「我已经通过了」→ 产出物已变更即为 stale）。
+- **苏格拉底式 draft-plan 头脑风暴。** `docs/draft_plan_template.md` 中的「Step 0」在填写计划之前，每次一个问题地厘清论文意图 — 与 `/paper-debate` 不同，它作为 R0 准备为后者提供输入。
+- **审稿人回复分诊。** `docs/revision_guide.md` 为每条审稿人意见指定 accept / partial / rebut 立场，并映射到 `[CHANGE]` 标记和 ghost-revision 门。
+- **命令 `use-when` 指引。** 现在每个 `.claude/commands/*.md` 都声明了应触发它的情境。
+
 ### Author Response DOCX Workflow
 
 Reviewer response 应按照 `docs/response_letter_template.md` 格式撰写，每一处稿件修改都记录为 `[CHANGE]` block。最终 response letter 可用以下命令编译：
@@ -279,6 +291,17 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.0.0 (2026-06-20)
+
+**验证加固（受 superpowers 启发）**
+
+- **门时效性 / provenance** — `check_gate.py` 新增 `provenance:` 区块（产出物/evidence/results 的 sha256）、`--verify-hash LABEL=PATH`（当被验证文件在 PASS 之后发生变更时，将该门判定为 *stale* 并失败）以及 `--compute-hash PATH`。堵住了并行验证所打开的 stale-PASS 漏洞；向后兼容（可选启用的 flag）。`review/gates/_TEMPLATE.GATE.md` 与 `docs/verification_protocol.md`（v0.2.0）对其进行了文档化；pytest 覆盖扩展至 56 个测试。
+- **并行 verifier + Constraint 优先** — 四个章节门 verifier 针对冻结的产出物并发执行；修复时优先处理 Constraint（spec）违规；任何编辑之后，所有 PASS 均作废并重新执行（`docs/verification_protocol.md`）。
+- **STOP 信号** — CLAUDE.md anti-rationalization 表格（§11），防范 verifier 遗漏的、人类层面的偷懒。
+- **苏格拉底式 draft-plan 头脑风暴** — `docs/draft_plan_template.md` Step 0（每次一个问题；与 `/paper-debate` 不同，作为其 R0 准备提供输入），并接入 CLAUDE.md Phase 3 + Rule 8。
+- **审稿人回复分诊** — `docs/revision_guide.md` 为每条意见指定 accept/partial/rebut 立场，绑定到 `[CHANGE]` + ghost-revision；Phase 8 的 verifier 集合对齐为包含 Constraint。
+- 为 `.claude/commands/*.md` 添加 **命令 `use-when` 行**；将 TodoWrite 文档化为非权威的 QC/门追踪手段（CLAUDE.md Rule 4）。
 
 ### v0.9.3 (2026-06-19)
 

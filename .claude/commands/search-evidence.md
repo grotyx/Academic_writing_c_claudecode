@@ -3,6 +3,8 @@ description: Search PubMed and register results in evidence.md
 args: query
 ---
 
+**When to use:** Phase 1, when you need NEW references — search PubMed for a topic and register the selected articles into `knowledge/evidence.md`.
+
 # PubMed Search & Evidence Registration
 
 Search query: **$ARGUMENTS**

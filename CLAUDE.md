@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v0.9.3)
+# Academic Paper Writing Project (v1.0.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -313,6 +313,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - Run **minimum 3 QC rounds** before submission
 - Follow `docs/qc_guide.md` for detailed procedures
 - Document all checks in `review/qc_log.md`
+- **진행 추적(선택):** QC 라운드·게이트 항목을 TodoWrite로 추적해 가시성을 높일 수 있다. 단 이는 **세션용 보조 도구일 뿐 정본(authoritative record)이 아니다** — 영속 기록은 `review/qc_log.md`와 `review/gates/`가 담당한다.
 
 ### 5. File Versioning (파일 버전 관리)
 
@@ -394,6 +395,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 
 - **NEVER start drafting sections without first creating `draft_plan.md`**
 - 분석 결과(results/)를 확인한 후, 원고 작성 전에 전체 구성을 먼저 계획
+- **Step 0 (Socratic 브레인스토밍):** 항목을 채우기 전, 사용자에게 **한 번에 하나씩** 질문해 의도를 정제한다 (`docs/draft_plan_template.md` 상단). 이 답변은 `/paper-debate`의 R0 준비자료로 쓰되 토론 자체와는 별개다.
 - 사용자가 draft_plan.md를 확인한 후에만 섹션 작성 진행
 - draft_plan.md가 존재하지 않으면 섹션 작성을 거부
 
@@ -448,7 +450,24 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 | 3 (Draft Plan) | Claim→Citation 사전검증 | Citation |
 | 4 (Draft) | 섹션 단위 (자율 루프) | Constraint + Citation + Data + Logic |
 | 6 (QC) | 최종 확인 (경량) | 인라인 게이트가 이미 수행 |
-| 8 (Revision) | 응답 단위 (자율 루프) | Citation + Data + Revision-claims + Response-alignment |
+| 8 (Revision) | 응답 단위 (자율 루프) | Constraint + Citation + Data + Revision-claims + Response-alignment |
+
+**병렬 검출 + freshness:** 섹션 게이트의 네 Verifier는 검출 단계에서 **병렬**로 투입한다(산출물을 먼저 고정). 검증 중에는 산출물을 수정하지 않고, 모든 판정을 모은 뒤 한 번에 수정한다. PASS 기록 시 산출물의 sha256를 게이트 원장 `provenance:`에 적고, 산출물이 바뀌면 그 PASS는 **stale(무효)** 로 보고 재검증한다 (`check_gate.py --verify-hash`). 상세: `docs/verification_protocol.md`.
+
+### 11. STOP Signals (자기기만 차단)
+
+> Verifier가 잡는 것은 산출물의 결함이다. 이 표는 그 **앞단** — 사람·에이전트가 검증을 건너뛰려는 *합리화의 순간*을 차단한다. 아래 생각이 들면 멈추고(STOP) 오른쪽 행동을 한다.
+
+| 머릿속 생각 (STOP) | 현실 / 해야 할 행동 |
+|---|---|
+| "이 숫자는 대충 맞을 거야" | `results/*.csv`와 대조. CSV에 없으면 쓰지 않는다. (`check_numbers.py`) |
+| "이 인용 어디서 본 것 같은데" | `knowledge/evidence.md`에서 `[EVID:id]` 확인. 없으면 인용 금지. (`check_citations.py`) |
+| "한 번만 더 보면 통과겠지" | 게이트 먼저. `status: PASS` 없이는 다음 섹션 진행 금지. |
+| "고친 김에 이 문장도 손봤어" | 검증 중 산출물 수정 금지. 판정을 모두 모은 뒤 한 번에, 그리고 전체 재검증. |
+| "리뷰어 말이 맞지만 반박하고 싶다" | 근거 없는 반박 금지. 반박은 1-2개로 제한하고 문헌으로 뒷받침. |
+| "이 정도면 novel하다고 써도 돼" | draft_plan의 tone·claim 범위 확인. 데이터가 지지하지 않는 주장 금지. |
+| "Constraint는 나중에 봐도 돼" | 명세(scope/tone/forbidden) 위반은 1순위. 곧 폐기될 문장을 다듬지 않는다. |
+| "PASS 받았으니 이제 안전해" | 산출물을 바꿨다면 그 PASS는 stale. `provenance` 해시로 재검증. |
 
 ### 9. Model Selection by Phase (단계별 모델 선택)
 
@@ -535,6 +554,7 @@ Phase 2: Statistical Analysis — Opus 권장 (analysis_plan)
 └── Generate figures → drafts/figures/
 
 Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
+├── Step 0: Socratic 브레인스토밍 — 항목을 채우기 전 사용자에게 한 번에 하나씩 질문해 의도(key message) 정제 (draft_plan_template.md 상단; /paper-debate와 별개, R0 준비자료로 활용)
 ├── (선택) /paper-debate — key message·구조를 전략 담당 공동 저자(Codex)와 토론 후 plan 작성
 ├── Copy docs/draft_plan_template.md → drafts/draft_plan.md (또는 논문별 서브폴더)
 │   ├── Key message (이 논문의 핵심 메시지 1-2문장)
@@ -691,7 +711,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `Run QC round [1-6]` | Execute specific QC round per qc_guide.md |
 | `Check number consistency` | `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results` 실행 |
 | `Verify references` | `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md` 실행 |
-| `Check phase gate` | `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --require-check constraint --require-check citation --require-check numbers --require-check logic` 실행 |
+| `Check phase gate` | `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md` 실행 (freshness 포함) |
 | `Check logic flow` | Verify narrative consistency |
 | `Run checklist for [study type]` | STROBE/CONSORT/PRISMA/CARE checklist |
 

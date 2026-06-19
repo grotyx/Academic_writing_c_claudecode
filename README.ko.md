@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v0.9.3** (2026-06-19)
+**v1.0.0** (2026-06-20)
 
 ---
 
@@ -31,6 +31,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **Citation evidence checking** (`scripts/check_citations.py`) — `[EVID:id]` 태그를 `knowledge/evidence.md`와 대조
 - **Data number checking** (`scripts/check_numbers.py`) — 원고/표의 숫자를 `results/*.csv`와 대조
 - **Phase gate ledger checking** (`scripts/check_gate.py`) — `review/gates/*.GATE.md`에 필수 PASS가 없으면 진행 차단
+- **Gate freshness / provenance** (`scripts/check_gate.py --verify-hash`) — PASS 시 검증된 산출물(및 evidence/results)의 sha256을 기록; 이후 편집이 발생하면 게이트가 **stale** 상태가 되어 재검증을 강제하므로, 병렬 verifier의 허점을 차단
 - **Revision claim checking** (`scripts/check_revision_claims.py`) — response letter의 `[CHANGE]` claim을 revised manuscript와 대조
 - **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — constraint, semantic citation, data, logic/redundancy, revision-alignment 검증 prompt/schema
 - **Author response DOCX generation** (`scripts/compile_response_docx.py`) — DOCX-ready Markdown을 `Author_response_220803_Final.docx` house style에 맞춰 변환
@@ -200,6 +201,17 @@ citation을 확보할 수 없는 claim이 있으면 Phase 1로 돌아가 먼저 
 - `scripts/check_revision_claims.py`: reviewer response의 `[CHANGE]` block을 revised manuscript 파일과 대조합니다.
 - `docs/verifier_prompt_templates.md`: semantic support, logic, redundancy, revision-response alignment 검증 prompt/schema를 제공합니다.
 
+### Verification Hardening (v1.0.0 신규)
+
+"superpowers" 스킬 프레임워크에서 가져와 검증 게이트에 맞게 적용한 개선 사항입니다:
+
+- **병렬 verifier + Constraint 우선.** 4개의 섹션 게이트 verifier(Constraint / Citation / Data / Logic)를 동결된(frozen) 산출물에 대해 동시에 dispatch합니다. 검증 도중에는 산출물을 편집하지 않으며, FAIL 시 Constraint(spec 준수) 지적사항을 먼저 수정합니다. `docs/verification_protocol.md` (v0.2.0) 참조.
+- **Gate freshness / provenance** (`scripts/check_gate.py`). PASS 시 게이트 원장에 검증된 산출물(및 citation·numbers 관련 게이트의 경우 `evidence` / `results`; revision에서는 필수)의 sha256을 기록합니다. `check_gate.py --verify-hash LABEL=PATH`는 파일을 다시 해싱하여 PASS 이후 파일이 변경되었으면 게이트를 **stale**로 실패 처리합니다 — PASS 이후의 편집이 재점검을 조용히 빠져나가는 허점을 차단합니다. `--compute-hash PATH`는 provenance 필드를 채웁니다. 도구 수준에서는 opt-in이며, 문서화된 게이트 명령에서는 표준으로 사용합니다.
+- **STOP 신호.** CLAUDE.md의 anti-rationalization 표가 verifier로는 잡을 수 없는 사람 수준의 지름길을 포착합니다 ("이 숫자는 아마 괜찮을 거야" → CSV를 확인; "이미 통과했어" → 변경된 산출물은 stale).
+- **Socratic draft-plan 브레인스토밍.** `docs/draft_plan_template.md`의 "Step 0"가 plan을 채우기 전에 한 번에 한 질문씩 논문의 의도를 다듬습니다 — `/paper-debate`와는 구분되며, 토론의 R0 사전 준비로 연결됩니다.
+- **리뷰어 응답 triage.** `docs/revision_guide.md`가 각 리뷰어 코멘트에 accept / partial / rebut 입장을 부여하고, 이를 `[CHANGE]` 마커 및 ghost-revision 게이트와 연결합니다.
+- **명령어 `use-when` 안내.** 각 `.claude/commands/*.md`가 이제 자신을 트리거해야 하는 상황을 명시합니다.
+
 ### Author Response DOCX Workflow
 
 Reviewer response는 `docs/response_letter_template.md` 형식으로 작성하고, 각 원고 수정은 `[CHANGE]` block으로 기록합니다. 최종 response letter는 다음 명령으로 컴파일합니다:
@@ -302,6 +314,17 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.0.0 (2026-06-20)
+
+**검증 하네스 강화 (superpowers 기반)**
+
+- **Gate freshness / provenance** — `check_gate.py`에 `provenance:` block(산출물/evidence/results의 sha256), `--verify-hash LABEL=PATH`(검증된 파일이 PASS 이후 변경되면 게이트를 *stale*로 실패 처리), `--compute-hash PATH` 추가. 병렬 검증으로 생긴 stale-PASS 허점을 차단; 하위 호환(opt-in 플래그). `review/gates/_TEMPLATE.GATE.md`와 `docs/verification_protocol.md`(v0.2.0)에 문서화; pytest 커버리지 56개 테스트로 확장.
+- **병렬 verifier + Constraint 우선** — 4개의 섹션 게이트 verifier가 동결된 산출물에 대해 동시에 실행; 수정은 Constraint(spec) 위반을 우선; 편집이 발생하면 모든 PASS를 폐기하고 재실행 (`docs/verification_protocol.md`).
+- **STOP 신호** — verifier가 놓치는 사람 수준의 지름길을 막는 CLAUDE.md anti-rationalization 표(§11).
+- **Socratic draft-plan 브레인스토밍** — `docs/draft_plan_template.md` Step 0(한 번에 한 질문; `/paper-debate`와 구분되며 토론의 R0 사전 준비로 연결), CLAUDE.md Phase 3 + Rule 8에 연결.
+- **리뷰어 응답 triage** — `docs/revision_guide.md`의 코멘트별 accept/partial/rebut 입장, `[CHANGE]` + ghost-revision과 연계; Phase 8 verifier set에 Constraint 포함하도록 정렬.
+- 각 `.claude/commands/*.md`에 **`use-when`** 줄 추가; TodoWrite를 비권위적(non-authoritative) QC/게이트 추적 수단으로 문서화 (CLAUDE.md Rule 4).
 
 ### v0.9.3 (2026-06-19)
 

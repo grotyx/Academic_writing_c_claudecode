@@ -3,6 +3,8 @@ description: Import article by DOI and register in evidence.md
 args: doi
 ---
 
+**When to use:** Phase 1, when you ALREADY have a DOI and want to register that specific paper into `knowledge/evidence.md` (no search needed).
+
 # Import Article by DOI
 
 DOI: **$ARGUMENTS**

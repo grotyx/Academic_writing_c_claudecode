@@ -3,6 +3,8 @@ description: 외부 멀티모델 적대적 critical review (작성 후, docs/cri
 args: target
 ---
 
+**언제 사용:** 작성 후(Phase 6 QC·Phase 8), 원고나 response letter를 외부 멀티모델 적대적 검토에 부치고 싶을 때.
+
 `docs/critical_review_protocol.md`를 기준으로 critical review를 수행한다.
 
 대상: **$ARGUMENTS** (생략 시 전체 원고; revision 맥락이면 response letter + 원고)

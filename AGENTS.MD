@@ -28,12 +28,12 @@ Never stage or commit these unless the user explicitly overrides the rule:
 ## Manuscript Workflow
 
 - Do not run statistical analysis before an approved `analysis_plan.md` exists.
-- Do not draft manuscript sections before an approved `draft_plan.md` exists.
+- Do not draft manuscript sections before an approved `draft_plan.md` exists (run the Step 0 Socratic brainstorming in `docs/draft_plan_template.md` before filling it).
 - Draft sections in the order defined by `CLAUDE.md`: Methods, Results, Introduction, Discussion, Conclusion, Abstract, Title.
 - Apply terminology rules from `Style/terminology.md` during drafting and polishing.
 - Use `docs/drafting_protocol.md`, `docs/section_templates.md`, and `docs/writing_guide.md` for manuscript work.
 - Run the manuscript lint script with `py scripts/lint_manuscript.py drafts --quiet` on Windows.
-- Pass the verification gate after each produce step (Phase 3/4/8): run the Constraint/Citation/Data verifier subagents per `docs/verification_protocol.md`. Never proceed past a gate without a recorded `status: PASS` in `review/gates/`. On FAIL, fix and re-verify (max 2 retries) before escalating to the user.
+- Pass the verification gate after each produce step (Phase 3/4/8): dispatch the Constraint/Citation/Data/Logic verifier subagents **in parallel** against a frozen artifact per `docs/verification_protocol.md` (fix Constraint/spec violations first). Never proceed past a gate without a recorded `status: PASS` in `review/gates/`. On PASS, record a `provenance:` sha256 of the artifact (plus evidence/results where the gate depends on them; required for revision) and re-check freshness with `check_gate.py --verify-hash` — a changed file makes the PASS stale. On FAIL, fix and re-verify (max 2 retries) before escalating to the user.
 - Tag citations as `[EVID:author_year]` during drafting; do not cite evidence entries whose Source Status is `todo` (unverified). Use only numbers present in `results/*.csv`.
 - Complete and document mandatory QC rounds before final submission files are prepared.
 

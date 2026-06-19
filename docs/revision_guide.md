@@ -119,6 +119,18 @@ py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check 
 | **Minor — Writing** | 문법, 표현, 약어, 참고문헌 | 즉시 수정 |
 | **Editorial** | 형식, 워드 수, 파일 형식 | 저널 규정대로 수정 |
 
+### 코멘트별 Triage Posture (응답 작성 전 필수)
+
+> 응답을 쓰기 **전에** 각 코멘트마다 세 가지 입장 중 하나를 먼저 정한다. 이 입장이 응답 문구와 `[CHANGE]` 마커, ghost-revision 게이트의 적용 여부를 결정한다.
+
+| Posture | 언제 사용 | 응답서 문구 | `[CHANGE]` + ghost-revision 게이트 |
+| --- | --- | --- | --- |
+| **수용 (Accept)** | 지적에 전적으로 동의 → 원고를 고친다 | 감사 → 동의 → 수정 위치(lead-in) → `Revised text:` 인용. 템플릿 1·5 사용 | `[CHANGE]` **필수**. 주장한 변경이 revised 섹션에 실제로 존재해야 게이트 PASS (`expected_terms`·`Revised text:` 대조) |
+| **부분수용 (Partial)** | 일부만 동의하거나 대안을 제시 → 고친 부분과 고치지 않은 부분이 공존 | 감사 → 동의 지점 명시 → 이견 지점과 근거 → 절충 조치(수정 위치 + 인용). 템플릿 2 사용 | `[CHANGE]` **필수** (실제로 변경한 부분에 한해). 변경 주장은 게이트로 검증되며, 고치지 않은 부분은 응답 문구에서 근거와 함께 명시 |
+| **반박 (Rebut)** | 정중히 동의하지 않음 → 원고 변경 없음 | 감사 → "After careful consideration, we respectfully maintain..." → 근거 기반 반론(가능하면 문헌 인용) → 리뷰어 우려를 외교적으로 인정. 템플릿 3 사용 | `[CHANGE]` **사용 금지** (변경이 없으므로). 게이트에 ghost-revision 위반으로 잡히지 않음. 단, Limitations 등에 한 문장을 *추가*했다면 그 부분만 `[CHANGE]` 첨부 |
+
+> **원칙:** 반박(Rebut)은 최대 1-2개로 제한한다(외교적 표현 가이드 참조). `[CHANGE]`가 붙은 모든 응답은 수정 원고에 변경이 실제로 반영돼야 하며, 그렇지 않으면 ghost-revision 게이트가 `GATE FAIL`을 출력한다. Revision Log의 Action 열(Revised / Rebutted)은 여기서 정한 posture와 일치시킨다.
+
 ### 대응 유형별 템플릿
 
 > 모든 템플릿에서 수정 위치는 문장 앞쪽에 먼저 밝힌 뒤 수정문을 인용한다 (lead-in 방식).

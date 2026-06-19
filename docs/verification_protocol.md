@@ -1,4 +1,4 @@
-# Verification Protocol (검증 하네스) (v0.1.0)
+# Verification Protocol (검증 하네스) (v0.2.0)
 
 > harness-engineering식 produce→verify→fix→re-verify 자동 루프 정의.
 > 각 산출 단계 뒤에 검증 게이트를 두어 제약 무시·인용 환각·수치 조작을 차단한다.
@@ -29,6 +29,8 @@ Draft 게이트는 네 개의 Verifier(Constraint / Citation / Data / Logic)를 
 - **외부지식 사용 금지.** 주어진 소스(소스 오브 트루스)와 산출물만으로 판정한다.
 - **불확실하면 FAIL 기본값.** 지지 여부가 모호하면 PASS로 넘기지 않는다.
 - **판정 결과를 구조화 출력**한다 (3.2 형식).
+
+> **실행 순서 (Constraint 우선 + 병렬 검출):** 네 Verifier는 검출 단계에서 **병렬**로 돌린다(§3.1). 다만 **Constraint(명세 적합)를 1순위 관문으로 본다** — 섹션이 draft_plan의 scope·tone·forbidden content를 위반하면, Phase 5 문체 손질을 시작하기 전에 먼저 바로잡는다. 곧 폐기될 문장을 다듬는 낭비를 막기 위함이다. 두 개 이상이 FAIL이면 수정도 Constraint부터.
 
 ### 2.1 Constraint-Compliance Verifier (제약 무시 F1)
 
@@ -104,9 +106,13 @@ Draft 게이트는 네 개의 Verifier(Constraint / Citation / Data / Logic)를 
 ### 3.1 루프 절차
 
 1. **Produce** — 섹션(또는 claim 매핑, revision 응답)을 작성한다.
-2. **Verify** — 해당 게이트의 Verifier(들)를 서브에이전트로 투입한다. 각 Verifier에 산출물 + 소스 오브 트루스를 전달한다.
-3. **판정** — 모든 Verifier가 PASS면 게이트 원장에 `status: PASS` 기록 후 다음 단계.
-4. **Fix loop** — 하나라도 FAIL이면 지적사항을 수정하고 2단계로 돌아간다.
+2. **Freeze & Verify** — 산출물을 고정(스냅샷)한 뒤 Verifier를 투입한다. 순서:
+   - **(a) Deterministic helpers 먼저** — `check_citations.py`, `check_numbers.py`(해당 시 `check_revision_claims.py`)를 실행한다.
+   - **(b) LLM Verifier 병렬** — Constraint / Citation / Data / Logic 네 Verifier는 서로 의존이 없으므로 **하나의 메시지에서 병렬 서브에이전트로 동시에** 투입한다. 각 Verifier에 **동일하게 고정된** 산출물 + 소스 오브 트루스를 전달한다. **검증이 끝날 때까지 산출물을 수정하지 않는다** — 수정은 모든 판정을 모은 뒤 한 번에 한다(병렬 검증 중 수정하면 일부 PASS가 낡은 상태 기준이 되어 무효해진다).
+3. **판정 & 기록** — 모든 Verifier가 PASS면 게이트 원장에 `status: PASS`와 함께 **검증 시점 sha256를 `provenance:`에 기록**한다(§6 freshness). `artifact`는 필수; 인용 게이트는 `evidence`(`knowledge/evidence.md`), 수치 게이트는 `results`(해당 CSV)도 기록한다(revision 게이트는 evidence/results 필수). 이후 그 파일이 바뀌면 PASS는 stale(무효)이며 다음 `check_gate.py --verify-hash`에서 FAIL로 잡힌다.
+4. **Fix loop** — 하나라도 FAIL이면 산출물을 수정하고 2단계로 돌아간다.
+   - **수정 우선순위: Constraint(명세) 위반 먼저.** 명세 위반을 고치면 섹션이 재작성되어 다른 지적이 무의미해질 수 있으므로, 품질·문체 손질보다 명세 적합을 먼저 맞춘다.
+   - 산출물이 바뀌었으므로 **이전 PASS를 모두 폐기하고 필요한 Verifier 전체를 재실행**한다(부분 재검증 금지). `provenance` 해시도 새로 기록한다.
 5. **상한** — Fix→re-verify는 **최대 2회(N=2)**. 2회 후에도 FAIL이면 멈추고 게이트 원장에 `status: FAIL`을 기록한 뒤 사용자에게 미해결 지적사항만 보고한다(에스컬레이션).
 
 ### 3.2 Verifier 판정 출력 형식
@@ -175,8 +181,9 @@ required_action: replace with 54.3 or remove
 - **기록 주체:** Verifier 판정 후 메인 에이전트가 기록 (Verifier 출력을 옮김).
 - **형식:** `review/gates/_TEMPLATE.GATE.md` 참조.
 - **규칙:** 어떤 섹션/단계도 게이트 원장에 해당 산출물의 `status: PASS`가 없으면 다음으로 진행 금지.
-- **Deterministic ledger check:** `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic`
-- **Required order:** deterministic helpers (`check_citations.py`, `check_numbers.py`, `check_revision_claims.py`) → LLM verifier schema (`docs/verifier_prompt_templates.md`) → gate ledger entry → `check_gate.py`.
+- **Freshness (stale-gate guard):** PASS 기록 시 검증 대상 파일의 sha256를 `provenance:` 블록에 적고, 게이트 확인 시 `--verify-hash`로 재대조한다. 파일이 바뀌었으면 stale로 FAIL — **병렬 검증·revision 라운드에서 낡은 PASS가 살아남는 것을 막는다.** 해시 계산: `py scripts\check_gate.py --compute-hash drafts\05_results.md`.
+- **Deterministic ledger check:** `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md`
+- **Required order:** deterministic helpers (`check_citations.py`, `check_numbers.py`, `check_revision_claims.py`) → LLM verifier schema (`docs/verifier_prompt_templates.md`) → gate ledger entry → `check_gate.py` (`--verify-hash`로 freshness 포함).
 
 ---
 

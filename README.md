@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v0.9.3** (2026-06-19)
+**v1.0.0** (2026-06-20)
 
 ---
 
@@ -31,6 +31,7 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Citation evidence checking** (`scripts/check_citations.py`) — verifies `[EVID:id]` tags against `knowledge/evidence.md`
 - **Data number checking** (`scripts/check_numbers.py`) — verifies manuscript/table numbers against `results/*.csv`
 - **Phase gate ledger checking** (`scripts/check_gate.py`) — blocks progression unless `review/gates/*.GATE.md` records required PASS checks
+- **Gate freshness / provenance** (`scripts/check_gate.py --verify-hash`) — records a sha256 of the verified artifact (and evidence/results) on PASS; a later edit makes the gate **stale** and forces re-verification, closing the parallel-verifier hole
 - **Revision claim checking** (`scripts/check_revision_claims.py`) — verifies response-letter `[CHANGE]` claims against revised manuscript files
 - **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — structured prompts for constraint, semantic citation, data, logic/redundancy, and revision-alignment checks
 - **Author response DOCX generation** (`scripts/compile_response_docx.py`) — converts DOCX-ready Markdown to the `Author_response_220803_Final.docx` house style
@@ -224,6 +225,17 @@ The adversarial prompts live as a single source under `scripts/critical_prompts/
 
 A `docs/writing_guide.md` pass (applied in Phase 5 for AI-written drafts) that removes the tells of AI prose — hollow `-ing` "surface analysis" clauses, AI-favored vocabulary, and over-signposting — while explicitly **excluding** patterns that legitimately conflict (necessary hedging, copula, passive voice). AI authorship is still disclosed; this only keeps disclosed assistance from reading as bloated and tedious.
 
+### Verification Hardening (NEW in v1.0.0)
+
+Improvements adapted from the "superpowers" skills framework, focused on the verification gate:
+
+- **Parallel verifiers + Constraint-first.** The four section-gate verifiers (Constraint / Citation / Data / Logic) are dispatched concurrently against a frozen artifact; the artifact is not edited mid-verification, and on FAIL the Constraint (spec-compliance) findings are fixed first. See `docs/verification_protocol.md` (v0.2.0).
+- **Gate freshness / provenance** (`scripts/check_gate.py`). On PASS the gate ledger records a sha256 of the verified artifact (and `evidence` / `results` for citation- and numbers-bearing gates; required for revision). `check_gate.py --verify-hash LABEL=PATH` re-hashes and fails the gate as **stale** if the file changed since the PASS — closing the hole where a post-PASS edit silently survives re-checking. `--compute-hash PATH` fills the provenance fields. Opt-in at the tool level, standard in the documented gate commands.
+- **STOP signals.** A CLAUDE.md anti-rationalization table catches the human-level shortcuts the verifiers can't ("this number is probably fine" → check the CSV; "I already passed" → a changed artifact is stale).
+- **Socratic draft-plan brainstorming.** A "Step 0" in `docs/draft_plan_template.md` sharpens the paper's intent one question at a time before the plan is filled — distinct from `/paper-debate`, which it feeds as R0 prep.
+- **Reviewer-response triage.** `docs/revision_guide.md` assigns each reviewer comment an accept / partial / rebut posture, mapped to the `[CHANGE]` marker and the ghost-revision gate.
+- **Command `use-when` guidance.** Each `.claude/commands/*.md` now declares the situation that should trigger it.
+
 ### Author Response DOCX Workflow
 
 Reviewer responses should be drafted in `docs/response_letter_template.md` format, with each manuscript edit recorded as a `[CHANGE]` block. Final response letters can be compiled with:
@@ -329,6 +341,17 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.0.0 (2026-06-20)
+
+**Verification hardening (superpowers-inspired)**
+
+- **Gate freshness / provenance** — `check_gate.py` gains a `provenance:` block (sha256 of artifact/evidence/results), `--verify-hash LABEL=PATH` (fails a gate as *stale* when a verified file changed after PASS), and `--compute-hash PATH`. Closes the stale-PASS hole opened by parallel verification; backward compatible (opt-in flag). `review/gates/_TEMPLATE.GATE.md` and `docs/verification_protocol.md` (v0.2.0) document it; pytest coverage expanded to 56 tests.
+- **Parallel verifiers + Constraint-first** — the four section-gate verifiers run concurrently against a frozen artifact; fixes prioritize Constraint (spec) violations; all PASSes are discarded and re-run after any edit (`docs/verification_protocol.md`).
+- **STOP signals** — CLAUDE.md anti-rationalization table (§11) guarding the human-level shortcuts verifiers miss.
+- **Socratic draft-plan brainstorming** — `docs/draft_plan_template.md` Step 0 (one question at a time; distinct from `/paper-debate`, feeds it as R0 prep), wired into CLAUDE.md Phase 3 + Rule 8.
+- **Reviewer-response triage** — `docs/revision_guide.md` accept/partial/rebut posture per comment, tied to `[CHANGE]` + ghost-revision; Phase 8 verifier set aligned to include Constraint.
+- **Command `use-when` lines** added to `.claude/commands/*.md`; TodoWrite documented as non-authoritative QC/gate tracking (CLAUDE.md Rule 4).
 
 ### v0.9.3 (2026-06-19)
 
