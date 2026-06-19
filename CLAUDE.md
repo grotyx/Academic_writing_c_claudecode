@@ -31,7 +31,8 @@ project/
 │   ├── figure_guide.md          # Figure generation guide
 │   ├── docx_guide.md            # DOCX 변환 가이드 (서식, 테이블, 네이밍)
 │   ├── draft_plan_template.md    # Draft plan 10개 항목 템플릿 (Phase 3에서 복사)
-│   └── debate_protocol.md        # Claude–Codex co-author 토론 절차
+│   ├── debate_protocol.md        # Claude–Codex co-author 토론 절차
+│   └── critical_review_protocol.md  # 외부 멀티모델 적대적 검토 절차
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # Original PDF files
@@ -72,13 +73,16 @@ project/
 │   ├── check_gate.py             # Phase gate ledger check
 │   ├── check_revision_claims.py  # Revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
-│   └── search_pubmed.py          # PubMed search tool (no external deps)
+│   ├── search_pubmed.py          # PubMed search tool (no external deps)
+│   ├── critical_review.py        # OpenRouter 멀티모델 적대적 검토 호출
+│   └── critical_models.txt       # OpenRouter 모델 목록 (외부화)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
 ├── review/                       # Review & QC documents
 │   ├── qc_log.md                 # QC round tracking
 │   ├── gates/                    # 검증 게이트 원장 (phase_NN_*.GATE.md)
-│   └── debates/                  # Claude–Codex 토론 로그
+│   ├── debates/                  # Claude–Codex 토론 로그
+│   └── critical/                 # 외부 멀티모델 적대적 검토 리포트
 └── output/                       # Final compiled manuscript
     ├── title_page_YYMMDD.docx
     ├── manuscript_YYMMDD.docx
@@ -209,6 +213,7 @@ output/paper1_xxx/revision/REV1/
 | `docs/docx_guide.md` | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) | Phase 7 (DOCX 변환 시 **반드시** 읽고 따를 것) |
 | `docs/draft_plan_template.md` | Draft plan 10개 항목 템플릿 (Phase 3에서 복사하여 사용) | Phase 3 시작 시 복사 → `drafts/draft_plan.md` |
 | `docs/debate_protocol.md` | Claude–Codex co-author 토론 절차 (라운드·역할·로그·폴백) | Phase 2·3·4·8 (`/paper-debate` 토론 시) |
+| `docs/critical_review_protocol.md` | 외부 멀티모델 적대적 검토 절차 (리뷰어 풀·합의도·폴백) | Phase 6 QC·Phase 8 (`/critical-review`) |
 | `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿) | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
 | `profile/journals.md` | 저널별 인용 형식 (bracket vs superscript, et al. 기준, volume 형식) | 참고문헌 목록 작성 시 확인 |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
@@ -584,7 +589,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 ├── Round 3: Logic & flow check — Dr. Editor (section 간 흐름)
 ├── Round 4: Terminology/abbreviation/tense — Dr. Editor + lint script (권장)
 ├── Round 5: Statistical quality — Dr. Statistician (권장)
-├── Round 6: Critical review — Dr. Editor + Dr. Statistician (overclaiming/bias/일반화 범위, 권장)
+├── Round 6: Critical review — 내부(Dr. Editor + Dr. Statistician) + (선택) /critical-review 외부 멀티모델 (overclaiming/bias/일반화, 권장)
 ├── Document all rounds in review/qc_log.md
 └── Run study-specific checklist (checklist_guide.md — CONSORT/STROBE/PRISMA/CARE)
 
@@ -662,6 +667,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | Command | Action |
 |---------|--------|
 | `/paper-debate <주제>` | Claude–Codex co-author 토론 (작성 전, `docs/debate_protocol.md`) |
+| `/critical-review <대상>` | 외부 멀티모델 적대적 검토 (작성 후, `docs/critical_review_protocol.md`) |
 
 ### Drafting
 | Command | Action |
