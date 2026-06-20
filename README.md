@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.0.1** (2026-06-20)
+**v1.0.2** (2026-06-20)
 
 ---
 
@@ -341,6 +341,14 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.0.2 (2026-06-20)
+
+**Process enforcement + CLAUDE.md condensation**
+
+- **Plan-first enforcement (hooks)** — `.claude/settings.json` adds committed hooks: a PreToolUse `Write|Edit` gate (`scripts/hooks/enforce_gates.py`) that BLOCKS drafting a section without `drafts/.../draft_plan.md` (Rule 8) or creating an analysis script without `data/.../analysis_plan.md` (Rule 7), and a SessionStart hook (`scripts/hooks/session_contract.py`) that injects the workflow contract every session. Revisions are exempt; multi-paper subfolders handled; fails open; UTF-8 safe. (Windows `py`; macOS/Linux use `python3`.)
+- **`/verify`** — `scripts/verify_all.py` runs check_citations + check_numbers (+ optional check_gate) in one command before recording a gate PASS. New hook tests; suite at 86 passing.
+- **CLAUDE.md condensed 808 → 696 lines (~14%)** — collapsed the Multi-Paper/Revision structure trees and the Phase-2 Notes / test-selection / style-priority / gate-placement duplicates into pointers to their canonical docs; no MUST-FOLLOW rule removed.
 
 ### v1.0.1 (2026-06-20)
 

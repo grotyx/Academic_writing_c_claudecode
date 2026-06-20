@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.0.1** (2026-06-20)
+**v1.0.2** (2026-06-20)
 
 ---
 
@@ -331,6 +331,14 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.0.2 (2026-06-20)
+
+**프로세스 강제 + CLAUDE.md 간결화**
+
+- **Plan-first 강제 (hooks)** — `.claude/settings.json`에 커밋된 hook을 추가: PreToolUse `Write|Edit` 게이트(`scripts/hooks/enforce_gates.py`)는 `drafts/.../draft_plan.md` 없이 섹션을 작성하거나(Rule 8) `data/.../analysis_plan.md` 없이 분석 스크립트를 생성하는 것(Rule 7)을 **차단**하고, SessionStart hook(`scripts/hooks/session_contract.py`)은 매 세션마다 워크플로 계약을 주입합니다. Revision은 예외 처리되고, 멀티 논문 서브폴더를 지원하며, 실패 시 통과(fails open)하고, UTF-8 안전합니다. (Windows는 `py`; macOS/Linux는 `python3` 사용.)
+- **`/verify`** — `scripts/verify_all.py`가 게이트 PASS를 기록하기 전에 check_citations + check_numbers(+ 선택적 check_gate)를 한 번의 명령으로 실행합니다. hook 테스트 신규 추가; 스위트 86개 통과.
+- **CLAUDE.md 808 → 696줄 (~14%) 간결화** — 멀티 논문/Revision 구조 트리와 Phase 2 Notes / 검정 선택 / 스타일 우선순위 / 게이트 배치 중복을 각 정본 문서에 대한 pointer로 축약; MUST-FOLLOW 규칙은 하나도 제거하지 않음.
 
 ### v1.0.1 (2026-06-20)
 
