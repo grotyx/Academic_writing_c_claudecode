@@ -568,21 +568,7 @@ Relationships:
 
 ### Avoid Triple Duplication
 
-The same data should preferably not appear in all three:
-1. Results text
-2. Table
-3. Figure
-
-**Allowed Combinations:**
-- Table only (most common)
-- Figure only (visual emphasis)
-- Table + brief text reference
-- Figure + brief text reference
-
-**Avoid (지양):**
-- Full numbers in text + same numbers in table
-- Bar chart + table with same exact data
-- Detailed text description + figure showing same
+> Canonical rules: **CLAUDE.md Rule 2 (Redundancy Prevention)**. In short: the same data should not appear in Results text + Table + Figure together — prefer Table-only or Figure-only with a brief text reference.
 
 ### Results Text Writing Rules
 

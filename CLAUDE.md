@@ -76,7 +76,9 @@ project/
 │   ├── search_pubmed.py          # PubMed search tool (no external deps)
 │   ├── critical_review.py        # OpenRouter 멀티모델 적대적 검토 호출
 │   ├── critical_models.txt       # OpenRouter 모델 목록 (외부화)
-│   └── critical_prompts/         # 적대적 검토 프롬프트 (manuscript.txt, response.txt)
+│   ├── critical_prompts/         # 적대적 검토 프롬프트 (manuscript.txt, response.txt)
+│   ├── verify_all.py             # /verify — citation+number(+gate) 일괄 검증
+│   └── hooks/                    # Plan-first 강제 훅 (enforce_gates, session_contract)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
 ├── review/                       # Review & QC documents
@@ -92,104 +94,20 @@ project/
 
 ### Multi-Paper Project (하나의 데이터에서 여러 논문 작성 시)
 
-> 동일 데이터셋에서 여러 논문을 작성할 때, 논문별 서브폴더로 정리
+> 동일 데이터셋에서 여러 논문 작성 시 논문별 서브폴더로 정리 (상세 규칙: Rule 6).
 
-```
-project/
-├── CLAUDE.md
-├── docs/                         # 공유 가이드 (모든 논문 공통)
-├── knowledge/                    # 공유 참고문헌 (모든 논문 공통)
-│   ├── evidence.md
-│   ├── pdf/
-│   └── summaries/
-├── scripts/                      # 공유 스크립트
-├── data/
-│   ├── raw_data.csv              # 원본 데이터 (공유)
-│   ├── paper1_xxx/               # 논문1 분석용 데이터
-│   │   ├── analysis_plan.md
-│   │   ├── filtered_data.csv     # 해당 논문에 맞게 필터링한 데이터
-│   │   └── py/
-│   └── paper2_yyy/               # 논문2 분석용 데이터
-│       ├── analysis_plan.md
-│       ├── filtered_data.csv
-│       └── py/
-├── results/
-│   ├── paper1_xxx/               # 논문1 분석 결과
-│   │   ├── table1_demographics.csv
-│   │   └── table2_outcomes.csv
-│   └── paper2_yyy/               # 논문2 분석 결과
-│       ├── table1_demographics.csv
-│       └── table2_outcomes.csv
-├── drafts/
-│   ├── paper1_xxx/               # 논문1 원고
-│   │   ├── draft_plan.md         # 논문1 원고 구성 계획
-│   │   ├── 01_title.md ~ 09_figure_legends.md
-│   │   ├── table_*.md
-│   │   └── figures/
-│   └── paper2_yyy/               # 논문2 원고
-│       ├── draft_plan.md         # 논문2 원고 구성 계획
-│       ├── 01_title.md ~ 09_figure_legends.md
-│       ├── table_*.md
-│       └── figures/
-├── review/
-│   ├── paper1_xxx/
-│   │   ├── qc_log.md
-│   │   └── gates/
-│   └── paper2_yyy/
-│       ├── qc_log.md
-│       └── gates/
-└── output/
-    ├── paper1_xxx/               # 논문1 최종 DOCX
-    │   ├── manuscript_YYMMDD.docx
-    │   └── table_N_YYMMDD.docx
-    └── paper2_yyy/               # 논문2 최종 DOCX
-        ├── manuscript_YYMMDD.docx
-        └── table_N_YYMMDD.docx
-```
+기본(Single) 구조에서 **`data/`·`results/`·`drafts/`·`output/`·`review/` 각각에 `paper{N}_{keyword}/` 서브폴더**를 만들어 논문별로 분리한다. `docs/`·`knowledge/`·`scripts/`는 공유. 원본 데이터는 `data/` 루트, 논문별 필터링 데이터·`analysis_plan.md`·`draft_plan.md`는 각 서브폴더에 둔다.
 
-**서브폴더 네이밍:** `paper{N}_{keyword}` (예: `paper1_infection`, `paper2_outcomes`)
-- 저자가 선호하는 이름이 있으면 그에 따름
-- keyword는 짧고 식별 가능한 단어로
+**서브폴더 네이밍:** `paper{N}_{keyword}` (예: `paper1_infection`) — 저자 선호 이름 우선, keyword는 짧고 식별 가능하게.
 
 ### Revision 구조 (리뷰어 코멘트 수신 후)
 
-> Revision 시에는 각 논문 폴더 내에 `revision/` 서브폴더를 만들어 정리
+> 각 논문 폴더 내 `revision/REV{N}/` 서브폴더로 정리 (상세 규칙: Rule 6).
 
-```
-# Single paper인 경우
-drafts/
-├── 01_title.md ~ (원본 유지)
-└── revision/
-    ├── REV1/                     # 1차 revision
-    │   ├── 01_title_REV1.md
-    │   ├── 04_methods_REV1.md    # 수정된 섹션만
-    │   ├── response_letter_REV1.md
-    │   └── figures/
-    └── REV2/                     # 2차 revision
-        ├── 04_methods_REV2.md
-        └── response_letter_REV2.md
-
-review/
-├── qc_log.md
-├── gates/                        # 검증 게이트 원장 (phase_08_revision.GATE.md 등)
-├── reviewer_comments_REV1.md     # 리뷰어 코멘트 원문
-└── reviewer_comments_REV2.md     # (필요 시)
-
-output/
-├── manuscript_YYMMDD.docx        # 원본 제출본
-└── revision/
-    ├── REV1/
-    │   ├── manuscript_REV1_YYMMDD.docx
-    │   ├── table_N_REV1_YYMMDD.docx
-    │   └── response_letter_REV1_YYMMDD.docx
-    └── REV2/
-        ├── manuscript_REV2_YYMMDD.docx
-        └── response_letter_REV2_YYMMDD.docx
-
-# Multi-paper인 경우: 동일 구조가 각 paper 서브폴더 안에 적용
-drafts/paper1_xxx/revision/REV1/
-output/paper1_xxx/revision/REV1/
-```
+- **`drafts/revision/REV{N}/`** — 수정된 섹션만 `_REV{N}` 접미사로 (예: `04_methods_REV1.md`) + `response_letter_REV{N}.md`
+- **`review/`** — `reviewer_comments_REV{N}.md`, `gates/phase_08_revision.GATE.md`
+- **`output/revision/REV{N}/`** — `manuscript_REV{N}_YYMMDD.docx`, 변경된 table, `response_letter_REV{N}_YYMMDD.docx`
+- **Multi-paper:** 동일 구조가 각 `paper{N}_xxx/revision/REV{N}/`에 적용
 
 ---
 
@@ -443,17 +361,9 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - **Verifier 모델:** Opus 기본. Opus 불가 시 또는 사용자 요청 시 다른 모델(예: GPT-5.5) 허용.
 - **인용 grounding:** 초안에서 모든 인용은 `[EVID:author_year]` 태그로 표기 (Phase 7에서 저널 형식 변환).
 - **수치 grounding:** 원고 결과 수치는 `results/*.csv`에 존재하는 값만 사용.
+- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅이 plan-first를 강제 — `draft_plan.md` 없이 섹션 작성·`analysis_plan.md` 없이 분석 스크립트 생성을 **차단**(Rule 7·8, fail-open). SessionStart 훅이 본 계약을 매 세션 주입. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
 
-**게이트 배치:**
-
-| Phase | 게이트 | Verifier |
-|-------|--------|----------|
-| 3 (Draft Plan) | Claim→Citation 사전검증 | Citation |
-| 4 (Draft) | 섹션 단위 (자율 루프) | Constraint + Citation + Data + Logic |
-| 6 (QC) | 최종 확인 (경량) | 인라인 게이트가 이미 수행 |
-| 8 (Revision) | 응답 단위 (자율 루프) | Constraint + Citation + Data + Revision-claims + Response-alignment |
-
-**병렬 검출 + freshness:** 섹션 게이트의 네 Verifier는 검출 단계에서 **병렬**로 투입한다(산출물을 먼저 고정). 검증 중에는 산출물을 수정하지 않고, 모든 판정을 모은 뒤 한 번에 수정한다. PASS 기록 시 산출물의 sha256를 게이트 원장 `provenance:`에 적고, 산출물이 바뀌면 그 PASS는 **stale(무효)** 로 보고 재검증한다 (`check_gate.py --verify-hash`). 상세: `docs/verification_protocol.md`.
+**게이트 배치·병렬·freshness:** Phase별 게이트(3 Claim→Citation 사전검증 · 4 섹션 게이트 · 6 경량 · 8 응답 게이트), 병렬 검출, freshness 해시 규칙은 `docs/verification_protocol.md` §7/§3.1/§6 참조. PASS 시 산출물 sha256를 `provenance:`에 기록하고, 산출물이 바뀌면 stale로 보고 재검증(`check_gate.py --verify-hash`).
 
 ### 10. STOP Signals (자기기만 차단)
 
@@ -713,6 +623,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `Check number consistency` | `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results` 실행 |
 | `Verify references` | `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md` 실행 |
 | `Check phase gate` | `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md` 실행 (freshness 포함) |
+| `/verify [artifacts]` | `py scripts\verify_all.py drafts\05_results.md --results results --evidence knowledge\evidence.md` — citation+number(+gate) 일괄 검증 |
 | `Check logic flow` | Verify narrative consistency |
 | `Run checklist for [study type]` | STROBE/CONSORT/PRISMA/CARE checklist |
 
@@ -780,29 +691,6 @@ When drafting, invoke experts from `docs/expert_roles.md`:
 - **Dr. Statistician**: Statistical validation
 - **Dr. Editor**: Final polish, consistency check
 
-### Writing Style Priority
-Phase 5에서 `docs/writing_guide.md` 참조:
-1. Style Reference Tables — Transition / Verb / Corrections / Voice / Notation / Hedging
-2. Writing Principles (4 Pillars) — Clarity / Conciseness / Objectivity / Consistency
-3. General Principles — 시제·Bold·약어·주어·동의어·숫자 서식
-
 ### Statistical Analysis (Phase 2)
 
-> 상세 가이드: `docs/statistical_analysis_guide.md` 참조
-
-**Quick Workflow:**
-1. CSV/XLSX → `data/` 폴더에 배치
-2. `Analyze data` → analysis_plan.md 작성 (필수, 사용자 승인 후 진행)
-3. `Generate analysis scripts` → data/py/ 스크립트 생성
-4. `Run analysis` → results/ CSV 출력
-5. `Generate tables` → drafts/table_*.md 생성
-6. `Generate figures` → drafts/figures/ (필요시, Table과 중복 확인)
-
-**Test Selection (Dr. Statistician):**
-
-| Data Type | Normal | Non-normal |
-|-----------|--------|------------|
-| 2 groups, continuous | t-test | Mann-Whitney U |
-| >2 groups, continuous | ANOVA | Kruskal-Wallis |
-| Categorical | Chi-square | Fisher's exact |
-| Paired | Paired t-test | Wilcoxon |
+> 워크플로·검정 선택은 Recommended Workflow Phase 2 + `docs/statistical_analysis_guide.md`(§1 워크플로, §5 검정 선택) 참조. 핵심: 분석 전 `analysis_plan.md` 필수(Rule 7, hook 강제) → `data/py/` 스크립트 → `results/` CSV → table/figure (Table↔Figure 중복 확인).
