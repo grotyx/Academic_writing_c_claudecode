@@ -1,0 +1,20 @@
+{
+  "$comment": "Process-enforcement hooks for the academic paper workflow. Windows uses 'py'; on macOS/Linux change 'py' to 'python3'. Hooks run from the project root and fail open (a hook error never blocks work).",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "py scripts/hooks/session_contract.py" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "py scripts/hooks/enforce_gates.py" }
+        ]
+      }
+    ]
+  }
+}
