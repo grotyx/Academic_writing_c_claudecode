@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.0.0** (2026-06-20)
+**v1.0.1** (2026-06-20)
 
 ---
 
@@ -341,6 +341,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.0.1 (2026-06-20)
+
+**Post-release hardening + concision tooling**
+
+- **Same-day hardening (code review + project audit)** — `check_gate.py` freshness now fails cleanly on non-file paths (directory/missing) instead of crashing, anchors relative paths on the repo `ROOT`, rejects blank/placeholder digests with a clear message, and reports `provenance_verified` / `provenance_unverified` in PASS output; Phase 8 verifier set aligned (Logic is Draft-only; Revision adds Revision-claims + Response-alignment) with `--require-check constraint` in the gate commands; "3 verifiers" corrected to "4"; Critical Rules renumbered 9/10/11; `lint_manuscript.py` skips nonexistent `.md` arguments (first lint tests added); `check_numbers.py` requires an explicit p-value (not any 0–1 proportion); `search_pubmed.py` evidence entries gain Evidence ID + Source Status; `failure_code` added to checker FAIL output; test suite expanded to 77 tests.
+- **Concision Pass** — `docs/writing_guide.md` gains a journal word-limit compression pass (Phase 5): 10 Before→After patterns distilled from a senior English edit, plus an over-compression guardrail (keep primary-outcome definitions, statistical spec, eligibility, and key limitations in text or move to Supplement — never silently delete).
 
 ### v1.0.0 (2026-06-20)
 

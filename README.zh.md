@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.0.0** (2026-06-20)
+**v1.0.1** (2026-06-20)
 
 ---
 
@@ -307,6 +307,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.0.1 (2026-06-20)
+
+**发布后加固 + 精简工具**
+
+- **当日加固（代码评审 + 项目审计）** — `check_gate.py` 的时效性检查现在对非文件路径（目录/缺失）会干净地失败而不再崩溃，将相对路径锚定到仓库 `ROOT`，以清晰的提示拒绝空白/占位的摘要值，并在 PASS 输出中报告 `provenance_verified` / `provenance_unverified`；Phase 8 的 verifier 集合已对齐（Logic 仅用于 Draft；Revision 增加 Revision-claims + Response-alignment），门命令中加入 `--require-check constraint`；“3 个 verifier”更正为“4 个”；Critical Rules 重新编号为 9/10/11；`lint_manuscript.py` 会跳过不存在的 `.md` 参数（新增首批 lint 测试）；`check_numbers.py` 要求显式的 p 值（而非任意 0–1 之间的比例）；`search_pubmed.py` 的 evidence 条目新增 Evidence ID 与 Source Status；checker 的 FAIL 输出新增 `failure_code`；测试扩展至 77 个。
+- **精简通道（Concision Pass）** — `docs/writing_guide.md` 新增面向期刊字数限制的压缩通道（Phase 5）：从资深英文编辑提炼出的 10 组 Before→After 模式，外加一条过度压缩的护栏（将主要结局定义、统计规格、入选标准与关键局限保留在正文中或移至 Supplement——切勿无声删除）。
 
 ### v1.0.0 (2026-06-20)
 

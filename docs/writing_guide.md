@@ -154,6 +154,41 @@ Discussion에서 해석·추론을 기술할 때, 근거의 강도에 비례한 
 
 ---
 
+## Concision Pass (저널 분량 압축)
+
+> 저널 word-limit 초과 시 적용하는 압축 패스. **Phase 5 (Style Polish)에서, 분량 초과 시 적용.**
+> 의미·데이터·신중한 해석은 보존하고 군더더기만 제거한다. senior 영문교정의 실제 압축 패턴을 일반화한 것 (own-paper 앵커: `Style/own/`).
+> AI-Draft De-bloat가 "AI 냄새"를 걷는다면, Concision Pass는 "분량"을 줄인다 (목적이 다름).
+
+### 압축 패턴 (Before → After)
+
+| # | 기법 | Before → After |
+|---|------|----------------|
+| 1 | 빈 도입어 제거 | "A total of 154 patients" → "Overall, 154 patients"; "From a clinical standpoint, our findings support X" → "Clinically, X" |
+| 2 | 약한 동사구 → 단/강동사 | "has emerged as" → "is"; "is associated with" → "can cause"; "was conducted in accordance with" → "followed"; "demonstrated/exhibited" → "showed" |
+| 3 | 전치사구 → 한 단어 | "in close proximity to" → "near"; "for which X had been selected" → "requiring X"; "between A and B" → "from A to B" |
+| 4 | 번호 목록 → 산문 | "(1) age 19–80; (2) …; (3) …" → 콤마로 연결한 한 문장 (적격기준 등) |
+| 5 | 중복 수식어 삭제 | "well balanced" → "balanced"; "clinically meaningful improvement" → "improvement"; "prospective, multicentre, randomised controlled trial" → "multicentre randomised trial" |
+| 6 | 표/그림/Supplement에 위임 | baseline 상세 → "Table I"; patient flow → CONSORT figure (본문 재서술 금지 — Redundancy Prevention의 Triple Duplication 규칙과 동일) |
+| 7 | 두 문장 → 한 문장 (절 결합) | "X was performed. The Y was Z." → "X using Y, Z." |
+| 8 | 자명한 계산·방법 서술 삭제 | "calculated as fused segments divided by total operated segments" → "calculated per operated segment" |
+| 9 | 수동·명사화 → 능동/형용사 | "randomisation was stratified by centre and conducted independently" → "centre-stratified"; "Wound closure was performed after placement of a drain" → (생략) |
+| 10 | 표기 압축 | 범위는 en-dash로 ("19–80", "to" 절약); p 연산자 공백 제거 ("p>0.05"); "three" → "3" (단위·시간·점수 예외는 General Principles) |
+
+### ⚠️ 압축이 삭제하면 안 되는 것 (over-compression 방지)
+
+> 분량을 줄이되 다음은 본문에 **간결히라도 반드시 남기거나, Supplement로 명시 이동**한다 (그냥 삭제 금지):
+
+- **1차 결과 정의** — 등급/기준의 실제 정의 (라벨만 남기지 않기)
+- **통계 모델 명세** — link function·상관구조·검정/CI 방법 (재현성)
+- **적격기준·제외기준의 핵심** — 산문화는 OK, 내용 누락은 NO (필요 시 Supplement)
+- **중요한 한계점** — 교란요인·일반화 한계가 압축 후 사라지지 않았는지
+- **다기관 표준화 진술** — 장비·프로토콜 통일 등
+
+압축 후 체크: *1차 결과 정의 / 통계 명세 / 적격기준 / 핵심 한계점* 이 여전히 추적 가능한가?
+
+---
+
 ## Writing Principles (4 Pillars)
 
 ### Clarity (명확성)

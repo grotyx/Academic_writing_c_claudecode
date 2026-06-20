@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.0.0** (2026-06-20)
+**v1.0.1** (2026-06-20)
 
 ---
 
@@ -331,6 +331,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.0.1 (2026-06-20)
+
+**릴리스 후 안정화 + 간결화 도구**
+
+- **당일 안정화 (코드 리뷰 + 프로젝트 감사)** — `check_gate.py`의 freshness가 이제 file이 아닌 경로(디렉터리/없는 파일)에 대해 크래시 없이 깔끔하게 실패하고, 상대 경로를 repo `ROOT` 기준으로 해석하며, 비어 있거나 placeholder인 digest를 명확한 메시지와 함께 거부하고, PASS 출력에 `provenance_verified` / `provenance_unverified`를 보고. Phase 8 verifier set 정렬 (Logic은 Draft 전용; Revision은 Revision-claims + Response-alignment 추가)과 게이트 명령의 `--require-check constraint`; "3 verifiers"를 "4"로 정정; Critical Rules를 9/10/11로 재번호; `lint_manuscript.py`가 존재하지 않는 `.md` 인자를 건너뜀(첫 lint 테스트 추가); `check_numbers.py`가 0–1 사이의 임의 비율이 아니라 명시적 p-value를 요구; `search_pubmed.py` evidence 항목에 Evidence ID + Source Status 추가; checker FAIL 출력에 `failure_code` 추가; 테스트 77개로 확장.
+- **Concision Pass** — `docs/writing_guide.md`에 저널 단어 수 제한 압축 패스(Phase 5) 추가: 시니어 영문 교정에서 도출한 10개의 Before→After 패턴과 과도 압축 방지 가드레일(primary-outcome 정의, 통계 명세, eligibility, 핵심 limitation은 본문에 유지하거나 Supplement로 이동 — 조용히 삭제 금지).
 
 ### v1.0.0 (2026-06-20)
 
