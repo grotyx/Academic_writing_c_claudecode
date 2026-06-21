@@ -15,6 +15,14 @@
           { "type": "command", "command": "py scripts/hooks/enforce_gates.py" }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "py scripts/hooks/lint_on_edit.py" }
+        ]
+      }
     ]
   }
 }
