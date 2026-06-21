@@ -13,7 +13,7 @@
 
 ```
 1. 대상 결정    기본 전체 원고 / 지정 부분 / revision: response letter + 원고
-2. 리뷰어 선택  멀티 선택: Claude 서브 / Codex / OpenRouter 모델 N개
+2. 리뷰어 선택  AskUserQuestion 멀티 선택 — OpenRouter 4종(MiniMax M3·GLM 5.2·Qwen3-Max·DeepSeek V4 Pro) 중 ~2개 권장 + Claude/Codex. 최소 1개
 3. 병렬 공격
      - Claude     → (Claude Code) Agent(새 서브에이전트, fresh context) + §2 적대 프롬프트
                     (Codex/셸) py scripts/critical_review.py --target <file> --include-claude
