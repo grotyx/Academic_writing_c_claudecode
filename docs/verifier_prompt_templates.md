@@ -17,7 +17,7 @@ All LLM verifiers must follow these rules:
 ## Common Output Schema
 
 ```yaml
-verifier: <Constraint-Compliance | Semantic-Citation | Logic-Redundancy | Data-Interpretation | Revision-Alignment>
+verifier: <Constraint-Compliance | Semantic-Citation | Logic-Redundancy | Data-Interpretation | Style-Conformance | Revision-Alignment>
 artifact: <path>
 status: <PASS | FAIL>
 checked_against:
@@ -29,7 +29,7 @@ findings:
     verdict: <SUPPORTED | PARTIALLY_SUPPORTED | UNSUPPORTED | NOT_ENOUGH_INFORMATION | NOT_APPLICABLE>
     reason: <one sentence>
     required_action: <specific action>
-gate_check_key: <constraint | citation | numbers | logic | response_alignment>
+gate_check_key: <constraint | citation | numbers | logic | style | response_alignment>
 ```
 
 Gate rule: any `critical` or `major` finding makes `status: FAIL`.
@@ -149,6 +149,44 @@ FAIL if:
 - The local paragraph logic does not support the stated manuscript argument.
 
 Return only the Common Output Schema.
+```
+
+## Style-Conformance Verifier
+
+Use for: whether a transformed section matches the project's bound style during the
+style-pass (Phase 5) or a revision rewrite. Run after `scripts/hooks/lint_on_edit.py`
+(or `lint_manuscript.py`) has handled the deterministic terminology/notation layer.
+
+Required inputs:
+
+- current artifact section
+- `drafts/style_spec.md` (the bound Style Spec; multi-paper: the paper's spec)
+- the bound exemplar anchor (`Style/own/<id>.md` or `Style/target_journal/<id>.md`)
+- relevant `docs/writing_guide.md` section rules
+- `Style/terminology.md`
+
+Prompt:
+
+```text
+You are the Style-Conformance verifier for an academic manuscript workflow. Use only
+the supplied Style Spec, bound exemplar anchor, writing_guide section rules, and
+terminology registry. Decide whether the artifact section matches the project's bound
+style. Do not use outside style preferences. If the Style Spec is missing or the
+section cannot be judged from the supplied files, return FAIL.
+
+FAIL if:
+- Section structure/flow departs from the Style Spec (e.g., Introduction not
+  burden -> treatment -> gap -> aim; Discussion not principal-finding first).
+- Mean sentence length or section length is materially off the Style Spec target.
+- Hedging or claim strength exceeds the Spec (overclaiming; superiority where the Spec
+  says equivalence-first).
+- Reference format or in-text citation style does not match the Spec.
+- Terminology drifts from Style/terminology.md or the exemplar's preferred terms.
+- The prose imitates a "Do Not Imitate" quirk of the exemplar.
+- Voice or tense by section does not match the Spec.
+
+For each finding give the location and a specific rewrite-toward action (not a full
+rewrite). Return only the Common Output Schema.
 ```
 
 ## Revision-Alignment Verifier

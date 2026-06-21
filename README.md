@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.0.3** (2026-06-20)
+**v1.1.0** (2026-06-21)
 
 ---
 
@@ -341,6 +341,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.1.0 (2026-06-21)
+
+**Style transformation — rough draft → bound journal style, reliably**
+
+- **Style Spec + Style-Conformance Verifier** — bind ONE exemplar (`Style/own/` or `Style/target_journal/`) into a compact, always-loaded `drafts/style_spec.md` (`docs/style_spec_template.md`), then transform section-by-section and verify each section against the spec with an independent **Style-Conformance Verifier** (auto-fix loop, max 2; `docs/verifier_prompt_templates.md` + `verification_protocol.md`). This reaches the holistic style layer (structure, sentence length, hedging, claim strength, reference format) that lint cannot. New `/style-pass` command + `docs/style_transform_protocol.md`.
+- **Auto-trigger on intent** — a `UserPromptSubmit` hook (`scripts/hooks/style_intent.py`) detects "make it academic / 학술적으로 바꿔줘" and injects the style-pass protocol, so the transform fires without remembering the command. SessionStart now also surfaces the active Style Spec. Advisory + fail-open. Tests added.
 
 ### v1.0.3 (2026-06-20)
 

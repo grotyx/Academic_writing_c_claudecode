@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.0.3** (2026-06-20)
+**v1.1.0** (2026-06-21)
 
 ---
 
@@ -331,6 +331,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.1.0 (2026-06-21)
+
+**스타일 변환 — 거친 초안 → bound 저널 스타일로, 안정적으로**
+
+- **Style Spec + Style-Conformance Verifier** — 하나의 exemplar(`Style/own/` 또는 `Style/target_journal/`)를 항상 로드되는 간결한 `drafts/style_spec.md`(`docs/style_spec_template.md`)로 묶은 뒤, 섹션별로 변환하고 각 섹션을 독립적인 **Style-Conformance Verifier**로 spec과 대조해 검증합니다(자동 수정 루프, 최대 2회; `docs/verifier_prompt_templates.md` + `verification_protocol.md`). 이로써 lint가 닿지 못하는 총체적 스타일 층위(구조, 문장 길이, hedging, 주장 강도, 참고문헌 형식)에 도달합니다. 신규 `/style-pass` 명령 + `docs/style_transform_protocol.md`.
+- **의도 기반 자동 트리거** — `UserPromptSubmit` hook(`scripts/hooks/style_intent.py`)이 "make it academic / 학술적으로 바꿔줘"를 감지해 style-pass 프로토콜을 주입하므로, 명령을 기억하지 않아도 변환이 작동합니다. SessionStart도 이제 활성 Style Spec을 함께 표시합니다. Advisory + fail-open. 테스트 추가.
 
 ### v1.0.3 (2026-06-20)
 

@@ -101,6 +101,16 @@ Draft 게이트는 네 개의 Verifier(Constraint / Citation / Data / Logic)를 
 
 ---
 
+### 2.6 Style-Conformance Verifier (Phase 5 style-pass)
+
+- **소스 오브 트루스:** `drafts/style_spec.md`(bound Style Spec), 지정 exemplar 앵커(`Style/own/` 또는 `Style/target_journal/`), `docs/writing_guide.md` 해당 섹션 규칙, `Style/terminology.md`. 외부 스타일 취향 금지.
+- **임무:** `/style-pass` 변환(또는 revision 재작성) 후 각 섹션이 bound 스타일과 맞는지 점검한다 — 구조·흐름, 평균 문장 길이, hedging·claim 강도, 레퍼런스 형식, 용어, 섹션별 voice/tense. lint(기계)가 못 잡는 *전체 스타일* 레이어.
+- **실행 시점:** deterministic lint(`lint_on_edit.py`/`lint_manuscript.py`) 다음. 프롬프트·출력 스키마는 `docs/verifier_prompt_templates.md`의 Style-Conformance Verifier.
+- **FAIL 조건:** Style Spec 부재, 또는 구조·문장 길이·hedging·레퍼런스 형식·용어가 Spec과 어긋나거나 exemplar의 `Do Not Imitate` 항목을 모방하면 FAIL.
+- **게이트 원장 check key:** `style`. 자율 루프(최대 2회)는 §3과 동일.
+
+---
+
 ## 3. 자율 루프 규칙
 
 ### 3.1 루프 절차
@@ -193,5 +203,6 @@ required_action: replace with 54.3 or remove
 |---|---|---|---|
 | 3 Draft Plan | Claim→Citation 사전검증 | Citation | 매핑 전체 |
 | 4 Draft | 섹션 게이트 | Constraint + Citation + Data + Logic | 섹션 단위 (자율) |
+| 5 Style-pass | style 게이트 | Style-Conformance | 섹션 단위 (자율) |
 | 6 QC | 최종 확인 (경량) | — (인라인 게이트가 이미 수행) | 원고 전체 |
 | 8 Revision | 응답 게이트 | Constraint + Citation + Data + ghost-revision diff + Response alignment | 응답 단위 (자율) |

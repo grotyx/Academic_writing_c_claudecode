@@ -23,6 +23,13 @@
           { "type": "command", "command": "py scripts/hooks/lint_on_edit.py" }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "py scripts/hooks/style_intent.py" }
+        ]
+      }
     ]
   }
 }

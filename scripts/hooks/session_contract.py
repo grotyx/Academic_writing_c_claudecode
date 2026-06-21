@@ -7,6 +7,9 @@ the hard half is the PreToolUse gate in enforce_gates.py).
 """
 
 import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
 
 CONTRACT = """\
 WORKFLOW CONTRACT (enforced - academic paper template; full rules in CLAUDE.md):
@@ -22,12 +25,33 @@ WORKFLOW CONTRACT (enforced - academic paper template; full rules in CLAUDE.md):
 """
 
 
+def style_spec_addendum(root: Path = ROOT) -> str:
+    """Surface any active project Style Spec so it is in context every session."""
+    try:
+        specs = sorted(p for p in (root / "drafts").rglob("style_spec.md") if p.is_file())
+    except Exception:
+        return ""
+    if not specs:
+        return ""
+    rels = ", ".join(str(p.relative_to(root)).replace("\\", "/") for p in specs)
+    return (
+        "STYLE (active Style Spec present - apply it):\n"
+        f"- A project Style Spec exists ({rels}). When drafting or transforming prose,\n"
+        "  load it and its bound exemplar and match it (structure, sentence length,\n"
+        "  hedging, reference format). For 'make it academic' requests follow the\n"
+        "  style-pass protocol (docs/style_transform_protocol.md) - do not free-hand."
+    )
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # avoid cp949 console crashes
     except Exception:
         pass
     print(CONTRACT)
+    addendum = style_spec_addendum()
+    if addendum:
+        print(addendum)
     return 0
 
 

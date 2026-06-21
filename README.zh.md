@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.0.3** (2026-06-20)
+**v1.1.0** (2026-06-21)
 
 ---
 
@@ -307,6 +307,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.1.0 (2026-06-21)
+
+**风格转换 —— 粗糙初稿 → 契合期刊风格，稳定可靠**
+
+- **Style Spec + Style-Conformance Verifier** —— 将一篇范例（`Style/own/` 或 `Style/target_journal/`）绑定为一份紧凑、始终加载的 `drafts/style_spec.md`（`docs/style_spec_template.md`），随后逐章节转换，并由一个独立的 **Style-Conformance Verifier** 对照该规范逐章节核验（自动修复循环，最多 2 次；`docs/verifier_prompt_templates.md` + `verification_protocol.md`）。这触及 lint 无法覆盖的整体风格层面（结构、句长、模糊化措辞、论断强度、参考文献格式）。新增 `/style-pass` 命令 + `docs/style_transform_protocol.md`。
+- **按意图自动触发** —— 一个 `UserPromptSubmit` hook（`scripts/hooks/style_intent.py`）会识别“make it academic / 学术化改写”一类意图并注入 style-pass 协议，使转换无需记住命令即可触发。SessionStart 现在还会显示当前生效的 Style Spec。建议性 + fail-open（出错时放行）。已新增测试。
 
 ### v1.0.3 (2026-06-20)
 

@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.0.3)
+# Academic Paper Writing Project (v1.1.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -361,7 +361,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - **Verifier 모델:** Opus 기본. Opus 불가 시 또는 사용자 요청 시 다른 모델(예: GPT-5.5) 허용.
 - **인용 grounding:** 초안에서 모든 인용은 `[EVID:author_year]` 태그로 표기 (Phase 7에서 저널 형식 변환).
 - **수치 grounding:** 원고 결과 수치는 `results/*.csv`에 존재하는 값만 사용.
-- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅이 plan-first를 강제 — `draft_plan.md` 없이 섹션 작성·`analysis_plan.md` 없이 분석 스크립트 생성을 **차단**(Rule 7·8, fail-open). SessionStart 훅이 본 계약을 매 세션 주입. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
+- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅이 plan-first를 강제 — `draft_plan.md` 없이 섹션 작성·`analysis_plan.md` 없이 분석 스크립트 생성을 **차단**(Rule 7·8, fail-open). SessionStart 훅이 본 계약(+활성 Style Spec)을 매 세션 주입. PostToolUse 훅(`lint_on_edit.py`)이 draft 편집마다 용어·표기 lint를 표면화하고, UserPromptSubmit 훅(`style_intent.py`)이 "학술적으로 바꿔줘" 류 입력에 style-pass protocol을 자동 주입한다. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
 
 **게이트 배치·병렬·freshness:** Phase별 게이트(3 Claim→Citation 사전검증 · 4 섹션 게이트 · 6 경량 · 8 응답 게이트), 병렬 검출, freshness 해시 규칙은 `docs/verification_protocol.md` §7/§3.1/§6 참조. PASS 시 산출물 sha256를 `provenance:`에 기록하고, 산출물이 바뀌면 stale로 보고 재검증(`check_gate.py --verify-hash`).
 
@@ -500,6 +500,7 @@ Phase 4: Draft (in this order)
 └── 🔒 GATE (각 섹션마다): Constraint + Citation + Data + Logic Verifier 자율 루프 (최대 2회) → review/gates/ 기록
 
 Phase 5: Style Polish
+├── /style-pass — 초안을 bound Style Spec/exemplar에 맞춰 섹션별 변환 + Style Verifier (docs/style_transform_protocol.md; "학술적으로 바꿔줘"에 자동 발동)
 ├── Apply writing_guide.md Style Reference Tables
 │   ├── Transition Words 업그레이드 (but → nonetheless)
 │   ├── Verb Upgrades (showed → demonstrated)
@@ -611,6 +612,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 ### Style & Polish
 | Command | Action |
 |---------|--------|
+| `/style-pass [scope]` | 초안→bound 학술/저널 스타일 섹션별 변환 + Style Verifier (docs/style_transform_protocol.md; "학술적으로 바꿔줘"에 자동 발동) |
 | `Apply writing style to [section]` | Apply Natural Academic Writing rules |
 | `Check transitions` | Find weak transitions (but, however overuse) |
 | `Upgrade verbs in [section]` | Replace basic verbs with academic alternatives |
