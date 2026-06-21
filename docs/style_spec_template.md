@@ -44,5 +44,13 @@
 - Preferred / forbidden → `Style/terminology.md` (project registry)
 - Paper-specific preferred terms: ____
 
+## Calibration Example (before → after)
+> One or two pairs from THIS project: a rough sentence and its on-style rewrite. Concrete
+> examples steer the transform far better than abstract rules — fill these during the first
+> `/style-pass`.
+
+- **Before:** [rough draft sentence]
+  **After:** [same content rewritten to the bound style]
+
 ## Do Not Imitate
 - [topic-specific quirks of the exemplar that are NOT house style]

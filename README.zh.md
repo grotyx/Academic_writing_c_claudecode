@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.1.0** (2026-06-21)
+**v1.1.1** (2026-06-21)
 
 ---
 
@@ -307,6 +307,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.1.1 (2026-06-21)
+
+**风格强制执行 —— 可度量的门 + 与 Codex 对齐**
+
+- **确定性风格度量** —— `scripts/check_style.py`（`extract` / `check --spec`）测量字数、平均句长、段落数、引用密度和模糊化措辞，并标记出与 Style Spec 目标值的偏差 —— 即“面向风格的 check_numbers”。它已接入 `lint_on_edit.py`（当存在 Style Spec 时，在每次初稿编辑时浮现 `[STYLE-METRIC]` 偏差）以及 Phase 5/6 的门。已新增测试。
+- **与 Codex 对齐 + 校准** —— `AGENTS.MD` 现在会指示非 Claude 的运行时显式运行风格转换流程（`check_style.py` + Style-Conformance verifier），因为这些 hooks 仅在 Claude Code 中可用。Style Spec 模板新增了一个 before→after 的校准示例（相比抽象规则，少量示例能更好地引导转换）。
 
 ### v1.1.0 (2026-06-21)
 

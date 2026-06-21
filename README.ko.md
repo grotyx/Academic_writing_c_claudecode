@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.1.0** (2026-06-21)
+**v1.1.1** (2026-06-21)
 
 ---
 
@@ -331,6 +331,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.1.1 (2026-06-21)
+
+**스타일 강제 — 측정 가능한 게이트 + Codex 동등성**
+
+- **결정적 스타일 지표** — `scripts/check_style.py`(`extract` / `check --spec`)가 단어 수, 평균 문장 길이, 문단 수, 인용 밀도, hedging을 측정하고 Style Spec 목표치에서 벗어나는 편차를 표시합니다 — 스타일판 "check_numbers". `lint_on_edit.py`에 연결되어(Style Spec이 존재할 때 각 초안 편집마다 `[STYLE-METRIC]` 편차를 표면화) Phase 5/6 게이트와 함께 작동합니다. 테스트 추가.
+- **Codex 동등성 + 보정** — hook은 Claude Code 전용이므로, 이제 `AGENTS.MD`가 Claude가 아닌 런타임에게 style-pass(`check_style.py` + Style-Conformance verifier)를 명시적으로 실행하도록 안내합니다. Style Spec 템플릿에는 before→after 보정 예시가 추가됩니다(few-shot이 추상적 규칙보다 변환을 더 잘 유도함).
 
 ### v1.1.0 (2026-06-21)
 

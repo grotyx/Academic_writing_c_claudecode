@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.1.0** (2026-06-21)
+**v1.1.1** (2026-06-21)
 
 ---
 
@@ -341,6 +341,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.1.1 (2026-06-21)
+
+**Style enforcement — measurable gate + Codex parity**
+
+- **Deterministic style metrics** — `scripts/check_style.py` (`extract` / `check --spec`) measures word count, mean sentence length, paragraphs, citation density, and hedging, and flags deviations from the Style Spec targets — the "check_numbers for style". Wired into `lint_on_edit.py` (surfaces `[STYLE-METRIC]` deviations on each draft edit when a Style Spec exists) and the Phase 5/6 gates. Tests added.
+- **Codex parity + calibration** — `AGENTS.MD` now tells non-Claude runtimes to run the style-pass (`check_style.py` + Style-Conformance verifier) explicitly, since the hooks are Claude Code-only. The Style Spec template gains a before→after calibration example (few-shot steers the transform better than abstract rules).
 
 ### v1.1.0 (2026-06-21)
 

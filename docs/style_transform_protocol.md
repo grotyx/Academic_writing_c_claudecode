@@ -44,10 +44,13 @@ Conclusion → Abstract → Title):
    strength, reference format, voice/tense. Keep claims and numbers grounded — do not invent.
 
 ### Step 3 — Verify each section (auto-fix loop)
-Run the **Style-Conformance Verifier** (`docs/verifier_prompt_templates.md`) on the section
-against the Style Spec + exemplar. On FAIL, fix and re-verify — **max 2 loops**, then
-escalate to the author. The `lint_on_edit.py` hook surfaces terminology/notation residue
-automatically after each edit.
+First the **measurable layer**: `py scripts/check_style.py check <section> --spec drafts/style_spec.md`
+flags metric deviations (word count, mean sentence length, paragraphs, citation density) from
+the Spec targets. Then the **Style-Conformance Verifier** (`docs/verifier_prompt_templates.md`)
+on the section against the Style Spec + exemplar for the qualitative layer (flow, claim
+strength, "Do Not Imitate"). On FAIL, fix and re-verify — **max 2 loops**, then escalate to
+the author. The `lint_on_edit.py` hook also surfaces terminology + style-metric residue
+automatically after each edit when a Style Spec exists.
 
 ### Step 4 — Record
 Record a `style` check PASS in `review/gates/phase_05_style.GATE.md` (template

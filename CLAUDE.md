@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.1.0)
+# Academic Paper Writing Project (v1.1.1)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -519,7 +519,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 ├── Round 1: Number consistency — Claude 자동 + 사용자 확인 (qc_guide.md)
 ├── Round 2: Reference verification — Claude + 사용자 (evidence.md 대조)
 ├── Round 3: Logic & flow check — Dr. Editor (section 간 흐름)
-├── Round 4: Terminology/abbreviation/tense — Dr. Editor + lint script (권장)
+├── Round 4: Terminology/abbreviation/tense + style metrics — Dr. Editor + lint + check_style.py vs Style Spec (권장)
 ├── Round 5: Statistical quality — Dr. Statistician (권장)
 ├── Round 6: Critical review — 내부(Dr. Editor + Dr. Statistician) + (선택) /critical-review 외부 멀티모델 (overclaiming/bias/일반화, 권장)
 ├── Document all rounds in review/qc_log.md
@@ -623,6 +623,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 |---------|--------|
 | `Run QC round [1-6]` | Execute specific QC round per qc_guide.md |
 | `Check number consistency` | `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results` 실행 |
+| `Check style` | `py scripts\check_style.py check drafts\05_results.md --spec drafts\style_spec.md` 실행 (Style Spec 대비 측정형 게이트) |
 | `Verify references` | `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md` 실행 |
 | `Check phase gate` | `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md` 실행 (freshness 포함) |
 | `/verify [artifacts]` | `py scripts\verify_all.py drafts\05_results.md --results results --evidence knowledge\evidence.md` — citation+number(+gate) 일괄 검증 |

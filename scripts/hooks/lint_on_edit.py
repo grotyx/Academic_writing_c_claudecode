@@ -31,6 +31,29 @@ def _load_lint():
     return module
 
 
+def _load_check_style():
+    spec = importlib.util.spec_from_file_location(
+        "check_style", ROOT / "scripts" / "check_style.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def _style_metric_lines(target: Path) -> list[str]:
+    """Measurable-style deviations vs the nearest Style Spec (empty if no spec)."""
+    try:
+        cs = _load_check_style()
+        spec = cs.nearest_spec(target)
+        if not spec:
+            return []
+        _metrics, issues = cs.check_file(target, cs.parse_spec_targets(spec))
+        return [f"[STYLE-METRIC] {m}" for m in issues]
+    except Exception:
+        return []
+
+
 def _is_manuscript_md(spath: str) -> bool:
     s = spath.replace("\\", "/")
     return (
@@ -58,16 +81,24 @@ def evaluate(event: dict) -> tuple[int, str]:
     lint = _load_lint()
     forbidden = lint.load_forbidden_terms(lint.TERMINOLOGY_FILE)
     issues = lint.lint_file(target, forbidden)
-    if not issues:
+
+    term_lines = [
+        f"[{code}] line {line}: {message}" for code, _p, line, message in issues[:MAX_LINES]
+    ]
+    style_lines = _style_metric_lines(target)
+    if not term_lines and not style_lines:
         return 0, ""
 
-    shown = issues[:MAX_LINES]
-    lines = [f"[{code}] line {line}: {message}" for code, _p, line, message in shown]
-    extra = f"\n... and {len(issues) - MAX_LINES} more" if len(issues) > MAX_LINES else ""
+    extra = (
+        f"\n... and {len(issues) - MAX_LINES} more terminology"
+        if len(issues) > MAX_LINES
+        else ""
+    )
+    total = len(issues) + len(style_lines)
     msg = (
-        f"Style lint on {target.name}: {len(issues)} terminology/style finding(s) "
-        f"(Style/terminology.md + writing_guide rules). Fix before finalizing:\n"
-        + "\n".join(lines)
+        f"Style lint on {target.name}: {total} finding(s) "
+        f"(terminology + style metrics vs Style Spec). Fix before finalizing:\n"
+        + "\n".join(term_lines + style_lines)
         + extra
         + "\n"
     )
