@@ -15,11 +15,13 @@
 1. 대상 결정    기본 전체 원고 / 지정 부분 / revision: response letter + 원고
 2. 리뷰어 선택  멀티 선택: Claude 서브 / Codex / OpenRouter 모델 N개
 3. 병렬 공격
-     - Claude     → Agent(새 서브에이전트, fresh context) + §2 적대 프롬프트
-     - Codex      → codex-rescue(read-only) + §2 적대 프롬프트
+     - Claude     → (Claude Code) Agent(새 서브에이전트, fresh context) + §2 적대 프롬프트
+                    (Codex/셸) py scripts/critical_review.py --target <file> --include-claude
+                    → 로컬 `claude -p` 헤드리스로 Claude 리뷰 호출
+     - Codex      → (Claude Code) codex-rescue(read-only) / (셸) codex exec + §2 적대 프롬프트
      - OpenRouter → python scripts/critical_review.py --target <file>
                     --models-file scripts/critical_models.txt --role <role>
-                    --out review/critical/<run>/
+                    --out review/critical/<run>/  (필요 시 --include-claude 동시 사용)
 4. 종합(메인)   중복 통합(합의도) + 심각도 분류(Critical/Important/Minor)
 5. 저장         review/critical/YYYYMMDD_<slug>.md (통합 리포트) + 모델별 원본
 ```

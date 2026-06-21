@@ -1,6 +1,7 @@
 # OpenRouter model IDs for /critical-review (one per line, # comments ignored).
 # Verify slugs at https://openrouter.ai/models before relying on them.
-# Defaults: MiniMax M3 + GLM 5.2. Add other families (GPT/Gemini/Llama) for
-# more blind-spot diversity.
+# Defaults: MiniMax M3 + GLM 5.2 + Qwen3-Max. Add other families (GPT/Gemini/
+# Llama/DeepSeek) for more blind-spot diversity.
 minimax/minimax-m3
 z-ai/glm-5.2
+qwen/qwen3.7-max

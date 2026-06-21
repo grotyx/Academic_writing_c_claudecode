@@ -93,5 +93,48 @@ class PromptFileTests(unittest.TestCase):
         self.assertTrue((m.PROMPT_DIR / "response.txt").exists())
 
 
+class CallClaudeCliTests(unittest.TestCase):
+    def test_runs_claude_print_mode_with_stdin(self) -> None:
+        m = load_module()
+        fake = mock.Mock(returncode=0, stdout="findings\n", stderr="")
+        with mock.patch.object(m.subprocess, "run", return_value=fake) as run:
+            out = m.call_claude_cli("attack this")
+        self.assertEqual(out, "findings")
+        args, kwargs = run.call_args
+        self.assertEqual(list(args[0])[:2], ["claude", "-p"])
+        self.assertEqual(kwargs["input"], "attack this")
+
+    def test_raises_on_nonzero_exit(self) -> None:
+        m = load_module()
+        fake = mock.Mock(returncode=1, stdout="", stderr="boom")
+        with mock.patch.object(m.subprocess, "run", return_value=fake):
+            with self.assertRaises(RuntimeError):
+                m.call_claude_cli("x")
+
+
+class ClaudeRoutingTests(unittest.TestCase):
+    def test_run_review_routes_claude_and_openrouter(self) -> None:
+        # claude-cli -> call_claude_cli; other ids -> call_model (OpenRouter).
+        m = load_module()
+        with mock.patch.object(m, "call_claude_cli", return_value="claude says") as cc, mock.patch.object(
+            m, "call_model", side_effect=lambda mid, p, k, timeout=120: f"or:{mid}"
+        ):
+            out = m.run_critical_review("t", [m.CLAUDE_MODEL_ID, "good/a"], "manuscript", "KEY")
+        self.assertEqual(out[m.CLAUDE_MODEL_ID], "claude says")
+        self.assertEqual(out["good/a"], "or:good/a")
+        cc.assert_called_once()
+
+    def test_claude_only_needs_no_api_key(self) -> None:
+        m = load_module()
+        with mock.patch.object(m, "call_claude_cli", return_value="ok"):
+            out = m.run_critical_review("t", [m.CLAUDE_MODEL_ID], "manuscript", None)
+        self.assertEqual(out, {m.CLAUDE_MODEL_ID: "ok"})
+
+    def test_openrouter_without_key_is_skipped(self) -> None:
+        m = load_module()
+        out = m.run_critical_review("t", ["some/model"], "manuscript", None)
+        self.assertEqual(out, {})
+
+
 if __name__ == "__main__":
     unittest.main()

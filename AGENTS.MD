@@ -12,6 +12,7 @@ This repository is an academic manuscript-writing workflow. Treat `CLAUDE.md` as
 - Keep reference evidence under `knowledge/`; keep writing-style material under `Style/`.
 - Do not commit copyrighted PDFs or private/local style-anchor summaries.
 - Commit public workflow files such as `Style/style_guide.md`, `Style/terminology.md`, documentation, templates, and scripts when appropriate.
+- Cross-runtime review: from Codex (or any shell) you can pull in Claude's adversarial review with `py scripts/critical_review.py --target <file> --include-claude` (shells out to `claude -p`); OpenRouter models via `--models-file scripts/critical_models.txt`. See `docs/critical_review_protocol.md`.
 
 ## Protected Local Files
 
