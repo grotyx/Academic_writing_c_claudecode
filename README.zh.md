@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.0.2** (2026-06-20)
+**v1.0.3** (2026-06-20)
 
 ---
 
@@ -307,6 +307,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.0.3 (2026-06-20)
+
+**跨运行时 critical review + 模型选择**
+
+- **Claude-CLI 评审者** — `scripts/critical_review.py --include-claude` 会调用本地的 `claude -p`（headless 模式），使得非 Claude-Code 的调用方（Codex 或普通 shell）也能引入 Claude 的对抗式评审。`OPENROUTER_API_KEY` 现在仅在实际请求某个 OpenRouter 模型时才需要。相关说明见 `docs/critical_review_protocol.md` 与 `AGENTS.MD`。
+- **更大的模型池 + 选约 2 个** — `scripts/critical_models.txt` 现在提供 MiniMax M3、GLM 5.2、Qwen3-Max 和 DeepSeek V4 Pro；`/critical-review` 将它们作为各自独立的 `AskUserQuestion` 选项呈现，并建议选择约 2 个（兼顾成本与盲点多样性），随后运行 `--models <selected>`。
 
 ### v1.0.2 (2026-06-20)
 

@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.0.2** (2026-06-20)
+**v1.0.3** (2026-06-20)
 
 ---
 
@@ -341,6 +341,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.0.3 (2026-06-20)
+
+**Cross-runtime critical review + model selection**
+
+- **Claude-CLI reviewer** — `scripts/critical_review.py --include-claude` shells out to the local `claude -p` (headless) so a non-Claude-Code caller (Codex or a plain shell) can pull in Claude's adversarial review. `OPENROUTER_API_KEY` is now only required when an OpenRouter model is actually requested. Documented in `docs/critical_review_protocol.md` + `AGENTS.MD`.
+- **Larger model pool + pick ~2** — `scripts/critical_models.txt` now offers MiniMax M3, GLM 5.2, Qwen3-Max, and DeepSeek V4 Pro; `/critical-review` presents them as individual `AskUserQuestion` options and recommends choosing ~2 (cost + blind-spot diversity), then runs `--models <selected>`.
 
 ### v1.0.2 (2026-06-20)
 

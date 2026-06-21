@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.0.2** (2026-06-20)
+**v1.0.3** (2026-06-20)
 
 ---
 
@@ -331,6 +331,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.0.3 (2026-06-20)
+
+**런타임 간 critical review + 모델 선택**
+
+- **Claude-CLI 리뷰어** — `scripts/critical_review.py --include-claude`는 로컬 `claude -p`(headless)를 shell로 호출하므로, Claude Code가 아닌 호출자(Codex나 일반 shell)도 Claude의 적대적 검토를 가져올 수 있습니다. `OPENROUTER_API_KEY`는 이제 OpenRouter 모델을 실제로 요청할 때만 필요합니다. `docs/critical_review_protocol.md` + `AGENTS.MD`에 문서화.
+- **더 큰 모델 풀 + ~2개 선택** — `scripts/critical_models.txt`에 MiniMax M3, GLM 5.2, Qwen3-Max, DeepSeek V4 Pro가 추가되었습니다. `/critical-review`는 이들을 개별 `AskUserQuestion` 옵션으로 제시하고 ~2개 선택을 권장하며(비용 + 사각지대 다양성), 이후 `--models <selected>`로 실행합니다.
 
 ### v1.0.2 (2026-06-20)
 
