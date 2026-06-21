@@ -109,6 +109,7 @@ def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")
         sys.stderr.reconfigure(encoding="utf-8")
+        sys.stdin.reconfigure(encoding="utf-8")  # Claude Code emits UTF-8 JSON; Windows default is cp949
     except Exception:
         pass
     try:

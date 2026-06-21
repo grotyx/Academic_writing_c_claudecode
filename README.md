@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.1.1** (2026-06-21)
+**v1.1.2** (2026-06-21)
 
 ---
 
@@ -341,6 +341,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.1.2 (2026-06-21)
+
+**Fix — hooks read UTF-8 stdin (Korean intent on Windows)**
+
+- The `UserPromptSubmit` / `PreToolUse` / `PostToolUse` hooks now reconfigure stdin to UTF-8. On Windows (cp949 default) the JSON payload Claude Code emits was mis-decoded, so non-ASCII prompts — e.g. the Korean auto-trigger "학술적으로 바꿔줘" — silently failed to match. Added an end-to-end UTF-8 stdin test.
 
 ### v1.1.1 (2026-06-21)
 

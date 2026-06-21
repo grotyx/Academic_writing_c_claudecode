@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.1.1** (2026-06-21)
+**v1.1.2** (2026-06-21)
 
 ---
 
@@ -331,6 +331,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.1.2 (2026-06-21)
+
+**수정 — hook이 UTF-8 stdin을 읽도록 (Windows에서 한국어 의도 인식)**
+
+- `UserPromptSubmit` / `PreToolUse` / `PostToolUse` hook이 이제 stdin을 UTF-8로 재설정합니다. Windows(기본 cp949)에서는 Claude Code가 보내는 JSON payload가 잘못 디코딩되어, ASCII가 아닌 프롬프트 — 예: 한국어 자동 트리거 "학술적으로 바꿔줘" — 가 조용히 매칭에 실패했습니다. 종단 간(end-to-end) UTF-8 stdin 테스트를 추가했습니다.
 
 ### v1.1.1 (2026-06-21)
 

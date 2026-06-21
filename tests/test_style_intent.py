@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -61,6 +64,30 @@ class EvaluateTests(unittest.TestCase):
 
     def test_fails_open_on_garbage(self) -> None:
         self.assertEqual(self.m.evaluate({}), "")
+
+
+class MainStdinTests(unittest.TestCase):
+    """End-to-end: the hook must read UTF-8 JSON from stdin (Korean intact on Windows)."""
+
+    def test_main_reads_utf8_korean_stdin(self) -> None:
+        payload = json.dumps({"prompt": "이 초안 학술적으로 바꿔줘"})
+        proc = subprocess.run(
+            [sys.executable, str(SCRIPT)],
+            input=payload.encode("utf-8"),
+            capture_output=True,
+        )
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn(b"style-pass", proc.stdout)
+
+    def test_main_quiet_on_non_match(self) -> None:
+        payload = json.dumps({"prompt": "그냥 커밋해줘"})
+        proc = subprocess.run(
+            [sys.executable, str(SCRIPT)],
+            input=payload.encode("utf-8"),
+            capture_output=True,
+        )
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(proc.stdout.strip(), b"")
 
 
 if __name__ == "__main__":

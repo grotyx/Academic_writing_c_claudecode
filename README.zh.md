@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.1.1** (2026-06-21)
+**v1.1.2** (2026-06-21)
 
 ---
 
@@ -307,6 +307,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.1.2 (2026-06-21)
+
+**修复 —— hooks 以 UTF-8 读取 stdin（Windows 上的韩语意图）**
+
+- `UserPromptSubmit` / `PreToolUse` / `PostToolUse` hooks 现在会将 stdin 重新配置为 UTF-8。在 Windows 上（默认 cp949），Claude Code 输出的 JSON 负载会被错误解码，因此非 ASCII 的提示词 —— 例如韩语自动触发语句“학술적으로 바꿔줘” —— 会静默地匹配失败。新增了一个端到端的 UTF-8 stdin 测试。
 
 ### v1.1.1 (2026-06-21)
 
