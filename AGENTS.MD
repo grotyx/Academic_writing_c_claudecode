@@ -9,6 +9,7 @@ This repository is an academic manuscript-writing workflow. Treat `CLAUDE.md` as
 - Read and follow `CLAUDE.md` before making workflow, manuscript, analysis, or documentation changes.
 - Do not fabricate references, citations, statistics, patient counts, p-values, confidence intervals, or journal requirements.
 - Check `knowledge/evidence.md` before citing literature or adding new references.
+- The `medical-kag-remote` MCP is a discovery/analysis/format assist, not a citation source: register anything it surfaces in `knowledge/evidence.md` (`[EVID:id]`, verify PMID/DOI) before citing. If the MCP is unavailable, fall back to `scripts/search_pubmed.py`. See `docs/medical_kag_protocol.md`.
 - Keep reference evidence under `knowledge/`; keep writing-style material under `Style/`.
 - Do not commit copyrighted PDFs or private/local style-anchor summaries.
 - Commit public workflow files such as `Style/style_guide.md`, `Style/terminology.md`, documentation, templates, and scripts when appropriate.
