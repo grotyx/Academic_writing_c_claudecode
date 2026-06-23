@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.2.0)
+# Academic Paper Writing Project (v1.3.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -155,6 +155,8 @@ project/
 | `scripts/check_citations.py` | `[EVID:id]` citations를 `knowledge/evidence.md`와 대조 | Phase 3·4·6 citation gate |
 | `scripts/check_numbers.py` | manuscript/table 수치를 `results/*.csv`와 대조 | Phase 4·6 data gate |
 | `scripts/check_gate.py` | `review/gates/*.GATE.md` 원장의 `status: PASS`와 필수 check를 검증 | 모든 phase gate 통과 직전 |
+| `scripts/extract_claims.py` | 초안의 `[EVID:id]` 문장 추출 (claim-verification 입력) | Phase 6 (`/verify-claims`) |
+| `docs/citation_assist_protocol.md` | 출처 제안 + claim 검증 리포트 (GraphRAG 주, evidence.md 보조) | Phase 3·4·6 |
 | `review/qc_log.md` | QC round documentation | Phase 6 (track all QC iterations) |
 | `review/gates/` | 검증 게이트 원장 (Verifier PASS/FAIL 기록) | Phase 3·4·8 (게이트 통과 기록) |
 | `output/` | Final compiled manuscript (docx only) | Phase 7 (finalize) |
@@ -526,6 +528,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 ├── Round 4: Terminology/abbreviation/tense + style metrics — Dr. Editor + lint + check_style.py vs Style Spec (권장)
 ├── Round 5: Statistical quality — Dr. Statistician (권장)
 ├── Round 6: Critical review — 내부(Dr. Editor + Dr. Statistician) + (선택) /critical-review 외부 멀티모델 (overclaiming/bias/일반화, 권장)
+├── Claim verification (선택): /verify-claims — 인용 문장별 SUPPORTED/PARTIAL/UNSUPPORTED 리포트 (docs/citation_assist_protocol.md; GraphRAG 주, evidence.md 보조)
 ├── Document all rounds in review/qc_log.md
 └── Run study-specific checklist (checklist_guide.md — CONSORT/STROBE/PRISMA/CARE)
 
@@ -642,6 +645,8 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `Verify references` | `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md` 실행 |
 | `Check phase gate` | `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md` 실행 (freshness 포함) |
 | `/verify [artifacts]` | `py scripts\verify_all.py drafts\05_results.md --results results --evidence knowledge\evidence.md` — citation+number(+gate) 일괄 검증 |
+| `/suggest-citation [claim]` | claim에 맞는 `[EVID:id]` 출처 제안 (medical-kag GraphRAG 주, evidence.md 보조; `docs/citation_assist_protocol.md`) |
+| `/verify-claims [section]` | 인용 문장별 SUPPORTED/PARTIAL/UNSUPPORTED 리포트 → `review/claim_verification.md` (`extract_claims.py` + Semantic-Citation Verifier) |
 | `Check logic flow` | Verify narrative consistency |
 | `Run checklist for [study type]` | STROBE/CONSORT/PRISMA/CARE checklist |
 

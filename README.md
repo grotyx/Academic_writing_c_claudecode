@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.2.0** (2026-06-22)
+**v1.3.0** (2026-06-24)
 
 ---
 
@@ -341,6 +341,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.3.0 (2026-06-24)
+
+**Citation assist — suggestion + per-claim verification (GraphRAG-backed)**
+
+- **Citation suggestion** (`/suggest-citation [claim]`) — given a draft claim, retrieve the best `[EVID:id]` candidates via the medical-kag knowledge graph (GraphRAG), falling back to `knowledge/evidence.md` + `scripts/search_pubmed.py` when the MCP is unavailable. The author picks; new sources are registered in evidence.md (PMID/DOI verified) before they become citable, so grounding holds.
+- **Per-claim verification report** (`/verify-claims [section]`) — `scripts/extract_claims.py` pulls every `[EVID:id]`-tagged sentence, then the Semantic-Citation Verifier classifies each as SUPPORTED / PARTIAL / UNSUPPORTED into `review/claim_verification.md` (a Phase-6 QC "claim map", deeper than `check_citations.py`'s existence check). New `docs/citation_assist_protocol.md`; both operations degrade gracefully to evidence.md. Tests added.
 
 ### v1.2.0 (2026-06-22)
 

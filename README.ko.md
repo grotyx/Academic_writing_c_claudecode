@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.2.0** (2026-06-22)
+**v1.3.0** (2026-06-24)
 
 ---
 
@@ -331,6 +331,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.3.0 (2026-06-24)
+
+**Citation 보조 — 제안 + claim별 검증 (GraphRAG 기반)**
+
+- **Citation 제안** (`/suggest-citation [claim]`) — 초안의 claim을 입력하면 medical-kag knowledge graph(GraphRAG)를 통해 가장 적합한 `[EVID:id]` 후보를 검색하며, MCP를 사용할 수 없을 때는 `knowledge/evidence.md` + `scripts/search_pubmed.py`로 폴백합니다. 선택은 저자가 하고, 신규 출처는 인용 가능해지기 전에 evidence.md에 등록(PMID/DOI 검증 완료)되므로 grounding이 유지됩니다.
+- **Claim별 검증 리포트** (`/verify-claims [section]`) — `scripts/extract_claims.py`가 `[EVID:id]` 태그가 붙은 모든 문장을 추출하면, Semantic-Citation Verifier가 각 문장을 SUPPORTED / PARTIAL / UNSUPPORTED로 분류하여 `review/claim_verification.md`에 기록합니다(Phase 6 QC의 "claim map"으로, `check_citations.py`의 존재 여부 확인보다 깊이 들어갑니다). 신규 `docs/citation_assist_protocol.md`가 추가되었으며, 두 작업 모두 evidence.md로 무리 없이(gracefully) degrade합니다. 테스트도 추가되었습니다.
 
 ### v1.2.0 (2026-06-22)
 

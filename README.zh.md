@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.2.0** (2026-06-22)
+**v1.3.0** (2026-06-24)
 
 ---
 
@@ -307,6 +307,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.3.0 (2026-06-24)
+
+**引用辅助 —— 推荐 + 逐条 claim 核验（基于 GraphRAG）**
+
+- **引用推荐**（`/suggest-citation [claim]`）—— 给定一条草稿 claim，通过 medical-kag 知识图谱（GraphRAG）检索出最匹配的 `[EVID:id]` 候选；当 MCP 不可用时，回退到 `knowledge/evidence.md` + `scripts/search_pubmed.py`。最终由作者选定，且新的来源必须先注册进 evidence.md（经 PMID/DOI 核验）才能被引用，从而保持 grounding 不被破坏。
+- **逐条 claim 核验报告**（`/verify-claims [section]`）—— `scripts/extract_claims.py` 会抽取每一句带 `[EVID:id]` 标记的句子，随后由 Semantic-Citation Verifier 将每条分类为 SUPPORTED / PARTIAL / UNSUPPORTED，写入 `review/claim_verification.md`（一份 Phase 6 QC 阶段的“claim 地图”，比 `check_citations.py` 仅做存在性检查更为深入）。新增 `docs/citation_assist_protocol.md`；两项操作均可优雅降级到 evidence.md。已补充测试。
 
 ### v1.2.0 (2026-06-22)
 
