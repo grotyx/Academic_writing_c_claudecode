@@ -5,9 +5,6 @@
 .claude/settings.local.json
 .vscode/
 
-# Personal local overlays (CLAUDE.local.md, README.local.md, NOTES.local.md) — never shared
-*.local.md
-
 # Presentation files (not part of manuscript workflow)
 presentation/
 
