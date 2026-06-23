@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.1.2** (2026-06-21)
+**v1.2.0** (2026-06-22)
 
 ---
 
@@ -341,6 +341,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.2.0 (2026-06-22)
+
+**medical-kag MCP integration — knowledge graph alongside evidence.md**
+
+- **Grounding-preserving KAG integration** — the `medical-kag-remote` MCP (a spine-surgery knowledge-augmented graph) plugs in as an upstream discovery/analysis/format engine, while `knowledge/evidence.md` stays the single canonical citation ledger: anything the graph surfaces is registered as `[EVID:id]` (PMID/DOI verified) before it can be cited, so `check_citations.py` still gates everything. New `docs/medical_kag_protocol.md` maps the tools to phases — discovery + structured extraction (Phase 1), evidence-chain / intervention-comparison / GRADE synthesis for claims + Discussion (Phase 3-4), conflict / overclaim guard (Phase 6), journal-style reference lists (Phase 7).
+- **Additive + fallback** — the MCP is never a dependency: if it is unavailable (e.g. an unauthenticated remote session), the workflow degrades to `scripts/search_pubmed.py` + manual evidence.md. Wired into CLAUDE.md (Rule 1, STOP signals, Phase 1, Quick Commands) + AGENTS.MD for Codex parity.
 
 ### v1.1.2 (2026-06-21)
 

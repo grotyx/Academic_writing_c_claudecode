@@ -14,9 +14,6 @@ profile/
 # Superpowers planning/spec notes — internal, not for public release
 docs/superpowers/
 
-# medical-kag integration protocol — personal MCP, kept local only
-docs/medical_kag_protocol.md
-
 # Local DOCX style references may contain private reviewer-response text
 Author_response_220803_Final.docx
 
