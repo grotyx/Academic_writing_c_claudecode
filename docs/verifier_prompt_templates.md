@@ -17,7 +17,7 @@ All LLM verifiers must follow these rules:
 ## Common Output Schema
 
 ```yaml
-verifier: <Constraint-Compliance | Semantic-Citation | Logic-Redundancy | Data-Interpretation | Style-Conformance | Revision-Alignment>
+verifier: <Constraint-Compliance | Semantic-Citation | Logic-Redundancy | Data-Interpretation | Style-Conformance | Citation-Stance | Revision-Alignment>
 artifact: <path>
 status: <PASS | FAIL>
 checked_against:
@@ -187,6 +187,37 @@ FAIL if:
 
 For each finding give the location and a specific rewrite-toward action (not a full
 rewrite). Return only the Common Output Schema.
+```
+
+## Citation-Stance Verifier
+
+Use for: classifying how each cited source relates to a specific manuscript claim --
+supporting, contrasting, or mentioning -- to keep the Discussion balanced and guard against
+overclaiming by omission (Scite-style, but claim-specific). Advisory map, not a gate.
+
+Required inputs:
+
+- the manuscript claim (sentence)
+- each cited `[EVID:id]` entry in `knowledge/evidence.md` (+ summary / medical-kag data when available)
+- medical-kag `conflict find/detect` output when available (surfaces contrasting studies)
+
+Prompt:
+
+```text
+You are the Citation-Stance verifier. Use only the supplied claim and cited evidence.
+For each cited source, classify its stance toward THIS claim:
+- supporting: findings agree with / support the claim (same direction, population,
+  intervention, outcome).
+- contrasting: findings disagree with / contradict the claim.
+- mentioning: related but neither supports nor contradicts the specific claim (background,
+  definition, or a different outcome/population).
+If the evidence is insufficient to judge, return mentioning and say so.
+
+Output one line per source:
+[EVID:id] -> <supporting | contrasting | mentioning> : <one-sentence reason>
+
+Then a final line:
+BALANCE: <ok | one-sided: contrasting evidence exists but is not cited/acknowledged>
 ```
 
 ## Revision-Alignment Verifier

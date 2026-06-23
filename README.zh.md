@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.3.0** (2026-06-24)
+**v1.4.0** (2026-06-24)
 
 ---
 
@@ -307,6 +307,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.4.0 (2026-06-24)
+
+**引用立场 + 证据对比表（基于 GraphRAG）**
+
+- **引用立场**（`/cite-stance [claim|section]`）—— 对每一个被引用的来源进行分类，判断它与某条 claim 的关系（支持 / 反驳 / 仅提及），从而让 Discussion 保持论证均衡；当存在反驳性证据却未被引用时，标记为“一边倒”（防止因遗漏而过度宣称的护栏）。新增 Citation-Stance verifier（`docs/verifier_prompt_templates.md`）；medical-kag 的 `conflict` 用于浮现缺失的反方证据，evidence.md 作为回退。Scite 风格，针对具体 claim。
+- **证据对比表**（`/evidence-table [topic|ids]`）—— 汇总生成一张“纳入研究汇总”表（研究 / 设计 / n / 干预 / 结局 / 结果 / LoE），可用于 Discussion 或 PRISMA 补充材料。`scripts/evidence_table.py` 为确定性格式化工具；以 medical-kag 的结构化数据为主，evidence.md 作为回退。Elicit 风格。已补充测试。
 
 ### v1.3.0 (2026-06-24)
 

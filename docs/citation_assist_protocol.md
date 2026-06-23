@@ -54,6 +54,36 @@ Use as a **Phase 6 QC round** (claim-level grounding), complementing the determi
 
 ---
 
+## Operation 3 — Citation stance (`/cite-stance [claim | section]`)
+
+Goal: tag how each cited source relates to a claim — supporting / contrasting / mentioning —
+so the Discussion stays balanced (Scite-style, claim-specific).
+
+1. **Identify** the claim(s) and their `[EVID:id]` (`scripts/extract_claims.py` for a whole section).
+2. **Retrieve + find contrasts:** pull each source (KAG primary, evidence.md fallback); use
+   medical-kag `conflict find/detect` to surface contrasting studies that may be missing.
+3. **Classify** each source with the Citation-Stance verifier (`docs/verifier_prompt_templates.md`):
+   supporting / contrasting / mentioning + reason.
+4. **Output** a stance summary; flag **one-sided** if contrasting evidence exists but is not
+   cited (overclaim-by-omission guard). Use when writing or QC-ing the Discussion.
+
+---
+
+## Operation 4 — Evidence comparison table (`/evidence-table [topic | EVID ids]`)
+
+Goal: a "summary of included studies" table (Elicit-style) for the Discussion or a PRISMA
+supplement.
+
+1. **Gather structured records** for the target papers — KAG primary (`analyze` fields /
+   `compare_interventions`: design, n, intervention, outcome, effect, p, evidence level);
+   evidence.md fallback (from the entry summaries; rougher).
+2. **Format:** emit JSON records, then `py scripts/evidence_table.py <records.json> --columns
+   study,design,n,intervention,outcome,result,loe` → a markdown table.
+3. **Save** to `drafts/table_evidence.md` (or a supplement). Verify every number against the
+   source (grounding) — KAG values can be sparse/noisy; `evidence.md` / `results` are canonical.
+
+---
+
 ## Guardrails
 
 - Never invent a citation to satisfy a claim — if nothing supports it, weaken or flag the claim

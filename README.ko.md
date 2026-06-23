@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.3.0** (2026-06-24)
+**v1.4.0** (2026-06-24)
 
 ---
 
@@ -331,6 +331,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.4.0 (2026-06-24)
+
+**Citation stance + 근거 비교표 (GraphRAG 기반)**
+
+- **Citation stance** (`/cite-stance [claim|section]`) — 인용된 각 출처가 claim과 어떤 관계인지(지지 / 반박 / 단순 언급) 분류하여 Discussion의 균형을 유지합니다. 반박 근거(contrasting evidence)가 존재하는데도 인용되지 않은 경우 "one-sided"로 플래그를 표시합니다(누락에 의한 overclaim 가드). 신규 Citation-Stance verifier가 추가되었으며(`docs/verifier_prompt_templates.md`), medical-kag `conflict`가 누락된 반박 근거를 surface하고 evidence.md로 폴백합니다. Scite 스타일의 claim 특화 기능입니다.
+- **근거 비교표** (`/evidence-table [topic|ids]`) — Discussion이나 PRISMA supplement를 위한 "포함된 연구 요약(summary of included studies)" 표(study / design / n / intervention / outcome / result / LoE)를 조립합니다. `scripts/evidence_table.py`가 결정적(deterministic) 포매터이며, medical-kag 구조화 데이터를 주(primary)로, evidence.md를 폴백으로 사용합니다. Elicit 스타일입니다. 테스트도 추가되었습니다.
 
 ### v1.3.0 (2026-06-24)
 

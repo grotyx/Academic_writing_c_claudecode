@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.3.0** (2026-06-24)
+**v1.4.0** (2026-06-24)
 
 ---
 
@@ -341,6 +341,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.4.0 (2026-06-24)
+
+**Citation stance + evidence comparison table (GraphRAG-backed)**
+
+- **Citation stance** (`/cite-stance [claim|section]`) — classify how each cited source relates to a claim (supporting / contrasting / mentioning) so the Discussion stays balanced; flags "one-sided" when contrasting evidence exists but is not cited (overclaim-by-omission guard). New Citation-Stance verifier (`docs/verifier_prompt_templates.md`); medical-kag `conflict` surfaces missing contrasts, evidence.md fallback. Scite-style, claim-specific.
+- **Evidence comparison table** (`/evidence-table [topic|ids]`) — assemble a "summary of included studies" table (study / design / n / intervention / outcome / result / LoE) for the Discussion or a PRISMA supplement. `scripts/evidence_table.py` is the deterministic formatter; medical-kag structured data primary, evidence.md fallback. Elicit-style. Tests added.
 
 ### v1.3.0 (2026-06-24)
 
