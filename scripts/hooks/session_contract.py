@@ -43,6 +43,20 @@ def style_spec_addendum(root: Path = ROOT) -> str:
     )
 
 
+def local_overlay(root: Path = ROOT) -> str:
+    """Inject personal local rules (CLAUDE.local.md) if present - gitignored, never shared."""
+    try:
+        p = root / "CLAUDE.local.md"
+        if not p.is_file():
+            return ""
+        text = p.read_text(encoding="utf-8", errors="replace").strip()
+    except Exception:
+        return ""
+    if not text:
+        return ""
+    return "LOCAL OVERLAY (CLAUDE.local.md - personal, gitignored, applied on top of CLAUDE.md):\n" + text
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # avoid cp949 console crashes
@@ -52,6 +66,9 @@ def main() -> int:
     addendum = style_spec_addendum()
     if addendum:
         print(addendum)
+    overlay = local_overlay()
+    if overlay:
+        print(overlay)
     return 0
 
 

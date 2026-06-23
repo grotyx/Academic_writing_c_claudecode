@@ -48,5 +48,21 @@ class StyleSpecAddendumTests(unittest.TestCase):
         self.assertIn("paper1_x/style_spec.md", out)
 
 
+class LocalOverlayTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.m = load_module()
+
+    def test_empty_when_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self.m.local_overlay(Path(tmp)), "")
+
+    def test_injects_when_present(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "CLAUDE.local.md").write_text("My private rule.\n", encoding="utf-8")
+            out = self.m.local_overlay(Path(tmp))
+        self.assertIn("LOCAL OVERLAY", out)
+        self.assertIn("My private rule.", out)
+
+
 if __name__ == "__main__":
     unittest.main()
