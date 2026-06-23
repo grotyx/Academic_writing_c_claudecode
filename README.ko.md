@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.2.0** (2026-06-22)
+**v1.1.2** (2026-06-21)
 
 ---
 
@@ -331,13 +331,6 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
-
-### v1.2.0 (2026-06-22)
-
-**medical-kag MCP 통합 — evidence.md와 함께 작동하는 knowledge graph**
-
-- **Grounding을 보존하는 KAG 통합** — `medical-kag-remote` MCP(척추 수술 knowledge-augmented graph)가 상류(upstream)의 discovery/analysis/format 엔진으로 연결되지만, `knowledge/evidence.md`는 여전히 단일 정본(canonical) citation ledger로 남습니다. graph가 surface한 모든 것은 인용되기 전에 `[EVID:id]`(PMID/DOI 검증 완료)로 등록되므로, `check_citations.py`가 변함없이 모든 것을 게이트합니다. 신규 `docs/medical_kag_protocol.md`가 도구를 phase에 매핑합니다 — discovery + 구조화 추출(Phase 1), claim과 Discussion을 위한 evidence-chain / intervention-comparison / GRADE 종합(Phase 3-4), conflict / overclaim 가드(Phase 6), 저널 형식 참고문헌 목록(Phase 7).
-- **부가적(additive) + 폴백** — 이 MCP는 결코 의존성이 아닙니다: 사용할 수 없는 경우(예: 인증되지 않은 remote 세션) 워크플로는 `scripts/search_pubmed.py` + 수동 evidence.md로 degrade합니다. Codex 동등성을 위해 CLAUDE.md(Rule 1, STOP 신호, Phase 1, Quick Commands)와 AGENTS.MD에 연결되어 있습니다.
 
 ### v1.1.2 (2026-06-21)
 

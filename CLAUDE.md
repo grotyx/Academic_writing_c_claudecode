@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.2.0)
+# Academic Paper Writing Project (v1.1.2)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -136,7 +136,6 @@ project/
 | `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿) | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
 | `profile/journals.md` | 저널별 인용 형식 (bracket vs superscript, et al. 기준, volume 형식) | 참고문헌 목록 작성 시 확인 |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
-| `docs/medical_kag_protocol.md` | medical-kag MCP 통합 (KG 발굴·conflict·GRADE·레퍼런스 포맷); evidence.md 정본 유지 규율·fallback | Phase 1·3·4·6·7 (MCP 사용 시) |
 | `knowledge/pdf/` | Original reference PDFs (**gitignored**; copyright-protected, local only) | When verifying claims |
 | `knowledge/summaries/` | 개별 논문 full-text 상세 요약 | 핵심 논문 상세 확인 시 |
 | `Style/` | 논문 스타일 앵커 전용 폴더. `own/`, `landmark/`, `target_journal/` md와 `PDF/` 원본을 분리 보관 | Phase 3-5 (저널 스타일, 팀 voice, 논증 구조 정렬) |
@@ -170,7 +169,6 @@ project/
 
 - **NEVER fabricate or hallucinate references**
 - **ALWAYS check `knowledge/evidence.md` first** before searching (avoid duplicate work)
-- **medical-kag MCP is discovery/analysis only, not a citation source:** register anything it surfaces in `knowledge/evidence.md` as `[EVID:id]` (verify PMID/DOI) **before** citing. evidence.md stays the canonical ledger; fall back to `scripts/search_pubmed.py` if the MCP is unavailable. (`docs/medical_kag_protocol.md`)
 - **Reference PDFs are local only:** store PDFs under `knowledge/pdf/`; do not commit copyrighted PDFs.
 - **Style anchors are separate from references:** keep writing-style material under `Style/`, not `knowledge/`.
 - **Style anchor mirror rule:** use matching basenames between PDF and md (e.g., `Style/PDF/landmark/weber_2007_sciatica.pdf` ↔ `Style/landmark/weber_2007_sciatica.md`).
@@ -375,7 +373,6 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 |---|---|
 | "이 숫자는 대충 맞을 거야" | `results/*.csv`와 대조. CSV에 없으면 쓰지 않는다. (`check_numbers.py`) |
 | "이 인용 어디서 본 것 같은데" | `knowledge/evidence.md`에서 `[EVID:id]` 확인. 없으면 인용 금지. (`check_citations.py`) |
-| "medical-kag가 찾았으니 바로 인용해도 돼" | 아니다. evidence.md에 `[EVID:id]`로 등록·PMID/DOI 확인 후에만 인용. (`docs/medical_kag_protocol.md`) |
 | "한 번만 더 보면 통과겠지" | 게이트 먼저. `status: PASS` 없이는 다음 섹션 진행 금지. |
 | "고친 김에 이 문장도 손봤어" | 검증 중 산출물 수정 금지. 판정을 모두 모은 뒤 한 번에, 그리고 전체 재검증. |
 | "리뷰어 말이 맞지만 반박하고 싶다" | 근거 없는 반박 금지. 반박은 1-2개로 제한하고 문헌으로 뒷받침. |
@@ -445,7 +442,6 @@ Phase 1: Setup
 ├── Check profile/journals.md — 목표 저널 인용 형식 확인 (et al. 규칙, volume 형식 등)
 ├── Check Style/own/ — 관련 스타일 앵커 논문 확인 (용어·톤 일관성 참고)
 ├── Search references: /search-evidence [query] 또는 scripts/search_pubmed.py
-├── (선택) medical-kag MCP: search/hybrid_search 발굴 + conflict find로 논쟁 파악 → evidence.md 등록 (docs/medical_kag_protocol.md; evidence.md 정본 유지, 미연결 시 search_pubmed.py로 fallback)
 ├── Import by DOI: /import-doi [doi]
 ├── Save PDFs to knowledge/pdf/
 ├── Summarize & register in knowledge/evidence.md (docs/evidence_guide.md 참조)
@@ -581,17 +577,6 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `/search-evidence [query]` | PubMed 검색 → 선택 → evidence.md 등록 (slash command) |
 | `/import-doi [doi]` | DOI로 논문 가져와서 evidence.md 등록 (slash command) |
 | `Read writing guide for [section]` | Load section-specific guidance |
-
-### Knowledge Graph (medical-kag MCP)
-> evidence.md 정본 유지 — 발굴/분석/포맷 보조. 미연결 시 search_pubmed.py로 fallback. 상세: `docs/medical_kag_protocol.md`
-
-| Command | Action |
-|---------|--------|
-| `KAG search [topic]` | medical-kag `search`/`hybrid_search` 발굴 → evidence.md 등록 |
-| `KAG conflicts [topic/intervention]` | `conflict` find/detect — 상충 연구·overclaim 점검 (Phase 6) |
-| `KAG synthesize [intervention] [outcome]` | `conflict synthesize` — GRADE 근거 합성 (Discussion) |
-| `KAG compare [interv1] [interv2]` | `compare_interventions` (Discussion 비교) |
-| `KAG references [style/journal]` | `reference format_multiple` — 저널 스타일 참고문헌 목록 (Phase 7) |
 
 ### Statistical Analysis
 | Command | Action |

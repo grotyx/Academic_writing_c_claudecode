@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.2.0** (2026-06-22)
+**v1.1.2** (2026-06-21)
 
 ---
 
@@ -307,13 +307,6 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
-
-### v1.2.0 (2026-06-22)
-
-**medical-kag MCP 集成 —— 知识图谱与 evidence.md 并行**
-
-- **保持 grounding 的 KAG 集成** —— `medical-kag-remote` MCP（一个面向脊柱外科的知识增强图谱）作为上游的发现/分析/格式化引擎接入，而 `knowledge/evidence.md` 仍然是唯一权威的引用台账：图谱检索到的任何内容，都必须先注册为 `[EVID:id]`（经 PMID/DOI 核验）才能被引用，因此 `check_citations.py` 依然对所有引用进行把关。新增的 `docs/medical_kag_protocol.md` 将各工具映射到对应阶段 —— 发现 + 结构化抽取（Phase 1），用于 claim 和 Discussion 的证据链 / 干预对比 / GRADE 综合（Phase 3-4），冲突 / 过度声明防护（Phase 6），以及符合期刊格式的参考文献列表（Phase 7）。
-- **附加式 + 回退机制** —— 该 MCP 绝不构成依赖：当它不可用时（例如未认证的远程会话），工作流会降级为 `scripts/search_pubmed.py` + 手动维护 evidence.md。已接入 CLAUDE.md（Rule 1、STOP 信号、Phase 1、Quick Commands）+ AGENTS.MD，以保持与 Codex 的一致性。
 
 ### v1.1.2 (2026-06-21)
 
