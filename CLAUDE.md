@@ -32,7 +32,11 @@ project/
 │   ├── docx_guide.md            # DOCX 변환 가이드 (서식, 테이블, 네이밍)
 │   ├── draft_plan_template.md    # Draft plan 10개 항목 템플릿 (Phase 3에서 복사)
 │   ├── debate_protocol.md        # Claude–Codex co-author 토론 절차
-│   └── critical_review_protocol.md  # 외부 멀티모델 적대적 검토 절차
+│   ├── critical_review_protocol.md  # 외부 멀티모델 적대적 검토 절차
+│   ├── style_transform_protocol.md  # /style-pass 변환 + Style Verifier
+│   ├── style_spec_template.md    # Style Spec 템플릿 (exemplar 바인딩)
+│   ├── citation_assist_protocol.md  # 출처 제안·claim 검증·stance·비교표 (GraphRAG)
+│   └── medical_kag_protocol.md   # medical-kag MCP 통합 (KG; evidence.md 정본)
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # Original PDF files
@@ -74,11 +78,14 @@ project/
 │   ├── check_revision_claims.py  # Revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
 │   ├── search_pubmed.py          # PubMed search tool (no external deps)
+│   ├── check_style.py            # Style Spec 대비 측정형 게이트 (문장길이·인용밀도)
+│   ├── extract_claims.py         # 초안의 [EVID:id] 문장 추출 (claim 검증 입력)
+│   ├── evidence_table.py         # 구조화 study 레코드 → markdown 비교표
 │   ├── critical_review.py        # OpenRouter 멀티모델 적대적 검토 호출
 │   ├── critical_models.txt       # OpenRouter 모델 목록 (외부화)
 │   ├── critical_prompts/         # 적대적 검토 프롬프트 (manuscript.txt, response.txt)
 │   ├── verify_all.py             # /verify — citation+number(+gate) 일괄 검증
-│   └── hooks/                    # Plan-first 강제 훅 (enforce_gates, session_contract)
+│   └── hooks/                    # 강제 훅 (enforce_gates, session_contract, lint_on_edit, style_intent)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
 ├── review/                       # Review & QC documents
@@ -155,9 +162,12 @@ project/
 | `scripts/check_citations.py` | `[EVID:id]` citations를 `knowledge/evidence.md`와 대조 | Phase 3·4·6 citation gate |
 | `scripts/check_numbers.py` | manuscript/table 수치를 `results/*.csv`와 대조 | Phase 4·6 data gate |
 | `scripts/check_gate.py` | `review/gates/*.GATE.md` 원장의 `status: PASS`와 필수 check를 검증 | 모든 phase gate 통과 직전 |
+| `scripts/check_style.py` | manuscript를 `drafts/style_spec.md` 목표와 대조 (측정형 스타일 게이트) | Phase 5·6 (`/style-pass`, `Check style`) |
 | `scripts/extract_claims.py` | 초안의 `[EVID:id]` 문장 추출 (claim-verification 입력) | Phase 6 (`/verify-claims`) |
 | `scripts/evidence_table.py` | 구조화 study 레코드 → markdown 비교표 (included studies) | Phase 6 (`/evidence-table`) |
-| `docs/citation_assist_protocol.md` | 출처 제안 + claim 검증 리포트 (GraphRAG 주, evidence.md 보조) | Phase 3·4·6 |
+| `docs/citation_assist_protocol.md` | 출처 제안 + claim 검증 + stance + 비교표 (GraphRAG 주, evidence.md 보조) | Phase 3·4·6 |
+| `docs/style_transform_protocol.md` | 초안→bound 학술/저널 스타일 변환 + Style Verifier·자동발동 | Phase 5 (`/style-pass`) |
+| `docs/style_spec_template.md` | Style Spec 템플릿 (exemplar 바인딩, 목표 metric) | Phase 5 (Style Spec 작성) |
 | `review/qc_log.md` | QC round documentation | Phase 6 (track all QC iterations) |
 | `review/gates/` | 검증 게이트 원장 (Verifier PASS/FAIL 기록) | Phase 3·4·8 (게이트 통과 기록) |
 | `output/` | Final compiled manuscript (docx only) | Phase 7 (finalize) |

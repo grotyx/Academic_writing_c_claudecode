@@ -23,6 +23,7 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Quality control procedures** with minimum 3-round verification (6 rounds recommended) plus revision QC re-run workflow
 - **Study-type specific checklists** (STROBE, CONSORT, PRISMA, CARE, etc.)
 - **Natural Academic Writing Style system** with Style Reference Tables (Voice/Tense, Transition Words, Verb Upgrades, Common Corrections, Statistical Notation, Hedging Language) and Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
+- **Reliable style transformation** (`/style-pass`) — convert a rough draft to a bound journal style: a per-project Style Spec (one chosen exemplar) + section-by-section transform + an independent Style-Conformance verifier (auto-fix loop) + a measurable `scripts/check_style.py` gate (sentence length, citation density, hedging) + auto-trigger on "make it academic" intent (`docs/style_transform_protocol.md`)
 - **Citation quality control** — Claim→Citation Mapping (20 key claims mapped to citations before writing starts; prevents write-first, cite-later)
 - **Style anchor library** (`Style/`) — own, landmark, and target-journal anchors for terminology, tone, framing, and house style
 - **Terminology registry** (`Style/terminology.md`) — preferred/forbidden terms with definitions and context
@@ -33,7 +34,11 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Phase gate ledger checking** (`scripts/check_gate.py`) — blocks progression unless `review/gates/*.GATE.md` records required PASS checks
 - **Gate freshness / provenance** (`scripts/check_gate.py --verify-hash`) — records a sha256 of the verified artifact (and evidence/results) on PASS; a later edit makes the gate **stale** and forces re-verification, closing the parallel-verifier hole
 - **Revision claim checking** (`scripts/check_revision_claims.py`) — verifies response-letter `[CHANGE]` claims against revised manuscript files
-- **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — structured prompts for constraint, semantic citation, data, logic/redundancy, and revision-alignment checks
+- **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — structured prompts for constraint, semantic-citation, data, logic/redundancy, style-conformance, citation-stance, and revision-alignment checks
+- **Citation assist** — `/suggest-citation` (find the best `[EVID:id]` for a claim), `/verify-claims` (per-sentence SUPPORTED/PARTIAL/UNSUPPORTED claim map via `scripts/extract_claims.py`), `/cite-stance` (supporting/contrasting/mentioning, Scite-style), and `/evidence-table` (a "summary of included studies" table via `scripts/evidence_table.py`, Elicit-style) (`docs/citation_assist_protocol.md`)
+- **Knowledge-graph integration** (optional) — the medical-kag MCP (GraphRAG) as an upstream discovery / conflict / GRADE-synthesis / reference engine, with `knowledge/evidence.md` kept canonical and `scripts/search_pubmed.py` as the fallback (`docs/medical_kag_protocol.md`)
+- **Process-enforcement hooks** (`scripts/hooks/`) — SessionStart contract injection, PreToolUse plan-first gate, PostToolUse style/terminology lint, and UserPromptSubmit style auto-trigger
+- **One-shot verification** (`/verify`, `scripts/verify_all.py`) — runs citation + number + gate checks together
 - **Author response DOCX generation** (`scripts/compile_response_docx.py`) — converts DOCX-ready Markdown to the `Author_response_220803_Final.docx` house style
 - **Author response Markdown template** (`docs/response_letter_template.md`) — keeps reviewer responses, manuscript locations, and machine-readable `[CHANGE]` blocks aligned
 - **Draft plan template** (`docs/draft_plan_template.md`) — 10-item template with claim→citation tables and approval checklist
@@ -69,7 +74,11 @@ project/
 │   ├── docx_guide.md             # DOCX conversion guide
 │   ├── draft_plan_template.md    # Draft plan template (copy to drafts/ for Phase 3)
 │   ├── debate_protocol.md        # Claude–Codex co-author debate procedure
-│   └── critical_review_protocol.md  # External multi-model adversarial review
+│   ├── critical_review_protocol.md  # External multi-model adversarial review
+│   ├── style_transform_protocol.md  # /style-pass transform + Style verifier
+│   ├── style_spec_template.md    # Style Spec template (bind one exemplar)
+│   ├── citation_assist_protocol.md  # Citation suggestion / verification / stance / table
+│   └── medical_kag_protocol.md   # medical-kag MCP (GraphRAG); evidence.md canonical
 ├── knowledge/                    # Reference materials
 │   ├── evidence.md               # Reference summary collection
 │   ├── pdf/                      # Original PDF files — gitignored, local only
@@ -99,9 +108,14 @@ project/
 │   ├── check_revision_claims.py  # Revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
 │   ├── search_pubmed.py          # PubMed search tool (no external deps)
+│   ├── check_style.py            # Measurable style gate vs the Style Spec
+│   ├── extract_claims.py         # Extract [EVID:id]-tagged sentences (claim verification)
+│   ├── evidence_table.py         # Structured study records → markdown comparison table
+│   ├── verify_all.py             # /verify — citation + number (+ gate) in one run
 │   ├── critical_review.py        # OpenRouter multi-model adversarial caller
 │   ├── critical_models.txt       # OpenRouter model list (externalized)
-│   └── critical_prompts/         # Adversarial prompt single-source (manuscript.txt, response.txt)
+│   ├── critical_prompts/         # Adversarial prompt single-source (manuscript.txt, response.txt)
+│   └── hooks/                    # Enforcement hooks (enforce_gates, session_contract, lint_on_edit, style_intent)
 ├── tests/                        # Pytest suite for the verification scripts
 ├── results/                      # Analysis outputs
 ├── drafts/                       # Manuscript sections, tables & figures

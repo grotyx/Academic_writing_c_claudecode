@@ -23,6 +23,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **품질 관리 절차** — 최소 3라운드 검증 (6라운드 권장) + Revision QC 재수행 워크플로
 - **연구 유형별 체크리스트** — STROBE, CONSORT, PRISMA, CARE 등
 - **학술 작문 스타일 시스템** — Style Reference Tables (Voice/Tense, Transition, Verb Upgrades, Common Corrections, Statistical Notation, Hedging) + Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
+- **안정적인 스타일 변환** (`/style-pass`) — 거친 초안을 bound 저널 스타일로 변환: 프로젝트별 Style Spec(선택한 exemplar 1개) + 섹션별 변환 + 독립적인 Style-Conformance verifier(자동 수정 루프) + 측정 가능한 `scripts/check_style.py` 게이트(문장 길이, 인용 밀도, hedging) + "make it academic" 의도에 대한 자동 트리거 (`docs/style_transform_protocol.md`)
 - **인용 품질 관리** — Claim→Citation Mapping (작성 전 핵심 주장 ~20개와 근거 논문 매핑; write-first, cite-later 방지)
 - **스타일 앵커 라이브러리** (`Style/`) — own, landmark, target-journal 앵커로 용어·톤·논증·저널 house style 확보
 - **분야 표준 용어 registry** (`Style/terminology.md`) — preferred/forbidden 용어, 정의, context
@@ -33,7 +34,11 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **Phase gate ledger checking** (`scripts/check_gate.py`) — `review/gates/*.GATE.md`에 필수 PASS가 없으면 진행 차단
 - **Gate freshness / provenance** (`scripts/check_gate.py --verify-hash`) — PASS 시 검증된 산출물(및 evidence/results)의 sha256을 기록; 이후 편집이 발생하면 게이트가 **stale** 상태가 되어 재검증을 강제하므로, 병렬 verifier의 허점을 차단
 - **Revision claim checking** (`scripts/check_revision_claims.py`) — response letter의 `[CHANGE]` claim을 revised manuscript와 대조
-- **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — constraint, semantic citation, data, logic/redundancy, revision-alignment 검증 prompt/schema
+- **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — constraint, semantic citation, data, logic/redundancy, style-conformance, citation-stance, revision-alignment 검증 prompt/schema
+- **인용 보조** — `/suggest-citation`(claim에 가장 적합한 `[EVID:id]` 탐색), `/verify-claims`(`scripts/extract_claims.py`를 통한 문장별 SUPPORTED/PARTIAL/UNSUPPORTED claim 맵), `/cite-stance`(supporting/contrasting/mentioning, Scite 스타일), `/evidence-table`(`scripts/evidence_table.py`를 통한 "포함된 연구 요약" 표, Elicit 스타일) (`docs/citation_assist_protocol.md`)
+- **Knowledge graph 통합** (선택) — medical-kag MCP(GraphRAG)를 상류(upstream)의 discovery / conflict / GRADE 종합 / reference 엔진으로 활용하되, `knowledge/evidence.md`를 정본으로 유지하고 `scripts/search_pubmed.py`를 폴백으로 사용 (`docs/medical_kag_protocol.md`)
+- **프로세스 강제 hook** (`scripts/hooks/`) — SessionStart 계약 주입, PreToolUse plan-first 게이트, PostToolUse style/terminology lint, UserPromptSubmit style 자동 트리거
+- **일괄 검증** (`/verify`, `scripts/verify_all.py`) — citation + number + gate check를 함께 실행
 - **Author response DOCX generation** (`scripts/compile_response_docx.py`) — DOCX-ready Markdown을 `Author_response_220803_Final.docx` house style에 맞춰 변환
 - **Author response Markdown template** (`docs/response_letter_template.md`) — reviewer response, 수정 위치, machine-readable `[CHANGE]` block을 정렬
 - **Draft plan 템플릿** (`docs/draft_plan_template.md`) — 10개 항목 템플릿 + claim→citation 테이블 + 승인 체크리스트
@@ -67,7 +72,13 @@ project/
 │   ├── response_letter_template.md  # DOCX-ready author response 템플릿
 │   ├── figure_guide.md           # Figure 생성 가이드
 │   ├── docx_guide.md             # DOCX 변환 가이드
-│   └── draft_plan_template.md    # Draft plan 템플릿 (Phase 3에서 복사하여 사용)
+│   ├── draft_plan_template.md    # Draft plan 템플릿 (Phase 3에서 복사하여 사용)
+│   ├── debate_protocol.md        # Claude–Codex 공동 저자 토론 절차
+│   ├── critical_review_protocol.md  # 외부 멀티모델 적대적 검토
+│   ├── style_transform_protocol.md  # /style-pass 변환 + Style verifier
+│   ├── style_spec_template.md    # Style Spec 템플릿 (exemplar 1개 바인딩)
+│   ├── citation_assist_protocol.md  # 인용 제안 / 검증 / stance / 표
+│   └── medical_kag_protocol.md   # medical-kag MCP (GraphRAG); evidence.md 정본
 ├── knowledge/                    # 참고 자료
 │   ├── evidence.md               # 참고문헌 요약 정리 자료집
 │   ├── pdf/                      # 원본 PDF 파일 — gitignored, 로컬 전용
@@ -97,9 +108,14 @@ project/
 │   ├── check_revision_claims.py  # revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
 │   ├── search_pubmed.py          # PubMed 검색 도구 (외부 의존성 없음)
+│   ├── check_style.py            # Style Spec 대비 측정 가능한 style 게이트
+│   ├── extract_claims.py         # [EVID:id] 태그 문장 추출 (claim 검증)
+│   ├── evidence_table.py         # 구조화된 연구 레코드 → markdown 비교표
+│   ├── verify_all.py             # /verify — citation + number (+ gate) 일괄 실행
 │   ├── critical_review.py        # OpenRouter 멀티모델 적대적 검토 호출
 │   ├── critical_models.txt       # OpenRouter 모델 목록 (외부화)
-│   └── critical_prompts/         # 적대적 프롬프트 단일 정본 (manuscript.txt, response.txt)
+│   ├── critical_prompts/         # 적대적 프롬프트 단일 정본 (manuscript.txt, response.txt)
+│   └── hooks/                    # 강제 hook (enforce_gates, session_contract, lint_on_edit, style_intent)
 ├── tests/                        # 검증 스크립트용 pytest 스위트
 ├── results/                      # 분석 결과
 ├── drafts/                       # 원고 섹션, 테이블, 그림

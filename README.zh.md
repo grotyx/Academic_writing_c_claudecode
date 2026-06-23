@@ -23,6 +23,7 @@
 - **质量控制流程** — 至少3轮验证（推荐6轮）+ Revision QC 重跑工作流
 - **研究类型专用清单** — STROBE、CONSORT、PRISMA、CARE 等
 - **学术写作风格系统** — Style Reference Tables（Voice/Tense、Transition、Verb Upgrades、Common Corrections、Statistical Notation、Hedging）+ Writing Principles（Clarity/Conciseness/Objectivity/Consistency）
+- **可靠的风格转换**（`/style-pass`）— 将粗糙初稿转换为契合的期刊风格：逐项目的 Style Spec（选定一篇范例）+ 逐章节转换 + 一个独立的 Style-Conformance verifier（自动修复循环）+ 一个可度量的 `scripts/check_style.py` 门（句长、引用密度、模糊化措辞）+ 在“make it academic”意图下自动触发（`docs/style_transform_protocol.md`）
 - **引用质量控制** — Claim→Citation Mapping（写作前将关键 claim 与证据文献对应）
 - **Style anchor library**（`Style/`）— own、landmark、target-journal anchors，用于术语、语气、论证结构和期刊 house style
 - **术语 registry**（`Style/terminology.md`）— preferred/forbidden terms、定义和使用 context
@@ -33,7 +34,11 @@
 - **Phase gate ledger checking**（`scripts/check_gate.py`）— 如果 `review/gates/*.GATE.md` 没有必要的 PASS，则阻止进入下一步
 - **门时效性 / provenance**（`scripts/check_gate.py --verify-hash`）— PASS 时记录被验证产出物（以及 evidence/results）的 sha256；之后的编辑会使该门变为 **stale** 并强制重新验证，从而堵住 parallel-verifier 漏洞
 - **Revision claim checking**（`scripts/check_revision_claims.py`）— 将 response letter 中的 `[CHANGE]` claim 与 revised manuscript 对照
-- **LLM verifier prompt templates**（`docs/verifier_prompt_templates.md`）— constraint、semantic citation、data、logic/redundancy、revision-alignment 验证 prompt/schema
+- **LLM verifier prompt templates**（`docs/verifier_prompt_templates.md`）— constraint、semantic citation、data、logic/redundancy、style-conformance、citation-stance、revision-alignment 验证 prompt/schema
+- **引用辅助** — `/suggest-citation`（为某条 claim 找到最匹配的 `[EVID:id]`）、`/verify-claims`（通过 `scripts/extract_claims.py` 生成逐句的 SUPPORTED/PARTIAL/UNSUPPORTED claim 地图）、`/cite-stance`（支持/反驳/仅提及，Scite 风格），以及 `/evidence-table`（通过 `scripts/evidence_table.py` 生成一张“纳入研究汇总”表，Elicit 风格）（`docs/citation_assist_protocol.md`）
+- **知识图谱集成**（可选）— medical-kag MCP（GraphRAG）作为上游的发现 / 冲突 / GRADE 综合 / 参考文献引擎，同时 `knowledge/evidence.md` 保持权威正本，`scripts/search_pubmed.py` 作为回退（`docs/medical_kag_protocol.md`）
+- **流程强制执行 hooks**（`scripts/hooks/`）— SessionStart 契约注入、PreToolUse 计划优先门、PostToolUse 风格/术语 lint，以及 UserPromptSubmit 风格自动触发
+- **一键验证**（`/verify`、`scripts/verify_all.py`）— 一并运行 citation + number + gate 检查
 - **Author response DOCX generation**（`scripts/compile_response_docx.py`）— 将 DOCX-ready Markdown 转换为 `Author_response_220803_Final.docx` house style
 - **Author response Markdown template**（`docs/response_letter_template.md`）— 对齐 reviewer response、修改位置和 machine-readable `[CHANGE]` block
 - **PubMed 搜索工具** — 内置 Python 脚本（无需 MCP 或外部包）
@@ -66,7 +71,13 @@ project/
 │   ├── response_letter_template.md  # DOCX-ready author response template
 │   ├── figure_guide.md          # 图表生成指南
 │   ├── docx_guide.md            # DOCX 转换指南
-│   └── draft_plan_template.md    # Draft plan template
+│   ├── draft_plan_template.md    # Draft plan template
+│   ├── debate_protocol.md        # Claude–Codex 合著者辩论流程
+│   ├── critical_review_protocol.md  # 外部多模型对抗性评审
+│   ├── style_transform_protocol.md  # /style-pass 转换 + Style verifier
+│   ├── style_spec_template.md       # Style Spec 模板（绑定一篇范例）
+│   ├── citation_assist_protocol.md  # 引用推荐 / 核验 / 立场 / 表格
+│   └── medical_kag_protocol.md      # medical-kag MCP（GraphRAG）；evidence.md 为正本
 ├── knowledge/                    # 参考资料
 │   ├── evidence.md               # 参考文献摘要汇编
 │   ├── pdf/                      # 原始 PDF 文件（gitignored, local only）
@@ -90,9 +101,14 @@ project/
 │   ├── check_revision_claims.py  # revision claim gate
 │   ├── compile_response_docx.py  # Author response DOCX compiler
 │   ├── search_pubmed.py          # PubMed 搜索工具（无外部依赖）
+│   ├── check_style.py            # 对照 Style Spec 的可度量风格门
+│   ├── extract_claims.py         # 抽取带 [EVID:id] 标记的句子（claim 核验）
+│   ├── evidence_table.py         # 结构化研究记录 → markdown 对比表
+│   ├── verify_all.py             # /verify —— 一次运行 citation + number（+ gate）
 │   ├── critical_review.py        # OpenRouter multi-model adversarial caller
 │   ├── critical_models.txt       # OpenRouter model list (externalized)
-│   └── critical_prompts/         # Adversarial prompt single-source (manuscript.txt, response.txt)
+│   ├── critical_prompts/         # Adversarial prompt single-source (manuscript.txt, response.txt)
+│   └── hooks/                    # 强制执行 hooks（enforce_gates、session_contract、lint_on_edit、style_intent）
 ├── tests/                        # 验证脚本的 pytest 测试套件
 ├── results/                      # 分析输出
 ├── drafts/                       # 稿件章节、表格、图表
