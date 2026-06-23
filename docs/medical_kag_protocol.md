@@ -24,6 +24,34 @@ session` — the remote MCP is registered but not authenticated this session), *
 gracefully** to the existing workflow: `scripts/search_pubmed.py` for discovery, manual
 `evidence.md` registration, `profile/journals.md` for reference style. Never block on the MCP.
 
+## Operational notes (field-tested 2026-06)
+
+Observed behavior against the live graph (~1,150 docs):
+
+- **Canonical node names matter.** The graph normalizes interventions — e.g. "biportal
+  endoscopic discectomy" is stored as **`UBE`**. `compare_interventions` / `intervention`
+  return empty for a non-canonical name. If a structured call comes back empty, retry with the
+  canonical/abbreviated form (UBE, TLIF, ACDF…) before concluding "no data".
+- **Structured comparison is a scan, not a clean head-to-head.** `compare_interventions`
+  aggregates outcomes across heterogeneous papers, so the set is large and noisy (a lumbar
+  query surfaced cervical/thoracic outcomes; baseline traits like "Age" appear as "outcomes").
+  Use it to MAP which outcomes favor which technique and which papers support it, then read the
+  source papers — do not treat the aggregate as one comparison.
+- **Trust direction/rating, verify the numbers.** Effect magnitudes are sparsely populated
+  (observed ~21/87 outcomes had a value; `conflict synthesize` returned effect `0.00`). Take the
+  GRADE rating / direction / p-value as a lead, but pull the actual numbers from the source paper
+  → `knowledge/evidence.md` / `results/*.csv` (grounding rule).
+- **Ingestion is server-side.** The remote server cannot read local paths, so `document add_pdf`
+  with a local PDF fails ("파일 없음"). Use `pubmed import_by_doi` / `import_by_pmids` (server
+  fetches) or `analyze store_paper` (push structured data). DOI import may return abstract-only
+  (`text_source: abstract`) — enough for `reference`, not for full structured outcomes.
+- **Sessions are short-lived.** The remote session can drop ("Invalid or missing session") after
+  a few calls. Verify with `document stats` first, do KAG work in short bursts, and keep the
+  `search_pubmed.py` fallback ready — never block on the MCP.
+- **Reliable today:** `search`, `conflict find/synthesize` (GRADE), `reference
+  format/format_multiple`, and — with canonical names — `compare_interventions`. Taxonomy
+  (`intervention hierarchy/comparable`) and per-paper numeric values are sparsely populated.
+
 ## Capability map (tool → use)
 
 | Need | medical-kag call |
