@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.4.0** (2026-06-24)
+**v1.4.1** (2026-06-24)
 
 ---
 
@@ -355,6 +355,14 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.4.1 (2026-06-24)
+
+**Template-gate hardening + `/verify` freshness forwarding**
+
+- **Template-aware plan gates** — `scripts/hooks/enforce_gates.py` now treats unresolved `analysis_plan.md` / `draft_plan.md` templates or unchecked approval boxes as not approved, applies to `Write|Edit|MultiEdit`, and avoids false positives for legitimate citation-style `[N]` text.
+- **Fresh `/verify` gate checks** — `scripts/verify_all.py` now forwards `--verify-hash` to `check_gate.py`; README/CLAUDE/slash-command examples include freshness inputs.
+- **Windows/template hygiene** — PubMed command examples use `py scripts\search_pubmed.py`, generated root-level DOCX artifacts are ignored, and regression tests cover the new hook and freshness-forwarding behavior.
 
 ### v1.4.0 (2026-06-24)
 

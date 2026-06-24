@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.4.0** (2026-06-24)
+**v1.4.1** (2026-06-24)
 
 ---
 
@@ -323,6 +323,14 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.4.1 (2026-06-24)
+
+**Template gate 加固 + `/verify` freshness 转发**
+
+- **Template-aware plan gates** — `scripts/hooks/enforce_gates.py` 不再把未完成的 `analysis_plan.md` / `draft_plan.md` 模板或未勾选的审批项视为已批准 plan，并覆盖 `Write|Edit|MultiEdit`。合法的 citation-style `[N]` 文本会被保守处理，避免误报。
+- **Fresh `/verify` gate checks** — `scripts/verify_all.py` 会把 `--verify-hash` 转发给 `check_gate.py`；README/CLAUDE/slash-command 示例也加入了 freshness 输入。
+- **Windows/template hygiene** — PubMed 命令示例统一为 `py scripts\search_pubmed.py`，根目录生成的 DOCX 产物加入 ignore，并用回归测试覆盖新的 hook 与 freshness 转发行为。
 
 ### v1.4.0 (2026-06-24)
 

@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.4.0** (2026-06-24)
+**v1.4.1** (2026-06-24)
 
 ---
 
@@ -347,6 +347,14 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.4.1 (2026-06-24)
+
+**Template gate 강화 + `/verify` freshness 전달**
+
+- **Template-aware plan gate** — `scripts/hooks/enforce_gates.py`가 미완성 `analysis_plan.md` / `draft_plan.md` 템플릿이나 미체크 승인 항목을 승인된 plan으로 인정하지 않으며, `Write|Edit|MultiEdit` 모두에 적용됩니다. 정상적인 citation-style `[N]` 문구는 오탐하지 않도록 보수적으로 처리합니다.
+- **Fresh `/verify` gate check** — `scripts/verify_all.py`가 `--verify-hash`를 `check_gate.py`로 전달합니다. README/CLAUDE/slash-command 예시에 freshness 입력을 포함했습니다.
+- **Windows/template 정리** — PubMed 명령 예시는 `py scripts\search_pubmed.py`로 정리했고, 루트의 생성 DOCX 산출물은 ignore 처리했으며, hook과 freshness 전달 동작은 회귀 테스트로 보호합니다.
 
 ### v1.4.0 (2026-06-24)
 
