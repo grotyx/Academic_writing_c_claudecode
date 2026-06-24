@@ -16,6 +16,7 @@
 project/
 ├── CLAUDE.md                     # This file - core rules & config
 ├── AGENTS.MD                     # Agent bootstrap rules; points to CLAUDE.md as source of truth
+├── .gitattributes                # Line-ending policy (text=auto eol=lf; prevents CRLF churn from OneDrive/Windows sync)
 ├── docs/                         # Reference guides (read when needed)
 │   ├── writing_guide.md          # Section-by-section writing guide
 │   ├── drafting_protocol.md      # Mandatory drafting sequence
@@ -123,6 +124,7 @@ project/
 | File/Folder | Purpose | When to Use |
 |-------------|---------|-------------|
 | `CLAUDE.md` | Core rules, project config, writing style | Auto-loaded every session |
+| `.gitattributes` | Line-ending policy (`text=auto eol=lf`) — stores LF, normalizes on compare so OneDrive/Windows CRLF rewrites never produce content-free diffs | Git-managed (no manual edits needed) |
 | `docs/writing_guide.md` | Detailed section guidelines | When drafting specific sections |
 | `docs/drafting_protocol.md` | Mandatory outline → evidence-bound draft → style pass → QC workflow | Before drafting any section |
 | `docs/section_templates.md` | Section-specific paragraph functions and sentence patterns | Phase 4 drafting |

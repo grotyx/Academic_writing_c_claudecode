@@ -56,6 +56,7 @@ project/
 ├── CLAUDE.md                     # 核心规则与配置
 ├── AGENTS.MD                     # agent 启动规则；以 CLAUDE.md 为 source of truth
 ├── README.md                     # 英文 README
+├── .gitattributes                # 换行符策略 (text=auto eol=lf；防止 OneDrive/Windows 同步导致的 CRLF 变更)
 ├── docs/                         # 参考指南
 │   ├── writing_guide.md          # 分节写作指南
 │   ├── drafting_protocol.md      # 必须遵循的 drafting sequence

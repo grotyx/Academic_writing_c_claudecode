@@ -57,6 +57,7 @@ project/
 ├── CLAUDE.md                     # Core rules & configuration
 ├── AGENTS.MD                     # Agent bootstrap rules; points to CLAUDE.md as source of truth
 ├── README.md                     # This file
+├── .gitattributes                # Line-ending policy (text=auto eol=lf; prevents CRLF churn from OneDrive/Windows sync)
 ├── docs/                         # Reference guides
 │   ├── writing_guide.md          # Section-by-section writing guide
 │   ├── drafting_protocol.md      # Mandatory drafting sequence

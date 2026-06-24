@@ -56,6 +56,7 @@ project/
 ├── CLAUDE.md                     # コアルール・設定
 ├── AGENTS.MD                     # agent 起動ルール；CLAUDE.md を source of truth とする
 ├── README.md                     # 英語版 README
+├── .gitattributes                # 改行コードポリシー (text=auto eol=lf；OneDrive/Windows 同期による CRLF 変更を防止)
 ├── docs/                         # 参照ガイド
 │   ├── writing_guide.md          # セクション別執筆ガイド
 │   ├── drafting_protocol.md      # 必須 drafting sequence

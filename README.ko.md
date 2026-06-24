@@ -57,6 +57,7 @@ project/
 ├── CLAUDE.md                     # 핵심 규칙 및 설정
 ├── AGENTS.MD                     # agent 시작 규칙; CLAUDE.md를 source of truth로 참조
 ├── README.md                     # 영문 README
+├── .gitattributes                # 줄바꿈 정책 (text=auto eol=lf; OneDrive/Windows 동기화의 CRLF 변경 방지)
 ├── docs/                         # 참조 가이드
 │   ├── writing_guide.md          # 섹션별 작성 가이드
 │   ├── drafting_protocol.md      # 필수 drafting sequence
