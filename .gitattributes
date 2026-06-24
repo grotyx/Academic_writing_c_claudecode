@@ -1,0 +1,22 @@
+# Normalize line endings: store LF in repo, prevent CRLF churn from OneDrive/Windows sync.
+* text=auto eol=lf
+
+# Source/text files always LF
+*.py   text eol=lf
+*.md   text eol=lf
+*.MD   text eol=lf
+*.txt  text eol=lf
+*.json text eol=lf
+*.js   text eol=lf
+*.csv  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+
+# Binary — never touch
+*.pdf  binary
+*.docx binary
+*.pptx binary
+*.wav  binary
+*.png  binary
+*.jpg  binary
+*.zip  binary
