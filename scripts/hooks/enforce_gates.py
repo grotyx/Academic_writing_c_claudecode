@@ -2,7 +2,7 @@
 """PreToolUse hook: enforce the plan-first gates (CLAUDE.md Rules 7 & 8).
 
 Reads the Claude Code PreToolUse event JSON from stdin and BLOCKS (exit 2) a
-Write/Edit that would:
+Write/Edit/MultiEdit that would:
   - draft a manuscript section (`drafts/.../0N_*.md`) without a `draft_plan.md`
     in the same drafts folder (Rule 8), or
   - create an analysis script (`data/.../py/*.py`) without an `analysis_plan.md`
@@ -22,20 +22,54 @@ import re
 import sys
 from pathlib import Path
 
+# Tools that can create or modify files in Claude Code.
+WRITE_TOOLS = ("Write", "Edit", "MultiEdit")
+
 # Manuscript section files: 01_title.md ... 09_figure_legends.md (basename only,
 # anchored on a leading slash so e.g. draft_plan.md / table_1.md never match).
 SECTION_RE = re.compile(r"/0[1-9]_[^/]*\.md$", re.IGNORECASE)
 # Analysis scripts: .../data/py/x.py or .../data/<paper>/py/x.py
 ANALYSIS_SCRIPT_RE = re.compile(r"/data/(?:[^/]+/)?py/[^/]*\.py$", re.IGNORECASE)
+PLACEHOLDER_RE = re.compile(
+    r"\[[^\]]*(?:작성|기술|입력|기준|변수|검정법|선택 근거|목적|내용|키워드|"
+    r"필요|설명|filename|n rows|n columns|var|fig_|Bar/Box|Additional Analysis|"
+    r"귀무가설|대립가설)[^\]]*\]",
+    re.IGNORECASE,
+)
+SAMPLE_SIZE_PLACEHOLDER_RE = re.compile(
+    r"(?im)^\s*(?:\*\*Expected Sample Size:\*\*\s*)?\[N\]\s*$"
+)
+PERCENT_PLACEHOLDER_RE = re.compile(r"\[%\]")
+UNCHECKED_APPROVAL_RE = re.compile(
+    r"-\s*\[\s\]\s*(?:\*\*)?사용자 승인 완료", re.IGNORECASE
+)
 
 
 def _norm(value: str) -> str:
     return (value or "").replace("\\", "/")
 
 
+def plan_problem(plan: Path) -> str | None:
+    """Return why a plan file is not usable as an approved plan, else None."""
+    if not plan.exists():
+        return "missing"
+    try:
+        text = plan.read_text(encoding="utf-8")
+    except Exception:
+        return "unreadable"
+    if (
+        PLACEHOLDER_RE.search(text)
+        or SAMPLE_SIZE_PLACEHOLDER_RE.search(text)
+        or PERCENT_PLACEHOLDER_RE.search(text)
+        or UNCHECKED_APPROVAL_RE.search(text)
+    ):
+        return "unresolved template or not approved"
+    return None
+
+
 def decide(event: dict) -> str | None:
     """Return a block reason, or None to allow. Pure function for testing."""
-    if event.get("tool_name") not in ("Write", "Edit"):
+    if event.get("tool_name") not in WRITE_TOOLS:
         return None
 
     tool_input = event.get("tool_input") or {}
@@ -53,10 +87,15 @@ def decide(event: dict) -> str | None:
     # Revisions (Phase 8) revise an existing manuscript and are exempt.
     if "/drafts/" in spath and "/revision/" not in spath and SECTION_RE.search(spath):
         plan = target.parent / "draft_plan.md"
-        if not plan.exists():
+        problem = plan_problem(plan)
+        if problem:
+            if problem == "missing":
+                detail = f"{plan} does not exist."
+            else:
+                detail = f"{plan} is an unresolved template or has not been approved."
             return (
                 "BLOCKED by workflow gate (CLAUDE.md Rule 8): "
-                f"{plan} does not exist.\n"
+                f"{detail}\n"
                 "Create the draft plan first: copy docs/draft_plan_template.md into "
                 "the drafts folder, complete the 10 items, get user approval, then draft sections."
             )
@@ -64,10 +103,15 @@ def decide(event: dict) -> str | None:
     # Rule 7 — generating an analysis script requires an approved analysis plan.
     if ANALYSIS_SCRIPT_RE.search(spath):
         plan = target.parent.parent / "analysis_plan.md"
-        if not plan.exists():
+        problem = plan_problem(plan)
+        if problem:
+            if problem == "missing":
+                detail = f"{plan} does not exist."
+            else:
+                detail = f"{plan} is an unresolved template or has not been approved."
             return (
                 "BLOCKED by workflow gate (CLAUDE.md Rule 7): "
-                f"{plan} does not exist.\n"
+                f"{detail}\n"
                 "Create and get approval on analysis_plan.md before generating analysis scripts."
             )
 

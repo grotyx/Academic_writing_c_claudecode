@@ -17,6 +17,12 @@ docs/superpowers/
 # Local DOCX style references may contain private reviewer-response text
 Author_response_220803_Final.docx
 
+# Root-level generated submission artifacts belong under output/ or output/revision/
+/manuscript_*.docx
+/response_letter_*.docx
+/title_page_*.docx
+/table_*.docx
+
 # Reference PDFs — copyright-protected, do not commit
 knowledge/pdf/
 

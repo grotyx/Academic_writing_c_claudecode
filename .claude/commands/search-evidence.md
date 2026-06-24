@@ -24,7 +24,7 @@ You have a Python script at `scripts/search_pubmed.py` that queries the NCBI E-u
 
 Run the search script:
 ```bash
-python3 scripts/search_pubmed.py search "$ARGUMENTS" --max 20
+py scripts\search_pubmed.py search "$ARGUMENTS" --max 20
 ```
 
 Show the results table to the user.
@@ -41,7 +41,7 @@ Ask the user which articles to register. Options:
 
 For selected articles, run:
 ```bash
-python3 scripts/search_pubmed.py fetch <PMID1> <PMID2> ... --format evidence --start-num <next_ref_num>
+py scripts\search_pubmed.py fetch <PMID1> <PMID2> ... --format evidence --start-num <next_ref_num>
 ```
 
 Then:
@@ -62,9 +62,9 @@ Then:
 ### Alternative Commands
 
 The script also supports:
-- **Import by DOI**: `python3 scripts/search_pubmed.py doi <DOI>`
-- **Import by PMID**: `python3 scripts/search_pubmed.py fetch <PMID>`
-- **Find related articles**: `python3 scripts/search_pubmed.py related <PMID> --max 10`
+- **Import by DOI**: `py scripts\search_pubmed.py doi <DOI>`
+- **Import by PMID**: `py scripts\search_pubmed.py fetch <PMID>`
+- **Find related articles**: `py scripts\search_pubmed.py related <PMID> --max 10`
 
 ### Important Rules
 

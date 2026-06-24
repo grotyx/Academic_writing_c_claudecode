@@ -129,7 +129,7 @@ project/
 ## 快速开始
 
 1. **设置**：在 `CLAUDE.md` 中填写研究主题、目标期刊和研究设计
-2. **参考文献**：使用 `/search-evidence [关键词]` 或 `python3 scripts/search_pubmed.py` 搜索 PubMed 并注册到 `knowledge/evidence.md`
+2. **参考文献**：使用 `/search-evidence [关键词]` 或 `py scripts\search_pubmed.py` 搜索 PubMed 并注册到 `knowledge/evidence.md`
 3. **数据分析**：将数据放入 `data/` 文件夹 → 创建 `analysis_plan.md`（必须）→ 运行统计分析
 4. **稿件计划**：将 `docs/draft_plan_template.md` 复制到 `drafts/draft_plan.md`，填写包含 Claim→Citation Mapping 的10项内容（推荐 Opus）
 5. **撰写初稿**：遵循 `docs/drafting_protocol.md`，按推荐顺序撰写各章节
@@ -234,10 +234,10 @@ compiler 会复现 `Author_response_220803_Final.docx` 的 house style — Times
 无需 MCP 即可搜索参考文献的内置 Python 脚本（`scripts/search_pubmed.py`）：
 
 ```bash
-python3 scripts/search_pubmed.py search "endoscopic spine surgery"  # 搜索
-python3 scripts/search_pubmed.py fetch 35486828                     # 按 PMID 获取
-python3 scripts/search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # 按 DOI 获取
-python3 scripts/search_pubmed.py related 35486828                   # 相关论文
+py scripts\search_pubmed.py search "endoscopic spine surgery"  # 搜索
+py scripts\search_pubmed.py fetch 35486828                     # 按 PMID 获取
+py scripts\search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # 按 DOI 获取
+py scripts\search_pubmed.py related 35486828                   # 相关论文
 ```
 
 Claude 集成斜杠命令：
@@ -376,8 +376,8 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 **流程强制执行 + CLAUDE.md 精简**
 
-- **计划优先强制执行（hooks）** — `.claude/settings.json` 新增已提交的 hooks：一个 PreToolUse 的 `Write|Edit` 门（`scripts/hooks/enforce_gates.py`），在缺少 `drafts/.../draft_plan.md` 时**阻止**撰写章节（Rule 8），在缺少 `data/.../analysis_plan.md` 时**阻止**创建分析脚本（Rule 7）；以及一个 SessionStart hook（`scripts/hooks/session_contract.py`），在每次会话注入工作流契约。Revision 不受限制；支持多论文子文件夹；fail open（出错时放行）；UTF-8 安全。（Windows 用 `py`；macOS/Linux 用 `python3`。）
-- **`/verify`** — `scripts/verify_all.py` 在记录门 PASS 之前，用单条命令运行 check_citations + check_numbers（+ 可选的 check_gate）。新增 hook 测试；测试套件达到 86 个通过。
+- **计划优先强制执行（hooks）** — `.claude/settings.json` 新增已提交的 hooks：一个 PreToolUse 的 `Write|Edit|MultiEdit` 门（`scripts/hooks/enforce_gates.py`），在缺少已完成/已批准的 `drafts/.../draft_plan.md` 时**阻止**撰写章节（Rule 8），在缺少已完成/已批准的 `data/.../analysis_plan.md` 时**阻止**创建分析脚本（Rule 7）；以及一个 SessionStart hook（`scripts/hooks/session_contract.py`），在每次会话注入工作流契约。Revision 不受限制；支持多论文子文件夹；fail open（出错时放行）；UTF-8 安全。（Windows 用 `py`；macOS/Linux 用 `python3`。）
+- **`/verify`** — `scripts/verify_all.py` 在记录门 PASS 之前，用单条命令运行 check_citations + check_numbers（+ 可选的 check_gate），并转发 `--verify-hash` 以保持文档化的 freshness 检查生效。hook 行为与 freshness 转发均由回归测试覆盖。
 - **CLAUDE.md 精简 808 → 696 行（约 14%）** — 将 Multi-Paper/Revision 结构树以及 Phase-2 Notes / 检验选择 / 风格优先级 / 门布置等重复内容收缩为指向其正本文档的指针；未移除任何 MUST-FOLLOW 规则。
 
 ### v1.0.1 (2026-06-20)

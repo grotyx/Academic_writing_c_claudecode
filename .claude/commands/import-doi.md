@@ -18,7 +18,7 @@ Read `knowledge/evidence.md` to find the next reference number and check if this
 ### Step 2: Fetch Article
 
 ```bash
-python3 scripts/search_pubmed.py doi $ARGUMENTS --format evidence --start-num <next_ref_num>
+py scripts\search_pubmed.py doi $ARGUMENTS --format evidence --start-num <next_ref_num>
 ```
 
 ### Step 3: Complete & Register

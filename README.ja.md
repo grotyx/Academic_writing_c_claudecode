@@ -129,7 +129,7 @@ project/
 ## クイックスタート
 
 1. **設定**：`CLAUDE.md` に研究テーマ、対象ジャーナル、研究デザインを入力します
-2. **参考文献**：`/search-evidence [クエリ]` または `python3 scripts/search_pubmed.py` で PubMed を検索し、`knowledge/evidence.md` に登録します
+2. **参考文献**：`/search-evidence [クエリ]` または `py scripts\search_pubmed.py` で PubMed を検索し、`knowledge/evidence.md` に登録します
 3. **データ分析**：`data/` フォルダにデータを配置 → `analysis_plan.md` 作成（必須）→ 統計分析実行
 4. **原稿計画**：`docs/draft_plan_template.md` を `drafts/draft_plan.md` にコピーし、Claim→Citation Mapping を含む10項目を作成（Opus 推奨）
 5. **執筆**：`docs/drafting_protocol.md` に従い、推奨順序でセクションを作成
@@ -230,10 +230,10 @@ compiler は `Author_response_220803_Final.docx` の house style を再現しま
 MCP 不要で参考文献を検索できる内蔵 Python スクリプト（`scripts/search_pubmed.py`）：
 
 ```bash
-python3 scripts/search_pubmed.py search "endoscopic spine surgery"  # 検索
-python3 scripts/search_pubmed.py fetch 35486828                     # PMIDで取得
-python3 scripts/search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # DOIで取得
-python3 scripts/search_pubmed.py related 35486828                   # 関連論文
+py scripts\search_pubmed.py search "endoscopic spine surgery"  # 検索
+py scripts\search_pubmed.py fetch 35486828                     # PMIDで取得
+py scripts\search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # DOIで取得
+py scripts\search_pubmed.py related 35486828                   # 関連論文
 ```
 
 Claude 統合スラッシュコマンド：
@@ -370,8 +370,8 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 **プロセス強制＋CLAUDE.md の圧縮**
 
-- **Plan-first 強制（hooks）** — `.claude/settings.json` にコミット済みの hooks を追加：PreToolUse の `Write|Edit` ゲート（`scripts/hooks/enforce_gates.py`）は、`drafts/.../draft_plan.md` なしのセクション執筆（Rule 8）や `data/.../analysis_plan.md` なしの分析スクリプト作成（Rule 7）を **ブロック** し、SessionStart hook（`scripts/hooks/session_contract.py`）は毎セッションでワークフロー contract を注入する。Revision は対象外、マルチ論文サブフォルダにも対応、fail open、UTF-8 セーフ。（Windows は `py`；macOS/Linux は `python3`。）
-- **`/verify`** — `scripts/verify_all.py` が check_citations ＋ check_numbers（＋任意で check_gate）を 1 コマンドで実行し、ゲートの PASS を記録する前に確認する。新しい hook テストを追加し、スイートは 86 件パス。
+- **Plan-first 強制（hooks）** — `.claude/settings.json` にコミット済みの hooks を追加：PreToolUse の `Write|Edit|MultiEdit` ゲート（`scripts/hooks/enforce_gates.py`）は、完了・承認済みの `drafts/.../draft_plan.md` なしのセクション執筆（Rule 8）や、完了・承認済みの `data/.../analysis_plan.md` なしの分析スクリプト作成（Rule 7）を **ブロック** し、SessionStart hook（`scripts/hooks/session_contract.py`）は毎セッションでワークフロー contract を注入する。Revision は対象外、マルチ論文サブフォルダにも対応、fail open、UTF-8 セーフ。（Windows は `py`；macOS/Linux は `python3`。）
+- **`/verify`** — `scripts/verify_all.py` が check_citations ＋ check_numbers（＋任意で check_gate）を 1 コマンドで実行し、ゲートの PASS を記録する前に確認する。文書化された freshness チェックを維持するため `--verify-hash` を転送し、hook と freshness 転送の挙動は回帰テストで保護されている。
 - **CLAUDE.md を 808 → 696 行に圧縮（約 14%）** — マルチ論文/Revision の構造ツリーと、Phase 2 の Notes／検定選択／style-priority／ゲート配置の重複を、各正本ドキュメントへのポインタに集約。MUST-FOLLOW ルールは一つも削除していない。
 
 ### v1.0.1 (2026-06-20)

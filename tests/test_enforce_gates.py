@@ -35,8 +35,45 @@ class DecideTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             drafts = Path(tmp) / "drafts"
             drafts.mkdir()
-            (drafts / "draft_plan.md").write_text("x", encoding="utf-8")
+            (drafts / "draft_plan.md").write_text(
+                "# Draft Plan\n\n## 1. Key Message\nA focused approved plan.\n\n"
+                "- [x] 사용자 승인 완료\n",
+                encoding="utf-8",
+            )
             self.assertIsNone(m.decide(event(tmp, file_path="drafts/04_methods.md")))
+
+    def test_blocks_section_with_unresolved_draft_plan_template(self) -> None:
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            drafts = Path(tmp) / "drafts"
+            drafts.mkdir()
+            (drafts / "draft_plan.md").write_text(
+                "# Draft Plan\n\n## 1. Key Message\n[작성]\n\n- [ ] 사용자 승인 완료\n",
+                encoding="utf-8",
+            )
+            reason = m.decide(event(tmp, file_path="drafts/04_methods.md"))
+            self.assertIsNotNone(reason)
+            self.assertIn("unresolved template", reason)
+
+    def test_allows_draft_plan_with_literal_citation_style_brackets(self) -> None:
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            drafts = Path(tmp) / "drafts"
+            drafts.mkdir()
+            (drafts / "draft_plan.md").write_text(
+                "# Draft Plan\n\nCitation style: bracket [N], 6 authors then et al.\n\n"
+                "- [x] 사용자 승인 완료\n",
+                encoding="utf-8",
+            )
+            self.assertIsNone(m.decide(event(tmp, file_path="drafts/04_methods.md")))
+
+    def test_multiedit_blocks_section_without_draft_plan(self) -> None:
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "drafts").mkdir()
+            reason = m.decide(event(tmp, tool="MultiEdit", file_path="drafts/04_methods.md"))
+            self.assertIsNotNone(reason)
+            self.assertIn("Rule 8", reason)
 
     def test_allows_draft_plan_file_itself(self) -> None:
         m = load_module()
@@ -84,8 +121,52 @@ class DecideTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             data = Path(tmp) / "data"
             (data / "py").mkdir(parents=True)
-            (data / "analysis_plan.md").write_text("x", encoding="utf-8")
+            (data / "analysis_plan.md").write_text(
+                "# Analysis Plan\n\nResearch question: compare treatment groups.\n\n"
+                "- [x] 사용자 승인 완료\n",
+                encoding="utf-8",
+            )
             self.assertIsNone(m.decide(event(tmp, file_path="data/py/01_descriptive.py")))
+
+    def test_allows_completed_analysis_plan_with_nonplaceholder_brackets(self) -> None:
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            data = Path(tmp) / "data"
+            (data / "py").mkdir(parents=True)
+            (data / "analysis_plan.md").write_text(
+                "# Analysis Plan\n\nExpected sample size: [N=120]. Report median [IQR].\n\n"
+                "- [x] 사용자 승인 완료\n",
+                encoding="utf-8",
+            )
+            self.assertIsNone(m.decide(event(tmp, file_path="data/py/01_descriptive.py")))
+
+    def test_blocks_analysis_script_with_unresolved_template_plan(self) -> None:
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            data = Path(tmp) / "data"
+            (data / "py").mkdir(parents=True)
+            (data / "analysis_plan.md").write_text(
+                "# Analysis Plan\n\n- [연구 질문을 구체적으로 기술]\n"
+                "- [ ] **사용자 승인 완료** -> 분석 진행\n",
+                encoding="utf-8",
+            )
+            reason = m.decide(event(tmp, file_path="data/py/01_descriptive.py"))
+            self.assertIsNotNone(reason)
+            self.assertIn("unresolved template", reason)
+
+    def test_blocks_analysis_plan_with_sample_size_placeholder(self) -> None:
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            data = Path(tmp) / "data"
+            (data / "py").mkdir(parents=True)
+            (data / "analysis_plan.md").write_text(
+                "# Analysis Plan\n\n**Expected Sample Size:** [N]\n\n"
+                "- [x] 사용자 승인 완료\n",
+                encoding="utf-8",
+            )
+            reason = m.decide(event(tmp, file_path="data/py/01_descriptive.py"))
+            self.assertIsNotNone(reason)
+            self.assertIn("unresolved template", reason)
 
     def test_fails_open_on_garbage(self) -> None:
         m = load_module()

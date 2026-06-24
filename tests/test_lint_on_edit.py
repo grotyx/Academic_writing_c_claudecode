@@ -67,6 +67,18 @@ class LintOnEditTests(unittest.TestCase):
                 (0, ""),
             )
 
+    def test_multiedit_flags_lint_issue_in_draft_section(self) -> None:
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            drafts = Path(tmp) / "drafts"
+            drafts.mkdir()
+            (drafts / "04_methods.md").write_text(
+                "The [TODO] result was dramatic.\n", encoding="utf-8"
+            )
+            code, msg = m.evaluate(event(tmp, tool="MultiEdit", file_path="drafts/04_methods.md"))
+        self.assertEqual(code, 2)
+        self.assertIn("PLACEHOLDER", msg)
+
     def test_fails_open_on_garbage(self) -> None:
         m = load_module()
         self.assertEqual(m.evaluate({}), (0, ""))

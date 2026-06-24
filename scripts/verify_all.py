@@ -40,6 +40,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--require-check", action="append", default=[], help="Required gate check (repeatable)."
     )
+    parser.add_argument(
+        "--verify-hash",
+        action="append",
+        default=[],
+        metavar="LABEL=PATH",
+        help="Freshness check passed through to check_gate.py. Repeat per tracked file.",
+    )
     return parser
 
 
@@ -59,6 +66,8 @@ def main() -> int:
             gate_args += ["--artifact", args.artifact]
         for check in args.require_check:
             gate_args += ["--require-check", check]
+        for item in args.verify_hash:
+            gate_args += ["--verify-hash", item]
         rc, out = run("check_gate.py", gate_args)
         results.append(("gate", rc, out))
 

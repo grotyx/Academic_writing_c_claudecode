@@ -376,7 +376,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - **Verifier 모델:** Opus 기본. Opus 불가 시 또는 사용자 요청 시 다른 모델(예: GPT-5.5) 허용.
 - **인용 grounding:** 초안에서 모든 인용은 `[EVID:author_year]` 태그로 표기 (Phase 7에서 저널 형식 변환).
 - **수치 grounding:** 원고 결과 수치는 `results/*.csv`에 존재하는 값만 사용.
-- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅이 plan-first를 강제 — `draft_plan.md` 없이 섹션 작성·`analysis_plan.md` 없이 분석 스크립트 생성을 **차단**(Rule 7·8, fail-open). SessionStart 훅이 본 계약(+활성 Style Spec)을 매 세션 주입. PostToolUse 훅(`lint_on_edit.py`)이 draft 편집마다 용어·표기 lint를 표면화하고, UserPromptSubmit 훅(`style_intent.py`)이 "학술적으로 바꿔줘" 류 입력에 style-pass protocol을 자동 주입한다. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
+- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅(`Write/Edit/MultiEdit`)이 plan-first를 강제 — 완료·승인된 `draft_plan.md` 없이 섹션 작성, 완료·승인된 `analysis_plan.md` 없이 분석 스크립트 생성을 **차단**한다(Rule 7·8, fail-open). 미완성 템플릿/미체크 승인 plan은 plan으로 인정하지 않는다. SessionStart 훅이 본 계약(+활성 Style Spec)을 매 세션 주입. PostToolUse 훅(`lint_on_edit.py`)이 draft 편집마다 용어·표기 lint를 표면화하고, UserPromptSubmit 훅(`style_intent.py`)이 "학술적으로 바꿔줘" 류 입력에 style-pass protocol을 자동 주입한다. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
 
 **게이트 배치·병렬·freshness:** Phase별 게이트(3 Claim→Citation 사전검증 · 4 섹션 게이트 · 6 경량 · 8 응답 게이트), 병렬 검출, freshness 해시 규칙은 `docs/verification_protocol.md` §7/§3.1/§6 참조. PASS 시 산출물 sha256를 `provenance:`에 기록하고, 산출물이 바뀌면 stale로 보고 재검증(`check_gate.py --verify-hash`).
 
@@ -655,7 +655,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `Check style` | `py scripts\check_style.py check drafts\05_results.md --spec drafts\style_spec.md` 실행 (Style Spec 대비 측정형 게이트) |
 | `Verify references` | `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md` 실행 |
 | `Check phase gate` | `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md` 실행 (freshness 포함) |
-| `/verify [artifacts]` | `py scripts\verify_all.py drafts\05_results.md --results results --evidence knowledge\evidence.md` — citation+number(+gate) 일괄 검증 |
+| `/verify [artifacts]` | `py scripts\verify_all.py drafts\05_results.md --results results --evidence knowledge\evidence.md --gate review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md` — citation+number+gate freshness 일괄 검증 |
 | `/suggest-citation [claim]` | claim에 맞는 `[EVID:id]` 출처 제안 (medical-kag GraphRAG 주, evidence.md 보조; `docs/citation_assist_protocol.md`) |
 | `/verify-claims [section]` | 인용 문장별 SUPPORTED/PARTIAL/UNSUPPORTED 리포트 → `review/claim_verification.md` (`extract_claims.py` + Semantic-Citation Verifier) |
 | `/cite-stance [claim/section]` | 인용이 claim을 지지/반박/언급인지 분류 (Discussion 균형·overclaim 가드; `docs/citation_assist_protocol.md`) |
@@ -703,10 +703,10 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 **CLI 직접 사용:**
 
 ```bash
-python3 scripts/search_pubmed.py search "query"           # 검색 (테이블 출력)
-python3 scripts/search_pubmed.py fetch <PMID> [PMID2...]  # PMID로 가져오기
-python3 scripts/search_pubmed.py doi <DOI>                # DOI로 가져오기
-python3 scripts/search_pubmed.py related <PMID>           # 관련 논문 검색
+py scripts\search_pubmed.py search "query"           # 검색 (테이블 출력)
+py scripts\search_pubmed.py fetch <PMID> [PMID2...]  # PMID로 가져오기
+py scripts\search_pubmed.py doi <DOI>                # DOI로 가져오기
+py scripts\search_pubmed.py related <PMID>           # 관련 논문 검색
 ```
 
 **옵션:**

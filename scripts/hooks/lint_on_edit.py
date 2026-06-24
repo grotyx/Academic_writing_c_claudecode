@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """PostToolUse hook: surface style/terminology drift right after a draft edit.
 
-After a Write/Edit to a manuscript section under `drafts/`, this runs the same
+After a Write/Edit/MultiEdit to a manuscript section under `drafts/`, this runs the same
 checks as `lint_manuscript.py` (terminology registry + style rules) on the edited
 file and, if there are findings, feeds them back to Claude (exit 2 + stderr) so it
 can fix them immediately -- no need for the author to repeat the same style note.
@@ -19,6 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]  # scripts/hooks/ -> repo root
 MAX_LINES = 20
+WRITE_TOOLS = ("Write", "Edit", "MultiEdit")
 
 
 def _load_lint():
@@ -66,7 +67,7 @@ def _is_manuscript_md(spath: str) -> bool:
 
 def evaluate(event: dict) -> tuple[int, str]:
     """Return (exit_code, stderr_message). Pure function for testing."""
-    if event.get("tool_name") not in ("Write", "Edit"):
+    if event.get("tool_name") not in WRITE_TOOLS:
         return 0, ""
     raw_path = (event.get("tool_input") or {}).get("file_path") or ""
     if not raw_path:

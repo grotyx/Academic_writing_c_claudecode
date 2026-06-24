@@ -1,8 +1,8 @@
 # Python dependencies for the manuscript verification harness (scripts/, tests/).
 #
-# Only scripts/compile_response_docx.py needs a third-party package; every other
-# script (check_citations.py, check_gate.py, check_numbers.py,
-# check_revision_claims.py, lint_manuscript.py, search_pubmed.py) is
+# DOCX compilation and external multi-model review need third-party packages.
+# Core gate scripts (check_citations.py, check_gate.py, check_numbers.py,
+# check_revision_claims.py, lint_manuscript.py, search_pubmed.py) are
 # standard-library only.
 #
 # Install with:  pip install -r requirements.txt

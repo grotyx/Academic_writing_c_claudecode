@@ -138,7 +138,7 @@ project/
 ## Quick Start
 
 1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design. Check `profile/journals.md` for citation format and `Style/` for style anchors.
-2. **References**: Use `/search-evidence [query]` or `python3 scripts/search_pubmed.py` to search PubMed and register in `knowledge/evidence.md`
+2. **References**: Use `/search-evidence [query]` or `py scripts\search_pubmed.py` to search PubMed and register in `knowledge/evidence.md`
 3. **Data Analysis**: Place data in `data/` folder → create `analysis_plan.md` (required) → run statistical analysis
 4. **Draft Plan**: Copy `docs/draft_plan_template.md` → `drafts/draft_plan.md`, fill in all 10 items including **Claim→Citation Mapping** (Opus recommended)
 5. **Drafting**: Follow `docs/drafting_protocol.md` and write sections in recommended order (Methods → Results → Introduction → Discussion)
@@ -265,10 +265,10 @@ The compiler reproduces the `Author_response_220803_Final.docx` house style — 
 Built-in Python script (`scripts/search_pubmed.py`) for reference search without MCP:
 
 ```bash
-python3 scripts/search_pubmed.py search "endoscopic spine surgery"  # Search
-python3 scripts/search_pubmed.py fetch 35486828                     # Import by PMID
-python3 scripts/search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # Import by DOI
-python3 scripts/search_pubmed.py related 35486828                   # Related articles
+py scripts\search_pubmed.py search "endoscopic spine surgery"  # Search
+py scripts\search_pubmed.py fetch 35486828                     # Import by PMID
+py scripts\search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # Import by DOI
+py scripts\search_pubmed.py related 35486828                   # Related articles
 ```
 
 Slash commands for Claude integration:
@@ -408,8 +408,8 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 **Process enforcement + CLAUDE.md condensation**
 
-- **Plan-first enforcement (hooks)** — `.claude/settings.json` adds committed hooks: a PreToolUse `Write|Edit` gate (`scripts/hooks/enforce_gates.py`) that BLOCKS drafting a section without `drafts/.../draft_plan.md` (Rule 8) or creating an analysis script without `data/.../analysis_plan.md` (Rule 7), and a SessionStart hook (`scripts/hooks/session_contract.py`) that injects the workflow contract every session. Revisions are exempt; multi-paper subfolders handled; fails open; UTF-8 safe. (Windows `py`; macOS/Linux use `python3`.)
-- **`/verify`** — `scripts/verify_all.py` runs check_citations + check_numbers (+ optional check_gate) in one command before recording a gate PASS. New hook tests; suite at 86 passing.
+- **Plan-first enforcement (hooks)** — `.claude/settings.json` adds committed hooks: a PreToolUse `Write|Edit|MultiEdit` gate (`scripts/hooks/enforce_gates.py`) that BLOCKS drafting a section without a completed/approved `drafts/.../draft_plan.md` (Rule 8) or creating an analysis script without a completed/approved `data/.../analysis_plan.md` (Rule 7), and a SessionStart hook (`scripts/hooks/session_contract.py`) that injects the workflow contract every session. Revisions are exempt; multi-paper subfolders handled; fails open; UTF-8 safe. (Windows `py`; macOS/Linux use `python3`.)
+- **`/verify`** — `scripts/verify_all.py` runs check_citations + check_numbers (+ optional check_gate) in one command before recording a gate PASS, and forwards `--verify-hash` to keep documented freshness checks active. Hook and freshness-forwarding behavior is covered by regression tests.
 - **CLAUDE.md condensed 808 → 696 lines (~14%)** — collapsed the Multi-Paper/Revision structure trees and the Phase-2 Notes / test-selection / style-priority / gate-placement duplicates into pointers to their canonical docs; no MUST-FOLLOW rule removed.
 
 ### v1.0.1 (2026-06-20)
