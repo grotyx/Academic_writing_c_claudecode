@@ -47,6 +47,14 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="LABEL=PATH",
         help="Freshness check passed through to check_gate.py. Repeat per tracked file.",
     )
+    parser.add_argument(
+        "--cross-check",
+        action="append",
+        default=[],
+        metavar="LABEL=PATH",
+        help="Ledger-vs-live cross-check passed through to check_gate.py "
+        "(LABEL in citation|numbers|revision_claims). Repeat per dimension.",
+    )
     return parser
 
 
@@ -68,6 +76,10 @@ def main() -> int:
             gate_args += ["--require-check", check]
         for item in args.verify_hash:
             gate_args += ["--verify-hash", item]
+        for item in args.cross_check:
+            gate_args += ["--cross-check", item]
+        if args.cross_check:  # share the same sources the live checks used
+            gate_args += ["--evidence", args.evidence, "--results", args.results]
         rc, out = run("check_gate.py", gate_args)
         results.append(("gate", rc, out))
 

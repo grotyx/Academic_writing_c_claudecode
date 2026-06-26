@@ -481,5 +481,155 @@ class FreshnessTests(unittest.TestCase):
             self.assertIn("not a readable file", completed.stderr)
 
 
+class CrossCheckTests(unittest.TestCase):
+    """Ledger-vs-live cross-check: a recorded PASS must match a live re-run."""
+
+    EVIDENCE = (
+        "# Evidence Registry\n\n"
+        "## Reference List\n\n"
+        "### [1] Smith et al., 2020\n\n"
+        "- **Evidence ID:** smith_2020\n"
+        "- **Citation:** Smith J. Example. Spine. 2020.\n"
+        "- **Source Status:** verified\n"
+    )
+
+    def _project(self, tmp: Path, *, section: str, evidence: str | None = None) -> Path:
+        """Lay out a minimal repo (drafts/ + knowledge/evidence.md) under tmp."""
+        (tmp / "drafts").mkdir(parents=True, exist_ok=True)
+        (tmp / "drafts" / "05_results.md").write_text(section, encoding="utf-8")
+        (tmp / "knowledge").mkdir(parents=True, exist_ok=True)
+        (tmp / "knowledge" / "evidence.md").write_text(
+            evidence if evidence is not None else self.EVIDENCE, encoding="utf-8"
+        )
+        return tmp
+
+    @staticmethod
+    def _gate(citation: str = "PASS") -> str:
+        return (
+            "phase: Phase 4 - Draft Sections\n"
+            "artifact: drafts/05_results.md\n"
+            "status: PASS\n"
+            "checks:\n"
+            "  constraint: PASS\n"
+            f"  citation: {citation}\n"
+        )
+
+    def test_cross_check_passes_when_ledger_matches_live(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = self._project(Path(tmp), section="Background is established [EVID:smith_2020].\n")
+            gate_path = base / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate("PASS"), encoding="utf-8")
+
+            result = module.check_gate(
+                gate_path,
+                required_checks=["citation"],
+                cross_checks=[("citation", Path("drafts/05_results.md"))],
+                base_dir=base,
+            )
+
+            self.assertTrue(result.passed, [f.reason for f in result.failures])
+            self.assertEqual(result.cross_verified, ("citation",))
+            self.assertIn("cross_checked: citation", module.format_result(result, gate_path))
+
+    def test_cross_check_catches_fabricated_pass(self) -> None:
+        # Ledger claims citation PASS, but the section cites an EVID id that does
+        # not exist -> live check FAILS -> the gate must catch the lie.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = self._project(Path(tmp), section="Claim with no source [EVID:ghost_2099].\n")
+            gate_path = base / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate("PASS"), encoding="utf-8")
+
+            result = module.check_gate(
+                gate_path,
+                required_checks=["citation"],
+                cross_checks=[("citation", Path("drafts/05_results.md"))],
+                base_dir=base,
+            )
+
+            self.assertFalse(result.passed)
+            reasons = " ".join(f.reason for f in result.failures)
+            self.assertIn("stale or fabricated PASS", reasons)
+
+    def test_cross_check_flags_stale_ledger_when_live_passes(self) -> None:
+        # Ledger says citation FAIL but the section is actually clean -> the gate
+        # fails (ledger must reflect reality) and points at the disagreement.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = self._project(Path(tmp), section="Established background [EVID:smith_2020].\n")
+            gate_path = base / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate("FAIL"), encoding="utf-8")
+
+            result = module.check_gate(
+                gate_path,
+                cross_checks=[("citation", Path("drafts/05_results.md"))],
+                base_dir=base,
+            )
+
+            self.assertFalse(result.passed)
+            self.assertTrue(any("stale ledger" in f.reason for f in result.failures))
+
+    def test_cross_check_unknown_label_fails(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = self._project(Path(tmp), section="x\n")
+            gate_path = base / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate("PASS"), encoding="utf-8")
+
+            result = module.check_gate(
+                gate_path,
+                cross_checks=[("bogus", Path("drafts/05_results.md"))],
+                base_dir=base,
+            )
+
+            self.assertFalse(result.passed)
+            self.assertTrue(any("unknown cross-check label" in f.reason for f in result.failures))
+
+    def test_cross_check_missing_ledger_entry_fails(self) -> None:
+        # Cross-check requested for a dimension the ledger never recorded.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = self._project(Path(tmp), section="Established [EVID:smith_2020].\n")
+            gate_text = (
+                "artifact: drafts/05_results.md\n"
+                "status: PASS\n"
+                "checks:\n"
+                "  constraint: PASS\n"  # no citation key
+            )
+            gate_path = base / "phase_04_draft.GATE.md"
+            gate_path.write_text(gate_text, encoding="utf-8")
+
+            result = module.check_gate(
+                gate_path,
+                cross_checks=[("citation", Path("drafts/05_results.md"))],
+                base_dir=base,
+            )
+
+            self.assertFalse(result.passed)
+            self.assertTrue(any("no citation check to cross-validate" in f.reason for f in result.failures))
+
+    def test_cross_check_fails_loud_when_source_unreachable(self) -> None:
+        # Live checker can't run (evidence.md absent) -> loud FAIL, not silent pass.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            (base / "drafts").mkdir()
+            (base / "drafts" / "05_results.md").write_text("text [EVID:smith_2020].\n", encoding="utf-8")
+            # deliberately no knowledge/evidence.md
+            gate_path = base / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate("PASS"), encoding="utf-8")
+
+            result = module.check_gate(
+                gate_path,
+                cross_checks=[("citation", Path("drafts/05_results.md"))],
+                evidence_path=Path("knowledge/evidence.md"),
+                base_dir=base,
+            )
+
+            self.assertFalse(result.passed)
+            self.assertTrue(any("could not run live citation" in f.reason for f in result.failures))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -33,6 +33,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **Data number checking** (`scripts/check_numbers.py`) — 원고/표의 숫자를 `results/*.csv`와 대조
 - **Phase gate ledger checking** (`scripts/check_gate.py`) — `review/gates/*.GATE.md`에 필수 PASS가 없으면 진행 차단
 - **Gate freshness / provenance** (`scripts/check_gate.py --verify-hash`) — PASS 시 검증된 산출물(및 evidence/results)의 sha256을 기록; 이후 편집이 발생하면 게이트가 **stale** 상태가 되어 재검증을 강제하므로, 병렬 verifier의 허점을 차단
+- **Gate cross-check** (`scripts/check_gate.py --cross-check`) — 결정적 차원(`citation` / `numbers` / `revision_claims`)에 대해 정본 checker를 즉석 재실행하고, 원장의 기록 상태가 실제와 불일치하면 게이트를 FAIL — 안 돌리고 적은 가짜 PASS나 stale PASS를 차단 (소스 미도달 시 loud FAIL)
 - **Revision claim checking** (`scripts/check_revision_claims.py`) — response letter의 `[CHANGE]` claim을 revised manuscript와 대조
 - **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — constraint, semantic citation, data, logic/redundancy, style-conformance, citation-stance, revision-alignment 검증 prompt/schema
 - **인용 보조** — `/suggest-citation`(claim에 가장 적합한 `[EVID:id]` 탐색), `/verify-claims`(`scripts/extract_claims.py`를 통한 문장별 SUPPORTED/PARTIAL/UNSUPPORTED claim 맵), `/cite-stance`(supporting/contrasting/mentioning, Scite 스타일), `/evidence-table`(`scripts/evidence_table.py`를 통한 "포함된 연구 요약" 표, Elicit 스타일) (`docs/citation_assist_protocol.md`)

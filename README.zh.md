@@ -33,6 +33,7 @@
 - **Data number checking**（`scripts/check_numbers.py`）— 将稿件/表格中的数字与 `results/*.csv` 对照
 - **Phase gate ledger checking**（`scripts/check_gate.py`）— 如果 `review/gates/*.GATE.md` 没有必要的 PASS，则阻止进入下一步
 - **门时效性 / provenance**（`scripts/check_gate.py --verify-hash`）— PASS 时记录被验证产出物（以及 evidence/results）的 sha256；之后的编辑会使该门变为 **stale** 并强制重新验证，从而堵住 parallel-verifier 漏洞
+- **门交叉校验**（`scripts/check_gate.py --cross-check`）— 对确定性维度（`citation` / `numbers` / `revision_claims`）就地重跑正本 checker，若台账记录的状态与实际不一致则使门 FAIL — 捕捉未实际运行而写入的伪 PASS 或 stale PASS（源不可达时 loud FAIL）
 - **Revision claim checking**（`scripts/check_revision_claims.py`）— 将 response letter 中的 `[CHANGE]` claim 与 revised manuscript 对照
 - **LLM verifier prompt templates**（`docs/verifier_prompt_templates.md`）— constraint、semantic citation、data、logic/redundancy、style-conformance、citation-stance、revision-alignment 验证 prompt/schema
 - **引用辅助** — `/suggest-citation`（为某条 claim 找到最匹配的 `[EVID:id]`）、`/verify-claims`（通过 `scripts/extract_claims.py` 生成逐句的 SUPPORTED/PARTIAL/UNSUPPORTED claim 地图）、`/cite-stance`（支持/反驳/仅提及，Scite 风格），以及 `/evidence-table`（通过 `scripts/evidence_table.py` 生成一张“纳入研究汇总”表，Elicit 风格）（`docs/citation_assist_protocol.md`）

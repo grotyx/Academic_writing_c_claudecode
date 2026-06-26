@@ -81,18 +81,34 @@ Use these exact keys so `check_gate.py --require-check <name>` can verify them:
 | `revision_claims` | `scripts/check_revision_claims.py` |
 | `response_alignment` | reviewer response vs manuscript alignment verifier |
 
+## Cross-Check (the ledger must match reality)
+
+`--require-check` only proves the ledger *says* `PASS`. For the deterministic
+dimensions (`citation`, `numbers`, `revision_claims`) the gate can go further and
+**re-run the canonical checker live**, then assert the recorded status agrees. This
+catches a stale or fabricated `checks.citation: PASS` — one recorded without actually
+running the checker, or left behind after the artifact changed under it. Disagreement
+in either direction (ledger PASS / live FAIL, or ledger FAIL / live PASS) fails the gate.
+
+`--cross-check LABEL=PATH` names the dimension and the artifact to re-check.
+`--evidence` / `--results` point the live citation/number checks at their sources
+(defaults `knowledge\evidence.md`, `results\`). A live checker that cannot run
+(missing sources) fails **loudly**, never silently passes. The flag is opt-in at the
+tool level (backward compatible) but **standard practice** at the workflow level — the
+gate commands below include it.
+
 ## Command Examples
 
-Draft section gate (with freshness — `results` because this section carries numbers):
+Draft section gate (freshness + cross-check — `results` because this section carries numbers):
 
 ```powershell
-py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md --verify-hash results=results\table2_outcomes.csv
+py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md --verify-hash results=results\table2_outcomes.csv --cross-check citation=drafts\05_results.md --cross-check numbers=drafts\05_results.md --results results
 ```
 
 Revision gate (evidence + results freshness required — a revision round changes both):
 
 ```powershell
-py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv
+py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv --cross-check revision_claims=drafts\revision\REV1\response_letter_REV1.md
 ```
 
 ## FAIL Example
