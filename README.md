@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.4.1** (2026-06-24)
+**v1.5.0** (2026-06-26)
 
 ---
 
@@ -245,7 +245,7 @@ A `docs/writing_guide.md` pass (applied in Phase 5 for AI-written drafts) that r
 
 Improvements adapted from the "superpowers" skills framework, focused on the verification gate:
 
-- **Parallel verifiers + Constraint-first.** The four section-gate verifiers (Constraint / Citation / Data / Logic) are dispatched concurrently against a frozen artifact; the artifact is not edited mid-verification, and on FAIL the Constraint (spec-compliance) findings are fixed first. See `docs/verification_protocol.md` (v0.2.0).
+- **Parallel verifiers + Constraint-first.** The four section-gate verifiers (Constraint / Citation / Data / Logic) are dispatched concurrently against a frozen artifact; the artifact is not edited mid-verification, and on FAIL the Constraint (spec-compliance) findings are fixed first. See `docs/verification_protocol.md` (v0.3.0).
 - **Gate freshness / provenance** (`scripts/check_gate.py`). On PASS the gate ledger records a sha256 of the verified artifact (and `evidence` / `results` for citation- and numbers-bearing gates; required for revision). `check_gate.py --verify-hash LABEL=PATH` re-hashes and fails the gate as **stale** if the file changed since the PASS — closing the hole where a post-PASS edit silently survives re-checking. `--compute-hash PATH` fills the provenance fields. Opt-in at the tool level, standard in the documented gate commands.
 - **STOP signals.** A CLAUDE.md anti-rationalization table catches the human-level shortcuts the verifiers can't ("this number is probably fine" → check the CSV; "I already passed" → a changed artifact is stale).
 - **Socratic draft-plan brainstorming.** A "Step 0" in `docs/draft_plan_template.md` sharpens the paper's intent one question at a time before the plan is filled — distinct from `/paper-debate`, which it feeds as R0 prep.
@@ -357,6 +357,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.5.0 (2026-06-26)
+
+**Gate cross-check (ledger ↔ live) + doc/version auto-sync policy**
+
+- **Gate cross-check** (`scripts/check_gate.py --cross-check LABEL=PATH`) — re-runs the canonical checker live for the deterministic dimensions (`citation` / `numbers` / `revision_claims`) and fails the gate when the ledger's recorded status disagrees in either direction, catching a stale or fabricated `PASS`; loud-fails when a source is unreachable. Forwarded by `scripts/verify_all.py` and wired into the canonical gate commands (`review/gates/_TEMPLATE.GATE.md`, `docs/verification_protocol.md` v0.3.0, CLAUDE.md). +6 regression tests (141 total).
+- **Doc/version sync + auto commit-push policy** (CLAUDE.md Rule 12) — every harness code/bug change now bumps the version, updates the affected docs, and auto-commits/pushes (with explicit STOP conditions for sensitive or destructive cases).
 
 ### v1.4.1 (2026-06-24)
 

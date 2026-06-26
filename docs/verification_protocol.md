@@ -1,4 +1,4 @@
-# Verification Protocol (검증 하네스) (v0.2.0)
+# Verification Protocol (검증 하네스) (v0.3.0)
 
 > harness-engineering식 produce→verify→fix→re-verify 자동 루프 정의.
 > 각 산출 단계 뒤에 검증 게이트를 두어 제약 무시·인용 환각·수치 조작을 차단한다.

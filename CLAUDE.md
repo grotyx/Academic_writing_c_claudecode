@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.4.1)
+# Academic Paper Writing Project (v1.5.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -425,6 +425,20 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
   - draft_plan.md + evidence.md가 잘 갖춰져 있으면 Sonnet으로도 충분
   - 비용 여유가 있으면 Opus 사용이 더 좋은 결과를 냄
 - **핵심 원칙:** Plan은 Opus로 잘 잡고 → 작성은 Sonnet으로도 OK
+
+### 12. Documentation & Version Sync + Auto Commit-Push (문서·버전 동기화 + 자동 커밋·푸시)
+
+> **harness(scripts/·hooks/·docs/) 코드·버그·기능 변경 시 항상: (1) 영향받는 문서 갱신 → (2) 버전 bump → (3) 자동 commit+push.** 매번 사용자에게 묻지 않는다.
+
+**규칙:**
+
+- **문서 동기화 (코드 ↔ 문서 동시 변경):** 동작·CLI 플래그·스크립트를 바꾸면 **같은 변경 안에서** 관련 문서를 갱신한다 — `CLAUDE.md`(명령 예시·규칙), `docs/`(해당 protocol), `review/gates/_TEMPLATE.GATE.md`, `AGENTS.MD`, `README.md`/`.ko`/`.ja`/`.zh`(기능 bullet + changelog). **문서 없는 코드 변경 금지.**
+- **버전 bump (semver):**
+  - **프로젝트 버전** = `CLAUDE.md` 헤더 + README 4종 헤더(`**vX.Y.Z**`). 새 기능 = minor(1.4.1→1.5.0), 버그/문서만 = patch(1.5.0→1.5.1), 호환성 깨짐 = major.
+  - 변경된 **개별 doc**은 자체 헤더 semver도 올린다 (예: `verification_protocol.md` 0.2.0→0.3.0).
+  - README 4종 Changelog에 `### vX.Y.Z (YYMMDD)` 항목 추가 (오늘 날짜).
+- **자동 commit+push:** 변경이 **검증(테스트 green)되면** 사용자 확인 없이 commit + push 한다. 표준 커밋 메시지 형식 사용. protected 파일(`.gitignore`의 PDF/`profile/`/Style 앵커)은 자동 제외됨.
+- **STOP — 자동 push 금지, 먼저 확인:** ① 비공개/민감 데이터가 staged될 위험, ② 대규모 파괴적 변경, ③ 사용자 manuscript 본문(`drafts/` WIP)이 함께 휩쓸릴 때, ④ history 재작성·force-push·revert(명시 요청 시에만). 이 경우 멈추고 사용자에게 확인한다.
 
 ---
 

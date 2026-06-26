@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.4.1** (2026-06-24)
+**v1.5.0** (2026-06-26)
 
 ---
 
@@ -239,7 +239,7 @@ AI 산문의 흔적 — 피상적인 `-ing` "표면 분석" 절, AI가 선호하
 
 "superpowers" 스킬 프레임워크에서 가져와 검증 게이트에 맞게 적용한 개선 사항입니다:
 
-- **병렬 verifier + Constraint 우선.** 4개의 섹션 게이트 verifier(Constraint / Citation / Data / Logic)를 동결된(frozen) 산출물에 대해 동시에 dispatch합니다. 검증 도중에는 산출물을 편집하지 않으며, FAIL 시 Constraint(spec 준수) 지적사항을 먼저 수정합니다. `docs/verification_protocol.md` (v0.2.0) 참조.
+- **병렬 verifier + Constraint 우선.** 4개의 섹션 게이트 verifier(Constraint / Citation / Data / Logic)를 동결된(frozen) 산출물에 대해 동시에 dispatch합니다. 검증 도중에는 산출물을 편집하지 않으며, FAIL 시 Constraint(spec 준수) 지적사항을 먼저 수정합니다. `docs/verification_protocol.md` (v0.3.0) 참조.
 - **Gate freshness / provenance** (`scripts/check_gate.py`). PASS 시 게이트 원장에 검증된 산출물(및 citation·numbers 관련 게이트의 경우 `evidence` / `results`; revision에서는 필수)의 sha256을 기록합니다. `check_gate.py --verify-hash LABEL=PATH`는 파일을 다시 해싱하여 PASS 이후 파일이 변경되었으면 게이트를 **stale**로 실패 처리합니다 — PASS 이후의 편집이 재점검을 조용히 빠져나가는 허점을 차단합니다. `--compute-hash PATH`는 provenance 필드를 채웁니다. 도구 수준에서는 opt-in이며, 문서화된 게이트 명령에서는 표준으로 사용합니다.
 - **STOP 신호.** CLAUDE.md의 anti-rationalization 표가 verifier로는 잡을 수 없는 사람 수준의 지름길을 포착합니다 ("이 숫자는 아마 괜찮을 거야" → CSV를 확인; "이미 통과했어" → 변경된 산출물은 stale).
 - **Socratic draft-plan 브레인스토밍.** `docs/draft_plan_template.md`의 "Step 0"가 plan을 채우기 전에 한 번에 한 질문씩 논문의 의도를 다듬습니다 — `/paper-debate`와는 구분되며, 토론의 R0 사전 준비로 연결됩니다.
@@ -349,6 +349,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.5.0 (2026-06-26)
+
+**Gate cross-check (원장 ↔ live) + 문서/버전 자동 동기화 정책**
+
+- **Gate cross-check** (`scripts/check_gate.py --cross-check LABEL=PATH`) — 결정적 차원(`citation` / `numbers` / `revision_claims`)에 대해 정본 checker를 즉석 재실행하고, 원장 기록이 양방향 중 어느 쪽으로든 실제와 불일치하면 게이트 FAIL — stale/가짜 `PASS` 차단, 소스 미도달 시 loud FAIL. `scripts/verify_all.py`가 포워딩하고 정본 게이트 명령(`review/gates/_TEMPLATE.GATE.md`, `docs/verification_protocol.md` v0.3.0, CLAUDE.md)에 연결. 회귀 테스트 +6 (총 141).
+- **문서/버전 동기화 + 자동 commit-push 정책** (CLAUDE.md Rule 12) — harness 코드/버그 변경 시 버전 bump + 영향받는 문서 갱신 + 자동 커밋/푸시 (민감·파괴적 경우엔 STOP 조건 명시).
 
 ### v1.4.1 (2026-06-24)
 

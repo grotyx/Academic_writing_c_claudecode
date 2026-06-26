@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.4.1** (2026-06-24)
+**v1.5.0** (2026-06-26)
 
 ---
 
@@ -214,7 +214,7 @@ project/
 
 借鉴 "superpowers" skills 框架、聚焦于验证门的改进：
 
-- **并行 verifier + Constraint 优先。** 四个章节门 verifier（Constraint / Citation / Data / Logic）针对冻结的产出物并发执行；验证过程中不编辑该产出物，FAIL 时优先修复 Constraint（spec 合规性）发现的问题。参见 `docs/verification_protocol.md`（v0.2.0）。
+- **并行 verifier + Constraint 优先。** 四个章节门 verifier（Constraint / Citation / Data / Logic）针对冻结的产出物并发执行；验证过程中不编辑该产出物，FAIL 时优先修复 Constraint（spec 合规性）发现的问题。参见 `docs/verification_protocol.md`（v0.3.0）。
 - **门时效性 / provenance**（`scripts/check_gate.py`）。PASS 时，门台账记录被验证产出物的 sha256（对于承载 citation 和 number 的门，还记录 `evidence` / `results`；revision 时必需）。`check_gate.py --verify-hash LABEL=PATH` 会重新计算哈希，若文件在 PASS 之后发生变更，则将该门判定为 **stale** 并失败 — 从而堵住「PASS 之后的编辑悄无声息地通过重新检查」的漏洞。`--compute-hash PATH` 用于填充 provenance 字段。在工具层面为可选启用，在文档化的门命令中为标准用法。
 - **STOP 信号。** CLAUDE.md 中的 anti-rationalization 表格捕捉 verifier 无法发现的、人类层面的偷懒（「这个数字大概没问题」→ 去查 CSV；「我已经通过了」→ 产出物已变更即为 stale）。
 - **苏格拉底式 draft-plan 头脑风暴。** `docs/draft_plan_template.md` 中的「Step 0」在填写计划之前，每次一个问题地厘清论文意图 — 与 `/paper-debate` 不同，它作为 R0 准备为后者提供输入。
@@ -325,6 +325,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.5.0 (2026-06-26)
+
+**门交叉校验（台账 ↔ live）+ 文档/版本自动同步策略**
+
+- **门交叉校验**（`scripts/check_gate.py --cross-check LABEL=PATH`）— 对确定性维度（`citation` / `numbers` / `revision_claims`）就地重跑正本 checker，若台账记录的状态在任一方向上与实际不一致则使门 FAIL — 捕捉 stale/伪 `PASS`，源不可达时 loud FAIL。由 `scripts/verify_all.py` 转发，并接入正本门命令（`review/gates/_TEMPLATE.GATE.md`、`docs/verification_protocol.md` v0.3.0、CLAUDE.md）。新增 6 个回归测试（共 141）。
+- **文档/版本同步 + 自动 commit-push 策略**（CLAUDE.md Rule 12）— harness 代码/缺陷变更时 bump 版本、更新受影响文档并自动提交/推送（对敏感或破坏性情形给出 STOP 条件）。
 
 ### v1.4.1 (2026-06-24)
 
