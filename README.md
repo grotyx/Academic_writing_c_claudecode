@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.0** (2026-06-26)
+**v1.5.1** (2026-06-26)
 
 ---
 
@@ -357,6 +357,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.5.1 (2026-06-26)
+
+**Translated-README documentation-table parity**
+
+- Added the missing File Roles rows to the Korean/Japanese/Chinese READMEs so they match `README.md`: `docs/debate_protocol.md` and `docs/critical_review_protocol.md` (all three), plus `scripts/critical_review.py` (ja/zh). Docs-only; no code change.
 
 ### v1.5.0 (2026-06-26)
 

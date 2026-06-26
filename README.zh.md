@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.5.0** (2026-06-26)
+**v1.5.1** (2026-06-26)
 
 ---
 
@@ -269,6 +269,8 @@ Claude 集成斜杠命令：
 | [docs/figure_guide.md](docs/figure_guide.md) | 图表生成指南（DPI、调色板、Python模板） |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 转换指南（格式、表格样式、命名规则） |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10项内容、claim→citation tables、approval checklist |
+| [docs/debate_protocol.md](docs/debate_protocol.md) | Claude–Codex 合著者辩论流程（轮次、角色、日志、fallback） |
+| [docs/critical_review_protocol.md](docs/critical_review_protocol.md) | 外部多模型对抗式评审（评审者池、共识度 × 严重度、fallback） |
 | [Style/style_guide.md](Style/style_guide.md) | Style anchor workflow、extraction framework、PDF-to-MD mirror rules |
 | [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry |
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
@@ -279,6 +281,7 @@ Claude 集成斜杠命令：
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | 将 response-letter `[CHANGE]` claims 与 revised manuscript files 对照 |
 | [scripts/compile_response_docx.py](scripts/compile_response_docx.py) | 将 `response_letter_REV*.md` 转换为 Author_response-style DOCX |
 | [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed 搜索脚本（NCBI E-utilities，无需外部包） |
+| [scripts/critical_review.py](scripts/critical_review.py) | OpenRouter 多模型对抗式评审调用（单个模型失败不会中断整体） |
 
 ---
 
@@ -325,6 +328,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.5.1 (2026-06-26)
+
+**翻译 README 文档表对齐**
+
+- 在韩文/日文/中文 README 的 File Roles 表中补齐缺失行，使其与 `README.md` 一致：`docs/debate_protocol.md`、`docs/critical_review_protocol.md`（三种语言均补），以及 `scripts/critical_review.py`（ja/zh）。仅文档变更，无代码变更。
 
 ### v1.5.0 (2026-06-26)
 

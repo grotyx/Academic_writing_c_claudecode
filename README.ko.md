@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.5.0** (2026-06-26)
+**v1.5.1** (2026-06-26)
 
 ---
 
@@ -294,6 +294,8 @@ Claude 통합 슬래시 명령어:
 | [docs/figure_guide.md](docs/figure_guide.md) | Figure 생성 가이드 (DPI, 팔레트, Python 템플릿) |
 | [docs/docx_guide.md](docs/docx_guide.md) | DOCX 변환 가이드 (서식, 테이블 스타일, 네이밍 규칙) |
 | [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan 템플릿 — 10개 항목 + claim→citation 테이블 + 승인 체크리스트 |
+| [docs/debate_protocol.md](docs/debate_protocol.md) | Claude–Codex 공동저자 토론 절차 (라운드, 역할, 로깅, fallback) |
+| [docs/critical_review_protocol.md](docs/critical_review_protocol.md) | 외부 멀티모델 적대적 검토 (리뷰어 풀, 합의도 × 심각도, fallback) |
 | [Style/style_guide.md](Style/style_guide.md) | 스타일 앵커 워크플로우, 추출 프레임워크, PDF-to-MD 미러 규칙 |
 | [Style/terminology.md](Style/terminology.md) | preferred/forbidden 용어 registry, 정의, context |
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | 본인 논문 스타일 앵커 템플릿 |
@@ -349,6 +351,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.5.1 (2026-06-26)
+
+**번역 README 문서 표 파리티**
+
+- 한국어/일본어/중국어 README의 File Roles 표에서 누락된 행을 `README.md`와 일치하도록 추가: `docs/debate_protocol.md` · `docs/critical_review_protocol.md` (3개 언어 모두), `scripts/critical_review.py` (ja/zh). 문서만 변경, 코드 변경 없음.
 
 ### v1.5.0 (2026-06-26)
 
