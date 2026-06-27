@@ -143,6 +143,41 @@ class CheckRevisionClaimsTests(unittest.TestCase):
             self.assertFalse(result.passed)
             self.assertIn("section unchanged from original", result.failures[0].reason)
 
+    def test_strict_escalates_missing_original_to_failure(self) -> None:
+        # The revised section passes the term + quote checks, but the ORIGINAL
+        # section file is absent so the unchanged-diff check cannot run. Non-strict
+        # downgrades that to a warning (still passes); --strict must escalate it to
+        # a failure -- otherwise a "ghost" revision slips through when the original
+        # is conveniently missing.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            draft_root = Path(tmp) / "drafts"
+            rev_dir = draft_root / "revision" / "REV1"
+            rev_dir.mkdir(parents=True)
+            # revised present, contains the expected terms + the quoted revised text
+            (rev_dir / "04_methods_REV1.md").write_text(
+                "Methods\n\nPatients were eligible if they met the eligibility criteria "
+                "and were excluded if they had prior surgery.",
+                encoding="utf-8",
+            )
+            # NOTE: no draft_root/04_methods.md -> original missing
+            response_path = rev_dir / "response_letter_REV1.md"
+            response_path.write_text(SAMPLE_RESPONSE, encoding="utf-8")
+
+            loose = module.check_revision_claims(response_path, draft_root=draft_root)
+            self.assertTrue(loose.passed)
+            self.assertTrue(
+                any("original section file not found" in w.reason for w in loose.warnings)
+            )
+
+            strict = module.check_revision_claims(
+                response_path, draft_root=draft_root, strict=True
+            )
+            self.assertFalse(strict.passed)
+            self.assertTrue(
+                any("original section file not found" in f.reason for f in strict.failures)
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

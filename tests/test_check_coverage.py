@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -155,6 +157,66 @@ class CoverageTests(unittest.TestCase):
             self.assertNotIn("unused", out)
             self.assertNotIn("waste", out.lower())
             self.assertIn("valid choice", out)
+
+
+class CoverageCliExitTests(unittest.TestCase):
+    """The --fail-on-* flags ARE the enforcement contract -- verify their exit codes."""
+
+    def _run(self, args: list[str]) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), *args],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def _project(self, tmp: Path, intro: str) -> tuple[Path, Path]:
+        ev = tmp / "evidence.md"
+        ev.write_text(EVIDENCE, encoding="utf-8")
+        art = tmp / "03_introduction.md"
+        art.write_text(intro, encoding="utf-8")
+        return ev, art
+
+    def test_advisory_by_default_exit_zero(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            # cite only smith -> lee/park uncited + cite a ghost (unknown), no flags
+            ev, art = self._project(tmp, "Cite [EVID:smith_2020] and ghost [EVID:ghost_2099].\n")
+            r = self._run([str(art), "--evidence", str(ev)])
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_fail_on_over_citation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            ev, art = self._project(
+                tmp,
+                "Many [EVID:smith_2020][EVID:lee_2021][EVID:park_2022]"
+                "[EVID:smith_2020][EVID:lee_2021].\n",  # 5 in one sentence > default 4
+            )
+            self.assertEqual(self._run([str(art), "--evidence", str(ev)]).returncode, 0)
+            self.assertEqual(
+                self._run([str(art), "--evidence", str(ev), "--fail-on-over-citation"]).returncode, 1
+            )
+
+    def test_fail_on_unknown(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            ev, art = self._project(tmp, "Cites a ghost [EVID:ghost_2099].\n")
+            self.assertEqual(self._run([str(art), "--evidence", str(ev)]).returncode, 0)
+            self.assertEqual(
+                self._run([str(art), "--evidence", str(ev), "--fail-on-unknown"]).returncode, 1
+            )
+
+    def test_fail_on_uncited_verified(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            # cite only smith -> lee_2021 (verified) is uncited
+            ev, art = self._project(tmp, "Only [EVID:smith_2020] is cited.\n")
+            self.assertEqual(self._run([str(art), "--evidence", str(ev)]).returncode, 0)
+            self.assertEqual(
+                self._run([str(art), "--evidence", str(ev), "--fail-on-uncited-verified"]).returncode,
+                1,
+            )
 
 
 if __name__ == "__main__":

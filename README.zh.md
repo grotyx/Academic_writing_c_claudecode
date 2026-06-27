@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.5.8** (2026-06-28)
+**v1.5.9** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -333,6 +333,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.5.9 (2026-06-28)
+
+**enforcement 路径的测试覆盖强化**
+
+- 全量审查的覆盖分析发现若干 *enforcement 契约* 没有测试，回归时可能被悄然停用。新增测试：`verify_all.py` 顶层 `OVERALL: PASS` 判定及其 `--cross-check`（以及 `--evidence`/`--results`）向 `check_gate.py` 的转发；`check_coverage.py` 的 `--fail-on-over-citation`/`--fail-on-unknown`/`--fail-on-uncited-verified` 退出码（默认 advisory vs 阻塞）；`check_revision_claims.py` 的 `--strict` 升级（缺失 original 默认为 warning，`--strict` 下为 failure）。共 170 个测试（此前 163）。
 
 ### v1.5.8 (2026-06-28)
 

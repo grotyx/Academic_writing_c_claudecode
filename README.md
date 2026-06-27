@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.8** (2026-06-28)
+**v1.5.9** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -362,6 +362,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.5.9 (2026-06-28)
+
+**Test-coverage hardening on enforcement paths**
+
+- A full-review coverage analysis found that several *enforcement contracts* had no test, so a regression could silently disable them. Added tests for: `verify_all.py` top-level `OVERALL: PASS` verdict and its `--cross-check` (+ `--evidence`/`--results`) pass-through to `check_gate.py`; `check_coverage.py` exit codes for `--fail-on-over-citation` / `--fail-on-unknown` / `--fail-on-uncited-verified` (advisory-by-default vs blocking); and `check_revision_claims.py` `--strict` escalation (a missing original section is a warning by default, a failure under `--strict`). 170 tests total (was 163).
 
 ### v1.5.8 (2026-06-28)
 
