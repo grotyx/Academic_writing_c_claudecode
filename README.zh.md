@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.0** (2026-06-28)
+**v1.8.0** (2026-06-28)
 
 ---
 
@@ -277,6 +277,7 @@ Claude 集成斜杠命令：
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script |
 | [scripts/check_citations.py](scripts/check_citations.py) | 将 `[EVID:id]` citations 与 `knowledge/evidence.md` 对照 |
 | [scripts/check_coverage.py](scripts/check_coverage.py) | 引用 coverage 审计 — **过度引用**（单一主张引用过多）·**未登记引用**为质量信号，各章节引用密度；未引用/未实现 claim 中立报告（属策展，非浪费） |
+| [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → 期刊格式参考文献列表（numbered/author-year）+ 将正文标签转换到同级 `*_formatted.md`；**不依赖 MCP**（Phase 7） |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 将稿件/表格中的数字与 `results/*.csv` 对照 |
 | [scripts/check_gate.py](scripts/check_gate.py) | 验证 `review/gates/*.GATE.md` 的 status 和必要 check |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | 将 response-letter `[CHANGE]` claims 与 revised manuscript files 对照 |
@@ -329,6 +330,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.8.0 (2026-06-28)
+
+**不依赖 MCP 的 reference formatter（Phase 7）**
+
+- **`scripts/format_references.py`** — 将撰写时的 `[EVID:id]` 标签转换为可投稿的参考文献列表与正文引用，仅读取 `knowledge/evidence.md`（无需 medical-kag）。两种风格：**numbered**（Vancouver — `[EVID:id]` → `[N]` 按首次出现顺序，列表同序编号）与 **author-year**（`(Author, Year)`，按字母排序列表）。`--convert` 将替换标签后的内容写入同级 `*_formatted.md`（不就地修改）；evidence.md 中不存在的引用保持不变并报告（且使退出码非零）。在已连接时与 medical-kag `reference` 工具互补。7 个测试（共 156）。
 
 ### v1.7.0 (2026-06-28)
 

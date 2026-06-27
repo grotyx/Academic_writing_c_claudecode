@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.7.0)
+# Academic Paper Writing Project (v1.8.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -87,6 +87,7 @@ project/
 │   ├── critical_prompts/         # 적대적 검토 프롬프트 (manuscript.txt, response.txt)
 │   ├── verify_all.py             # /verify — citation+number(+gate) 일괄 검증
 │   ├── check_coverage.py         # 인용 coverage audit (과잉인용·미등록인용 주신호; 인용밀도; uncited는 중립)
+│   ├── format_references.py       # [EVID:id]→저널형 서지목록 + 본문 태그 변환 (MCP 독립; Phase 7)
 │   └── hooks/                    # 강제 훅 (enforce_gates, session_contract, lint_on_edit, style_intent)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
@@ -164,6 +165,7 @@ project/
 | `scripts/check_revision_claims.py` | `response_letter_REV*.md`의 `[CHANGE]` claims를 revised manuscript 파일과 대조 | Phase 8 ghost-revision gate |
 | `scripts/check_citations.py` | `[EVID:id]` citations를 `knowledge/evidence.md`와 대조 | Phase 3·4·6 citation gate |
 | `scripts/check_coverage.py` | 인용 coverage audit — **과잉인용**(한 문장 과다 인용)·**미등록인용** 주신호, 섹션별 인용밀도; uncited ref/미실현 claim은 중립 정보(낭비 아님) | Phase 6 QC (`Check coverage`) |
+| `scripts/format_references.py` | `[EVID:id]` → 저널형 서지목록(numbered/author-year) + 본문 태그 변환(`*_formatted.md`); **MCP 독립**, evidence.md 정본 | Phase 7 (`Format references`) |
 | `scripts/check_numbers.py` | manuscript/table 수치를 `results/*.csv`와 대조 | Phase 4·6 data gate |
 | `scripts/check_gate.py` | `review/gates/*.GATE.md` 원장의 `status: PASS`와 필수 check를 검증 | 모든 phase gate 통과 직전 |
 | `scripts/check_style.py` | manuscript를 `drafts/style_spec.md` 목표와 대조 (측정형 스타일 게이트) | Phase 5·6 (`/style-pass`, `Check style`) |
@@ -702,7 +704,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | Command | Action |
 |---------|--------|
 | `Compile manuscript` | Read `docs/docx_guide.md` → DOCX 변환 (규칙대로) |
-| `Format references for [journal]` | Apply journal citation style (profile/journals.md 참조) |
+| `Format references for [journal]` | `py scripts\format_references.py drafts\03_introduction.md drafts\06_discussion.md --evidence knowledge\evidence.md --style numbered --convert` 실행 → 서지목록 + `*_formatted.md` (저널 스타일은 profile/journals.md 참조; MCP 독립). medical-kag 연결 시 `KAG references`로 KG 기반 포맷도 가능 |
 | `Generate submission checklist` | Pre-submission verification |
 
 ---

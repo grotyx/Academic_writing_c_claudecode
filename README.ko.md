@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.0** (2026-06-28)
+**v1.8.0** (2026-06-28)
 
 ---
 
@@ -302,6 +302,7 @@ Claude 통합 슬래시 명령어:
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | 용어, placeholder, 과장 표현, 섹션별 위반 점검 lint 스크립트 |
 | [scripts/check_citations.py](scripts/check_citations.py) | `[EVID:id]` citation을 `knowledge/evidence.md`와 대조 |
 | [scripts/check_coverage.py](scripts/check_coverage.py) | 인용 coverage audit — **과잉인용**(한 주장에 과다 인용)·**미등록인용**이 품질 신호, 섹션별 인용밀도; uncited/미실현 claim은 중립(큐레이션, 낭비 아님) |
+| [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → 저널형 서지목록(numbered/author-year) + 본문 태그를 `*_formatted.md`로 변환; **MCP 독립** (Phase 7) |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 원고/표의 숫자를 `results/*.csv`와 대조 |
 | [scripts/check_gate.py](scripts/check_gate.py) | `review/gates/*.GATE.md`의 status와 필수 check 검증 |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | response-letter `[CHANGE]` claim을 revised manuscript와 대조 |
@@ -352,6 +353,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.8.0 (2026-06-28)
+
+**MCP 독립 reference formatter (Phase 7)**
+
+- **`scripts/format_references.py`** — 작성 시점의 `[EVID:id]` 태그를 제출용 서지목록 + 본문 인용으로 변환. `knowledge/evidence.md`만 읽음(medical-kag 불필요). 두 스타일: **numbered**(Vancouver — `[EVID:id]` → `[N]` 등장순, 목록도 그 순서로 번호) + **author-year**(`(Author, Year)`, 알파벳 목록). `--convert`는 태그 치환본을 `*_formatted.md`로 출력(in-place 안 함); evidence.md에 없는 인용은 변환 안 하고 보고(+ exit non-zero). 연결 시 medical-kag `reference` 툴과 상호보완. 테스트 7개(총 156).
 
 ### v1.7.0 (2026-06-28)
 
