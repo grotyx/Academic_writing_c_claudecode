@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.8.0** (2026-06-28)
+**v1.5.4** (2026-06-28)
 
 ---
 
@@ -360,20 +360,20 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 ## Changelog
 
-### v1.8.0 (2026-06-28)
+### v1.5.4 (2026-06-28)
 
 **MCP-independent reference formatter (Phase 7)**
 
 - **`scripts/format_references.py`** — converts drafting-time `[EVID:id]` tags into a submission-ready reference list and in-text citations, reading only `knowledge/evidence.md` (no medical-kag required). Two styles: **numbered** (Vancouver — `[EVID:id]` → `[N]` by first appearance, list numbered in that order) and **author-year** (`(Author, Year)`, alphabetical list). `--convert` writes each section with tags replaced to a sibling `*_formatted.md` (never in place); a cited id absent from evidence.md is left unconverted and reported (and makes the run non-zero). Complements the medical-kag `reference` tool, which stays available when connected. 7 tests (156 total).
 
-### v1.7.0 (2026-06-28)
+### v1.5.3 (2026-06-28)
 
 **Coverage audit refocused on over-citation (not orphan-as-waste)**
 
 - **Over-citation detection** — `check_coverage.py` now flags sentences carrying more than `--max-citations-per-sentence` (default 4) `[EVID:id]` citations (citation stuffing / padding). This and **unknown citations** are the real quality signals; `--fail-on-over-citation` / `--fail-on-unknown` are the meaningful blocking flags.
 - **Reframed orphan/uncited as neutral** — an uncited-but-registered reference is normal curation (you cite only what is necessary), **not** wasted work. The prior "verified work unused" framing is removed; uncited refs and unrealized draft_plan items are reported as neutral information. `--fail-on-uncited-verified` / `--fail-on-unrealized` remain only for strict full-use policies and are off by default. Coverage tests now total 8 (149 suite-wide).
 
-### v1.6.0 (2026-06-27)
+### v1.5.2 (2026-06-27)
 
 **Citation coverage / orphan audit**
 

@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.8.0** (2026-06-28)
+**v1.5.4** (2026-06-28)
 
 ---
 
@@ -354,20 +354,20 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 
 ## 변경 이력
 
-### v1.8.0 (2026-06-28)
+### v1.5.4 (2026-06-28)
 
 **MCP 독립 reference formatter (Phase 7)**
 
 - **`scripts/format_references.py`** — 작성 시점의 `[EVID:id]` 태그를 제출용 서지목록 + 본문 인용으로 변환. `knowledge/evidence.md`만 읽음(medical-kag 불필요). 두 스타일: **numbered**(Vancouver — `[EVID:id]` → `[N]` 등장순, 목록도 그 순서로 번호) + **author-year**(`(Author, Year)`, 알파벳 목록). `--convert`는 태그 치환본을 `*_formatted.md`로 출력(in-place 안 함); evidence.md에 없는 인용은 변환 안 하고 보고(+ exit non-zero). 연결 시 medical-kag `reference` 툴과 상호보완. 테스트 7개(총 156).
 
-### v1.7.0 (2026-06-28)
+### v1.5.3 (2026-06-28)
 
 **Coverage audit를 과잉인용 중심으로 재정향 (orphan=낭비 프레이밍 폐기)**
 
 - **과잉인용 탐지** — `check_coverage.py`가 한 문장에 `--max-citations-per-sentence`(기본 4) 초과 `[EVID:id]` 인용을 플래그(인용 남발/padding). 이것과 **미등록인용**이 진짜 품질 신호 → `--fail-on-over-citation` / `--fail-on-unknown`이 의미 있는 차단 플래그.
 - **orphan/uncited를 중립으로 재정의** — 등록됐지만 미인용된 ref는 정상 큐레이션(꼭 필요한 것만 인용)이지 **낭비가 아니다.** 기존 "verified work unused" 표현 제거; uncited ref·미실현 draft_plan 항목은 중립 정보로 보고. `--fail-on-uncited-verified` / `--fail-on-unrealized`는 strict full-use 정책 전용, 기본 off. coverage 테스트 8개(전체 149).
 
-### v1.6.0 (2026-06-27)
+### v1.5.2 (2026-06-27)
 
 **인용 coverage / orphan audit**
 

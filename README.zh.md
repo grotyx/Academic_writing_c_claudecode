@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.8.0** (2026-06-28)
+**v1.5.4** (2026-06-28)
 
 ---
 
@@ -331,20 +331,20 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 ## 变更记录
 
-### v1.8.0 (2026-06-28)
+### v1.5.4 (2026-06-28)
 
 **不依赖 MCP 的 reference formatter（Phase 7）**
 
 - **`scripts/format_references.py`** — 将撰写时的 `[EVID:id]` 标签转换为可投稿的参考文献列表与正文引用，仅读取 `knowledge/evidence.md`（无需 medical-kag）。两种风格：**numbered**（Vancouver — `[EVID:id]` → `[N]` 按首次出现顺序，列表同序编号）与 **author-year**（`(Author, Year)`，按字母排序列表）。`--convert` 将替换标签后的内容写入同级 `*_formatted.md`（不就地修改）；evidence.md 中不存在的引用保持不变并报告（且使退出码非零）。在已连接时与 medical-kag `reference` 工具互补。7 个测试（共 156）。
 
-### v1.7.0 (2026-06-28)
+### v1.5.3 (2026-06-28)
 
 **Coverage 审计重新聚焦于过度引用（弃用 orphan=浪费 的框定）**
 
 - **过度引用检测** — `check_coverage.py` 现在标记单句中 `[EVID:id]` 引用数超过 `--max-citations-per-sentence`（默认 4）的情况（引用堆砌/padding）。它与**未登记引用**才是真正的质量信号 → `--fail-on-over-citation` / `--fail-on-unknown` 是有意义的阻塞标志。
 - **将 orphan/未引用 重新定义为中立** — 已登记但未引用的参考是正常策展（只引用必要的），**并非浪费**。移除原先 "verified work unused" 的措辞；未引用 ref 与未实现 draft_plan 项作为中立信息报告。`--fail-on-uncited-verified` / `--fail-on-unrealized` 仅用于严格 full-use 策略，默认关闭。coverage 测试共 8 个（套件 149）。
 
-### v1.6.0 (2026-06-27)
+### v1.5.2 (2026-06-27)
 
 **引用 coverage / orphan 审计**
 
