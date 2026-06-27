@@ -51,21 +51,51 @@ class CoverageTests(unittest.TestCase):
             plan.write_text(draft_plan, encoding="utf-8")
         return ev, art, plan
 
-    def test_orphan_detection_flags_uncited_verified(self) -> None:
+    def test_uncited_detection_neutral(self) -> None:
         module = load_module()
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
-            # cite smith only -> lee (verified) + park (todo) are orphans
+            # cite smith only -> lee (verified) + park (todo) are uncited (neutral)
             ev, art, _ = self._setup(tmp, intro="Background established [EVID:smith_2020].\n")
             result = module.audit([art], evidence_path=ev)
 
-            orphan_ids = {eid for eid, _status in result.orphans}
-            self.assertEqual(orphan_ids, {"lee_2021", "park_2022"})
+            uncited_ids = {eid for eid, _status in result.uncited}
+            self.assertEqual(uncited_ids, {"lee_2021", "park_2022"})
             self.assertEqual(result.citation_counts["smith_2020"], 1)
-            # lee is the verified orphan (notable); park is todo (expected)
-            statuses = dict(result.orphans)
+            statuses = dict(result.uncited)
             self.assertEqual(statuses["lee_2021"], "verified")
             self.assertEqual(statuses["park_2022"], "todo")
+
+    def test_over_citation_detection(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            # one padded sentence (5 cites) + one fine sentence (1 cite); default cap 4
+            intro = (
+                "Many studies agree [EVID:smith_2020][EVID:smith_2020]"
+                "[EVID:lee_2021][EVID:park_2022][EVID:lee_2021]. "
+                "A focused claim is supported [EVID:smith_2020].\n"
+            )
+            ev, art, _ = self._setup(tmp, intro=intro)
+            result = module.audit([art], evidence_path=ev)
+
+            self.assertEqual(len(result.over_citations), 1)
+            oc = result.over_citations[0]
+            self.assertEqual(oc.count, 5)
+            self.assertEqual(oc.line, 1)
+
+    def test_over_citation_threshold_configurable(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            intro = "Three sources [EVID:smith_2020][EVID:lee_2021][EVID:park_2022].\n"
+            ev, art, _ = self._setup(tmp, intro=intro)
+            # cap 4 -> 3 cites OK
+            self.assertEqual(module.audit([art], evidence_path=ev).over_citations, [])
+            # cap 2 -> 3 cites flagged
+            flagged = module.audit([art], evidence_path=ev, max_per_sentence=2).over_citations
+            self.assertEqual(len(flagged), 1)
+            self.assertEqual(flagged[0].count, 3)
 
     def test_density_counts_per_artifact(self) -> None:
         module = load_module()
@@ -101,7 +131,7 @@ class CoverageTests(unittest.TestCase):
             result = module.audit([art], evidence_path=ev, draft_plan=plan)
             self.assertEqual(result.unrealized, ["lee_2021"])
 
-    def test_fully_covered_has_no_orphans(self) -> None:
+    def test_fully_covered_has_no_uncited(self) -> None:
         module = load_module()
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
@@ -110,19 +140,9 @@ class CoverageTests(unittest.TestCase):
                 intro="A [EVID:smith_2020] B [EVID:lee_2021] C [EVID:park_2022].\n",
             )
             result = module.audit([art], evidence_path=ev)
-            self.assertEqual(result.orphans, [])
+            self.assertEqual(result.uncited, [])
 
-    def test_main_fail_on_orphan_verified_exit_code(self) -> None:
-        module = load_module()
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp = Path(tmp)
-            ev, art, _ = self._setup(tmp, intro="Only smith [EVID:smith_2020].\n")
-            # simulate CLI via audit + the same predicate main() uses
-            result = module.audit([art], evidence_path=ev)
-            has_verified_orphan = any(s == "verified" for _e, s in result.orphans)
-            self.assertTrue(has_verified_orphan)  # lee_2021 verified + uncited
-
-    def test_format_result_marks_verified_orphan(self) -> None:
+    def test_format_result_neutral_uncited_no_waste_language(self) -> None:
         module = load_module()
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
@@ -130,8 +150,11 @@ class CoverageTests(unittest.TestCase):
             result = module.audit([art], evidence_path=ev)
             out = module.format_result(result)
             self.assertIn("COVERAGE REPORT", out)
-            self.assertIn("verified work unused", out)
             self.assertIn("EVID:lee_2021", out)
+            # uncited framed neutrally -- no "waste"/"unused" judgment
+            self.assertNotIn("unused", out)
+            self.assertNotIn("waste", out.lower())
+            self.assertIn("valid choice", out)
 
 
 if __name__ == "__main__":

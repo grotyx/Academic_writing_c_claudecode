@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.6.0** (2026-06-27)
+**v1.7.0** (2026-06-28)
 
 ---
 
@@ -276,7 +276,7 @@ Claude 集成斜杠命令：
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script |
 | [scripts/check_citations.py](scripts/check_citations.py) | 将 `[EVID:id]` citations 与 `knowledge/evidence.md` 对照 |
-| [scripts/check_coverage.py](scripts/check_coverage.py) | 引用 coverage/orphan 审计 — 未被引用的 evidence ref、各章节引用密度、draft_plan 未实现 claim |
+| [scripts/check_coverage.py](scripts/check_coverage.py) | 引用 coverage 审计 — **过度引用**（单一主张引用过多）·**未登记引用**为质量信号，各章节引用密度；未引用/未实现 claim 中立报告（属策展，非浪费） |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 将稿件/表格中的数字与 `results/*.csv` 对照 |
 | [scripts/check_gate.py](scripts/check_gate.py) | 验证 `review/gates/*.GATE.md` 的 status 和必要 check |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | 将 response-letter `[CHANGE]` claims 与 revised manuscript files 对照 |
@@ -329,6 +329,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.0 (2026-06-28)
+
+**Coverage 审计重新聚焦于过度引用（弃用 orphan=浪费 的框定）**
+
+- **过度引用检测** — `check_coverage.py` 现在标记单句中 `[EVID:id]` 引用数超过 `--max-citations-per-sentence`（默认 4）的情况（引用堆砌/padding）。它与**未登记引用**才是真正的质量信号 → `--fail-on-over-citation` / `--fail-on-unknown` 是有意义的阻塞标志。
+- **将 orphan/未引用 重新定义为中立** — 已登记但未引用的参考是正常策展（只引用必要的），**并非浪费**。移除原先 "verified work unused" 的措辞；未引用 ref 与未实现 draft_plan 项作为中立信息报告。`--fail-on-uncited-verified` / `--fail-on-unrealized` 仅用于严格 full-use 策略，默认关闭。coverage 测试共 8 个（套件 149）。
 
 ### v1.6.0 (2026-06-27)
 

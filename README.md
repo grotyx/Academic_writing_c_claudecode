@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.6.0** (2026-06-27)
+**v1.7.0** (2026-06-28)
 
 ---
 
@@ -307,7 +307,7 @@ Slash commands for Claude integration:
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script for terminology, placeholders, overclaiming, and section issues |
 | [scripts/check_citations.py](scripts/check_citations.py) | Verify `[EVID:id]` citations against `knowledge/evidence.md` |
-| [scripts/check_coverage.py](scripts/check_coverage.py) | Citation coverage/orphan audit — uncited evidence refs, per-section citation density, unrealized draft_plan claims |
+| [scripts/check_coverage.py](scripts/check_coverage.py) | Citation coverage audit — **over-citation** (too many refs on one claim) and **unknown citations** as the quality signals, plus per-section density; uncited/unrealized reported neutrally (curation, not waste) |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | Verify manuscript/table numbers against `results/*.csv` |
 | [scripts/check_gate.py](scripts/check_gate.py) | Verify `review/gates/*.GATE.md` status and required checks |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | Verify response-letter `[CHANGE]` claims against revised manuscript files |
@@ -358,6 +358,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.0 (2026-06-28)
+
+**Coverage audit refocused on over-citation (not orphan-as-waste)**
+
+- **Over-citation detection** — `check_coverage.py` now flags sentences carrying more than `--max-citations-per-sentence` (default 4) `[EVID:id]` citations (citation stuffing / padding). This and **unknown citations** are the real quality signals; `--fail-on-over-citation` / `--fail-on-unknown` are the meaningful blocking flags.
+- **Reframed orphan/uncited as neutral** — an uncited-but-registered reference is normal curation (you cite only what is necessary), **not** wasted work. The prior "verified work unused" framing is removed; uncited refs and unrealized draft_plan items are reported as neutral information. `--fail-on-uncited-verified` / `--fail-on-unrealized` remain only for strict full-use policies and are off by default. Coverage tests now total 8 (149 suite-wide).
 
 ### v1.6.0 (2026-06-27)
 

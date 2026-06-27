@@ -1,4 +1,4 @@
-# Quality Control Guide (v0.5.1)
+# Quality Control Guide (v0.5.2)
 
 ## Overview
 논문 제출 전 **최소 3라운드**의 QC를 수행해야 합니다. 각 라운드는 서로 다른 측면에 집중하며, 모든 검증 결과는 `review/qc_log.md`에 기록합니다.
@@ -113,18 +113,19 @@ Table 1의 인구통계와 본문 기술 일치 여부
 - 존재하지 않는 저널명
 - 연도와 내용 불일치
 
-### 2.3 Coverage / Orphan Audit (`scripts/check_coverage.py`)
+### 2.3 Coverage Audit (`scripts/check_coverage.py`)
 
-존재·정확성과 별개로 **인용 분포**를 점검한다 (advisory):
+존재·정확성과 별개로 **인용 분포**를 점검한다 (advisory). 진짜 위험은 *잘못된 인용*(2.1·2.2 + semantic verifier)과 ***과잉 인용***이다 — **등록됐는데 안 쓴 ref(uncited)는 결함이 아니다.** 문헌고찰로 꼭 필요한 것만 인용하는 게 정상이므로 uncited는 중립 정보로만 보고한다.
 
 ```
 py scripts\check_coverage.py drafts\03_introduction.md drafts\06_discussion.md --evidence knowledge\evidence.md --draft-plan drafts\draft_plan.md
 ```
 
-- **Orphan** — evidence.md에 verified로 등록됐는데 본문에 한 번도 인용 안 된 ref (검증 작업 낭비 or 인용 누락 → 인용하거나 정리)
-- **Density** — 섹션별 인용 수 (Introduction·Discussion은 많아야, Results는 적어야 정상)
-- **Unrealized** — draft_plan의 Claim→Citation 매핑에 계획했으나 본문에 미인용된 claim
-- 기본 advisory(exit 0). 게이트로 강제하려면 `--fail-on-orphan-verified` / `--fail-on-unrealized` / `--fail-on-unknown`.
+- **Over-citation (주신호)** — 한 문장에 임계(기본 4) 초과 인용 → 인용 남발/padding 의심. `--max-citations-per-sentence N`으로 조정
+- **Unknown (실제 오류)** — 본문에 인용했는데 evidence.md에 미등록 → 환각/미등록 인용, 확인 또는 제거
+- **Density** — 섹션별 인용 수 (Introduction·Discussion 많고 Results 적은 게 정상)
+- **Uncited / Unrealized (중립)** — 등록·계획됐으나 미인용. *검토만* 하면 됨, 안 쓴 건 정당한 큐레이션
+- 기본 advisory(exit 0). 의미 있는 게이트화는 `--fail-on-over-citation` / `--fail-on-unknown`. (`--fail-on-uncited-verified`·`--fail-on-unrealized`는 full-use 정책 전용, 기본 off)
 
 ### 2.2 Citation Accuracy Check
 인용된 내용이 원문과 일치하는지 확인

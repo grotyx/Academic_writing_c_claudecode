@@ -1,20 +1,31 @@
 #!/usr/bin/env python3
-"""Citation coverage / orphan audit (Phase 6 QC).
+"""Citation coverage audit (Phase 6 QC).
+
+The real citation risks are **wrong** citations (a source that does not support
+the claim -- caught by check_citations.py + the semantic citation verifier) and
+**over-citation** (padding a single claim with unnecessary references). Leaving a
+registered reference *uncited* is NOT a defect: good literature review cites only
+what is necessary, so an "orphan" reference is normal curation, reported here as
+neutral information -- not as wasted work.
 
 Reports, against `knowledge/evidence.md`:
-  - **orphan references** — registered evidence entries never cited by any
-    `[EVID:id]` in the manuscript (verified-but-uncited refs are wasted work or
-    a missing citation; todo/abstract-only orphans are usually expected)
-  - **citation density** — `[EVID:id]` count per manuscript section (Introduction
-    and Discussion should carry most; Results usually few)
+  - **over-citation** — sentences citing more `[EVID:id]` than a threshold
+    (citation stuffing / padding). This is the primary quality signal.
   - **unknown citations** — `[EVID:id]` cited in the manuscript but absent from
-    evidence.md (also caught by check_citations.py; surfaced here for the matrix)
-  - **unrealized claims** (optional) — `[EVID:id]` planned in `draft_plan.md`
-    (the Claim->Citation mapping) but never cited in the drafted sections
+    evidence.md (a hallucinated/unregistered citation; also caught by
+    check_citations.py, surfaced here for completeness)
+  - **uncited references** (neutral) — registered evidence entries not cited
+    anywhere. Informational: review whether each *should* be cited, but uncited
+    is a legitimate curation outcome, not an error.
+  - **citation density** — `[EVID:id]` count per manuscript section.
+  - **unrealized claims** (optional, neutral) — `[EVID:id]` planned in
+    `draft_plan.md` but not cited in the drafted body (you may have decided
+    against it; a heads-up, not a defect).
 
-This is an **advisory QC report**, not a hard gate: it exits 0 by default. Use
-`--fail-on-orphan-verified`, `--fail-on-unrealized`, or `--fail-on-unknown` to
-make any dimension blocking (e.g. in a Phase 6 check).
+Advisory by default (exit 0). `--fail-on-over-citation` and `--fail-on-unknown`
+are the meaningful blocking flags; `--fail-on-uncited-verified` and
+`--fail-on-unrealized` exist only for workflows that explicitly require full use,
+and are off by default because uncited is not a defect.
 
 The evidence/citation parsing reuses check_citations.py so the two stay in lockstep.
 """
@@ -23,12 +34,19 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import re
 from pathlib import Path
 from typing import NamedTuple
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = Path(__file__).resolve().parent
+
+# A "sentence" = a run of text ending in . ! or ? (spanning line breaks). Used to
+# count how many citations pile onto one claim (over-citation detection).
+SENTENCE_RE = re.compile(r"[^.!?]*[.!?]", re.DOTALL)
+# Default: flag a sentence carrying MORE than this many [EVID:id] citations.
+DEFAULT_MAX_PER_SENTENCE = 4
 
 
 def _load_sibling(name: str):
@@ -44,15 +62,39 @@ def _load_sibling(name: str):
 _cc = _load_sibling("check_citations")
 parse_evidence_entries = _cc.parse_evidence_entries
 iter_evid_tokens = _cc.iter_evid_tokens
+EVID_RE = _cc.EVID_RE
+strip_code_fences = _cc.strip_code_fences
+
+
+class OverCitation(NamedTuple):
+    artifact: str
+    line: int
+    count: int
+    snippet: str
 
 
 class CoverageResult(NamedTuple):
     citation_counts: dict[str, int]  # evidence_id -> total citations across all artifacts
     per_artifact: dict[str, dict[str, int]]  # artifact -> {evidence_id: count}
     density: dict[str, int]  # artifact -> total [EVID:id] tokens
-    orphans: list[tuple[str, str]]  # (evidence_id, source_status) registered but never cited
+    over_citations: list[OverCitation]  # sentences exceeding the per-sentence citation cap
+    uncited: list[tuple[str, str]]  # (evidence_id, source_status) registered but never cited (neutral)
     unknown: list[str]  # cited in manuscript but not registered in evidence.md
-    unrealized: list[str]  # planned in draft_plan.md but uncited in the sections
+    unrealized: list[str]  # planned in draft_plan.md but uncited in the sections (neutral)
+
+
+def find_over_citations(artifact: Path, max_per_sentence: int) -> list[OverCitation]:
+    """Flag sentences carrying more than `max_per_sentence` [EVID:id] citations."""
+    text = strip_code_fences(artifact.read_text(encoding="utf-8"))
+    hits: list[OverCitation] = []
+    for match in SENTENCE_RE.finditer(text):
+        sentence = match.group(0)
+        count = len(EVID_RE.findall(sentence))
+        if count > max_per_sentence:
+            line = text.count("\n", 0, match.start()) + 1
+            snippet = " ".join(sentence.split())[:90]
+            hits.append(OverCitation(str(artifact), line, count, snippet))
+    return hits
 
 
 def audit(
@@ -60,12 +102,14 @@ def audit(
     *,
     evidence_path: Path,
     draft_plan: Path | None = None,
+    max_per_sentence: int = DEFAULT_MAX_PER_SENTENCE,
 ) -> CoverageResult:
     entries = parse_evidence_entries(evidence_path.read_text(encoding="utf-8"))
     counts: dict[str, int] = {eid: 0 for eid in entries}
     per_artifact: dict[str, dict[str, int]] = {}
     density: dict[str, int] = {}
     unknown: set[str] = set()
+    over_citations: list[OverCitation] = []
 
     for artifact in artifacts:
         tokens = iter_evid_tokens(artifact)  # [(evidence_id, line), ...]
@@ -78,9 +122,11 @@ def audit(
                 unknown.add(citation_id)
         per_artifact[str(artifact)] = local
         density[str(artifact)] = len(tokens)
+        over_citations.extend(find_over_citations(artifact, max_per_sentence))
 
     # source_status from check_citations is lowercase ("verified"/"todo"/...).
-    orphans = sorted(
+    # Uncited registered refs are reported neutrally -- curation, not a defect.
+    uncited = sorted(
         (eid, entries[eid].source_status or "unspecified")
         for eid, count in counts.items()
         if count == 0
@@ -93,7 +139,9 @@ def audit(
         # Planned + registered in evidence.md, but never cited in the drafted body.
         unrealized = sorted(p for p in planned if p in entries and p not in cited)
 
-    return CoverageResult(counts, per_artifact, density, orphans, sorted(unknown), unrealized)
+    return CoverageResult(
+        counts, per_artifact, density, over_citations, uncited, sorted(unknown), unrealized
+    )
 
 
 def format_result(result: CoverageResult) -> str:
@@ -101,30 +149,39 @@ def format_result(result: CoverageResult) -> str:
     cited = sum(1 for c in result.citation_counts.values() if c > 0)
     lines = [
         "COVERAGE REPORT",
-        f"references: {total_refs} registered, {cited} cited, {len(result.orphans)} orphan",
+        f"references: {total_refs} registered, {cited} cited "
+        f"({len(result.uncited)} uncited) | over-citation: {len(result.over_citations)} | "
+        f"unknown: {len(result.unknown)}",
     ]
 
-    # Density per section
+    # Over-citation -- the primary quality signal: too many refs on one claim.
+    if result.over_citations:
+        lines.append("over-citation (sentences with too many citations):")
+        for oc in sorted(result.over_citations, key=lambda o: (-o.count, o.artifact, o.line)):
+            lines.append(f"  {oc.artifact}:{oc.line}  {oc.count} citations -> \"{oc.snippet}\"")
+
+    # Unknown -- a real error (cited but unregistered / hallucinated).
+    if result.unknown:
+        lines.append("unknown (cited but not in evidence.md -- verify or remove):")
+        for cid in result.unknown:
+            lines.append(f"  EVID:{cid}")
+
+    # Density per section (informational).
     lines.append("density:")
     for artifact, total in sorted(result.density.items()):
         lines.append(f"  {artifact}: {total} citations")
 
-    # Orphans, verified ones first (those are the notable ones)
-    if result.orphans:
-        lines.append("orphans (registered, never cited):")
-        verified = [o for o in result.orphans if o[1] == "verified"]
-        others = [o for o in result.orphans if o[1] != "verified"]
+    # Uncited registered refs -- NEUTRAL. Review, but uncited is fine (curation).
+    if result.uncited:
+        lines.append("uncited references (review only -- not citing is a valid choice):")
+        verified = [o for o in result.uncited if o[1] == "verified"]
+        others = [o for o in result.uncited if o[1] != "verified"]
         for eid, status in verified + others:
-            flag = "  <- verified work unused" if status == "verified" else ""
-            lines.append(f"  EVID:{eid} ({status}){flag}")
+            lines.append(f"  EVID:{eid} ({status})")
 
-    if result.unknown:
-        lines.append("unknown (cited but not in evidence.md):")
-        for cid in result.unknown:
-            lines.append(f"  EVID:{cid}")
-
+    # Unrealized plan items -- NEUTRAL heads-up.
     if result.unrealized:
-        lines.append("unrealized (planned in draft_plan but uncited):")
+        lines.append("unrealized (planned in draft_plan, not cited -- heads-up, not a defect):")
         for cid in result.unrealized:
             lines.append(f"  EVID:{cid}")
 
@@ -149,34 +206,55 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Optional draft_plan.md to check planned Claim->Citation EVID realization.",
     )
     parser.add_argument(
-        "--fail-on-orphan-verified",
-        action="store_true",
-        help="Exit non-zero if any VERIFIED evidence entry is never cited.",
+        "--max-citations-per-sentence",
+        type=int,
+        default=DEFAULT_MAX_PER_SENTENCE,
+        help=f"Flag a sentence carrying more than N citations (default {DEFAULT_MAX_PER_SENTENCE}).",
     )
+    # Meaningful blocking flags: real quality defects.
     parser.add_argument(
-        "--fail-on-unrealized",
+        "--fail-on-over-citation",
         action="store_true",
-        help="Exit non-zero if any draft_plan-planned citation is uncited in the body.",
+        help="Exit non-zero if any sentence exceeds the per-sentence citation cap.",
     )
     parser.add_argument(
         "--fail-on-unknown",
         action="store_true",
         help="Exit non-zero if any cited [EVID:id] is not registered in evidence.md.",
     )
+    # Off-by-default: uncited/unrealized are NOT defects; only for strict full-use policies.
+    parser.add_argument(
+        "--fail-on-uncited-verified",
+        action="store_true",
+        help="Strict/optional: exit non-zero if any VERIFIED entry is uncited "
+        "(uncited is normally a valid curation choice, so this is off by default).",
+    )
+    parser.add_argument(
+        "--fail-on-unrealized",
+        action="store_true",
+        help="Strict/optional: exit non-zero if any draft_plan-planned citation is uncited.",
+    )
     return parser
 
 
 def main() -> int:
     args = build_arg_parser().parse_args()
-    result = audit(args.artifacts, evidence_path=args.evidence, draft_plan=args.draft_plan)
+    result = audit(
+        args.artifacts,
+        evidence_path=args.evidence,
+        draft_plan=args.draft_plan,
+        max_per_sentence=args.max_citations_per_sentence,
+    )
     print(format_result(result))
 
     failed = False
-    if args.fail_on_orphan_verified and any(status == "verified" for _eid, status in result.orphans):
-        failed = True
-    if args.fail_on_unrealized and result.unrealized:
+    if args.fail_on_over_citation and result.over_citations:
         failed = True
     if args.fail_on_unknown and result.unknown:
+        failed = True
+    if args.fail_on_uncited_verified and any(s == "verified" for _e, s in result.uncited):
+        failed = True
+    if args.fail_on_unrealized and result.unrealized:
         failed = True
     return 1 if failed else 0
 

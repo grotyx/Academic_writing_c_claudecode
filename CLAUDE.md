@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.6.0)
+# Academic Paper Writing Project (v1.7.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -86,7 +86,7 @@ project/
 │   ├── critical_models.txt       # OpenRouter 모델 목록 (외부화)
 │   ├── critical_prompts/         # 적대적 검토 프롬프트 (manuscript.txt, response.txt)
 │   ├── verify_all.py             # /verify — citation+number(+gate) 일괄 검증
-│   ├── check_coverage.py         # 인용 coverage/orphan audit (안 쓰인 ref·인용밀도·미실현 claim)
+│   ├── check_coverage.py         # 인용 coverage audit (과잉인용·미등록인용 주신호; 인용밀도; uncited는 중립)
 │   └── hooks/                    # 강제 훅 (enforce_gates, session_contract, lint_on_edit, style_intent)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
@@ -163,7 +163,7 @@ project/
 | `scripts/compile_response_docx.py` | `response_letter_REV*.md`를 Author_response 양식 DOCX로 변환 | Phase 8 response letter finalize |
 | `scripts/check_revision_claims.py` | `response_letter_REV*.md`의 `[CHANGE]` claims를 revised manuscript 파일과 대조 | Phase 8 ghost-revision gate |
 | `scripts/check_citations.py` | `[EVID:id]` citations를 `knowledge/evidence.md`와 대조 | Phase 3·4·6 citation gate |
-| `scripts/check_coverage.py` | 인용 coverage/orphan audit — 안 쓰인 evidence ref, 섹션별 인용밀도, draft_plan 미실현 claim | Phase 6 QC (`Check coverage`) |
+| `scripts/check_coverage.py` | 인용 coverage audit — **과잉인용**(한 문장 과다 인용)·**미등록인용** 주신호, 섹션별 인용밀도; uncited ref/미실현 claim은 중립 정보(낭비 아님) | Phase 6 QC (`Check coverage`) |
 | `scripts/check_numbers.py` | manuscript/table 수치를 `results/*.csv`와 대조 | Phase 4·6 data gate |
 | `scripts/check_gate.py` | `review/gates/*.GATE.md` 원장의 `status: PASS`와 필수 check를 검증 | 모든 phase gate 통과 직전 |
 | `scripts/check_style.py` | manuscript를 `drafts/style_spec.md` 목표와 대조 (측정형 스타일 게이트) | Phase 5·6 (`/style-pass`, `Check style`) |
@@ -672,7 +672,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `Check number consistency` | `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results` 실행 |
 | `Check style` | `py scripts\check_style.py check drafts\05_results.md --spec drafts\style_spec.md` 실행 (Style Spec 대비 측정형 게이트) |
 | `Verify references` | `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md` 실행 |
-| `Check coverage` | `py scripts\check_coverage.py drafts\03_introduction.md drafts\06_discussion.md --evidence knowledge\evidence.md --draft-plan drafts\draft_plan.md` 실행 (안 쓰인 ref·인용밀도·미실현 claim 리포트; 기본 advisory, `--fail-on-orphan-verified` 등으로 게이트화) |
+| `Check coverage` | `py scripts\check_coverage.py drafts\03_introduction.md drafts\06_discussion.md --evidence knowledge\evidence.md --draft-plan drafts\draft_plan.md` 실행 (과잉인용·미등록인용·인용밀도 리포트; uncited는 중립. 기본 advisory, `--fail-on-over-citation`·`--fail-on-unknown`로 게이트화, `--max-citations-per-sentence N`로 임계 조정) |
 | `Check phase gate` | `py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md --cross-check citation=drafts\05_results.md --cross-check numbers=drafts\05_results.md --results results` 실행 (freshness + ledger↔live cross-check 포함) |
 | `/verify [artifacts]` | `py scripts\verify_all.py drafts\05_results.md --results results --evidence knowledge\evidence.md --gate review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md --cross-check citation=drafts\05_results.md --cross-check numbers=drafts\05_results.md` — citation+number+gate freshness+cross-check 일괄 검증 |
 | `/suggest-citation [claim]` | claim에 맞는 `[EVID:id]` 출처 제안 (medical-kag GraphRAG 주, evidence.md 보조; `docs/citation_assist_protocol.md`) |

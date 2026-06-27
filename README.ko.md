@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.6.0** (2026-06-27)
+**v1.7.0** (2026-06-28)
 
 ---
 
@@ -301,7 +301,7 @@ Claude 통합 슬래시 명령어:
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | 본인 논문 스타일 앵커 템플릿 |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | 용어, placeholder, 과장 표현, 섹션별 위반 점검 lint 스크립트 |
 | [scripts/check_citations.py](scripts/check_citations.py) | `[EVID:id]` citation을 `knowledge/evidence.md`와 대조 |
-| [scripts/check_coverage.py](scripts/check_coverage.py) | 인용 coverage/orphan audit — 안 쓰인 evidence ref, 섹션별 인용밀도, draft_plan 미실현 claim |
+| [scripts/check_coverage.py](scripts/check_coverage.py) | 인용 coverage audit — **과잉인용**(한 주장에 과다 인용)·**미등록인용**이 품질 신호, 섹션별 인용밀도; uncited/미실현 claim은 중립(큐레이션, 낭비 아님) |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 원고/표의 숫자를 `results/*.csv`와 대조 |
 | [scripts/check_gate.py](scripts/check_gate.py) | `review/gates/*.GATE.md`의 status와 필수 check 검증 |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | response-letter `[CHANGE]` claim을 revised manuscript와 대조 |
@@ -352,6 +352,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.0 (2026-06-28)
+
+**Coverage audit를 과잉인용 중심으로 재정향 (orphan=낭비 프레이밍 폐기)**
+
+- **과잉인용 탐지** — `check_coverage.py`가 한 문장에 `--max-citations-per-sentence`(기본 4) 초과 `[EVID:id]` 인용을 플래그(인용 남발/padding). 이것과 **미등록인용**이 진짜 품질 신호 → `--fail-on-over-citation` / `--fail-on-unknown`이 의미 있는 차단 플래그.
+- **orphan/uncited를 중립으로 재정의** — 등록됐지만 미인용된 ref는 정상 큐레이션(꼭 필요한 것만 인용)이지 **낭비가 아니다.** 기존 "verified work unused" 표현 제거; uncited ref·미실현 draft_plan 항목은 중립 정보로 보고. `--fail-on-uncited-verified` / `--fail-on-unrealized`는 strict full-use 정책 전용, 기본 off. coverage 테스트 8개(전체 149).
 
 ### v1.6.0 (2026-06-27)
 
