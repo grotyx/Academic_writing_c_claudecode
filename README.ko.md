@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.5.6** (2026-06-28)
+**v1.5.7** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -356,6 +356,14 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.5.7 (2026-06-28)
+
+**전체 코드 감사에서 나온 버그 수정**
+
+- **Gate cross-check가 live FAIL이면 무조건 게이트 FAIL** (`check_gate.py`) — 이전엔 cross-check 차원이 live 재실행에서 FAIL인데 원장도 FAIL을 기록하면 "일치"로 보고 실패를 추가하지 않아, 그 차원을 `--require-check`로 걸지 않은 경우 **깨진 산출물이 통과**할 수 있었음. 이제 live 결정적 실패는 원장과 무관하게 항상 게이트 FAIL.
+- **plan-first 훅이 상대 cwd에서 더 이상 fail-open 안 함** (`hooks/enforce_gates.py`, `hooks/lint_on_edit.py`) — 상대/누락 `cwd`가 경로를 `drafts/05_results.md`(앞 슬래시 없음)로 정규화 → `"/drafts/"`/`"/data/.../py/"` 체크 미스 → Rule 7/8 게이트 스킵. 이제 체크 전에 앞 슬래시를 강제. (latent: production은 항상 absolute cwd 전송.)
+- 회귀 테스트 +2 (총 163).
 
 ### v1.5.6 (2026-06-28)
 

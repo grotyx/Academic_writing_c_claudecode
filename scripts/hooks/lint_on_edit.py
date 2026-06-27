@@ -56,7 +56,9 @@ def _style_metric_lines(target: Path) -> list[str]:
 
 
 def _is_manuscript_md(spath: str) -> bool:
-    s = spath.replace("\\", "/")
+    # Force a single leading slash so "/drafts/" matches even for a relative path
+    # like "drafts/05_results.md" (cwd relative/missing), consistent with enforce_gates.
+    s = "/" + spath.replace("\\", "/").lstrip("/")
     return (
         "/drafts/" in s
         and s.endswith(".md")

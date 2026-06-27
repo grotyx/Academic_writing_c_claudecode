@@ -81,7 +81,11 @@ def decide(event: dict) -> str | None:
     target = Path(_norm(raw_path))
     if not target.is_absolute():
         target = Path(cwd) / target
-    spath = _norm(str(target))
+    # Force a single leading slash so the slash-anchored dir checks below
+    # ("/drafts/", "/data/.../py/") fire even when cwd is relative/missing and
+    # the path normalizes to e.g. "drafts/03_results.md" (no leading slash).
+    # Without this the plan-first gate would FAIL OPEN on a relative cwd.
+    spath = "/" + _norm(str(target)).lstrip("/")
 
     # Rule 8 — drafting a section requires a completed draft plan.
     # Revisions (Phase 8) revise an existing manuscript and are exempt.

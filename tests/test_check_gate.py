@@ -552,6 +552,29 @@ class CrossCheckTests(unittest.TestCase):
             reasons = " ".join(f.reason for f in result.failures)
             self.assertIn("stale or fabricated PASS", reasons)
 
+    def test_cross_check_live_fail_fails_gate_even_when_ledger_records_fail(self) -> None:
+        # The artifact currently fails the live citation check AND the ledger
+        # honestly records citation: FAIL. The gate must still FAIL -- a broken
+        # artifact cannot pass just because the ledger agrees it is broken
+        # (regression: this previously slipped through as "cross_verified").
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = self._project(Path(tmp), section="Claim with no source [EVID:ghost_2099].\n")
+            gate_path = base / "phase_04_draft.GATE.md"
+            gate_path.write_text(self._gate("FAIL"), encoding="utf-8")  # ledger records FAIL
+
+            result = module.check_gate(
+                gate_path,
+                cross_checks=[("citation", Path("drafts/05_results.md"))],
+                base_dir=base,
+            )
+
+            self.assertFalse(result.passed)
+            self.assertTrue(
+                any("cannot pass while the artifact fails" in f.reason for f in result.failures)
+            )
+            self.assertNotIn("citation", result.cross_verified)
+
     def test_cross_check_flags_stale_ledger_when_live_passes(self) -> None:
         # Ledger says citation FAIL but the section is actually clean -> the gate
         # fails (ledger must reflect reality) and points at the disagreement.

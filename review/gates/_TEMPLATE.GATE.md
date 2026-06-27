@@ -87,8 +87,10 @@ Use these exact keys so `check_gate.py --require-check <name>` can verify them:
 dimensions (`citation`, `numbers`, `revision_claims`) the gate can go further and
 **re-run the canonical checker live**, then assert the recorded status agrees. This
 catches a stale or fabricated `checks.citation: PASS` — one recorded without actually
-running the checker, or left behind after the artifact changed under it. Disagreement
-in either direction (ledger PASS / live FAIL, or ledger FAIL / live PASS) fails the gate.
+running the checker, or left behind after the artifact changed under it. **A live FAIL
+fails the gate regardless of the ledger** — a broken artifact cannot pass even if the
+ledger honestly records FAIL — and a ledger that disagrees with a live PASS (stale
+ledger) fails too.
 
 `--cross-check LABEL=PATH` names the dimension and the artifact to re-check.
 `--evidence` / `--results` point the live citation/number checks at their sources

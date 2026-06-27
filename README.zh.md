@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.5.6** (2026-06-28)
+**v1.5.7** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -333,6 +333,14 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.5.7 (2026-06-28)
+
+**全量代码审计发现的缺陷修复**
+
+- **Gate cross-check 在任何 live FAIL 时都使门 FAIL**（`check_gate.py`）— 此前若某 cross-check 维度在 live 重跑中 FAIL 且台账也记录 FAIL，门会视为"一致"而不追加失败，于是在该维度未同时作为 `--require-check` 时，**已损坏的产出物仍可能通过**。现在 live 确定性失败始终使门 FAIL，与台账无关。
+- **plan-first 钩子不再在相对 cwd 下 fail-open**（`hooks/enforce_gates.py`、`hooks/lint_on_edit.py`）— 相对/缺失 `cwd` 会把路径归一化为 `drafts/05_results.md`（无前导斜杠），导致 `"/drafts/"`/`"/data/.../py/"` 检查不匹配而跳过 Rule 7/8 门。现在在检查前强制加前导斜杠。（latent：生产环境始终发送绝对 cwd。）
+- 回归测试 +2（共 163）。
 
 ### v1.5.6 (2026-06-28)
 

@@ -371,16 +371,31 @@ def check_gate(
             continue
 
         ledger_pass = recorded == "PASS"
-        if ledger_pass and not live_passed:
+        if not live_passed:
+            # The artifact fails this deterministic check NOW -> the gate must not
+            # pass, regardless of what the ledger recorded. A ledger that also
+            # records FAIL is honest, but the gate still cannot pass on a broken
+            # artifact (otherwise a live failure slips through whenever the check
+            # is not also a --require-check).
+            if ledger_pass:
+                reason = (
+                    f"ledger records {key}: PASS but live re-check FAILS "
+                    "(stale or fabricated PASS)"
+                )
+            else:
+                reason = (
+                    f"live {key} re-check FAILS (ledger records {recorded or 'FAIL'}); "
+                    "the gate cannot pass while the artifact fails this check"
+                )
             failures.append(
                 GateIssue(
                     gate_path,
                     f"cross_check.{key}",
-                    f"ledger records {key}: PASS but live re-check FAILS (stale or fabricated PASS)",
-                    f"Re-run the {key} verifier; do not record PASS until the live check passes.",
+                    reason,
+                    f"Fix the {key} failure and re-verify before recording {key}: PASS.",
                 )
             )
-        elif live_passed and not ledger_pass:
+        elif not ledger_pass:
             failures.append(
                 GateIssue(
                     gate_path,

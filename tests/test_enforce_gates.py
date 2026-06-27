@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -29,6 +30,28 @@ class DecideTests(unittest.TestCase):
             reason = m.decide(event(tmp, file_path="drafts/04_methods.md"))
             self.assertIsNotNone(reason)
             self.assertIn("Rule 8", reason)
+
+    def test_blocks_section_with_relative_cwd(self) -> None:
+        # Regression: a relative/missing cwd normalizes the target to
+        # "drafts/04_methods.md" (no leading slash). The plan-first gate must
+        # still fire -- it previously FAILED OPEN because "/drafts/" did not match.
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "drafts").mkdir()  # no draft_plan.md
+            prev = os.getcwd()
+            try:
+                os.chdir(tmp)
+                reason = m.decide(
+                    {
+                        "tool_name": "Write",
+                        "cwd": ".",  # relative
+                        "tool_input": {"file_path": "drafts/04_methods.md"},
+                    }
+                )
+                self.assertIsNotNone(reason)
+                self.assertIn("Rule 8", reason)
+            finally:
+                os.chdir(prev)
 
     def test_allows_section_with_draft_plan(self) -> None:
         m = load_module()

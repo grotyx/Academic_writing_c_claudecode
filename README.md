@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.6** (2026-06-28)
+**v1.5.7** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -362,6 +362,14 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.5.7 (2026-06-28)
+
+**Bug fixes from a full code audit**
+
+- **Gate cross-check now fails on any live FAIL** (`check_gate.py`) — previously, if a cross-checked dimension failed the live re-run *and* the ledger also recorded FAIL, the gate treated that as "consistent" and did not add a failure, so a broken artifact could still pass when the dimension was not also a `--require-check`. A live deterministic failure now always fails the gate, regardless of the ledger.
+- **Plan-first hook no longer fails open on a relative cwd** (`hooks/enforce_gates.py`, `hooks/lint_on_edit.py`) — a relative/missing `cwd` normalized the path to e.g. `drafts/05_results.md` (no leading slash), so the `"/drafts/"` / `"/data/.../py/"` checks did not match and the Rule 7/8 gate was skipped. Paths are now normalized to a leading slash before the check. (Latent: production always sends an absolute cwd.)
+- +2 regression tests (163 total).
 
 ### v1.5.6 (2026-06-28)
 
