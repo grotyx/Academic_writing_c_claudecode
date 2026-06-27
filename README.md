@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.9** (2026-06-28)
+**v1.5.10** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -362,6 +362,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.5.10 (2026-06-28)
+
+**Test-coverage hardening, round 2 (MEDIUM gaps)**
+
+- Added tests for the remaining coverage gaps from the full review: `search_pubmed.py` pure formatters (`format_citation` author-count branches, `guess_study_design` ladder); `check_abstract.py` (abstract more precise than body → fail, integer match, multi-file body aggregation, comparator preserved in the issue); `check_numbers.py` (p-value `>` comparator pass/fail, `is_structural_number` for heading/`Table N`/`Figure N`/bare-year); `check_style.py` (`mean_sentence_length`/`paragraph_count` tolerance, `split_sentences` abbreviation/decimal protection); `check_citations.py` (`require_citations`, `fail_abstract_only` toggles); `format_references.py` (`smith_2020a` disambiguation, `--convert` write path); `check_coverage.py` (`--fail-on-unrealized`). 214 tests total (was 170).
 
 ### v1.5.9 (2026-06-28)
 

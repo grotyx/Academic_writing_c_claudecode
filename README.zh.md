@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.5.9** (2026-06-28)
+**v1.5.10** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -333,6 +333,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.5.10 (2026-06-28)
+
+**测试覆盖强化 第二轮（MEDIUM 缺口）**
+
+- 为全量审查的剩余覆盖缺口补充测试：`search_pubmed.py` 纯格式化函数（`format_citation` 作者数分支、`guess_study_design` 阶梯）；`check_abstract.py`（abstract 比正文更精确 → fail、整数匹配、多文件 body 聚合、issue 保留 comparator）；`check_numbers.py`（p 值 `>` comparator 的 pass/fail、对 heading/`Table N`/`Figure N`/年份的 `is_structural_number`）；`check_style.py`（`mean_sentence_length`/`paragraph_count` 容差、`split_sentences` 缩写/小数保护）；`check_citations.py`（`require_citations`、`fail_abstract_only` 开关）；`format_references.py`（`smith_2020a` 消歧、`--convert` 写入路径）；`check_coverage.py`（`--fail-on-unrealized`）。共 214 个测试（此前 170）。
 
 ### v1.5.9 (2026-06-28)
 

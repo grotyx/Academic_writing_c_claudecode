@@ -218,6 +218,37 @@ class CoverageCliExitTests(unittest.TestCase):
                 1,
             )
 
+    def test_fail_on_unrealized(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            # plan promises smith + lee; body cites only smith -> lee is unrealized
+            ev, art = self._project(tmp, "Background [EVID:smith_2020].\n")
+            plan = tmp / "draft_plan.md"
+            plan.write_text(
+                "Claim A -> [EVID:smith_2020]\nClaim B -> [EVID:lee_2021]\n",
+                encoding="utf-8",
+            )
+            base = [str(art), "--evidence", str(ev), "--draft-plan", str(plan)]
+            # Without the flag the unrealized item is a neutral heads-up (exit 0).
+            self.assertEqual(self._run(base).returncode, 0)
+            # With the flag it blocks (exit 1).
+            self.assertEqual(self._run(base + ["--fail-on-unrealized"]).returncode, 1)
+
+    def test_fail_on_unrealized_passes_when_all_planned_cited(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            # body cites everything the plan promised -> nothing unrealized -> exit 0
+            ev, art = self._project(
+                tmp, "Background [EVID:smith_2020] and follow-up [EVID:lee_2021].\n"
+            )
+            plan = tmp / "draft_plan.md"
+            plan.write_text(
+                "Claim A -> [EVID:smith_2020]\nClaim B -> [EVID:lee_2021]\n",
+                encoding="utf-8",
+            )
+            base = [str(art), "--evidence", str(ev), "--draft-plan", str(plan)]
+            self.assertEqual(self._run(base + ["--fail-on-unrealized"]).returncode, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

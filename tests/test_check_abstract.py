@@ -87,6 +87,73 @@ class CheckAbstractTests(unittest.TestCase):
             self.assertIn("Abstract-Body-Consistency", out)
             self.assertIn("2.5", out)
 
+    def test_abstract_more_precise_than_body_fails(self) -> None:
+        # body_supports rounds the BODY value to the abstract's decimal count.
+        # Abstract "54.32" (2 dp) vs body "54.3" -> round(54.3, 2) == 54.3 != 54.32
+        # so the abstract number is not supported and the check FAILS.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            a, body = self._files(
+                Path(tmp),
+                abstract="The mean was 54.32.\n",
+                body="Mean value 54.3 was recorded.\n",
+            )
+            result = module.check_abstract(a, body)
+            self.assertFalse(result.passed)
+            self.assertEqual([i.number for i in result.issues], ["54.32"])
+
+    def test_integer_abstract_number_supported_by_identical_body_integer(self) -> None:
+        # An integer (0 decimals) abstract value is supported by the same body integer.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            a, body = self._files(
+                Path(tmp),
+                abstract="We enrolled 120 patients.\n",
+                body="A total of 120 patients were analyzed.\n",
+            )
+            result = module.check_abstract(a, body)
+            self.assertTrue(result.passed, [i.number for i in result.issues])
+            self.assertEqual(result.checked, 1)
+
+    def test_body_supports_aggregates_across_multiple_files(self) -> None:
+        # Two abstract numbers each live in a different body file; the body token
+        # pool is the union of all body_paths, so both are supported.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmpdir = Path(tmp)
+            a = tmpdir / "02_abstract.md"
+            a.write_text("Enrolled 120 patients; improvement reached 88 percent.\n", encoding="utf-8")
+            methods = tmpdir / "04_methods.md"
+            methods.write_text("A total of 120 patients were analyzed.\n", encoding="utf-8")
+            results = tmpdir / "05_results.md"
+            results.write_text("Functional improvement reached 88 percent overall.\n", encoding="utf-8")
+
+            result = module.check_abstract(a, [methods, results])
+            self.assertTrue(result.passed, [i.number for i in result.issues])
+            self.assertEqual(result.checked, 2)
+
+            # Removing the file that carries 88 leaves it unsupported -> FAIL.
+            partial = module.check_abstract(a, [methods])
+            self.assertFalse(partial.passed)
+            self.assertEqual([i.number for i in partial.issues], ["88"])
+
+    def test_flagged_pvalue_inequality_keeps_comparator_in_issue_number(self) -> None:
+        # When a p-value token is checked (--include-p-values) and absent from the
+        # body, the issue.number prepends the comparator ("<0.001"), since the
+        # NUMBER_RE only captures a comparator on a p-prefixed token.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            a, body = self._files(
+                Path(tmp),
+                abstract="The difference was significant (p<0.001), n=40.\n",
+                body="A total of 40 patients were analyzed.\n",  # no p-value echoed
+            )
+            result = module.check_abstract(a, body, include_p_values=True)
+            self.assertFalse(result.passed)
+            self.assertEqual([i.number for i in result.issues], ["<0.001"])
+            out = module.format_result(result, a)
+            self.assertIn("number: <0.001", out)
+
 
 if __name__ == "__main__":
     unittest.main()

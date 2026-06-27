@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -135,6 +137,58 @@ class FormatReferencesTests(unittest.TestCase):
         ay = load_module().author_year("van_der_berg_2019")
         self.assertEqual(ay, ("Van Der Berg", "2019"))
         self.assertIsNone(module.author_year("noyear_id"))
+
+    def test_author_year_disambiguation_letter(self) -> None:
+        # A trailing disambiguation letter (2020a) is preserved in both the
+        # parsed year and the in-text label.
+        module = load_module()
+        self.assertEqual(module.author_year("smith_2020a"), ("Smith", "2020a"))
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            ev = tmp / "evidence.md"
+            ev.write_text(
+                "## Reference List\n\n### [1] Smith et al., 2020a\n\n"
+                "- **Evidence ID:** smith_2020a\n"
+                "- **Citation:** Smith J. First 2020 paper. Spine. 2020;45(1):1-9.\n"
+                "- **Source Status:** verified\n",
+                encoding="utf-8",
+            )
+            art = tmp / "03_introduction.md"
+            art.write_text("Cited [EVID:smith_2020a].\n", encoding="utf-8")
+            result = module.build([art], evidence_path=ev, style="author-year")
+            self.assertEqual(result.labels["smith_2020a"], "(Smith, 2020a)")
+
+
+class FormatReferencesConvertCliTests(unittest.TestCase):
+    """End-to-end --convert: writes *_formatted.md sibling, leaves source intact."""
+
+    def _run(self, args: list[str]) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), *args],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def test_convert_writes_formatted_sibling_and_preserves_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            ev = tmp / "evidence.md"
+            ev.write_text(EVIDENCE, encoding="utf-8")
+            art = tmp / "03_introduction.md"
+            art.write_text("Cite [EVID:smith_2020].\n", encoding="utf-8")
+            original = art.read_text(encoding="utf-8")
+
+            result = self._run(
+                [str(art), "--evidence", str(ev), "--convert"]
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+            sibling = art.with_name(f"{art.stem}_formatted{art.suffix}")
+            self.assertTrue(sibling.exists(), result.stdout)
+            self.assertEqual(sibling.read_text(encoding="utf-8"), "Cite [1].\n")
+            # The original draft must be left untouched (never converted in place).
+            self.assertEqual(art.read_text(encoding="utf-8"), original)
 
 
 if __name__ == "__main__":

@@ -65,5 +65,100 @@ class SearchPubmedFormattingTests(unittest.TestCase):
         self.assertIn("- **Source Status:** todo", entry)
 
 
+class FormatCitationAuthorBranchesTests(unittest.TestCase):
+    """Cover every author-count branch of format_citation (pure, no network)."""
+
+    def _citation(self, authors):
+        module = load_module()
+        article = {
+            "authors": authors,
+            "title": "An example study.",
+            "journal_abbr": "Spine",
+            "journal": "Spine",
+            "year": "2020",
+        }
+        return module.format_citation(article)
+
+    def test_more_than_six_authors_truncates_with_et_al(self) -> None:
+        # >6 authors -> first 6 joined, then ", et al."
+        authors = [f"Author{i} X" for i in range(8)]
+        citation = self._citation(authors)
+        author_str = citation.split(". An example study")[0]
+        self.assertEqual(
+            author_str,
+            "Author0 X, Author1 X, Author2 X, Author3 X, Author4 X, Author5 X, et al.",
+        )
+
+    def test_exactly_six_authors_listed_without_et_al(self) -> None:
+        # 6 authors is NOT >6, so the 2-6 branch joins all of them, last with ", ".
+        authors = [f"Author{i} X" for i in range(6)]
+        citation = self._citation(authors)
+        author_str = citation.split(". An example study")[0]
+        self.assertNotIn("et al.", author_str)
+        self.assertEqual(
+            author_str,
+            "Author0 X, Author1 X, Author2 X, Author3 X, Author4 X, Author5 X",
+        )
+
+    def test_two_to_six_authors_join_last_with_comma(self) -> None:
+        citation = self._citation(["Smith J", "Doe A", "Roe B"])
+        author_str = citation.split(". An example study")[0]
+        self.assertEqual(author_str, "Smith J, Doe A, Roe B")
+
+    def test_single_author_used_verbatim(self) -> None:
+        citation = self._citation(["Smith J"])
+        author_str = citation.split(". An example study")[0]
+        self.assertEqual(author_str, "Smith J")
+
+    def test_empty_authors_falls_back_to_unknown(self) -> None:
+        citation = self._citation([])
+        author_str = citation.split(". An example study")[0]
+        self.assertEqual(author_str, "Unknown")
+
+
+class GuessStudyDesignLadderTests(unittest.TestCase):
+    """Cover every rung of the guess_study_design ladder (pure, no network)."""
+
+    def setUp(self) -> None:
+        self.module = load_module()
+
+    def test_randomized_controlled_trial_is_rct(self) -> None:
+        self.assertEqual(self.module.guess_study_design(["Randomized Controlled Trial"]), "RCT")
+
+    def test_phase_clinical_trial_is_rct(self) -> None:
+        # "clinical trial, phase" also resolves to RCT on the first rung.
+        self.assertEqual(self.module.guess_study_design(["Clinical Trial, Phase III"]), "RCT")
+
+    def test_meta_analysis(self) -> None:
+        self.assertEqual(self.module.guess_study_design(["Meta-Analysis"]), "Meta-analysis")
+
+    def test_systematic_review(self) -> None:
+        self.assertEqual(self.module.guess_study_design(["Systematic Review"]), "Systematic Review")
+
+    def test_plain_review(self) -> None:
+        self.assertEqual(self.module.guess_study_design(["Review"]), "Review")
+
+    def test_case_reports(self) -> None:
+        self.assertEqual(self.module.guess_study_design(["Case Reports"]), "Case Report")
+
+    def test_comparative_study(self) -> None:
+        self.assertEqual(self.module.guess_study_design(["Comparative Study"]), "Comparative Study")
+
+    def test_cohort_study(self) -> None:
+        self.assertEqual(self.module.guess_study_design(["Cohort Studies"]), "Cohort Study")
+
+    def test_unrecognized_pub_types_fall_back_to_todo(self) -> None:
+        self.assertEqual(
+            self.module.guess_study_design(["Journal Article"]),
+            "[TODO - study type, n=?, follow-up period]",
+        )
+
+    def test_empty_pub_types_fall_back_to_todo(self) -> None:
+        self.assertEqual(
+            self.module.guess_study_design([]),
+            "[TODO - study type, n=?, follow-up period]",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

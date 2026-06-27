@@ -412,6 +412,115 @@ class CheckNumbersTests(unittest.TestCase):
             self.assertFalse(result.passed)
             self.assertIn(".001", [failure.number for failure in result.failures])
 
+    def test_check_numbers_allows_p_greater_than_threshold_when_csv_value_is_above(self) -> None:
+        # p>0.05 is satisfied by a results p-value that is genuinely above 0.05.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table2_outcomes.csv").write_text(
+                "endpoint,p_value\nprimary,0.42\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The between-group difference was not significant (*p*>0.05).",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertTrue(result.passed)
+            self.assertEqual(result.failures, [])
+
+    def test_check_numbers_rejects_p_greater_than_when_csv_value_is_below_threshold(self) -> None:
+        # p>0.05 must FAIL when the only results p-value (0.001) is below the
+        # threshold and therefore does not satisfy the inequality.
+        module = load_module()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "results"
+            results_dir.mkdir()
+            artifact = root / "05_results.md"
+            (results_dir / "table2_outcomes.csv").write_text(
+                "endpoint,p_value\nprimary,0.001\n",
+                encoding="utf-8",
+            )
+            artifact.write_text(
+                "The between-group difference was not significant (*p*>0.05).",
+                encoding="utf-8",
+            )
+
+            result = module.check_numbers([artifact], results_dir=results_dir)
+
+            self.assertFalse(result.passed)
+            self.assertIn("0.05", [failure.number for failure in result.failures])
+
+    def test_matches_number_p_greater_comparator_directly(self) -> None:
+        # Unit-level coverage of the ">" branch in matches_number.
+        module = load_module()
+        token = module.NumberToken(
+            value=0.05, number="0.05", line=1, comparator=">",
+            is_p_value=True, decimals=2, context="p>0.05",
+        )
+        above = module.ResultNumber(value=0.42, raw="0.42", source=Path("x.csv"), row=2, column="p_value")
+        below = module.ResultNumber(value=0.001, raw="0.001", source=Path("x.csv"), row=2, column="p_value")
+        self.assertTrue(module.matches_number(token, above))
+        self.assertFalse(module.matches_number(token, below))
+
+
+class IsStructuralNumberTests(unittest.TestCase):
+    """Section headings, Table/Figure references, and bare years are not results."""
+
+    def _tokens(self, module, text: str):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact = Path(tmp) / "05_results.md"
+            artifact.write_text(text, encoding="utf-8")
+            return module.iter_artifact_numbers(artifact)
+
+    def test_section_heading_number_is_not_a_result(self) -> None:
+        module = load_module()
+        tokens = self._tokens(module, "## 3.2 Outcomes\n")
+        self.assertEqual(tokens, [])
+
+    def test_table_reference_in_prose_is_not_a_result(self) -> None:
+        module = load_module()
+        tokens = self._tokens(module, "Baseline characteristics are shown in Table 2.\n")
+        self.assertEqual([t.number for t in tokens], [])
+
+    def test_table_caption_heading_is_not_a_result(self) -> None:
+        module = load_module()
+        tokens = self._tokens(module, "Table 2. Primary and secondary outcomes\n")
+        self.assertEqual(tokens, [])
+
+    def test_figure_reference_in_prose_is_not_a_result(self) -> None:
+        module = load_module()
+        tokens = self._tokens(module, "The Kaplan-Meier curves are plotted in Figure 1.\n")
+        self.assertEqual([t.number for t in tokens], [])
+
+    def test_bare_year_in_prose_is_not_a_result(self) -> None:
+        module = load_module()
+        tokens = self._tokens(module, "The cohort was enrolled in 2019 at a single center.\n")
+        self.assertEqual([t.number for t in tokens], [])
+
+    def test_is_structural_number_predicate_for_year(self) -> None:
+        # Direct predicate coverage: a 4-digit year value in [1900, 2099] is structural.
+        module = load_module()
+        line = "Conducted in 2019."
+        start = line.index("2019")
+        self.assertTrue(
+            module.is_structural_number(line, start, "2019", False, 2019.0)
+        )
+        # A genuine result value of the same magnitude band is NOT auto-structural.
+        line2 = "The total cost was 2500 dollars."
+        start2 = line2.index("2500")
+        self.assertFalse(
+            module.is_structural_number(line2, start2, "2500", False, 2500.0)
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -158,5 +158,68 @@ class CheckCitationsTests(unittest.TestCase):
             self.assertEqual(result.checked_tokens, 1)
 
 
+class CheckCitationsEnforcementToggleTests(unittest.TestCase):
+    """The require_citations / fail_abstract_only toggles change pass/fail."""
+
+    def _project(self, tmp: Path, body: str):
+        evidence_path = tmp / "evidence.md"
+        artifact_path = tmp / "03_introduction.md"
+        evidence_path.write_text(SAMPLE_EVIDENCE, encoding="utf-8")
+        artifact_path.write_text(body, encoding="utf-8")
+        return evidence_path, artifact_path
+
+    def test_require_citations_fails_artifact_with_zero_evid_tokens(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            evidence_path, artifact_path = self._project(
+                Path(tmp), "This paragraph makes a claim but cites nothing.\n"
+            )
+            # Without the toggle a citation-free artifact is fine.
+            relaxed = module.check_citations([artifact_path], evidence_path=evidence_path)
+            self.assertTrue(relaxed.passed)
+            self.assertEqual(relaxed.checked_tokens, 0)
+
+            # With require_citations it must fail.
+            strict = module.check_citations(
+                [artifact_path], evidence_path=evidence_path, require_citations=True
+            )
+            self.assertFalse(strict.passed)
+            self.assertEqual(strict.failures[0].citation_id, "<none>")
+            self.assertIn("no [EVID:id] citations", strict.failures[0].reason)
+
+    def test_todo_source_status_fails(self) -> None:
+        # (Already asserted in CheckCitationsTests; re-stated here to keep the
+        # enforcement-toggle contract self-contained.)
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            evidence_path, artifact_path = self._project(
+                Path(tmp), "Cites an unverified source [EVID:lee_2021].\n"
+            )
+            result = module.check_citations([artifact_path], evidence_path=evidence_path)
+            self.assertFalse(result.passed)
+            self.assertEqual(result.failures[0].citation_id, "lee_2021")
+            self.assertIn("todo", result.failures[0].reason)
+
+    def test_fail_abstract_only_promotes_warning_to_failure(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            evidence_path, artifact_path = self._project(
+                Path(tmp), "Supported only by an abstract [EVID:park_2022].\n"
+            )
+            # Default: abstract-only is a warning, the gate passes.
+            warned = module.check_citations([artifact_path], evidence_path=evidence_path)
+            self.assertTrue(warned.passed)
+            self.assertEqual(warned.warnings[0].citation_id, "park_2022")
+
+            # With fail_abstract_only it becomes a failure and the gate fails.
+            strict = module.check_citations(
+                [artifact_path], evidence_path=evidence_path, fail_abstract_only=True
+            )
+            self.assertFalse(strict.passed)
+            self.assertEqual(strict.warnings, [])
+            self.assertEqual(strict.failures[0].citation_id, "park_2022")
+            self.assertIn("abstract-only", strict.failures[0].reason)
+
+
 if __name__ == "__main__":
     unittest.main()

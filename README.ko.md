@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.5.9** (2026-06-28)
+**v1.5.10** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -356,6 +356,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.5.10 (2026-06-28)
+
+**테스트 커버리지 보강 2라운드 (MEDIUM gap)**
+
+- 전체 리뷰의 남은 커버리지 gap에 테스트 추가: `search_pubmed.py` 순수 포매터(`format_citation` 저자 수 분기, `guess_study_design` ladder); `check_abstract.py`(abstract가 본문보다 정밀 → fail, 정수 매칭, 다중 파일 body 집계, issue에 comparator 보존); `check_numbers.py`(p값 `>` comparator pass/fail, heading/`Table N`/`Figure N`/연도에 대한 `is_structural_number`); `check_style.py`(`mean_sentence_length`/`paragraph_count` tolerance, `split_sentences` 약어/소수 보호); `check_citations.py`(`require_citations`, `fail_abstract_only` 토글); `format_references.py`(`smith_2020a` disambiguation, `--convert` write 경로); `check_coverage.py`(`--fail-on-unrealized`). 총 214 테스트(이전 170).
 
 ### v1.5.9 (2026-06-28)
 
