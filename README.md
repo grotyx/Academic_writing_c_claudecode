@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.1** (2026-06-26)
+**v1.6.0** (2026-06-27)
 
 ---
 
@@ -307,6 +307,7 @@ Slash commands for Claude integration:
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script for terminology, placeholders, overclaiming, and section issues |
 | [scripts/check_citations.py](scripts/check_citations.py) | Verify `[EVID:id]` citations against `knowledge/evidence.md` |
+| [scripts/check_coverage.py](scripts/check_coverage.py) | Citation coverage/orphan audit — uncited evidence refs, per-section citation density, unrealized draft_plan claims |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | Verify manuscript/table numbers against `results/*.csv` |
 | [scripts/check_gate.py](scripts/check_gate.py) | Verify `review/gates/*.GATE.md` status and required checks |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | Verify response-letter `[CHANGE]` claims against revised manuscript files |
@@ -357,6 +358,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.6.0 (2026-06-27)
+
+**Citation coverage / orphan audit**
+
+- **`scripts/check_coverage.py`** — a Phase 6 QC audit against `knowledge/evidence.md`: reports **orphan references** (registered but never cited; verified-but-uncited flagged as wasted work), **citation density** per manuscript section, **unknown citations** (cited but unregistered), and — with `--draft-plan` — **unrealized claims** (planned in the Claim→Citation map but never cited in the body). Advisory by default; `--fail-on-orphan-verified` / `--fail-on-unrealized` / `--fail-on-unknown` make any dimension blocking. Reuses `check_citations.py` parsing so the two stay in lockstep. 7 tests (148 total).
 
 ### v1.5.1 (2026-06-26)
 

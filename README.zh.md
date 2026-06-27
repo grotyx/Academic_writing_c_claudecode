@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.5.1** (2026-06-26)
+**v1.6.0** (2026-06-27)
 
 ---
 
@@ -276,6 +276,7 @@ Claude 集成斜杠命令：
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script |
 | [scripts/check_citations.py](scripts/check_citations.py) | 将 `[EVID:id]` citations 与 `knowledge/evidence.md` 对照 |
+| [scripts/check_coverage.py](scripts/check_coverage.py) | 引用 coverage/orphan 审计 — 未被引用的 evidence ref、各章节引用密度、draft_plan 未实现 claim |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 将稿件/表格中的数字与 `results/*.csv` 对照 |
 | [scripts/check_gate.py](scripts/check_gate.py) | 验证 `review/gates/*.GATE.md` 的 status 和必要 check |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | 将 response-letter `[CHANGE]` claims 与 revised manuscript files 对照 |
@@ -328,6 +329,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.6.0 (2026-06-27)
+
+**引用 coverage / orphan 审计**
+
+- **`scripts/check_coverage.py`** — 针对 `knowledge/evidence.md` 的 Phase 6 QC 审计：报告 **orphan reference**（已登记但从未被引用；verified-but-uncited 标记为"浪费的工作"）、各章节**引用密度**、**unknown citation**（被引用但未登记），以及在使用 `--draft-plan` 时报告**未实现 claim**（在 Claim→Citation 映射中计划但正文未引用）。默认 advisory，`--fail-on-orphan-verified` / `--fail-on-unrealized` / `--fail-on-unknown` 可使各维度变为阻塞。复用 `check_citations.py` 解析器以保持二者 lockstep。7 个测试（共 148）。
 
 ### v1.5.1 (2026-06-26)
 

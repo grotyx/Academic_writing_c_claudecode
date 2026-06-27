@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.5.1** (2026-06-26)
+**v1.6.0** (2026-06-27)
 
 ---
 
@@ -301,6 +301,7 @@ Claude 통합 슬래시 명령어:
 | [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | 본인 논문 스타일 앵커 템플릿 |
 | [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | 용어, placeholder, 과장 표현, 섹션별 위반 점검 lint 스크립트 |
 | [scripts/check_citations.py](scripts/check_citations.py) | `[EVID:id]` citation을 `knowledge/evidence.md`와 대조 |
+| [scripts/check_coverage.py](scripts/check_coverage.py) | 인용 coverage/orphan audit — 안 쓰인 evidence ref, 섹션별 인용밀도, draft_plan 미실현 claim |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 원고/표의 숫자를 `results/*.csv`와 대조 |
 | [scripts/check_gate.py](scripts/check_gate.py) | `review/gates/*.GATE.md`의 status와 필수 check 검증 |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | response-letter `[CHANGE]` claim을 revised manuscript와 대조 |
@@ -351,6 +352,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.6.0 (2026-06-27)
+
+**인용 coverage / orphan audit**
+
+- **`scripts/check_coverage.py`** — `knowledge/evidence.md` 대비 Phase 6 QC 감사: **orphan reference**(등록됐는데 한 번도 인용 안 됨; verified-but-uncited는 "낭비된 작업"으로 표시), 섹션별 **인용밀도**, **unknown citation**(인용했는데 미등록), 그리고 `--draft-plan` 사용 시 **미실현 claim**(Claim→Citation 매핑에 계획됐으나 본문에 미인용)을 리포트. 기본 advisory, `--fail-on-orphan-verified` / `--fail-on-unrealized` / `--fail-on-unknown`로 차원별 게이트화. `check_citations.py` 파서를 재사용해 둘이 lockstep 유지. 테스트 7개(총 148).
 
 ### v1.5.1 (2026-06-26)
 

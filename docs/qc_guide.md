@@ -1,4 +1,4 @@
-# Quality Control Guide (v0.5.0)
+# Quality Control Guide (v0.5.1)
 
 ## Overview
 논문 제출 전 **최소 3라운드**의 QC를 수행해야 합니다. 각 라운드는 서로 다른 측면에 집중하며, 모든 검증 결과는 `review/qc_log.md`에 기록합니다.
@@ -112,6 +112,19 @@ Table 1의 인구통계와 본문 기술 일치 여부
 - 너무 완벽해 보이는 reference (AI 생성 의심)
 - 존재하지 않는 저널명
 - 연도와 내용 불일치
+
+### 2.3 Coverage / Orphan Audit (`scripts/check_coverage.py`)
+
+존재·정확성과 별개로 **인용 분포**를 점검한다 (advisory):
+
+```
+py scripts\check_coverage.py drafts\03_introduction.md drafts\06_discussion.md --evidence knowledge\evidence.md --draft-plan drafts\draft_plan.md
+```
+
+- **Orphan** — evidence.md에 verified로 등록됐는데 본문에 한 번도 인용 안 된 ref (검증 작업 낭비 or 인용 누락 → 인용하거나 정리)
+- **Density** — 섹션별 인용 수 (Introduction·Discussion은 많아야, Results는 적어야 정상)
+- **Unrealized** — draft_plan의 Claim→Citation 매핑에 계획했으나 본문에 미인용된 claim
+- 기본 advisory(exit 0). 게이트로 강제하려면 `--fail-on-orphan-verified` / `--fail-on-unrealized` / `--fail-on-unknown`.
 
 ### 2.2 Citation Accuracy Check
 인용된 내용이 원문과 일치하는지 확인
