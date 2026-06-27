@@ -1,4 +1,4 @@
-# Quality Control Guide (v0.5.2)
+# Quality Control Guide (v0.5.3)
 
 ## Overview
 논문 제출 전 **최소 3라운드**의 QC를 수행해야 합니다. 각 라운드는 서로 다른 측면에 집중하며, 모든 검증 결과는 `review/qc_log.md`에 기록합니다.
@@ -26,7 +26,7 @@
 
 ## Round 1: Number Consistency Check
 
-**Deterministic helper:** run `py scripts\check_numbers.py drafts\02_abstract.md drafts\05_results.md drafts\table_1.md drafts\table_2.md --results results` first, then manually review any remaining cross-section issues.
+**Deterministic helpers:** run `py scripts\check_numbers.py drafts\02_abstract.md drafts\05_results.md drafts\table_1.md drafts\table_2.md --results results` (numbers ↔ results CSV), then `py scripts\check_abstract.py drafts\04_methods.md drafts\05_results.md drafts\table_1.md drafts\table_2.md --abstract drafts\02_abstract.md` (every abstract number must also appear in the body — catches abstract-only figures, Rule 3). Then manually review any remaining cross-section issues.
 
 ### 1.1 Patient/Sample Numbers
 모든 섹션에서 환자/샘플 수가 일치하는지 확인

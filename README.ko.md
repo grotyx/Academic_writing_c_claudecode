@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.5.5** (2026-06-28)
+**v1.5.6** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -305,6 +305,7 @@ Claude 통합 슬래시 명령어:
 | [scripts/check_citations.py](scripts/check_citations.py) | `[EVID:id]` citation을 `knowledge/evidence.md`와 대조 |
 | [scripts/check_coverage.py](scripts/check_coverage.py) | 인용 coverage audit — **과잉인용**(한 주장에 과다 인용)·**미등록인용**이 품질 신호, 섹션별 인용밀도; uncited/미실현 claim은 중립(큐레이션, 낭비 아님) |
 | [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → 저널형 서지목록(numbered/author-year) + 본문 태그를 `*_formatted.md`로 변환; **MCP 독립** (Phase 7) |
+| [scripts/check_abstract.py](scripts/check_abstract.py) | abstract↔본문 수치 일관성 — abstract에만 있고 본문에 없는 수치를 차단 (Rule 3; p값 기본 제외) (Phase 6 QC Round 1) |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 원고/표의 숫자를 `results/*.csv`와 대조 |
 | [scripts/check_gate.py](scripts/check_gate.py) | `review/gates/*.GATE.md`의 status와 필수 check 검증 |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | response-letter `[CHANGE]` claim을 revised manuscript와 대조 |
@@ -355,6 +356,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.5.6 (2026-06-28)
+
+**Abstract↔본문 수치 일관성 + medical-kag synthesis 워크플로**
+
+- **`scripts/check_abstract.py`** — abstract의 모든 수치가 본문 섹션에도 등장하는지(반올림 허용) 확인 → reviewer 단골 지적인 abstract-only 수치를 잡음. `check_numbers.py`(수치↔`results/*.csv`)를 보완; p값 토큰은 기본 제외(`--include-p-values`로 포함). Rule 3 / QC Round 1의 Abstract↔Methods↔Results↔Tables 일관성을 자동화. 테스트 5개.
+- **medical-kag synthesis → Discussion/Limitations 워크플로** (`docs/medical_kag_protocol.md`) — `compare_interventions` / `conflict synthesize` 출력은 풍부하나 noisy(bibliometric outcome, 빈 값, KG 정규화 이름) → 임상 outcome 필터·모든 수치/인용 grounding·게이트 통과 방법 + Discussion/Limitations 골격 문서화.
 
 ### v1.5.5 (2026-06-28)
 

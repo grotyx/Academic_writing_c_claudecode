@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.5.5)
+# Academic Paper Writing Project (v1.5.6)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -88,6 +88,7 @@ project/
 │   ├── verify_all.py             # /verify — citation+number(+gate) 일괄 검증
 │   ├── check_coverage.py         # 인용 coverage audit (과잉인용·미등록인용 주신호; 인용밀도; uncited는 중립)
 │   ├── format_references.py       # [EVID:id]→저널형 서지목록 + 본문 태그 변환 (MCP 독립; Phase 7)
+│   ├── check_abstract.py         # abstract↔본문 수치 일관성 (abstract-only 수치 차단; Phase 6, Rule 3)
 │   └── hooks/                    # 강제 훅 (enforce_gates, session_contract, lint_on_edit, style_intent)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
@@ -167,6 +168,7 @@ project/
 | `scripts/check_citations.py` | `[EVID:id]` citations를 `knowledge/evidence.md`와 대조 | Phase 3·4·6 citation gate |
 | `scripts/check_coverage.py` | 인용 coverage audit — **과잉인용**(한 문장 과다 인용)·**미등록인용** 주신호, 섹션별 인용밀도; uncited ref/미실현 claim은 중립 정보(낭비 아님) | Phase 6 QC (`Check coverage`) |
 | `scripts/format_references.py` | `[EVID:id]` → 저널형 서지목록(numbered/author-year) + 본문 태그 변환(`*_formatted.md`); **MCP 독립**, evidence.md 정본 | Phase 7 (`Format references`) |
+| `scripts/check_abstract.py` | abstract↔본문 수치 일관성 — abstract에만 있고 본문에 없는 수치 차단 (Rule 3; p값 기본 제외) | Phase 6 QC Round 1 (`Check abstract`) |
 | `scripts/check_numbers.py` | manuscript/table 수치를 `results/*.csv`와 대조 | Phase 4·6 data gate |
 | `scripts/check_gate.py` | `review/gates/*.GATE.md` 원장의 `status: PASS`와 필수 check를 검증 | 모든 phase gate 통과 직전 |
 | `scripts/check_style.py` | manuscript를 `drafts/style_spec.md` 목표와 대조 (측정형 스타일 게이트) | Phase 5·6 (`/style-pass`, `Check style`) |
@@ -673,6 +675,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 |---------|--------|
 | `Run QC round [1-6]` | Execute specific QC round per qc_guide.md |
 | `Check number consistency` | `py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results` 실행 |
+| `Check abstract` | `py scripts\check_abstract.py drafts\04_methods.md drafts\05_results.md drafts\table_1.md drafts\table_2.md --abstract drafts\02_abstract.md` 실행 (abstract 수치가 본문에 다 있는지; Rule 3 일관성) |
 | `Check style` | `py scripts\check_style.py check drafts\05_results.md --spec drafts\style_spec.md` 실행 (Style Spec 대비 측정형 게이트) |
 | `Verify references` | `py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md` 실행 |
 | `Check coverage` | `py scripts\check_coverage.py drafts\03_introduction.md drafts\06_discussion.md --evidence knowledge\evidence.md --draft-plan drafts\draft_plan.md` 실행 (과잉인용·미등록인용·인용밀도 리포트; uncited는 중립. 기본 advisory, `--fail-on-over-citation`·`--fail-on-unknown`로 게이트화, `--max-citations-per-sentence N`로 임계 조정) |

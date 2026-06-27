@@ -93,6 +93,38 @@ Observed behavior against the live graph (~1,150 docs):
 - `reference` action=`format_multiple` with the target journal style (`set_journal_style` /
   `add_custom_style` for a new journal); export `bibtex`/`ris`. Cross-check against
   `profile/journals.md` (the canonical journal-format registry).
+- MCP-independent alternative: `scripts/format_references.py` builds a numbered/author-year
+  list from `evidence.md` and converts in-text `[EVID:id]` tags — use it when the MCP is down.
+
+## Synthesis → Discussion & Limitations (workflow)
+
+`compare_interventions` / `conflict synthesize` return **rich but noisy** output — bibliometric
+outcomes (e.g. "Citation Count …"), empty `value` fields, and KG-normalized intervention names
+(distinct surgical variants can collapse to one canonical node). Treat the KG as a **lead
+generator**, never as a drop-in source. Workflow:
+
+1. **Filter before use.** Keep only *clinically* meaningful outcomes that carry both a
+   `direction` and a `p_value`; drop bibliometric/empty rows. Confirm the KG resolved the
+   intervention names you actually meant (check the echoed `intervention1/2`).
+2. **Strength of evidence.** Use `conflict synthesize` for the GRADE statement and `conflict
+   detect`/`find` as the overclaim guard — does the draft Discussion ignore a conflicting result?
+3. **Ground every number and citation.** A figure surfaced by the KG is a *discovery*; the final
+   manuscript number must trace to `results/*.csv` (or the cited paper), and any paper you cite
+   must first be registered in `evidence.md` as `[EVID:id]` with a verified PMID/DOI. The KG is
+   not a citation source (see the grounding rule above).
+4. **Write it down, then verify.** Draft the Discussion/Limitations paragraph, then run the
+   normal Phase 4/6 gates — `check_citations.py`, `check_numbers.py`, and `/cite-stance` for
+   one-sidedness. KG-sourced comparisons are not exempt from the gates.
+
+Discussion / Limitations skeleton (fill from filtered KG output, then ground + cite):
+
+```
+Compared with <comparator>, <intervention> showed <direction> <outcome>
+(<effect/p from results CSV or cited paper>) [EVID:id]. This is consistent with /
+diverges from <synthesised body of evidence; GRADE: low/moderate/high> [EVID:id].
+Limitation: the evidence base for <outcome> is <sparse/conflicting> (KG conflict on
+<outcome>), so this comparison should be read with caution.
+```
 
 ## Codex / cross-runtime
 

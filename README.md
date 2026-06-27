@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.5** (2026-06-28)
+**v1.5.6** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -311,6 +311,7 @@ Slash commands for Claude integration:
 | [scripts/check_citations.py](scripts/check_citations.py) | Verify `[EVID:id]` citations against `knowledge/evidence.md` |
 | [scripts/check_coverage.py](scripts/check_coverage.py) | Citation coverage audit — **over-citation** (too many refs on one claim) and **unknown citations** as the quality signals, plus per-section density; uncited/unrealized reported neutrally (curation, not waste) |
 | [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → journal reference list (numbered/author-year) + in-text tag conversion to a sibling `*_formatted.md`; **MCP-independent** (Phase 7) |
+| [scripts/check_abstract.py](scripts/check_abstract.py) | Abstract ↔ body number consistency — flags any abstract number absent from the body (Rule 3; p-values excluded by default) (Phase 6 QC Round 1) |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | Verify manuscript/table numbers against `results/*.csv` |
 | [scripts/check_gate.py](scripts/check_gate.py) | Verify `review/gates/*.GATE.md` status and required checks |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | Verify response-letter `[CHANGE]` claims against revised manuscript files |
@@ -361,6 +362,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.5.6 (2026-06-28)
+
+**Abstract↔body number consistency + medical-kag synthesis workflow**
+
+- **`scripts/check_abstract.py`** — checks that every number stated in the abstract also appears somewhere in the body sections (rounding-tolerant), catching the classic reviewer complaint of an abstract-only figure. Complements `check_numbers.py` (which ties numbers to `results/*.csv`); p-value tokens are excluded by default (`--include-p-values` to include). Automates the Abstract↔Methods↔Results↔Tables consistency that Rule 3 / QC Round 1 require. 5 tests.
+- **medical-kag synthesis → Discussion/Limitations workflow** (`docs/medical_kag_protocol.md`) — `compare_interventions` / `conflict synthesize` output is rich but noisy (bibliometric outcomes, empty values, KG-normalized names); documents how to filter to clinical outcomes, ground every number/citation, and gate the result, with a Discussion/Limitations skeleton.
 
 ### v1.5.5 (2026-06-28)
 

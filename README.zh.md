@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.5.5** (2026-06-28)
+**v1.5.6** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -280,6 +280,7 @@ Claude 集成斜杠命令：
 | [scripts/check_citations.py](scripts/check_citations.py) | 将 `[EVID:id]` citations 与 `knowledge/evidence.md` 对照 |
 | [scripts/check_coverage.py](scripts/check_coverage.py) | 引用 coverage 审计 — **过度引用**（单一主张引用过多）·**未登记引用**为质量信号，各章节引用密度；未引用/未实现 claim 中立报告（属策展，非浪费） |
 | [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → 期刊格式参考文献列表（numbered/author-year）+ 将正文标签转换到同级 `*_formatted.md`；**不依赖 MCP**（Phase 7） |
+| [scripts/check_abstract.py](scripts/check_abstract.py) | abstract↔正文数字一致性 — 标记 abstract 中存在但正文缺失的数字（Rule 3；默认排除 p 值）（Phase 6 QC Round 1） |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 将稿件/表格中的数字与 `results/*.csv` 对照 |
 | [scripts/check_gate.py](scripts/check_gate.py) | 验证 `review/gates/*.GATE.md` 的 status 和必要 check |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | 将 response-letter `[CHANGE]` claims 与 revised manuscript files 对照 |
@@ -332,6 +333,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.5.6 (2026-06-28)
+
+**Abstract↔正文数字一致性 + medical-kag synthesis 工作流**
+
+- **`scripts/check_abstract.py`** — 检查 abstract 中陈述的每个数字是否也出现在正文章节中（允许四舍五入），捕捉审稿人常指出的"仅出现在摘要"的数字。与 `check_numbers.py`（数字↔`results/*.csv`）互补；默认排除 p 值标记（`--include-p-values` 可纳入）。将 Rule 3 / QC Round 1 的 Abstract↔Methods↔Results↔Tables 一致性自动化。5 个测试。
+- **medical-kag synthesis → Discussion/Limitations 工作流**（`docs/medical_kag_protocol.md`）— `compare_interventions` / `conflict synthesize` 输出丰富但 noisy（文献计量 outcome、空值、KG 归一化名称）→ 记录如何过滤到临床 outcome、为每个数字/引用做 grounding、并通过门，附 Discussion/Limitations 骨架。
 
 ### v1.5.5 (2026-06-28)
 
