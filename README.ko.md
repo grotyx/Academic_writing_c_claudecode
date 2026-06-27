@@ -6,7 +6,9 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.5.4** (2026-06-28)
+**v1.5.5** (2026-06-28)
+
+[![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
 ---
 
@@ -353,6 +355,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.5.5 (2026-06-28)
+
+**CI: 모든 push/PR에서 테스트 실행**
+
+- **`.github/workflows/tests.yml`** — GitHub Actions가 `main` push와 PR마다 전체 pytest를 Python 3.10/3.11/3.12에서 실행 → 검증 스크립트를 깨뜨리는 변경을 머지 전에 차단. README 상단에 상태 배지 표시.
 
 ### v1.5.4 (2026-06-28)
 

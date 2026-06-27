@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.5.4)
+# Academic Paper Writing Project (v1.5.5)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -91,6 +91,7 @@ project/
 │   └── hooks/                    # 강제 훅 (enforce_gates, session_contract, lint_on_edit, style_intent)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
+├── .github/workflows/tests.yml   # CI: pytest on push to main + PRs (Python 3.10/3.11/3.12)
 ├── review/                       # Review & QC documents
 │   ├── qc_log.md                 # QC round tracking
 │   ├── gates/                    # 검증 게이트 원장 (phase_NN_*.GATE.md)

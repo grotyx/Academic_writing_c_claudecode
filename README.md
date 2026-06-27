@@ -6,7 +6,9 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.4** (2026-06-28)
+**v1.5.5** (2026-06-28)
+
+[![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
 ---
 
@@ -359,6 +361,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.5.5 (2026-06-28)
+
+**CI: run the test suite on every push/PR**
+
+- **`.github/workflows/tests.yml`** — GitHub Actions runs the full pytest suite on pushes to `main` and on pull requests, across Python 3.10 / 3.11 / 3.12, so a change that breaks any verification script is caught before it lands. A status badge is shown at the top of the README.
 
 ### v1.5.4 (2026-06-28)
 

@@ -6,7 +6,9 @@
 
 ## 版本
 
-**v1.5.4** (2026-06-28)
+**v1.5.5** (2026-06-28)
+
+[![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
 ---
 
@@ -330,6 +332,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.5.5 (2026-06-28)
+
+**CI：每次 push/PR 运行测试**
+
+- **`.github/workflows/tests.yml`** — GitHub Actions 在每次 push 到 `main` 及 PR 时运行完整 pytest 套件，覆盖 Python 3.10/3.11/3.12，从而在合并前捕获破坏验证脚本的更改。README 顶部显示状态徽章。
 
 ### v1.5.4 (2026-06-28)
 
