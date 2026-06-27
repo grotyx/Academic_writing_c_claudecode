@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.7** (2026-06-28)
+**v1.5.8** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -362,6 +362,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.5.8 (2026-06-28)
+
+**Unify the `[EVID:id]` regex (full-review consistency fix)**
+
+- `extract_claims.py` defined its own permissive `[EVID:([^\]]+)]` pattern while `check_citations.py` (and the scripts that reuse it — `check_coverage.py`, `format_references.py`) use the restrictive `[A-Za-z0-9_.-]+`. Valid slugified ids match both identically, but the drift meant a malformed tag could be extracted yet not validated/converted. `extract_claims.py` now imports the canonical `EVID_RE` from `check_citations.py`, so all four scripts share one source of truth. No behavior change for valid ids; 163 tests green.
 
 ### v1.5.7 (2026-06-28)
 

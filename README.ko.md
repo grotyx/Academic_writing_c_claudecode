@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.5.7** (2026-06-28)
+**v1.5.8** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -356,6 +356,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.5.8 (2026-06-28)
+
+**`[EVID:id]` regex 통일 (전체 리뷰 일관성 수정)**
+
+- `extract_claims.py`는 자체 permissive `[EVID:([^\]]+)]` 패턴을 썼고, `check_citations.py`(및 이를 재사용하는 `check_coverage.py`·`format_references.py`)는 restrictive `[A-Za-z0-9_.-]+`를 씀. 유효한 slugified id는 둘 다 동일하게 매칭하나, drift 때문에 malformed 태그가 추출은 되지만 검증/변환은 안 되는 불일치가 있었음. 이제 `extract_claims.py`가 `check_citations.py`의 정본 `EVID_RE`를 import → 4개 스크립트가 single source 공유. 유효 id는 동작 변화 없음; 163 tests green.
 
 ### v1.5.7 (2026-06-28)
 

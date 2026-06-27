@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.5.7** (2026-06-28)
+**v1.5.8** (2026-06-28)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -333,6 +333,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.5.8 (2026-06-28)
+
+**统一 `[EVID:id]` 正则（全量审查一致性修复）**
+
+- `extract_claims.py` 使用了自有的宽松模式 `[EVID:([^\]]+)]`，而 `check_citations.py`（及复用它的 `check_coverage.py`、`format_references.py`）使用受限模式 `[A-Za-z0-9_.-]+`。有效的 slugified id 在两者下匹配一致，但该 drift 意味着畸形标签可能被抽取却未被校验/转换。现在 `extract_claims.py` 从 `check_citations.py` 导入正本 `EVID_RE`，四个脚本共享单一来源。对有效 id 无行为变化；163 tests green。
 
 ### v1.5.7 (2026-06-28)
 

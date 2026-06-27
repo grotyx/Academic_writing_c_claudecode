@@ -14,12 +14,28 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import sys
 from pathlib import Path
 
-EVID_RE = re.compile(r"\[EVID:([^\]]+)\]")
+SCRIPTS_DIR = Path(__file__).resolve().parent
+
+
+def _load_sibling(name: str):
+    spec = importlib.util.spec_from_file_location(name, SCRIPTS_DIR / f"{name}.py")
+    if spec is None or spec.loader is None:  # pragma: no cover - defensive
+        raise ImportError(f"cannot load {name}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# Single source of truth for the [EVID:id] pattern: import the canonical regex
+# from check_citations so extract_claims, check_coverage, and format_references
+# stay in lockstep (no drift between what is extracted, validated, and converted).
+EVID_RE = _load_sibling("check_citations").EVID_RE
 ABBREV = ["vs.", "e.g.", "i.e.", "et al.", "dr.", "fig.", "no.", "cf.", "approx."]
 
 
