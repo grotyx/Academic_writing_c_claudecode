@@ -30,6 +30,16 @@ class BuildPromptTests(unittest.TestCase):
         self.assertIn("We added a sentence.", out)
         self.assertIn("reviewer", out.lower())
 
+    def test_editor_prompt_embeds_target_and_high_impact_framing(self) -> None:
+        m = load_module()
+        self.assertIn("editor", m.ROLES)
+        out = m.build_prompt("editor", "Single-centre case series of 12 patients.")
+        self.assertIn("Single-centre case series of 12 patients.", out)
+        low = out.lower()
+        self.assertIn("high-impact", low)
+        self.assertIn("desk reject", low)
+        self.assertIn("clinical", low)
+
     def test_braces_in_target_do_not_break_substitution(self) -> None:
         # Target text with literal braces (JSON, LaTeX) must be inserted verbatim.
         m = load_module()
@@ -91,6 +101,7 @@ class PromptFileTests(unittest.TestCase):
         m = load_module()
         self.assertTrue((m.PROMPT_DIR / "manuscript.txt").exists())
         self.assertTrue((m.PROMPT_DIR / "response.txt").exists())
+        self.assertTrue((m.PROMPT_DIR / "editor.txt").exists())
 
 
 class CallClaudeCliTests(unittest.TestCase):

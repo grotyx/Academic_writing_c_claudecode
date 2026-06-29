@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.5.10** (2026-06-28)
+**v1.6.0** (2026-06-29)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -48,6 +48,7 @@ This project provides a comprehensive framework for writing academic medical pap
 - **PubMed search tool** with built-in Python script (no MCP or external packages required)
 - **Co-author debate** (`/paper-debate`) — pre-writing Claude–Codex discussion for analysis plans, draft plans, argument structure, and reviewer responses (`docs/debate_protocol.md`)
 - **Multi-model critical review** (`/critical-review`) — post-writing adversarial review at senior reviewer/editor level via Claude subagent, Codex, and/or OpenRouter models, ranked by consensus × severity (`docs/critical_review_protocol.md`)
+- **Editorial desk-screen** (`/editor-review`) — a high-impact-journal editor's substantive call beyond mechanical QC: identifies the paper's field, benchmarks it against what that field's high-impact journals actually publish, and judges clinical validity, scope fit, and analysis adequacy — then a `SEND FOR PEER REVIEW` / `BORDERLINE` / `DESK REJECT` verdict with what to add to compete (or a realistic lower-tier journal). Single Opus subagent or multi-model panel; optional medical-kag benchmark (`docs/critical_review_protocol.md` §5)
 - **AI-Draft De-bloat** — writing-guide pass that strips AI tells (hollow `-ing` analysis, AI vocabulary, signposting) so disclosed AI assistance still reads naturally (`docs/writing_guide.md`)
 - **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
 
@@ -362,6 +363,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.6.0 (2026-06-29)
+
+**Editorial desk-screen — high-impact-journal editor assessment (`/editor-review`)**
+
+- A new evaluation that goes beyond mechanical QC and reviewer-level critique: an **Editor-in-Chief / Clinical Editor desk-screen at the high-impact tier**. It identifies the manuscript's own field, benchmarks the paper against what that field's high-impact journals actually publish, and judges **clinical validity** (practice-changing? MCID/effect, not just p?), **scope/novelty fit**, and **methodological/analytic adequacy** — then returns a `SEND FOR PEER REVIEW` / `BORDERLINE` / `DESK REJECT` verdict with the concrete **additional validation needed to compete**, or a realistic lower-tier journal if the bar is out of reach.
+- Canonical prompt `scripts/critical_prompts/editor.txt` (single source). Runs as a single Opus subagent (no API key) **or** a multi-model panel via `scripts/critical_review.py --role editor`; optional medical-kag / PubMed benchmark of the real high-impact literature. Exposed as `/editor-review`; documented in `docs/critical_review_protocol.md` §5. Advisory (judgment-based) — does not replace the grounded gates. Tests added.
 
 ### v1.5.10 (2026-06-28)
 

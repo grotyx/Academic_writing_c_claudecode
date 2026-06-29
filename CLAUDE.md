@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.5.10)
+# Academic Paper Writing Project (v1.6.0)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -84,7 +84,7 @@ project/
 │   ├── evidence_table.py         # 구조화 study 레코드 → markdown 비교표
 │   ├── critical_review.py        # OpenRouter 멀티모델 적대적 검토 호출
 │   ├── critical_models.txt       # OpenRouter 모델 목록 (외부화)
-│   ├── critical_prompts/         # 적대적 검토 프롬프트 (manuscript.txt, response.txt)
+│   ├── critical_prompts/         # 적대적 검토 프롬프트 (manuscript.txt, response.txt, editor.txt)
 │   ├── verify_all.py             # /verify — citation+number(+gate) 일괄 검증
 │   ├── check_coverage.py         # 인용 coverage audit (과잉인용·미등록인용 주신호; 인용밀도; uncited는 중립)
 │   ├── format_references.py       # [EVID:id]→저널형 서지목록 + 본문 태그 변환 (MCP 독립; Phase 7)
@@ -562,6 +562,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 ├── Round 4: Terminology/abbreviation/tense + style metrics — Dr. Editor + lint + check_style.py vs Style Spec (권장)
 ├── Round 5: Statistical quality — Dr. Statistician (권장)
 ├── Round 6: Critical review — 내부(Dr. Editor + Dr. Statistician) + (선택) /critical-review 외부 멀티모델 (overclaiming/bias/일반화, 권장)
+├── Round 6.5 (선택): Editorial desk-screen — /editor-review: high-impact 저널 편집장 관점 (임상 타당성·분야 scope fit·추가검증 roadmap·하위저널 추천; advisory, `docs/critical_review_protocol.md` §5)
 ├── Claim verification (선택): /verify-claims — 인용 문장별 SUPPORTED/PARTIAL/UNSUPPORTED 리포트 (docs/citation_assist_protocol.md; GraphRAG 주, evidence.md 보조)
 ├── Document all rounds in review/qc_log.md
 └── Run study-specific checklist (checklist_guide.md — CONSORT/STROBE/PRISMA/CARE)
@@ -651,7 +652,8 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | Command | Action |
 |---------|--------|
 | `/paper-debate <주제>` | Claude–Codex co-author 토론 (작성 전, `docs/debate_protocol.md`) |
-| `/critical-review <대상>` | 외부 멀티모델 적대적 검토 (작성 후, `docs/critical_review_protocol.md`) |
+| `/critical-review <대상>` | 외부 멀티모델 적대적 reviewer 검토 (작성 후, `docs/critical_review_protocol.md`) |
+| `/editor-review <대상>` | high-impact 저널 **편집장 desk-screen** — 임상 타당성·분야 scope fit·추가검증·하위저널 추천 (`docs/critical_review_protocol.md` §5) |
 
 ### Drafting
 | Command | Action |

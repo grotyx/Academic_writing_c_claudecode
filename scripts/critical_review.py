@@ -25,7 +25,10 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 # Adversarial prompts live in scripts/critical_prompts/<role>.txt so that this
 # script, the protocol doc, and the Claude/Codex reviewers all share one source.
 PROMPT_DIR = Path(__file__).resolve().parent / "critical_prompts"
-ROLES = ("manuscript", "response")
+# manuscript = senior peer-reviewer pass; response = reviewer-response pass;
+# editor = high-impact-tier editor desk-screen (clinical validity / scope fit /
+# additional validation), a deliberately higher bar than the target journal.
+ROLES = ("manuscript", "response", "editor")
 
 # Pseudo model id routing to the local Claude Code CLI reviewer (claude -p).
 CLAUDE_MODEL_ID = "claude-cli"

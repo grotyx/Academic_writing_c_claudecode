@@ -32,8 +32,9 @@
 
 - `manuscript.txt` — 원고를 적대적으로 공격 (overclaiming·방법론·논리 비약·일반화·재현성).
 - `response.txt` — reviewer rebuttal 검토 (만족 여부·재반박 지점).
+- `editor.txt` — **editor desk-screen** (§5).
 
-(스크립트: `--role manuscript|response`로 해당 파일 선택. Claude/Codex 호출 시에도 같은 `.txt` 본문을 프롬프트로 사용.)
+(스크립트: `--role manuscript|response|editor`로 해당 파일 선택. Claude/Codex 호출 시에도 같은 `.txt` 본문을 프롬프트로 사용.)
 
 ## 3. 종합 — 합의도 × 심각도
 
@@ -47,3 +48,16 @@
 | 특정 모델 실패 | 그 모델만 skip (스크립트가 처리), 나머지 계속 |
 | Codex 실패 | Codex skip, 나머지 계속 |
 | 리뷰어 0개 | 에러(최소 1개 필요) |
+
+## 5. Editorial desk-screen (`editor` role, `/editor-review`)
+
+기계적 QC·reviewer 적대 검토를 넘어 **편집장·임상 관점의 실질 평가**다: *이 논문이 임상적으로 타당한가, 분야 high-impact 저널 scope에 맞는가, 무엇을 추가해야 경쟁력이 생기는가, 안 되면 어느 하위 저널이 현실적인가.* 저자가 정한 target 저널이 아니라 **논문 주제 분야를 식별해 그 분야 high-impact 저널의 실제 게재물**을 기준으로 벤치마크한다(상위 tier 기준 = 의도적으로 높은 bar).
+
+- **정본 프롬프트:** `scripts/critical_prompts/editor.txt` (5단계: 분야·벤치마크 식별 → 임상타당성 → scope/novelty → 방법·분석 적절성 → WHAT TO ADD + desk-screen 판정).
+- **판정:** `SEND FOR PEER REVIEW` / `BORDERLINE` / `DESK REJECT` (at high-impact tier). DESK REJECT면 현실적 하위·specialty 저널을 근거와 함께 추천.
+- **실행 (둘 다 가능):**
+  - 단일 **Opus 서브에이전트** — fresh context에 `editor.txt` 투입 (API 키 불필요).
+  - **멀티모델 panel** — `python scripts/critical_review.py --target <file> --role editor --models <…>` (다양한 편집장 관점; OpenRouter 키 또는 `--include-claude`).
+- **벤치마크 강화(선택):** medical-kag MCP 연결 시 `search`/`compare_interventions`/`best_evidence`로 해당 분야 high-impact 문헌의 설계·n·근거수준을 끌어와 근거화. 미연결 시 LLM 지식 + `search_pubmed.py`.
+- **성격:** grounded 게이트가 **아니라** 판정형 평가(임상·분야 지식 사용). **advisory** — 게이트를 대체하지 않는다. 수치·인용 grounding은 여전히 `check_numbers`/`check_citations` 담당. Phase 6에서 사용.
+- 에러·폴백은 §4와 동일.

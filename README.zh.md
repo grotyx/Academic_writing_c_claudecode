@@ -47,6 +47,7 @@
 - **PubMed 搜索工具** — 内置 Python 脚本（无需 MCP 或外部包）
 - **合著者辩论**（`/paper-debate`）— 写作前的 Claude–Codex 讨论，用于分析计划、draft plan、论证结构与审稿人回应（`docs/debate_protocol.md`）
 - **多模型批判性评审**（`/critical-review`）— 写作后由 Claude 子代理、Codex、OpenRouter 模型进行 senior reviewer/editor 级别的对抗性评审，按共识度 × 严重度排序（`docs/critical_review_protocol.md`）
+- **主编 desk-screen**（`/editor-review`）— 超越机械式 QC 的 high-impact 期刊主编实质评估：识别论文所属领域，并以该领域 high-impact 期刊的实际刊文水准进行基准比较，判定临床有效性、scope 契合度与分析充分性 → `SEND FOR PEER REVIEW`/`BORDERLINE`/`DESK REJECT` 结论 + 为具备竞争力需补充的内容（或现实的下层期刊）。单个 Opus 子代理或多模型 panel；可选 medical-kag 基准（`docs/critical_review_protocol.md` §5）
 - **AI-Draft De-bloat** — 去除 AI 痕迹（空洞的 `-ing` 分析、AI 词汇、signposting）的 writing-guide 流程，在保留 disclosure 的同时让文本读起来自然（`docs/writing_guide.md`）
 - **斜杠命令** — 证据文献注册（`/search-evidence`、`/import-doi`）
 
@@ -333,6 +334,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.6.0 (2026-06-29)
+
+**Editorial desk-screen — high-impact 期刊主编评估（`/editor-review`）**
+
+- 超越机械式 QC 与 reviewer 批判的新评估：**high-impact tier 主编 / 临床编辑 desk-screen**。识别论文所属领域，并以该领域 high-impact 期刊实际刊文水准做基准，判定 **临床有效性**（能否改变实践？是 MCID/effect 而非仅 p？）、**scope/novelty 契合度**、**方法与分析充分性** → `SEND FOR PEER REVIEW`/`BORDERLINE`/`DESK REJECT` + 为具备竞争力的 **具体补充验证**，或当门槛不现实时给出现实的下层期刊。
+- 正本提示 `scripts/critical_prompts/editor.txt`（single source）。单个 Opus 子代理（无需密钥）**或** `scripts/critical_review.py --role editor` 多模型 panel；可选 medical-kag/PubMed 对真实 high-impact 文献做基准。以 `/editor-review` 暴露，记录于 `docs/critical_review_protocol.md` §5。判定型（advisory）— 不替代 grounded 门。新增测试。
 
 ### v1.5.10 (2026-06-28)
 

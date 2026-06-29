@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.5.10** (2026-06-28)
+**v1.6.0** (2026-06-29)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -48,6 +48,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 - **PubMed 검색 도구** — 내장 Python 스크립트 (MCP 및 외부 패키지 불필요)
 - **공동 저자 토론** (`/paper-debate`) — 작성 전 Claude–Codex 토론으로 분석 계획·draft plan·논증 구조·리뷰어 응답 설계 (`docs/debate_protocol.md`)
 - **멀티모델 비판적 검토** (`/critical-review`) — 작성 후 Claude 서브에이전트·Codex·OpenRouter 모델로 senior reviewer/editor 수준의 적대적 검토, 합의도 × 심각도로 정렬 (`docs/critical_review_protocol.md`)
+- **편집장 desk-screen** (`/editor-review`) — 기계적 QC를 넘어선 high-impact 저널 편집장의 실질 평가: 논문의 분야를 식별하고 그 분야 high-impact 저널의 실제 게재물 기준으로 벤치마크해 임상 타당성·scope fit·분석 적절성을 판정 → `SEND FOR PEER REVIEW`/`BORDERLINE`/`DESK REJECT` 판정 + 경쟁력 위해 추가할 것(또는 현실적 하위 저널). 단일 Opus 서브에이전트 또는 멀티모델 panel; medical-kag 벤치마크 선택 (`docs/critical_review_protocol.md` §5)
 - **AI-Draft De-bloat** — AI 흔적(피상적 `-ing` 분석·AI 어휘·신호어)을 제거해 disclosure를 유지하면서도 자연스럽게 읽히게 하는 writing-guide 패스 (`docs/writing_guide.md`)
 - **슬래시 명령어** — 근거 문헌 등록 (`/search-evidence`, `/import-doi`)
 
@@ -356,6 +357,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.6.0 (2026-06-29)
+
+**Editorial desk-screen — high-impact 저널 편집장 평가 (`/editor-review`)**
+
+- 기계적 QC·reviewer 비판을 넘어선 새 평가: **high-impact tier 편집장·임상 편집자 desk-screen**. 논문의 분야를 식별하고, 그 분야 high-impact 저널이 실제로 싣는 수준으로 벤치마크해 **임상 타당성**(practice 바꾸나? p 말고 MCID/effect?)·**scope/novelty fit**·**방법·분석 적절성**을 판정 → `SEND FOR PEER REVIEW`/`BORDERLINE`/`DESK REJECT` + 경쟁력 위한 **구체적 추가검증**, 또는 bar가 무리면 현실적 하위 저널.
+- 정본 프롬프트 `scripts/critical_prompts/editor.txt`(single source). 단일 Opus 서브에이전트(키 불필요) **또는** `scripts/critical_review.py --role editor` 멀티모델 panel; medical-kag/PubMed로 실제 high-impact 문헌 벤치마크 선택. `/editor-review`로 노출, `docs/critical_review_protocol.md` §5 문서화. 판정형(advisory) — grounded 게이트 대체 아님. 테스트 추가.
 
 ### v1.5.10 (2026-06-28)
 
