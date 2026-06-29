@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.5.10** (2026-06-28)
+**v1.6.1** (2026-06-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -334,6 +334,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.6.1 (2026-06-30)
+
+**`/editor-review` 使用与 `/critical-review` 相同的评审者选择器**
+
+- editorial desk-screen 现在提供与 `/critical-review` 相同的模型选择 UX：对同一池（OpenRouter 4 个 `scripts/critical_models.txt` + 本地 Claude + Codex）的 `AskUserQuestion` 评审者选择器，仅 role 不同（`--role editor`，提示 `editor.txt`）。仅选 `Claude` 即单个 Opus 子代理（无需密钥）。Codex 通过 `codex:codex-rescue` 编排（并非 critical_review.py 的模型 —— 该脚本仅处理 OpenRouter + 本地 Claude）。更新命令 + protocol §5；同时修正 v1.6.0 中 changelog 已列而头部仍为 v1.5.10 的 ja/zh README。
 
 ### v1.6.0 (2026-06-29)
 

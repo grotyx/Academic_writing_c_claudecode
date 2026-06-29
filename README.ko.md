@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.6.0** (2026-06-29)
+**v1.6.1** (2026-06-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -357,6 +357,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.6.1 (2026-06-30)
+
+**`/editor-review`가 `/critical-review`와 동일한 리뷰어 피커 사용**
+
+- editorial desk-screen이 이제 `/critical-review`와 같은 모델 선택 UX를 제공: 같은 풀(OpenRouter 4종 `scripts/critical_models.txt` + 로컬 Claude + Codex)에 대한 `AskUserQuestion` 리뷰어 피커, role만 다름(`--role editor`, 프롬프트 `editor.txt`). `Claude`만 선택하면 단일 Opus 서브에이전트(키 불필요). Codex는 `codex:codex-rescue`로 오케스트레이션(critical_review.py 모델 아님 — 스크립트는 OpenRouter + 로컬 Claude만). 커맨드 + protocol §5 갱신; v1.6.0에서 changelog엔 있으나 헤더가 v1.5.10로 남아 있던 ja/zh README도 정정.
 
 ### v1.6.0 (2026-06-29)
 

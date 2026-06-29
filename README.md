@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.6.0** (2026-06-29)
+**v1.6.1** (2026-06-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -363,6 +363,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.6.1 (2026-06-30)
+
+**`/editor-review` uses the same reviewer picker as `/critical-review`**
+
+- The editorial desk-screen now offers the identical model-selection UX as `/critical-review`: an `AskUserQuestion` reviewer picker over the same pool — the four OpenRouter models (`scripts/critical_models.txt`) + local Claude + Codex — only the role differs (`--role editor`, prompt `editor.txt`). Selecting just `Claude` gives the single Opus subagent (no key). Codex is orchestrated via `codex:codex-rescue` (it is not a `critical_review.py` model — that script handles OpenRouter + local Claude). Command + protocol §5 updated; also fixes the ja/zh README headers that were left at v1.5.10 while their changelog already listed v1.6.0.
 
 ### v1.6.0 (2026-06-29)
 

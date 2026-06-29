@@ -55,9 +55,11 @@
 
 - **정본 프롬프트:** `scripts/critical_prompts/editor.txt` (5단계: 분야·벤치마크 식별 → 임상타당성 → scope/novelty → 방법·분석 적절성 → WHAT TO ADD + desk-screen 판정).
 - **판정:** `SEND FOR PEER REVIEW` / `BORDERLINE` / `DESK REJECT` (at high-impact tier). DESK REJECT면 현실적 하위·specialty 저널을 근거와 함께 추천.
-- **실행 (둘 다 가능):**
-  - 단일 **Opus 서브에이전트** — fresh context에 `editor.txt` 투입 (API 키 불필요).
-  - **멀티모델 panel** — `python scripts/critical_review.py --target <file> --role editor --models <…>` (다양한 편집장 관점; OpenRouter 키 또는 `--include-claude`).
+- **실행 — `/critical-review`와 동일한 리뷰어 선택 UX** (`AskUserQuestion`: OpenRouter ×4 + Claude + Codex, role만 `editor`):
+  - `Claude`만 선택 = 단일 **Opus 서브에이전트** (fresh context에 `editor.txt`, API 키 불필요).
+  - `Codex` = `codex:codex-rescue` read-only에 `editor.txt`.
+  - OpenRouter = `python scripts/critical_review.py --target <file> --role editor --models <…>` (또는 `--include-claude`).
+  - 즉 모델 풀·선택 방식은 §1·§2의 reviewer 검토와 같고, 프롬프트만 `editor.txt`다.
 - **벤치마크 강화(선택):** medical-kag MCP 연결 시 `search`/`compare_interventions`/`best_evidence`로 해당 분야 high-impact 문헌의 설계·n·근거수준을 끌어와 근거화. 미연결 시 LLM 지식 + `search_pubmed.py`.
 - **성격:** grounded 게이트가 **아니라** 판정형 평가(임상·분야 지식 사용). **advisory** — 게이트를 대체하지 않는다. 수치·인용 grounding은 여전히 `check_numbers`/`check_citations` 담당. Phase 6에서 사용.
 - 에러·폴백은 §4와 동일.
