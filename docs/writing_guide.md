@@ -1,4 +1,4 @@
-# Section-by-Section Writing Guide (v0.5.0)
+# Section-by-Section Writing Guide (v0.5.1)
 
 ## General Principles
 - Use past tense for completed actions (Methods, Results)
@@ -276,6 +276,7 @@ Conclusions: (1-2 sentences)
 - Numbers must EXACTLY match Results and Tables
 - Include actual data (means, p-values, CIs), not just "significant difference"
 - Word limit: typically 250-350 words (check target journal)
+- **Keywords line REQUIRED.** Fill the `**Keywords:**` line at the bottom of `drafts/02_abstract.md`. Convention: **3-6 MeSH-preferred terms**, semicolon-separated (check the target journal's exact separator/rule). Do not submit with an empty Keywords line.
 
 **Common Mistakes:**
 - ❌ Vague results: "There was a significant difference"

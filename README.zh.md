@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.6.1** (2026-06-30)
+**v1.6.2** (2026-07-02)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -334,6 +334,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.6.2 (2026-07-02)
+
+**Abstract Keywords 强制**
+
+- `drafts/02_abstract.md` 末尾的 `**Keywords:**` 行既无 lint 也无明确规则，容易漏填。三层强制：(1) 模板中说明要求与示例；(2) `docs/writing_guide.md` § 02. Abstract 增加 Keywords 规则（3–6 个 MeSH 首选，分号分隔）；(3) `scripts/lint_manuscript.py` 识别 abstract 文件并触发 `KEYWORDS_MISSING`/`KEYWORDS_EMPTY`/`KEYWORDS_TOO_FEW`/`KEYWORDS_TOO_MANY` —— PostToolUse `lint_on_edit` 钩子已经在编辑时暴露 lint，因此一旦触碰 abstract，空 Keywords 立即被捕获。`;` 与 `,` 均可作为分隔符。7 个测试（共 222）。
 
 ### v1.6.1 (2026-06-30)
 

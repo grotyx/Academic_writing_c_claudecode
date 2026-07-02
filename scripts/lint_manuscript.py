@@ -125,6 +125,45 @@ def is_discussion_file(path: Path, text: str) -> bool:
     return name.startswith("06_") or name == "discussion.md" or re.search(r"^#\s+Discussion\b", text, re.I | re.M) is not None
 
 
+def is_abstract_file(path: Path, text: str) -> bool:
+    name = path.name.lower()
+    return name.startswith("02_") or name == "abstract.md" or re.search(r"^#\s+Abstract\b", text, re.I | re.M) is not None
+
+
+# `**Keywords:**` (or "Key words:") + optional whitespace up to end-of-line. Captures
+# whatever the author put after the colon so we can tell "empty" from "filled".
+# The label's own closing `**` (if any) is captured with the colon so it does not
+# bleed into the value, and any trailing `**` after the value is also stripped.
+KEYWORDS_LINE_RE = re.compile(
+    r"(?im)^\s*\*{0,2}\s*key\s?words?\s*:\s*\*{0,2}\s*(.*?)\s*\*{0,2}\s*$"
+)
+
+
+def find_keywords_issues(path: Path, text: str) -> list[tuple[str, Path, int, str]]:
+    """Every abstract file must carry a filled Keywords line (required by most journals)."""
+    hits = list(KEYWORDS_LINE_RE.finditer(text))
+    if not hits:
+        return [("KEYWORDS_MISSING", path, 1,
+                 "Abstract has no Keywords line. Add '**Keywords:** term1; term2; ...' (3-6 MeSH terms).")]
+    issues: list[tuple[str, Path, int, str]] = []
+    for match in hits:
+        value = match.group(1).strip()
+        line_no = text.count("\n", 0, match.start()) + 1
+        if not value:
+            issues.append(("KEYWORDS_EMPTY", path, line_no,
+                           "Empty Keywords line. Fill with 3-6 MeSH terms, semicolon-separated."))
+            continue
+        # split on ; or , (either separator is common), ignore empties
+        terms = [t.strip() for t in re.split(r"[;,]", value) if t.strip()]
+        if len(terms) < 3:
+            issues.append(("KEYWORDS_TOO_FEW", path, line_no,
+                           f"Only {len(terms)} keyword(s); most journals require 3-6."))
+        elif len(terms) > 6:
+            issues.append(("KEYWORDS_TOO_MANY", path, line_no,
+                           f"{len(terms)} keywords; most journals cap at 6."))
+    return issues
+
+
 def line_collections(text: str):
     for idx, line in enumerate(text.splitlines(), start=1):
         yield idx, line
@@ -146,6 +185,9 @@ def lint_file(path: Path, forbidden_terms: dict[str, str]) -> list[tuple[str, Pa
     issues: list[tuple[str, Path, int, str]] = []
     results = is_results_file(path, text)
     discussion = is_discussion_file(path, text)
+
+    if is_abstract_file(path, text):
+        issues.extend(find_keywords_issues(path, text))
 
     for line_no, line in line_collections(text):
         stripped = line.strip()

@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.6.1** (2026-06-30)
+**v1.6.2** (2026-07-02)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -357,6 +357,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.6.2 (2026-07-02)
+
+**Abstract Keywords 강제**
+
+- `drafts/02_abstract.md` 하단의 `**Keywords:**` 자리가 lint·규칙 없이 놓쳐지기 쉬웠음. 3중 강제: (1) 템플릿에 요구사항·예시 명시, (2) `docs/writing_guide.md` § 02. Abstract에 Keywords 규칙 추가(3–6개 MeSH 선호, 세미콜론 구분), (3) `scripts/lint_manuscript.py`가 abstract 파일을 감지해 `KEYWORDS_MISSING`/`KEYWORDS_EMPTY`/`KEYWORDS_TOO_FEW`/`KEYWORDS_TOO_MANY` 발생 — PostToolUse `lint_on_edit` 훅이 이미 편집 시 lint를 표면화하므로, abstract 건드리는 즉시 빈 Keywords가 잡힘. `;`·`,` 둘 다 구분자로 인정. 테스트 7개(총 222).
 
 ### v1.6.1 (2026-06-30)
 

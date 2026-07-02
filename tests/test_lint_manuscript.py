@@ -88,5 +88,78 @@ class LintFileTests(unittest.TestCase):
             self.assertEqual(module.lint_file(path, {}), [])
 
 
+class KeywordsLintTests(unittest.TestCase):
+    """Every abstract file must carry a filled Keywords line (journal requirement)."""
+
+    @staticmethod
+    def _write(tmp: str, name: str, text: str) -> Path:
+        path = Path(tmp) / name
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def test_missing_keywords_line_in_abstract_flagged(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(tmp, "02_abstract.md", "# Abstract\n\nSome text.\n")
+            codes = {code for code, *_ in module.lint_file(path, {})}
+            self.assertIn("KEYWORDS_MISSING", codes)
+
+    def test_empty_keywords_line_flagged(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(tmp, "02_abstract.md", "# Abstract\n\n**Keywords:**\n")
+            codes = {code for code, *_ in module.lint_file(path, {})}
+            self.assertIn("KEYWORDS_EMPTY", codes)
+
+    def test_too_few_keywords_flagged(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(tmp, "02_abstract.md", "# Abstract\n\n**Keywords:** a; b\n")
+            codes = {code for code, *_ in module.lint_file(path, {})}
+            self.assertIn("KEYWORDS_TOO_FEW", codes)
+
+    def test_too_many_keywords_flagged(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(
+                tmp, "02_abstract.md", "# Abstract\n\n**Keywords:** a; b; c; d; e; f; g\n",
+            )
+            codes = {code for code, *_ in module.lint_file(path, {})}
+            self.assertIn("KEYWORDS_TOO_MANY", codes)
+
+    def test_valid_keywords_passes(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(
+                tmp,
+                "02_abstract.md",
+                "# Abstract\n\n**Keywords:** lumbar spinal stenosis; decompression; MCID\n",
+            )
+            codes = {code for code, *_ in module.lint_file(path, {})}
+            self.assertNotIn("KEYWORDS_MISSING", codes)
+            self.assertNotIn("KEYWORDS_EMPTY", codes)
+            self.assertNotIn("KEYWORDS_TOO_FEW", codes)
+            self.assertNotIn("KEYWORDS_TOO_MANY", codes)
+
+    def test_comma_separator_also_counted(self) -> None:
+        # Journals differ on ; vs , -- accept either as a separator.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(
+                tmp,
+                "02_abstract.md",
+                "# Abstract\n\n**Keywords:** stenosis, decompression, MCID\n",
+            )
+            codes = {code for code, *_ in module.lint_file(path, {})}
+            self.assertNotIn("KEYWORDS_TOO_FEW", codes)
+
+    def test_non_abstract_file_not_checked(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write(tmp, "04_methods.md", "# Methods\n\nText only.\n")
+            codes = {code for code, *_ in module.lint_file(path, {})}
+            self.assertNotIn("KEYWORDS_MISSING", codes)
+
+
 if __name__ == "__main__":
     unittest.main()

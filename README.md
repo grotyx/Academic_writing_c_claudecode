@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.6.1** (2026-06-30)
+**v1.6.2** (2026-07-02)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -363,6 +363,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.6.2 (2026-07-02)
+
+**Abstract Keywords enforced**
+
+- The `**Keywords:**` line at the bottom of `drafts/02_abstract.md` was easy to miss (no lint, no explicit rule). Three-layer enforcement: (1) the template now names the requirement and gives an example, (2) `docs/writing_guide.md` § 02. Abstract lists a Keywords rule (3-6 MeSH-preferred terms, semicolon-separated), and (3) `scripts/lint_manuscript.py` detects abstract files and emits `KEYWORDS_MISSING` / `KEYWORDS_EMPTY` / `KEYWORDS_TOO_FEW` / `KEYWORDS_TOO_MANY` — the PostToolUse `lint_on_edit` hook already surfaces lint on edits, so an empty Keywords line is now caught the moment the abstract is touched. Semicolon and comma separators both counted. 7 tests (222 total).
 
 ### v1.6.1 (2026-06-30)
 
