@@ -6,7 +6,7 @@ A structured workflow system for academic medical paper writing using Claude AI.
 
 ## Version
 
-**v1.6.2** (2026-07-02)
+**v1.6.3** (2026-07-02)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -313,6 +313,9 @@ Slash commands for Claude integration:
 | [scripts/check_coverage.py](scripts/check_coverage.py) | Citation coverage audit — **over-citation** (too many refs on one claim) and **unknown citations** as the quality signals, plus per-section density; uncited/unrealized reported neutrally (curation, not waste) |
 | [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → journal reference list (numbered/author-year) + in-text tag conversion to a sibling `*_formatted.md`; **MCP-independent** (Phase 7) |
 | [scripts/check_abstract.py](scripts/check_abstract.py) | Abstract ↔ body number consistency — flags any abstract number absent from the body (Rule 3; p-values excluded by default) (Phase 6 QC Round 1) |
+| [scripts/check_crossrefs.py](scripts/check_crossrefs.py) | Table/Figure cross-reference check — in-text "Table N"/"Figure N" mentions vs actual `table_*.md`/figure legends: **broken references** (primary signal), unreferenced items, out-of-order first mentions; advisory by default, `--fail-on-*` to gate (Phase 6 QC) |
+| [scripts/check_abbreviations.py](scripts/check_abbreviations.py) | Abbreviation define-at-first-use check — abstract and body as separate scopes (UNDEFINED / DEFINED_AFTER_USE / REDEFINED / SINGLE_USE); advisory by design (false positives expected), `--allow` / `--strict` (Phase 6 QC) |
+| [scripts/check_response_coverage.py](scripts/check_response_coverage.py) | Reviewer-comment response coverage — every `Comment N)` must have a real `Response:` (missing/empty/placeholder blocked), `--comments` cross-checks against the original comments file; complements the ghost-revision gate (Phase 8) |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | Verify manuscript/table numbers against `results/*.csv` |
 | [scripts/check_gate.py](scripts/check_gate.py) | Verify `review/gates/*.GATE.md` status and required checks |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | Verify response-letter `[CHANGE]` claims against revised manuscript files |
@@ -363,6 +366,15 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.6.3 (2026-07-02)
+
+**Mechanical submission-error checkers (advisory-first)**
+
+- **`scripts/check_crossrefs.py`** — verifies in-text "Table N"/"Figure N" mentions against the actual `table_*.md` files and figure-legend entries: broken references (the desk-reject trigger nothing else caught), unreferenced tables/figures, and out-of-order first mentions. Handles "Tables 1 and 2", "Figure 2-4", "Fig. 1A"; ignores code fences/HTML comments; skips a kind loudly instead of flagging everything when its inventory is missing. Advisory by default; `--fail-on-broken` / `--fail-on-unreferenced` / `--fail-on-order` to gate.
+- **`scripts/check_abbreviations.py`** — define-at-first-use audit with abstract and body as independent scopes (journals require both). Emits `ABBREV_UNDEFINED` / `ABBREV_DEFINED_AFTER_USE` / `ABBREV_REDEFINED` / always-advisory `ABBREV_SINGLE_USE`. Deliberately advisory — detection is capitals-only (2-6 letters, `-digits`, plural `s`) with a built-in statistical allowlist (CI, SD, OR, HR, ...) extendable via `--allow`; `--strict` gates definition issues only.
+- **`scripts/check_response_coverage.py`** — the opposite face of the ghost-revision gate: did the response letter answer **every** reviewer comment? Parses the `Reviewer #N:` / `Comment N)` / `Response:` structure, blocks missing/empty/`[placeholder]` responses, and with `--comments` cross-checks the original reviewer_comments file (`COMMENT_UNANSWERED` fails; unparseable original warns, `--strict` fails). Fails by default — a skipped comment is binary.
+- Design principle per author feedback: mechanization only for binary facts; judgment stays human+LLM. Docs updated (`CLAUDE.md`, `docs/qc_guide.md` §3.7/§4.2, `docs/revision_guide.md`). 40 tests (262 total).
 
 ### v1.6.2 (2026-07-02)
 

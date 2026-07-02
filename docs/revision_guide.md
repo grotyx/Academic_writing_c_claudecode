@@ -1,4 +1,4 @@
-# Revision & Reviewer Response Guide (v0.5.0)
+# Revision & Reviewer Response Guide (v0.5.1)
 
 > 대응 전략을 정하기 전에 `/paper-debate <코멘트 주제> revision`으로 공동 저자(Codex)와 함께 reviewer 대응을 설계할 수 있다 (선택). 절차: `docs/debate_protocol.md`.
 
@@ -94,6 +94,16 @@ expected_terms: eligibility criteria; excluded; prior surgery
 ```powershell
 py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict
 ```
+
+**응답 전수 커버리지 (`scripts/check_response_coverage.py`):** ghost-revision 게이트가 "주장한 변경이 진짜인가"를 본다면, 이 검사는 반대면 — **모든 리뷰어 코멘트에 응답이 존재하는가**를 본다. 누락 응답은 자동 reject 사유이므로 기본 fail(exit 1).
+
+```powershell
+py scripts\check_response_coverage.py drafts\revision\REV1\response_letter_REV1.md --comments review\reviewer_comments_REV1.md
+```
+
+- `RESPONSE_MISSING`(Response 블록 없음) / `RESPONSE_EMPTY` / `RESPONSE_PLACEHOLDER`(템플릿 `[...]` 잔존) — 실패
+- `--comments`로 원본 코멘트 파일 대조 시 `COMMENT_UNANSWERED`(원본에 있는데 응답서에 없음) 실패, `COMMENT_EXTRA`·`COMMENT_GAP`은 경고
+- 원본 파일이 `Reviewer #N` + `Comment N)` 구조로 파싱 안 되면 경고 후 대조 생략 (`--strict`면 실패) — 코멘트 수신 시 이 구조로 정리해 두면 대조가 작동한다
 
 After deterministic revision-claim checking, run the Revision-Alignment verifier in `docs/verifier_prompt_templates.md` to confirm that the response directly answers the reviewer and that the manuscript is not written in response-letter style. Record `revision_claims: PASS` and `response_alignment: PASS` in `review/gates/phase_08_revision.GATE.md`, then confirm the ledger:
 
@@ -331,5 +341,6 @@ output/revision/
 | `Draft response letter` | 전체 응답서 초안 작성 |
 | `Review response letter` | Dr. Editor 관점에서 응답서 검토 |
 | `Check response completeness` | `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict` 실행 |
+| `Check response coverage` | `py scripts\check_response_coverage.py drafts\revision\REV1\response_letter_REV1.md --comments review\reviewer_comments_REV1.md` 실행 (모든 코멘트에 실제 응답 존재 확인) |
 | `Check revision gate` | `py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv` 실행 |
 | `Compile response letter` | `py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md` 실행 |

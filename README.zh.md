@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.6.2** (2026-07-02)
+**v1.6.3** (2026-07-02)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -282,6 +282,9 @@ Claude 集成斜杠命令：
 | [scripts/check_coverage.py](scripts/check_coverage.py) | 引用 coverage 审计 — **过度引用**（单一主张引用过多）·**未登记引用**为质量信号，各章节引用密度；未引用/未实现 claim 中立报告（属策展，非浪费） |
 | [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → 期刊格式参考文献列表（numbered/author-year）+ 将正文标签转换到同级 `*_formatted.md`；**不依赖 MCP**（Phase 7） |
 | [scripts/check_abstract.py](scripts/check_abstract.py) | abstract↔正文数字一致性 — 标记 abstract 中存在但正文缺失的数字（Rule 3；默认排除 p 值）（Phase 6 QC Round 1） |
+| [scripts/check_crossrefs.py](scripts/check_crossrefs.py) | Table/Figure 交叉引用检查 — 正文 "Table N"/"Figure N" 提及 ↔ 实际 `table_*.md`·figure legends：**broken reference**（主要信号）·未被引用项·首次提及顺序；默认 advisory，`--fail-on-*` 可门禁化（Phase 6 QC） |
+| [scripts/check_abbreviations.py](scripts/check_abbreviations.py) | 缩写首次使用定义检查 — abstract/正文独立 scope（UNDEFINED / DEFINED_AFTER_USE / REDEFINED / SINGLE_USE）；以误报为前提的 advisory，`--allow`·`--strict`（Phase 6 QC） |
+| [scripts/check_response_coverage.py](scripts/check_response_coverage.py) | 审稿意见回复覆盖检查 — 每个 `Comment N)` 必须有真实 `Response:`（拦截缺失/空/placeholder），`--comments` 与原始意见文件交叉核对；与 ghost-revision 门禁互补（Phase 8） |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 将稿件/表格中的数字与 `results/*.csv` 对照 |
 | [scripts/check_gate.py](scripts/check_gate.py) | 验证 `review/gates/*.GATE.md` 的 status 和必要 check |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | 将 response-letter `[CHANGE]` claims 与 revised manuscript files 对照 |
@@ -334,6 +337,15 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.6.3 (2026-07-02)
+
+**三个机械性投稿错误检查器（advisory 优先）**
+
+- **`scripts/check_crossrefs.py`** — 将正文 "Table N"/"Figure N" 提及与实际 `table_*.md`·figure legend 条目对照：broken reference（此前无任何机制捕捉的 desk-reject 诱因）·未被引用的 table/figure·首次提及顺序。支持 "Tables 1 and 2"·"Figure 2-4"·"Fig. 1A"；忽略代码围栏/HTML 注释；inventory 缺失时 loud 跳过而非全部误报。默认 advisory，`--fail-on-broken`/`--fail-on-unreferenced`/`--fail-on-order` 门禁化。
+- **`scripts/check_abbreviations.py`** — 缩写首次使用定义 audit，abstract/正文独立 scope（期刊两者都要求）。发出 `ABBREV_UNDEFINED`/`ABBREV_DEFINED_AFTER_USE`/`ABBREV_REDEFINED`/始终 advisory 的 `ABBREV_SINGLE_USE`。刻意 advisory — 仅检测大写（2-6 字母、`-数字`、复数 s），统计缩写默认允许（CI、SD、OR、HR...）+ `--allow` 扩展；`--strict` 仅门禁定义问题。
+- **`scripts/check_response_coverage.py`** — ghost-revision 门禁的另一面：回复信是否回答了**所有**审稿意见？解析 `Reviewer #N:`/`Comment N)`/`Response:` 结构，拦截缺失/空/`[placeholder]` 回复，`--comments` 与原始意见文件交叉核对（`COMMENT_UNANSWERED` 失败；原文件不可解析则警告，`--strict` 下失败）。默认 fail — 漏答意见是二值性缺陷。
+- 设计原则（吸纳作者反馈）：机械化仅用于二值事实，判断留给人+LLM。文档更新（`CLAUDE.md`、`docs/qc_guide.md` §3.7/§4.2、`docs/revision_guide.md`）。40 个测试（共 262）。
 
 ### v1.6.2 (2026-07-02)
 

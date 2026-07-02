@@ -1,4 +1,4 @@
-# Quality Control Guide (v0.5.3)
+# Quality Control Guide (v0.5.4)
 
 ## Overview
 논문 제출 전 **최소 3라운드**의 QC를 수행해야 합니다. 각 라운드는 서로 다른 측면에 집중하며, 모든 검증 결과는 `review/qc_log.md`에 기록합니다.
@@ -359,6 +359,20 @@ Conclusion이 Results에 의해 지지되는지 확인
 - 과장된 결론 (overstated claims)
 - Limitation을 무시한 결론
 
+### 3.7 Table/Figure Cross-reference Check (`scripts/check_crossrefs.py`)
+
+본문의 "Table N"/"Figure N" 언급이 실제 존재하는 table/figure와 일치하는지 결정적으로 대조한다 (advisory). Revision에서 table 번호를 바꾸거나 삭제하면 본문 참조가 조용히 깨진다 — desk reject 단골 사유.
+
+```powershell
+py scripts\check_crossrefs.py drafts\05_results.md drafts\06_discussion.md
+```
+
+- **Broken reference (주신호)** — 본문이 참조하는 Table/Figure가 존재하지 않음 → 즉시 수정
+- **Unreferenced (advisory)** — 존재하는데 본문 어디서도 인용 안 됨 (저널은 전 항목 인용 요구)
+- **Out-of-order (advisory)** — 첫 언급 순서가 오름차순 아님 (대부분의 저널 요건)
+- inventory: table은 `table_*.md`, figure는 `09_figure_legends.md`(+`--figures-dir`); inventory가 없으면 해당 종류 검사를 건너뛰고 NOTE로 알림
+- 기본 advisory(exit 0); 게이트화는 `--fail-on-broken` / `--fail-on-unreferenced` / `--fail-on-order`
+
 ---
 
 ## Round 4: Terminology, Abbreviation & Tense Check (RECOMMENDED)
@@ -389,6 +403,17 @@ Conclusion이 Results에 의해 지지되는지 확인
 - [ ] Abstract에서 별도로 정의됨 (standalone)
 - [ ] Tables/Figures에서 footnote로 정의됨
 - [ ] 일관된 약어 사용 (혼용 없음)
+
+**결정적 보조 (`scripts/check_abbreviations.py`, advisory):**
+
+```powershell
+py scripts\check_abbreviations.py drafts\02_abstract.md drafts\03_introduction.md drafts\04_methods.md drafts\05_results.md drafts\06_discussion.md
+```
+
+- abstract와 본문을 **별도 scope**로 검사 (둘 다 각자 첫 사용 시 정의 필요)
+- `ABBREV_UNDEFINED`(정의 없음) / `ABBREV_DEFINED_AFTER_USE`(정의 전 사용) / `ABBREV_REDEFINED`(중복 정의) / `ABBREV_SINGLE_USE`(1회 사용 — 풀어쓰기 고려)
+- 탐지 한계: 2-6 연속 대문자(+`-숫자`, 복수형 s)만 탐지 — mJOA·tDCS 같은 혼합대문자는 사람이 확인. 통계 약어(CI, SD, OR...)는 기본 허용, `--allow ABB`로 확장
+- **오탐 전제 advisory** — 최종 판단은 사람. `--strict`로 정의 이슈만 게이트화 가능
 
 ### 4.3 Tense Consistency (HIGH)
 - [ ] Methods: past tense

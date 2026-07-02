@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.6.2)
+# Academic Paper Writing Project (v1.6.3)
 
 ## Research Configuration
 **Topic:** [INSERT YOUR SPECIFIC RESEARCH TOPIC]
@@ -89,6 +89,9 @@ project/
 │   ├── check_coverage.py         # 인용 coverage audit (과잉인용·미등록인용 주신호; 인용밀도; uncited는 중립)
 │   ├── format_references.py       # [EVID:id]→저널형 서지목록 + 본문 태그 변환 (MCP 독립; Phase 7)
 │   ├── check_abstract.py         # abstract↔본문 수치 일관성 (abstract-only 수치 차단; Phase 6, Rule 3)
+│   ├── check_crossrefs.py        # Table/Figure 본문 참조 ↔ 실존 대조 (broken ref·미인용·순서; advisory)
+│   ├── check_abbreviations.py    # 약어 첫 사용 정의 검사 (abstract/본문 scope 분리; advisory)
+│   ├── check_response_coverage.py # 리뷰어 코멘트 전수 응답 확인 (Phase 8; ghost-revision 보완)
 │   └── hooks/                    # 강제 훅 (enforce_gates, session_contract, lint_on_edit, style_intent)
 ├── tests/                        # pytest suite for the verification scripts
 │   └── test_*.py                 # Run: pytest  (python-docx required, see requirements.txt)
@@ -169,6 +172,9 @@ project/
 | `scripts/check_coverage.py` | 인용 coverage audit — **과잉인용**(한 문장 과다 인용)·**미등록인용** 주신호, 섹션별 인용밀도; uncited ref/미실현 claim은 중립 정보(낭비 아님) | Phase 6 QC (`Check coverage`) |
 | `scripts/format_references.py` | `[EVID:id]` → 저널형 서지목록(numbered/author-year) + 본문 태그 변환(`*_formatted.md`); **MCP 독립**, evidence.md 정본 | Phase 7 (`Format references`) |
 | `scripts/check_abstract.py` | abstract↔본문 수치 일관성 — abstract에만 있고 본문에 없는 수치 차단 (Rule 3; p값 기본 제외) | Phase 6 QC Round 1 (`Check abstract`) |
+| `scripts/check_crossrefs.py` | 본문 "Table/Figure N" 언급 ↔ `table_*.md`·figure legends 대조 — **broken ref**(없는 것 참조, 주신호)·미인용 항목·첫 언급 순서; advisory 기본, `--fail-on-broken` 등으로 게이트화 | Phase 6 QC (`Check crossrefs`) |
+| `scripts/check_abbreviations.py` | 약어 첫 사용 정의 검사 — abstract↔본문 별도 scope (UNDEFINED/DEFINED_AFTER_USE/REDEFINED/SINGLE_USE); 오탐 전제 advisory, `--allow`·`--strict` | Phase 6 QC (`Check abbreviations`) |
+| `scripts/check_response_coverage.py` | response letter의 Comment↔Response 전수 매핑 + 원본 코멘트 파일 대조 — 미응답·빈 응답·placeholder 검출 (ghost-revision 게이트의 반대면; 기본 fail) | Phase 8 (`Check response coverage`) |
 | `scripts/check_numbers.py` | manuscript/table 수치를 `results/*.csv`와 대조 | Phase 4·6 data gate |
 | `scripts/check_gate.py` | `review/gates/*.GATE.md` 원장의 `status: PASS`와 필수 check를 검증 | 모든 phase gate 통과 직전 |
 | `scripts/check_style.py` | manuscript를 `drafts/style_spec.md` 목표와 대조 (측정형 스타일 게이트) | Phase 5·6 (`/style-pass`, `Check style`) |
@@ -560,6 +566,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 ├── Round 2: Reference verification — Claude + 사용자 (evidence.md 대조)
 ├── Round 3: Logic & flow check — Dr. Editor (section 간 흐름)
 ├── Round 4: Terminology/abbreviation/tense + style metrics — Dr. Editor + lint + check_style.py vs Style Spec (권장)
+├── (권장) Check crossrefs / Check abbreviations — Table·Figure 참조 정합 + 약어 정의 advisory 점검
 ├── Round 5: Statistical quality — Dr. Statistician (권장)
 ├── Round 6: Critical review — 내부(Dr. Editor + Dr. Statistician) + (선택) /critical-review 외부 멀티모델 (overclaiming/bias/일반화, 권장)
 ├── Round 6.5 (선택): Editorial desk-screen — /editor-review: high-impact 저널 편집장 관점 (임상 타당성·분야 scope fit·추가검증 roadmap·하위저널 추천; advisory, `docs/critical_review_protocol.md` §5)
@@ -585,6 +592,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 ├── (선택) /paper-debate — 대응 전략을 공동 저자(Codex)와 토론 후 response 작성
 ├── Response letter 작성 → drafts/revision/REV1/response_letter_REV1.md
 ├── 🔒 GATE (각 응답마다): ghost-revision 검증 (응답 주장 ↔ 원고 diff 대조) 자율 루프
+├── Check response coverage — 모든 리뷰어 코멘트에 응답 존재 확인 (check_response_coverage.py --comments)
 ├── QC re-run (최소 Round 1-2 재수행)
 ├── Compile revised DOCX → output/revision/REV1/
 │   ├── manuscript_REV1_YYMMDD.docx
@@ -687,6 +695,8 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `/verify-claims [section]` | 인용 문장별 SUPPORTED/PARTIAL/UNSUPPORTED 리포트 → `review/claim_verification.md` (`extract_claims.py` + Semantic-Citation Verifier) |
 | `/cite-stance [claim/section]` | 인용이 claim을 지지/반박/언급인지 분류 (Discussion 균형·overclaim 가드; `docs/citation_assist_protocol.md`) |
 | `/evidence-table [topic/ids]` | 논문 비교표(included studies) 생성 (`scripts\evidence_table.py`; Discussion/PRISMA supplement) |
+| `Check crossrefs` | `py scripts\check_crossrefs.py drafts\05_results.md drafts\06_discussion.md` 실행 (본문 Table/Figure 참조 ↔ 실존 대조 — broken ref·미인용·순서; advisory 기본, `--fail-on-broken`·`--fail-on-unreferenced`·`--fail-on-order`로 게이트화) |
+| `Check abbreviations` | `py scripts\check_abbreviations.py drafts\02_abstract.md drafts\03_introduction.md drafts\04_methods.md drafts\05_results.md drafts\06_discussion.md` 실행 (약어 첫 사용 정의 — abstract/본문 scope 분리; advisory, `--allow ABB` 반복 지정·`--strict`) |
 | `Check logic flow` | Verify narrative consistency |
 | `Run checklist for [study type]` | STROBE/CONSORT/PRISMA/CARE checklist |
 
@@ -698,6 +708,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 | `Draft response letter` | 전체 응답서 초안 작성 |
 | `Review response letter` | Dr. Editor 관점에서 응답서 검토 |
 | `Check response completeness` | `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict` 실행 |
+| `Check response coverage` | `py scripts\check_response_coverage.py drafts\revision\REV1\response_letter_REV1.md --comments review\reviewer_comments_REV1.md` 실행 (모든 리뷰어 코멘트에 실제 응답이 있는지 — 미응답·빈 응답·placeholder 차단) |
 | `Compile response letter` | `py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md` 실행 |
 
 ### Figures

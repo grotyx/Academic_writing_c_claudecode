@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.6.2** (2026-07-02)
+**v1.6.3** (2026-07-02)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -307,6 +307,9 @@ Claude 통합 슬래시 명령어:
 | [scripts/check_coverage.py](scripts/check_coverage.py) | 인용 coverage audit — **과잉인용**(한 주장에 과다 인용)·**미등록인용**이 품질 신호, 섹션별 인용밀도; uncited/미실현 claim은 중립(큐레이션, 낭비 아님) |
 | [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → 저널형 서지목록(numbered/author-year) + 본문 태그를 `*_formatted.md`로 변환; **MCP 독립** (Phase 7) |
 | [scripts/check_abstract.py](scripts/check_abstract.py) | abstract↔본문 수치 일관성 — abstract에만 있고 본문에 없는 수치를 차단 (Rule 3; p값 기본 제외) (Phase 6 QC Round 1) |
+| [scripts/check_crossrefs.py](scripts/check_crossrefs.py) | Table/Figure 교차참조 검사 — 본문 "Table N"/"Figure N" 언급 ↔ 실제 `table_*.md`·figure legends: **broken reference**(주신호)·미인용 항목·첫 언급 순서; advisory 기본, `--fail-on-*`로 게이트화 (Phase 6 QC) |
+| [scripts/check_abbreviations.py](scripts/check_abbreviations.py) | 약어 첫 사용 정의 검사 — abstract/본문 별도 scope (UNDEFINED / DEFINED_AFTER_USE / REDEFINED / SINGLE_USE); 오탐 전제 advisory, `--allow`·`--strict` (Phase 6 QC) |
+| [scripts/check_response_coverage.py](scripts/check_response_coverage.py) | 리뷰어 코멘트 응답 커버리지 — 모든 `Comment N)`에 실제 `Response:` 필수 (미응답·빈 응답·placeholder 차단), `--comments`로 원본 코멘트 파일 대조; ghost-revision 게이트 보완 (Phase 8) |
 | [scripts/check_numbers.py](scripts/check_numbers.py) | 원고/표의 숫자를 `results/*.csv`와 대조 |
 | [scripts/check_gate.py](scripts/check_gate.py) | `review/gates/*.GATE.md`의 status와 필수 check 검증 |
 | [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | response-letter `[CHANGE]` claim을 revised manuscript와 대조 |
@@ -357,6 +360,15 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.6.3 (2026-07-02)
+
+**기계적 투고 오류 체커 3종 (advisory 우선)**
+
+- **`scripts/check_crossrefs.py`** — 본문 "Table N"/"Figure N" 언급을 실제 `table_*.md`·figure legend 항목과 대조: broken reference(그동안 아무것도 못 잡던 desk-reject 사유)·미인용 table/figure·첫 언급 순서. "Tables 1 and 2"·"Figure 2-4"·"Fig. 1A" 처리; 코드펜스/HTML 주석 무시; inventory 없으면 전부 broken으로 오탐하는 대신 loud하게 건너뜀. advisory 기본, `--fail-on-broken`/`--fail-on-unreferenced`/`--fail-on-order`로 게이트화.
+- **`scripts/check_abbreviations.py`** — 약어 첫 사용 정의 audit, abstract/본문 독립 scope(저널이 둘 다 요구). `ABBREV_UNDEFINED`/`ABBREV_DEFINED_AFTER_USE`/`ABBREV_REDEFINED`/항상-advisory `ABBREV_SINGLE_USE`. 의도적으로 advisory — 탐지는 대문자 전용(2-6자, `-숫자`, 복수형 s), 통계 약어 기본 허용(CI, SD, OR, HR...) + `--allow` 확장; `--strict`는 정의 이슈만 게이트화.
+- **`scripts/check_response_coverage.py`** — ghost-revision 게이트의 반대면: 응답서가 **모든** 리뷰어 코멘트에 답했는가? `Reviewer #N:`/`Comment N)`/`Response:` 구조 파싱, 미응답·빈 응답·`[placeholder]` 차단, `--comments`로 원본 코멘트 파일 대조(`COMMENT_UNANSWERED` 실패; 원본 파싱 불가 시 경고, `--strict`면 실패). 기본 fail — 코멘트 누락은 이분법적 결함.
+- 설계 원칙(저자 피드백 반영): 기계화는 이분법적 사실에만, 판단은 사람+LLM 몫. 문서 갱신(`CLAUDE.md`, `docs/qc_guide.md` §3.7/§4.2, `docs/revision_guide.md`). 테스트 40개(총 262).
 
 ### v1.6.2 (2026-07-02)
 
