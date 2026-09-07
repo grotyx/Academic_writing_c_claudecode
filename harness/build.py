@@ -107,6 +107,13 @@ def build(path):
     if references.unknown or references.missing_citation:
         raise ValueError('incomplete bibliography')
     date=datetime.now().strftime('%y%m%d')
+    # Rule 5: revision packages carry _REVn before the date (manuscript_REV1_YYMMDD.docx).
+    stamp='_'+date
+    if config.get('response'):
+        folder=inside(root,config['response']).parent
+        revision=re.fullmatch(r'REV(\d+)',folder.name)
+        if revision and folder.parent.name=='revision':
+            stamp=f'_REV{revision.group(1)}_{date}'
     destination=inside(root, config.get('output','output'))
     destination.mkdir(parents=True,exist_ok=True)
     final=destination/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'_'+uuid4().hex[:8])
@@ -118,7 +125,7 @@ def build(path):
             if source.name.startswith('08_references'):
                 continue  # bibliography is generated below from actual first appearances
             if source.name.startswith('01_title'):
-                title=document(False);append_markdown(title,text);title.save(stage/f'title_page_{date}.docx');continue
+                title=document(False);append_markdown(title,text);title.save(stage/f'title_page{stamp}.docx');continue
             if section_count: manuscript.add_page_break()
             append_markdown(manuscript,text);merged.append(text);section_count+=1
         if references.references:
@@ -129,11 +136,11 @@ def build(path):
             if ai.get('used'):
                 disclosure='# AI assistance disclosure\n\n'+ai['disclosure']
                 manuscript.add_page_break();append_markdown(manuscript,disclosure);merged.append(disclosure)
-        manuscript.save(stage/f'manuscript_{date}.docx')
-        (stage/f'manuscript_{date}.md').write_text('\n\n'.join(merged),encoding='utf-8')
+        manuscript.save(stage/f'manuscript{stamp}.docx')
+        (stage/f'manuscript{stamp}.md').write_text('\n\n'.join(merged),encoding='utf-8')
         for index,value in enumerate(config.get('tables',[]),1):
             text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels)
-            table=document(False);append_markdown(table,text);table.save(stage/f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}_{date}.docx')
+            table=document(False);append_markdown(table,text);table.save(stage/f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}{stamp}.docx')
         for index,value in enumerate(config.get('figures',[]),1):
             source=inside(root,value);shutil.copyfile(source,stage/f'figure_{checker("check_crossrefs").FIGURE_FILE_RE.search(source.stem).group(1)}{source.suffix}')
         if config.get('response'):
@@ -146,7 +153,7 @@ def build(path):
             if response_refs.references:
                 response_text+='\n\nReferences\n\n'+'\n\n'.join(response_refs.references)
             temporary_response=stage/'response_source.md';temporary_response.write_text(response_text,encoding='utf-8')
-            response.compile_docx(temporary_response,stage/f'response_letter_{date}.docx',keep_change_markers=False)
+            response.compile_docx(temporary_response,stage/f'response_letter{stamp}.docx',keep_change_markers=False)
             temporary_response.unlink()
         if snapshot(path,config)!=report['dependencies'] or any(digest(inside(root,config[key]))!=value for key,value in receipts.items()):
             raise ValueError('inputs or approvals changed during build')

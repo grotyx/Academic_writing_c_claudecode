@@ -152,3 +152,24 @@ def test_changed_during_build_does_not_publish(project):
         with pytest.raises(ValueError,match='changed during build'):
             build(project)
     assert not list((project.parent/'output').glob('*'))
+
+def test_build_stamps_revision_suffix(project):
+    root=project.parent
+    put(root/'drafts/revision/REV1/03_introduction_REV1.md',
+        '# Introduction\n\nAn important clinical question remains unresolved. Additional context was added.\n')
+    put(root/'review/comments_REV1.md','Reviewer #1:\n\nComment 1) Add context.\n')
+    put(root/'drafts/revision/REV1/response_letter_REV1.md',
+        '# Responses\n\nReviewer #1:\n\nComment 1) Add context.\n\n'
+        '[CHANGE]\ncomment_id: R1-C1\nclaim: Added context\nsection: 03_introduction\n'
+        'expected_terms: additional context\n[/CHANGE]\n\n'
+        'Response: We thank the reviewer. Additional context was added.\n')
+    data=json.loads(project.read_text(encoding='utf-8'))
+    data['artifacts']=['drafts/revision/REV1/03_introduction_REV1.md','drafts/05_results.md']
+    data['response']='drafts/revision/REV1/response_letter_REV1.md';data['comments']='review/comments_REV1.md'
+    put(project,data);sign(project)
+    assert verify(project,'revision')['status']=='PASS'
+    out=build(project)
+    names={item.name for item in out.iterdir()}
+    assert any(name.startswith('manuscript_REV1_') and name.endswith('.docx') for name in names),names
+    assert any(name.startswith('response_letter_REV1_') and name.endswith('.docx') for name in names),names
+    assert not any(name.startswith('manuscript_2') for name in names),names
