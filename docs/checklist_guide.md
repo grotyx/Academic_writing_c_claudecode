@@ -1,4 +1,4 @@
-# Study-Type Specific Checklists (v0.2.1)
+# Study-Type Specific Checklists (v0.2.2)
 
 ## Overview
 연구 유형에 따른 reporting guideline 체크리스트입니다. 제출 전 해당 연구 유형의 체크리스트를 완료하세요.
@@ -84,68 +84,44 @@
 
 ---
 
-## CONSORT Checklist (Randomized Controlled Trials)
+## CONSORT 2025 (Randomized Controlled Trials)
 
-### Title and Abstract
-| # | Item | Location | Level | Done |
-|---|------|----------|-------|------|
-| 1a | "Randomized" in title | Title | 필수 | [ ] |
-| 1b | Structured abstract (design, methods, results, conclusions) | Abstract | 필수 | [ ] |
+Verified 2026-09-06 against the [official CONSORT site](https://www.consort-spirit.org/). Use its full 30-item checklist and explanation document, including subitems, for submission. This short index replaces the previous 2010 numbering and is not the full checklist.
 
-### Introduction
-| # | Item | Location | Level | Done |
-|---|------|----------|-------|------|
-| 2a | Scientific background and rationale | Introduction | 필수 | [ ] |
-| 2b | Specific objectives or hypotheses | Introduction | 필수 | [ ] |
+| Item | Review topic | Location / completion |
+|---|---|---|
+| 1 | Trial identification and summary | [ ] |
+| 2 | Registration | [ ] |
+| 3 | Protocol and analysis-plan access | [ ] |
+| 4 | Data-sharing statement | [ ] |
+| 5 | Funding and competing interests | [ ] |
+| 6 | Scientific rationale | [ ] |
+| 7 | Objectives | [ ] |
+| 8 | Patient/public involvement | [ ] |
+| 9 | Design | [ ] |
+| 10 | Protocol changes | [ ] |
+| 11 | Setting | [ ] |
+| 12 | Eligibility | [ ] |
+| 13 | Interventions | [ ] |
+| 14 | Outcomes | [ ] |
+| 15 | Harm assessment | [ ] |
+| 16 | Sample-size rationale | [ ] |
+| 17 | Random sequence | [ ] |
+| 18 | Concealment | [ ] |
+| 19 | Assignment implementation | [ ] |
+| 20 | Blinding | [ ] |
+| 21 | Analysis methods | [ ] |
+| 22 | Participant flow | [ ] |
+| 23 | Recruitment and end dates | [ ] |
+| 24 | Treatment delivery | [ ] |
+| 25 | Baseline characteristics | [ ] |
+| 26 | Outcome estimates and denominators | [ ] |
+| 27 | Observed harms | [ ] |
+| 28 | Additional analyses | [ ] |
+| 29 | Interpretation | [ ] |
+| 30 | Limitations | [ ] |
 
-### Methods
-| # | Item | Location | Level | Done |
-|---|------|----------|-------|------|
-| 3a | Trial design (parallel, factorial, etc.) with allocation ratio | Methods | 필수 | [ ] |
-| 3b | Important changes after trial start | Methods | 권장 | [ ] |
-| 4a | Eligibility criteria | Methods | 필수 | [ ] |
-| 4b | Settings and locations | Methods | 필수 | [ ] |
-| 5 | Interventions described with sufficient detail | Methods | 필수 | [ ] |
-| 6a | Pre-specified primary and secondary outcomes | Methods | 필수 | [ ] |
-| 6b | Any changes to outcomes after start | Methods | 권장 | [ ] |
-| 7a | How sample size was determined | Methods | 필수 | [ ] |
-| 7b | Interim analyses explanation (if any) | Methods | 선택 | [ ] |
-| 8a | Sequence generation method | Methods | 필수 | [ ] |
-| 8b | Type of randomization (block, stratified, etc.) | Methods | 필수 | [ ] |
-| 9 | Allocation concealment mechanism | Methods | 필수 | [ ] |
-| 10 | Who generated sequence, enrolled, assigned | Methods | 권장 | [ ] |
-| 11a | Who was blinded (participants, providers, assessors) | Methods | 필수 | [ ] |
-| 11b | Description of similarity of interventions | Methods | 권장 | [ ] |
-| 12a | Statistical methods for primary and secondary outcomes | Methods | 필수 | [ ] |
-| 12b | Methods for additional analyses (subgroup, adjusted) | Methods | 선택 | [ ] |
-
-### Results
-| # | Item | Location | Level | Done |
-|---|------|----------|-------|------|
-| 13a | Flow diagram with numbers | Results/Figure | 필수 | [ ] |
-| 13b | Losses and exclusions with reasons | Results | 필수 | [ ] |
-| 14a | Recruitment dates | Results | 필수 | [ ] |
-| 14b | Why trial ended or stopped | Results | 선택 | [ ] |
-| 15 | Baseline demographic table | Results/Table 1 | 필수 | [ ] |
-| 16 | Numbers analyzed in each group (ITT) | Results | 필수 | [ ] |
-| 17a | Primary and secondary outcomes with effect size and CI | Results | 필수 | [ ] |
-| 17b | Binary outcomes: absolute and relative effect sizes | Results | 권장 | [ ] |
-| 18 | All important harms or unintended effects | Results | 필수 | [ ] |
-
-### Discussion
-| # | Item | Location | Level | Done |
-|---|------|----------|-------|------|
-| 19 | Trial limitations | Discussion | 필수 | [ ] |
-| 20 | Generalizability | Discussion | 권장 | [ ] |
-| 21 | Interpretation consistent with results | Discussion | 필수 | [ ] |
-
-### Other
-| # | Item | Location | Level | Done |
-|---|------|----------|-------|------|
-| 22 | Registration number and name of registry | Methods/Abstract | 필수 | [ ] |
-| 23 | Where full protocol can be accessed | Methods | 권장 | [ ] |
-| 24 | Funding sources | Acknowledgments | 필수 | [ ] |
-| 25 | Role of funders | Acknowledgments | 권장 | [ ] |
+For every primary/secondary outcome, record group-specific analysed counts, available observations at the stated time point, group estimates and treatment effects with precision. Binary outcomes need absolute and relative effects. See [Item 26](https://www.consort-spirit.org/item-26-numbers-analysed). In `review/checklist.json`, retain official subitem IDs and locations; document justified non-applicability. A completed short index alone does not establish full reporting compliance.
 
 ---
 

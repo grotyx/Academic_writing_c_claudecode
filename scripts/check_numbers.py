@@ -26,7 +26,7 @@ INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 NUMBER_RE = re.compile(
     r"(?<![A-Za-z0-9_])"
     r"(?:(?P<p>\*?[pP]\*?)\s*(?P<comp><=|>=|<|>|=)\s*)?"
-    r"(?P<num>[-+]?(?:\d+(?:,\d{3})*(?:\.\d+)?|\.\d+))"
+    r"(?P<num>[-+]?(?:\d+(?:,\d{3})*(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?)"
     r"(?P<pct>%)?"
 )
 P_VALUE_COLUMNS = frozenset(
@@ -92,9 +92,7 @@ def to_float(number_text: str) -> float:
 
 
 def decimal_places(number_text: str) -> int:
-    if "." not in number_text:
-        return 0
-    return len(number_text.split(".", 1)[1])
+    return max(0, -Decimal(number_text.replace(",", "")).as_tuple().exponent)
 
 
 def extract_numbers_from_text(text: str) -> list[float]:
@@ -175,13 +173,21 @@ def is_structural_number(
 def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
     text = strip_ignored_text(artifact.read_text(encoding="utf-8"))
     tokens: list[NumberToken] = []
+    p_columns = set()
     for line_number, line in enumerate(text.splitlines(), start=1):
-        if "XX" in line:
-            continue
+        if not line.strip().startswith('|'):
+            p_columns = set()
+        elif re.search(r'[A-Za-z]', line) and not re.search(r'\d', line):
+            candidates = {i for i, cell in enumerate(line.split('|'))
+                          if cell.strip().strip('*').casefold() in P_VALUE_COLUMNS}
+            if candidates:
+                p_columns = candidates
         for match in NUMBER_RE.finditer(line):
             raw_number = match.group("num")
             full_token = match.group(0)
-            is_p_value = bool(match.group("p"))
+            table_p = line.strip().startswith('|') and line[:match.start()].count('|') in p_columns
+            is_p_value = bool(match.group("p")) or table_p
+            table_comparator = re.search(r'(<=|>=|<|>|=)\s*$', line[:match.start()]) if table_p else None
             value = to_float(raw_number)
             if is_structural_number(line, match.start(), full_token, is_p_value, value):
                 continue
@@ -190,7 +196,7 @@ def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
                     value=value,
                     number=raw_number,
                     line=line_number,
-                    comparator=match.group("comp") or "",
+                    comparator=match.group("comp") or (table_comparator.group(1) if table_comparator else ""),
                     is_p_value=is_p_value,
                     decimals=decimal_places(raw_number),
                     context=line.strip(),
@@ -222,26 +228,30 @@ def rounded_candidates(value: float, decimals: int) -> tuple[float, float]:
 
 
 def matches_number(token: NumberToken, result_number: ResultNumber) -> bool:
-    if token.is_p_value and token.comparator:
-        if not result_is_p_value(result_number):
+    if token.is_p_value:
+        if not 0 < token.value <= 1 or not result_is_p_value(result_number):
             return False
         bound = result_bound_comparator(result_number)
-        if bound and token.comparator != "=":
-            # The CSV cell is itself a bound (e.g. "<0.001"). The manuscript may
-            # restate it or a looser bound in the same direction, never a
-            # tighter one or the opposite direction.
-            if bound[0] != token.comparator[0]:
+        comp = token.comparator or "="
+        if bound:
+            if comp == "=" or bound[0] != comp[0]:
                 return False
             if bound[0] == "<":
-                return result_number.value <= token.value
-            return result_number.value >= token.value
-        if token.comparator == "<":
+                return (result_number.value < token.value or
+                        (result_number.value == token.value and
+                         (bound == "<" or comp == "<=")))
+            return (result_number.value > token.value or
+                    (result_number.value == token.value and
+                     (bound == ">" or comp == ">=")))
+        if not 0 <= result_number.value <= 1:
+            return False
+        if comp == "<":
             return result_number.value < token.value
-        if token.comparator == "<=":
+        if comp == "<=":
             return result_number.value <= token.value
-        if token.comparator == ">":
+        if comp == ">":
             return result_number.value > token.value
-        if token.comparator == ">=":
+        if comp == ">=":
             return result_number.value >= token.value
 
     if math.isclose(token.value, result_number.value, rel_tol=0, abs_tol=1e-12):
@@ -285,6 +295,10 @@ def check_numbers(
             )
             continue
 
+        for line_no, line in enumerate(strip_ignored_text(artifact.read_text(encoding="utf-8")).splitlines(), 1):
+            if re.search(r"\bXX\b|\[(?:TODO|TBD)\]", line):
+                failures.append(NumberIssue(artifact, "<placeholder>", line_no,
+                    "unresolved manuscript placeholder", "Complete the draft before verification.", "<none>"))
         tokens = iter_artifact_numbers(artifact)
         checked_numbers += len(tokens)
         for token in tokens:

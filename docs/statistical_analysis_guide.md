@@ -778,7 +778,7 @@ def compare_groups(df, outcome_var, group_var):
 | p-value without effect size | Report both (p-value + CI + effect size) |
 | "Trending toward significance" | **Never use** - report exact p-value, state non-significant |
 | Cherry-picking subgroups | Pre-specify all analyses, use interaction tests |
-| Numbers in text AND table | Choose one location |
+| Exhaustive repetition of table data in text | Summarize key outcomes and effect estimates with CI; avoid repeating all cells |
 | RCT Table 1에 p-value | RCT는 p-value 불필요 (CONSORT) |
 | Confusing statistical vs clinical significance | Report MCID comparison |
 | Testing every variable without plan | Define endpoints hierarchy in advance |
@@ -789,6 +789,6 @@ def compare_groups(df, outcome_var, group_var):
 
 ---
 
-*Last updated: v0.3.0*
+*Last updated: v0.3.1*
 *Based on Dr. Statistician role from expert_roles.md*
-*References: NEJM 2019 statistical guidelines, CONSORT 2010, SAMPL guidelines, ICMJE recommendations*
+*References: NEJM 2019 statistical guidelines, CONSORT 2025 (see docs/checklist_guide.md), SAMPL guidelines, ICMJE recommendations*

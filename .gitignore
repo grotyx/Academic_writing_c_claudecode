@@ -45,3 +45,22 @@ __pycache__/
 
 # Local archives/backups (not part of the workflow)
 *.zip
+
+# Private project work and credentials (already tracked templates are unaffected)
+.env
+.env.*
+!.env.example
+.venv/
+/results/
+/output/
+/review/runs/
+/review/packets/
+/review/state.json
+/review/*.json
+/review/*.jsonl
+/data/*.csv
+/data/*.xlsx
+/data/*.xls
+/data/*.approval.json
+/drafts/*.approval.json
+/project.json

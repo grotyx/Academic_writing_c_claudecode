@@ -1,4 +1,6 @@
-# DOCX 변환 가이드 (v0.2.3)
+# DOCX 변환 가이드 (v0.2.4)
+
+> v1.7.0 update: `python -m harness build --project PATH` provides submission-gated, manifest-ordered DOCX packaging. It supports a bounded Markdown subset and preserves bibliography Citation strings; journal-specific CSL formatting and visual inspection remain separate. See `docs/harness_guide.md`.
 
 drafts/ 폴더의 섹션들을 학술 논문 DOCX 파일로 변환하는 규칙입니다.
 python-docx를 사용하여 서식을 정밀하게 제어합니다.

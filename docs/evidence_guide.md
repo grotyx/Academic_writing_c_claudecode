@@ -1,4 +1,6 @@
-# Evidence 작성 가이드 (v0.3.1)
+# Evidence 작성 가이드 (v0.3.2)
+
+> v1.7.0 update: Allowed Source Status values: verified, full-text-reviewed, abstract-only. Unknown/todo/retracted states fail. Duplicate IDs fail; new imports add a PMID or DOI-hash suffix. Preserve existing unique IDs. Metadata status does not prove claim support. See `docs/harness_guide.md`.
 
 > `knowledge/evidence.md` 작성 방법 및 문헌 관리 워크플로우
 

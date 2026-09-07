@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.6.4** (2026-08-30)
+**v1.7.0** (2026-09-06)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -58,7 +58,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 ```
 project/
 ├── CLAUDE.md                     # コアルール・設定
-├── AGENTS.MD                     # agent 起動ルール；CLAUDE.md を source of truth とする
+├── AGENTS.md                     # agent 起動ルール；CLAUDE.md を source of truth とする
 ├── README.md                     # 英語版 README
 ├── .gitattributes                # 改行コードポリシー (text=auto eol=lf；OneDrive/Windows 同期による CRLF 変更を防止)
 ├── docs/                         # 参照ガイド
@@ -332,6 +332,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 ## 変更履歴
 
+### v1.7.0 (260906)
+
+- Fixed F01–F09: citation status/duplicate IDs, p-value bounds, placeholders, gate identity, plan completeness, revision baseline and reviewer fallback.
+- Added shared WORKFLOW.md, standard AGENTS.md and GEMINI.md bootstraps.
+- Added manifest-based verification profiles, context-bound results, content-bound approvals, review packets/state, and gated DOCX packaging.
+- See [shared engine guide](docs/harness_guide.md) for setup, migration and remaining limits.
+
 ### v1.6.4 (2026-08-30)
 
 **ハーネス全体レビュー（Claude Fable）— 欠陥 16 件修正、回帰テスト 33 件**
@@ -469,7 +476,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 **medical-kag MCP 統合 — evidence.md と並走するナレッジグラフ**
 
 - **Grounding を保持した KAG 統合** — `medical-kag-remote` MCP（脊椎外科向けの knowledge-augmented graph）を、上流の探索／分析／整形エンジンとして接続する一方、`knowledge/evidence.md` は唯一の正典となる引用台帳であり続ける。グラフが提示したものは、引用される前に必ず `[EVID:id]`（PMID/DOI を検証済み）として登録されるため、引き続き `check_citations.py` がすべてをゲートする。新規の `docs/medical_kag_protocol.md` が各ツールをフェーズに対応づける — 探索＋構造化抽出（Phase 1）、主張と Discussion のための evidence-chain／intervention-comparison／GRADE 統合（Phase 3-4）、conflict／overclaim ガード（Phase 6）、ジャーナル形式の参考文献リスト（Phase 7）。
-- **追加的＋フォールバック** — この MCP は決して依存先ではない。利用できない場合（例：未認証のリモートセッション）、ワークフローは `scripts/search_pubmed.py` ＋手動の evidence.md へとグレースフルに縮退する。CLAUDE.md（Rule 1、STOP signals、Phase 1、Quick Commands）＋ Codex パリティのための AGENTS.MD に組み込み済み。
+- **追加的＋フォールバック** — この MCP は決して依存先ではない。利用できない場合（例：未認証のリモートセッション）、ワークフローは `scripts/search_pubmed.py` ＋手動の evidence.md へとグレースフルに縮退する。CLAUDE.md（Rule 1、STOP signals、Phase 1、Quick Commands）＋ Codex パリティのための AGENTS.md に組み込み済み。
 
 ### v1.1.2 (2026-06-21)
 
@@ -482,7 +489,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 **スタイルの強制 — 計測可能なゲート＋Codex パリティ**
 
 - **決定論的なスタイルメトリクス** — `scripts/check_style.py`（`extract` / `check --spec`）が単語数、平均文長、段落数、引用密度、hedging を計測し、Style Spec の目標値からの逸脱を検出する — いわば「スタイル版 check_numbers」。`lint_on_edit.py`（Style Spec が存在する場合、各草稿編集時に `[STYLE-METRIC]` の逸脱を提示）および Phase 5/6 のゲートに組み込まれている。テストを追加。
-- **Codex パリティ＋キャリブレーション** — hook は Claude Code 専用であるため、`AGENTS.MD` は Claude 以外のランタイムに対し、style-pass（`check_style.py` ＋ Style-Conformance verifier）を明示的に実行するよう指示するようになった。Style Spec テンプレートには before→after のキャリブレーション例を追加（few-shot は抽象的なルールよりも変換をうまく導く）。
+- **Codex パリティ＋キャリブレーション** — hook は Claude Code 専用であるため、`AGENTS.md` は Claude 以外のランタイムに対し、style-pass（`check_style.py` ＋ Style-Conformance verifier）を明示的に実行するよう指示するようになった。Style Spec テンプレートには before→after のキャリブレーション例を追加（few-shot は抽象的なルールよりも変換をうまく導く）。
 
 ### v1.1.0 (2026-06-21)
 
@@ -495,7 +502,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 **クロスランタイム批判的レビュー＋モデル選択**
 
-- **Claude-CLI reviewer** — `scripts/critical_review.py --include-claude` はローカルの `claude -p`（ヘッドレス）をシェル経由で呼び出すため、Claude Code 以外の呼び出し元（Codex や素のシェル）でも Claude の敵対的レビューを取り込める。`OPENROUTER_API_KEY` は OpenRouter モデルが実際に要求された場合にのみ必要となった。`docs/critical_review_protocol.md` ＋ `AGENTS.MD` に文書化。
+- **Claude-CLI reviewer** — `scripts/critical_review.py --include-claude` はローカルの `claude -p`（ヘッドレス）をシェル経由で呼び出すため、Claude Code 以外の呼び出し元（Codex や素のシェル）でも Claude の敵対的レビューを取り込める。`OPENROUTER_API_KEY` は OpenRouter モデルが実際に要求された場合にのみ必要となった。`docs/critical_review_protocol.md` ＋ `AGENTS.md` に文書化。
 - **モデルプールの拡張＋約2個を選択** — `scripts/critical_models.txt` に MiniMax M3、GLM 5.2、Qwen3-Max、DeepSeek V4 Pro を追加；`/critical-review` はこれらを個別の `AskUserQuestion` 選択肢として提示し、約2個の選択（コスト＋盲点の多様性）を推奨したうえで `--models <selected>` を実行する。
 
 ### v1.0.2 (2026-06-20)
@@ -594,7 +601,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 - `Style/terminology.md` を、脊椎外科・臨床試験・AI/radiomics・報告コンテキストにわたる preferred/forbidden 用語のプロジェクト用語 registry に拡張。
 - outline → evidence-bound draft → style pass → QC の drafting を強制する `docs/drafting_protocol.md` と `docs/section_templates.md` を追加。
 - `scripts/lint_manuscript.py` を追加し、Windows 上で `py scripts/lint_manuscript.py drafts --quiet` により manuscript linting が通過するよう draft/table テンプレートを更新。
-- agent 起動指示として `AGENTS.MD` を追加し、`CLAUDE.md` を権威ある source of truth とする。
+- agent 起動指示として `AGENTS.md` を追加し、`CLAUDE.md` を権威ある source of truth とする。
 - 著作権付き PDF と非公開の style-anchor 要約をローカルに保ちつつ、公開ワークフローファイルと例は commit 可能なまま残すよう `.gitignore` を更新。
 
 ### v0.7.1 (2026-05-15)

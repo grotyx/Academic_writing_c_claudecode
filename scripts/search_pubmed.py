@@ -21,6 +21,7 @@ import json
 import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
+import hashlib
 import argparse
 import re
 import time
@@ -251,7 +252,16 @@ def format_evidence_entry(a, ref_num):
     year = a["year"]
     citation = format_citation(a)
     design = guess_study_design(a.get("pub_types", []))
-    evidence_id = f"{fa}_{year}" if year else fa
+    base_id = f"{fa}_{year}" if year else fa
+    pmid = str(a.get("pmid", "")).strip()
+    doi = str(a.get("doi", "")).strip().lower().removeprefix("https://doi.org/")
+    if pmid:
+        suffix = "pmid" + slugify(pmid)
+    elif doi:
+        suffix = "doi" + hashlib.sha256(doi.encode()).hexdigest()[:16]
+    else:
+        raise ValueError("A PMID or DOI is required to register a stable evidence identity")
+    evidence_id = f"{base_id}_{suffix}"
     source_status = "abstract-only" if a.get("abstract", "") else "todo"
 
     entry = f"""### [{ref_num}] {a['first_author']} et al., {year}

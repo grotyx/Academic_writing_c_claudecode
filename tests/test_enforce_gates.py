@@ -18,6 +18,42 @@ def load_module():
     return module
 
 
+DRAFT_CONTENT = """
+## Key Message
+Compare patient outcomes across the treatment groups.
+## Tone & Voice
+Use conservative language for exploratory findings.
+## Essential References
+Use the verified trial evidence registered for this project.
+## Evidence Gap
+No unresolved evidence gaps remain for the planned claims.
+## Claim to Citation Mapping
+The background claim is supported by the registered trial.
+## Table / Figure Plan
+Report primary outcomes in the main results table.
+## Introduction Outline
+Describe the clinical problem and the evidence gap.
+## Discussion Outline
+Interpret the primary outcome and compare prior studies.
+## Limitation Points
+Discuss limited precision and potential selection bias.
+"""
+ANALYSIS_CONTENT = """
+## Research Question
+Compare the primary outcome between randomized groups.
+## Study Population
+Include all eligible randomized adult participants.
+## Variable Definitions
+Primary endpoint is ODI change at the prespecified visit.
+## Statistical Methods
+Estimate the baseline-adjusted difference between groups.
+## Significance and Multiple Comparisons
+Use the prespecified alpha with no confirmatory secondary tests.
+## Missing Data
+Use the prespecified imputation and sensitivity analyses.
+"""
+
+
 def event(cwd, tool: str = "Write", file_path: str = "drafts/04_methods.md") -> dict:
     return {"tool_name": tool, "cwd": str(cwd), "tool_input": {"file_path": file_path}}
 
@@ -59,7 +95,7 @@ class DecideTests(unittest.TestCase):
             drafts = Path(tmp) / "drafts"
             drafts.mkdir()
             (drafts / "draft_plan.md").write_text(
-                "# Draft Plan\n\n## 1. Key Message\nA focused approved plan.\n\n"
+                DRAFT_CONTENT +                 "# Draft Plan\n\n## 1. Key Message\nA focused approved plan.\n\n"
                 "- [x] 사용자 승인 완료\n",
                 encoding="utf-8",
             )
@@ -84,7 +120,7 @@ class DecideTests(unittest.TestCase):
             drafts = Path(tmp) / "drafts"
             drafts.mkdir()
             (drafts / "draft_plan.md").write_text(
-                "# Draft Plan\n\nCitation style: bracket [N], 6 authors then et al.\n\n"
+                DRAFT_CONTENT +                 "# Draft Plan\n\nCitation style: bracket [N], 6 authors then et al.\n\n"
                 "- [x] 사용자 승인 완료\n",
                 encoding="utf-8",
             )
@@ -129,7 +165,7 @@ class DecideTests(unittest.TestCase):
                 "Rule 8", m.decide(event(tmp, file_path="drafts/paper1_x/04_methods.md"))
             )
             (paper / "draft_plan.md").write_text(
-                "# Draft Plan\n\nApproved plan for paper 1.\n\n- [x] 사용자 승인 완료\n",
+                DRAFT_CONTENT +                 "# Draft Plan\n\nApproved plan for paper 1.\n\n- [x] 사용자 승인 완료\n",
                 encoding="utf-8",
             )
             self.assertIsNone(m.decide(event(tmp, file_path="drafts/paper1_x/04_methods.md")))
@@ -165,7 +201,7 @@ class DecideTests(unittest.TestCase):
             drafts = Path(tmp) / "drafts"
             drafts.mkdir()
             (drafts / "draft_plan.md").write_text(
-                "# Draft Plan\n\nApproved.\n\n- [X] **사용자 승인 완료**\n", encoding="utf-8"
+                DRAFT_CONTENT +                 "# Draft Plan\n\nApproved.\n\n- [X] **사용자 승인 완료**\n", encoding="utf-8"
             )
             self.assertIsNone(m.decide(event(tmp, file_path="drafts/04_methods.md")))
 
@@ -183,7 +219,7 @@ class DecideTests(unittest.TestCase):
             data = Path(tmp) / "data"
             (data / "py").mkdir(parents=True)
             (data / "analysis_plan.md").write_text(
-                "# Analysis Plan\n\nResearch question: compare treatment groups.\n\n"
+                ANALYSIS_CONTENT +                 "# Analysis Plan\n\nResearch question: compare treatment groups.\n\n"
                 "- [x] 사용자 승인 완료\n",
                 encoding="utf-8",
             )
@@ -195,7 +231,7 @@ class DecideTests(unittest.TestCase):
             data = Path(tmp) / "data"
             (data / "py").mkdir(parents=True)
             (data / "analysis_plan.md").write_text(
-                "# Analysis Plan\n\nExpected sample size: [N=120]. Report median [IQR].\n\n"
+                ANALYSIS_CONTENT +                 "# Analysis Plan\n\nExpected sample size: [N=120]. Report median [IQR].\n\n"
                 "- [x] 사용자 승인 완료\n",
                 encoding="utf-8",
             )

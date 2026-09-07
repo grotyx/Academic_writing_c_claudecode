@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "paper_id": "replace_with_paper_id",
+  "study_type": "original_research",
+  "artifacts": ["drafts/01_title.md", "drafts/02_abstract.md", "drafts/03_introduction.md", "drafts/04_methods.md", "drafts/05_results.md", "drafts/06_discussion.md", "drafts/07_conclusion.md", "drafts/09_figure_legends.md"],
+  "tables": ["drafts/table_1.md"],
+  "figures": [],
+  "evidence": "knowledge/evidence.md",
+  "draft_plan": "drafts/draft_plan.md",
+  "analysis_plan": "data/analysis_plan.md",
+  "results": "results",
+  "numeric_artifacts": ["drafts/02_abstract.md", "drafts/05_results.md", "drafts/table_1.md"],
+  "abstract": "drafts/02_abstract.md",
+  "result_bindings": "review/result_bindings.json",
+  "semantic_review": "review/semantic_review.json",
+  "human_signoff": "review/human_signoff.json",
+  "ai_usage": "review/ai_usage.json",
+  "checklist": "review/checklist.json",
+  "dependencies": [],
+  "review_sources": [],
+  "output": "output"
+}

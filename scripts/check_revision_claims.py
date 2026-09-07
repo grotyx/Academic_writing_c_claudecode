@@ -222,6 +222,17 @@ def resolve_original_section_path(claim: ChangeClaim, response_path: Path, draft
 
     revision_id = infer_revision_id(response_path)
     base_stem = normalize_section_stem(section, revision_id)
+    # Reconstruct the preceding submission overlay: newest earlier revision
+    # containing this section, then the initial draft. Never compare REV2 to
+    # the initial draft when REV1 already changed the section.
+    if revision_id:
+        number = int(revision_id[3:])
+        for previous in range(number - 1, 0, -1):
+            folder = draft_root / "revision" / f"REV{previous}"
+            for name in (f"{base_stem}_REV{previous}.md", f"{base_stem}.md"):
+                candidate = folder / name
+                if candidate.is_file():
+                    return candidate
     section_path = Path(section)
     candidates: list[Path] = []
 
