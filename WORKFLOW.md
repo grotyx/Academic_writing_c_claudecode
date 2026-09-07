@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.7.0)
+# Academic Paper Writing Project (v1.7.1)
 
-## Shared Engine (v1.7.0)
+## Shared Engine (v1.7.1)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -18,8 +18,10 @@ This file contains the runtime-independent workflow. Read `docs/harness_guide.md
 ### Single Paper Project (기본)
 ```
 project/
-├── CLAUDE.md                     # This file - core rules & config
-├── AGENTS.md                     # Agent bootstrap rules; points to CLAUDE.md as source of truth
+├── WORKFLOW.md                   # This file - shared core rules & config (Claude/Codex/Gemini)
+├── CLAUDE.md                     # Claude Code bootstrap; imports this file via @WORKFLOW.md
+├── AGENTS.md                     # Codex/agent bootstrap rules; points to WORKFLOW.md as source of truth
+├── GEMINI.md                     # Gemini bootstrap; points to WORKFLOW.md
 ├── .gitattributes                # Line-ending policy (text=auto eol=lf; prevents CRLF churn from OneDrive/Windows sync)
 ├── docs/                         # Reference guides (read when needed)
 │   ├── writing_guide.md          # Section-by-section writing guide
@@ -134,7 +136,7 @@ project/
 
 | File/Folder | Purpose | When to Use |
 |-------------|---------|-------------|
-| `CLAUDE.md` | Core rules, project config, writing style | Auto-loaded every session |
+| `WORKFLOW.md` | Core rules, project config, writing style (shared by every runtime) | Auto-loaded in Claude Code via `@WORKFLOW.md` in `CLAUDE.md`; read first in Codex/Gemini |
 | `.gitattributes` | Line-ending policy (`text=auto eol=lf`) — stores LF, normalizes on compare so OneDrive/Windows CRLF rewrites never produce content-free diffs | Git-managed (no manual edits needed) |
 | `docs/writing_guide.md` | Detailed section guidelines | When drafting specific sections |
 | `docs/drafting_protocol.md` | Mandatory outline → evidence-bound draft → style pass → QC workflow | Before drafting any section |
@@ -428,9 +430,9 @@ Use a capable planner for design, a shell-capable analyst for reproducible analy
 
 **규칙:**
 
-- **문서 동기화 (코드 ↔ 문서 동시 변경):** 동작·CLI 플래그·스크립트를 바꾸면 **같은 변경 안에서** 관련 문서를 갱신한다 — `CLAUDE.md`(명령 예시·규칙), `docs/`(해당 protocol), `review/gates/_TEMPLATE.GATE.md`, `AGENTS.md`, `README.md`/`.ko`/`.ja`/`.zh`(기능 bullet + changelog). **문서 없는 코드 변경 금지.**
+- **문서 동기화 (코드 ↔ 문서 동시 변경):** 동작·CLI 플래그·스크립트를 바꾸면 **같은 변경 안에서** 관련 문서를 갱신한다 — `WORKFLOW.md`(명령 예시·규칙), `docs/`(해당 protocol), `review/gates/_TEMPLATE.GATE.md`, `AGENTS.md`, `README.md`/`.ko`/`.ja`/`.zh`(기능 bullet + changelog). **문서 없는 코드 변경 금지.**
 - **버전 bump (semver):**
-  - **프로젝트 버전** = `CLAUDE.md` 헤더 + README 4종 헤더(`**vX.Y.Z**`). **cadence 느리게:** 개별 스크립트/플래그 추가·개선·문서·버그는 **patch**(1.5.3→1.5.4). minor는 **큰 마일스톤**(여러 기능 묶음, phase 단위 신규 역량, 워크플로 구조 변경)에만. 호환성 깨짐 = major. 작은 기능 하나마다 minor 올리지 말 것.
+  - **프로젝트 버전** = `WORKFLOW.md`·`CLAUDE.md`·`GEMINI.md` 헤더 + README 4종 헤더(`**vX.Y.Z**`). **cadence 느리게:** 개별 스크립트/플래그 추가·개선·문서·버그는 **patch**(1.5.3→1.5.4). minor는 **큰 마일스톤**(여러 기능 묶음, phase 단위 신규 역량, 워크플로 구조 변경)에만. 호환성 깨짐 = major. 작은 기능 하나마다 minor 올리지 말 것.
   - 변경된 **개별 doc**은 자체 헤더 semver도 올린다 (예: `verification_protocol.md` 0.2.0→0.3.0).
   - README 4종 Changelog에 `### vX.Y.Z (YYMMDD)` 항목 추가 (오늘 날짜).
 - **자동 commit+push:** 변경이 **검증(테스트 green)되면** 사용자 확인 없이 commit + push 한다. 표준 커밋 메시지 형식 사용. protected 파일(`.gitignore`의 PDF/`profile/`/Style 앵커)은 자동 제외됨.
@@ -441,7 +443,7 @@ Use a capable planner for design, a shell-capable analyst for reproducible analy
 ## Natural Academic Writing Style
 
 > **상세 가이드: `docs/writing_guide.md`**
-> 규칙·표·예시는 writing_guide.md에 있음. CLAUDE.md는 워크플로·Phase 조정만 담당 (중복 방지).
+> 규칙·표·예시는 writing_guide.md에 있음. WORKFLOW.md는 워크플로·Phase 조정만 담당 (중복 방지).
 
 **Phase 5 (Style Polish)에서 적용할 writing_guide.md 섹션:**
 
@@ -466,7 +468,7 @@ Use a capable planner for design, a shell-capable analyst for reproducible analy
 
 ```
 Phase 1: Setup
-├── Define topic, journal, study design in CLAUDE.md
+├── Define topic, journal, study design in WORKFLOW.md
 ├── Check profile/journals.md — 목표 저널 인용 형식 확인 (et al. 규칙, volume 형식 등)
 ├── Check Style/own/ — 관련 스타일 앵커 논문 확인 (용어·톤 일관성 참고)
 ├── Search references: /search-evidence [query] 또는 scripts/search_pubmed.py

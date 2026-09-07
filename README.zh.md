@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.0** (2026-09-06)
+**v1.7.1** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -57,8 +57,10 @@
 
 ```text
 project/
-├── CLAUDE.md                     # 核心规则与配置
-├── AGENTS.md                     # agent 启动规则；以 CLAUDE.md 为 source of truth
+├── WORKFLOW.md                   # 核心规则与配置（Claude/Codex/Gemini 共享）
+├── CLAUDE.md                     # Claude Code 引导文件；通过 @WORKFLOW.md 导入 WORKFLOW.md
+├── AGENTS.md                     # Codex/agent 启动规则；以 WORKFLOW.md 为 source of truth
+├── GEMINI.md                     # Gemini 引导文件；指向 WORKFLOW.md
 ├── README.md                     # 英文 README
 ├── .gitattributes                # 换行符策略 (text=auto eol=lf；防止 OneDrive/Windows 同步导致的 CRLF 变更)
 ├── docs/                         # 参考指南
@@ -133,7 +135,7 @@ project/
 
 ## 快速开始
 
-1. **设置**：在 `CLAUDE.md` 中填写研究主题、目标期刊和研究设计
+1. **设置**：在 `WORKFLOW.md` 中填写研究主题、目标期刊和研究设计
 2. **参考文献**：使用 `/search-evidence [关键词]` 或 `py scripts\search_pubmed.py` 搜索 PubMed 并注册到 `knowledge/evidence.md`
 3. **数据分析**：将数据放入 `data/` 文件夹 → 创建 `analysis_plan.md`（必须）→ 运行统计分析
 4. **稿件计划**：将 `docs/draft_plan_template.md` 复制到 `drafts/draft_plan.md`，填写包含 Claim→Citation Mapping 的10项内容（推荐 Opus）
@@ -219,7 +221,7 @@ project/
 
 - **并行 verifier + Constraint 优先。** 四个章节门 verifier（Constraint / Citation / Data / Logic）针对冻结的产出物并发执行；验证过程中不编辑该产出物，FAIL 时优先修复 Constraint（spec 合规性）发现的问题。参见 `docs/verification_protocol.md`（v0.3.0）。
 - **门时效性 / provenance**（`scripts/check_gate.py`）。PASS 时，门台账记录被验证产出物的 sha256（对于承载 citation 和 number 的门，还记录 `evidence` / `results`；revision 时必需）。`check_gate.py --verify-hash LABEL=PATH` 会重新计算哈希，若文件在 PASS 之后发生变更，则将该门判定为 **stale** 并失败 — 从而堵住「PASS 之后的编辑悄无声息地通过重新检查」的漏洞。`--compute-hash PATH` 用于填充 provenance 字段。在工具层面为可选启用，在文档化的门命令中为标准用法。
-- **STOP 信号。** CLAUDE.md 中的 anti-rationalization 表格捕捉 verifier 无法发现的、人类层面的偷懒（「这个数字大概没问题」→ 去查 CSV；「我已经通过了」→ 产出物已变更即为 stale）。
+- **STOP 信号。** WORKFLOW.md 中的 anti-rationalization 表格捕捉 verifier 无法发现的、人类层面的偷懒（「这个数字大概没问题」→ 去查 CSV；「我已经通过了」→ 产出物已变更即为 stale）。
 - **苏格拉底式 draft-plan 头脑风暴。** `docs/draft_plan_template.md` 中的「Step 0」在填写计划之前，每次一个问题地厘清论文意图 — 与 `/paper-debate` 不同，它作为 R0 准备为后者提供输入。
 - **审稿人回复分诊。** `docs/revision_guide.md` 为每条审稿人意见指定 accept / partial / rebut 立场，并映射到 `[CHANGE]` 标记和 ghost-revision 门。
 - **命令 `use-when` 指引。** 现在每个 `.claude/commands/*.md` 都声明了应触发它的情境。
@@ -256,7 +258,8 @@ Claude 集成斜杠命令：
 
 | 文档 | 用途 |
 | ---- | ---- |
-| [CLAUDE.md](CLAUDE.md) | 核心规则与项目配置 |
+| [WORKFLOW.md](WORKFLOW.md) | 核心规则与项目配置（所有运行时共享） |
+| [CLAUDE.md](CLAUDE.md) | Claude Code 引导文件；导入 WORKFLOW.md |
 | [docs/writing_guide.md](docs/writing_guide.md) | 分节写作指南 + Style Reference Tables + Writing Principles (4 Pillars) |
 | [docs/drafting_protocol.md](docs/drafting_protocol.md) | outline → evidence-bound draft → style/QC pass 的必须 drafting workflow |
 | [docs/section_templates.md](docs/section_templates.md) | 分节 paragraph function 和 sentence patterns |
@@ -338,12 +341,22 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 ## 变更记录
 
+### v1.7.1 (260908)
+
+**v1.7.0（PR #1）合并后验证 — 修复 4 项缺陷，文档同步**
+
+- **v1.7.0 的 CI 从未真正运行。** `.github/workflows/tests.yml` 中 OS 矩阵行被错误嵌套在 setup-python 的 `with:` 之下，所有运行在 YAML 解析阶段即失败（0 秒）。现在 3 OS × 3 Python 矩阵真正执行（main 上 9/9 通过）。
+- **Windows cp949:** 新增的 `test_harness.py` / `test_review_regressions.py` 读取文件时未指定 `encoding='utf-8'`，在韩文 Windows 上 3 项失败 — 被失效的 CI 掩盖。已修复；333 个测试通过。
+- **构建文件名:** `harness build` 使用 UTC 日期（KST 00–09 时会得到前一天的 `_YYMMDD`），且 revision 包缺少 `_REVn`（Rule 5）。现在首次投稿为 `manuscript_YYMMDD.docx`，revision 为 `manuscript_REV1_YYMMDD.docx` / `response_letter_REV1_…` / `table_N_REV1_…`。新增合成 REV1 构建测试；`docs/harness_guide.md` v1.0.1。
+- **`CLAUDE.md` 现在导入 `WORKFLOW.md`**（`@WORKFLOW.md`）— Claude Code 自动加载共享规则，而非依赖"先读一遍"的指令。`WORKFLOW.md`/README 中残留的"CLAUDE.md 是核心规则文件"引用已改为 `WORKFLOW.md`。
+- 在合成项目上通过真实 CLI 端到端验证：draft 配置 12 个、revision 配置 13 个错误注入场景（未登记引用、`todo` evidence、CSV 中不存在的数值、批准后修改 plan、ghost revision、未回复/占位符回复、REV2↔REV1 基线）均按设计被拦截；DOCX 结构符合 `docs/docx_guide.md`。
+
 ### v1.7.0 (260906)
 
-- Fixed F01–F09: citation status/duplicate IDs, p-value bounds, placeholders, gate identity, plan completeness, revision baseline and reviewer fallback.
-- Added shared WORKFLOW.md, standard AGENTS.md and GEMINI.md bootstraps.
-- Added manifest-based verification profiles, context-bound results, content-bound approvals, review packets/state, and gated DOCX packaging.
-- See [shared engine guide](docs/harness_guide.md) for setup, migration and remaining limits.
+- 修复 F01–F09：引用 status/重复 ID、p 值边界、占位符、门禁 identity、plan 完整性、revision 基线与 reviewer fallback。
+- 新增共享 WORKFLOW.md 以及标准 AGENTS.md、GEMINI.md 引导文件。
+- 新增基于 manifest 的验证配置、context-bound 结果值、content-bound 批准、review packet/state 以及带门禁的 DOCX 打包。
+- 设置、迁移与剩余限制见 [shared engine guide](docs/harness_guide.md)。
 
 ### v1.6.4 (2026-08-30)
 

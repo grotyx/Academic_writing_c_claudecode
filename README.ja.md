@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.0** (2026-09-06)
+**v1.7.1** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -57,8 +57,10 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ```
 project/
-├── CLAUDE.md                     # コアルール・設定
-├── AGENTS.md                     # agent 起動ルール；CLAUDE.md を source of truth とする
+├── WORKFLOW.md                   # コアルール・設定（Claude/Codex/Gemini で共有）
+├── CLAUDE.md                     # Claude Code ブートストラップ；@WORKFLOW.md で WORKFLOW.md を import
+├── AGENTS.md                     # Codex/agent 起動ルール；WORKFLOW.md を source of truth とする
+├── GEMINI.md                     # Gemini ブートストラップ；WORKFLOW.md を参照
 ├── README.md                     # 英語版 README
 ├── .gitattributes                # 改行コードポリシー (text=auto eol=lf；OneDrive/Windows 同期による CRLF 変更を防止)
 ├── docs/                         # 参照ガイド
@@ -133,7 +135,7 @@ project/
 
 ## クイックスタート
 
-1. **設定**：`CLAUDE.md` に研究テーマ、対象ジャーナル、研究デザインを入力します
+1. **設定**：`WORKFLOW.md` に研究テーマ、対象ジャーナル、研究デザインを入力します
 2. **参考文献**：`/search-evidence [クエリ]` または `py scripts\search_pubmed.py` で PubMed を検索し、`knowledge/evidence.md` に登録します
 3. **データ分析**：`data/` フォルダにデータを配置 → `analysis_plan.md` 作成（必須）→ 統計分析実行
 4. **原稿計画**：`docs/draft_plan_template.md` を `drafts/draft_plan.md` にコピーし、Claim→Citation Mapping を含む10項目を作成（Opus 推奨）
@@ -215,7 +217,7 @@ project/
 
 - **Parallel verifiers + Constraint-first.** 4 つのセクションゲート verifier（Constraint / Citation / Data / Logic）は、凍結された成果物に対して並行してディスパッチされます。成果物は検証の途中で編集されず、FAIL 時には Constraint（仕様適合性）の指摘を最優先で修正します。`docs/verification_protocol.md`（v0.3.0）を参照。
 - **Gate freshness / provenance**（`scripts/check_gate.py`）。PASS 時にゲート台帳へ検証済み成果物の sha256 を記録します（citation・numbers を伴うゲートでは `evidence` / `results` も；revision では必須）。`check_gate.py --verify-hash LABEL=PATH` は再ハッシュを行い、PASS 以降にファイルが変更されていればゲートを **stale** として失敗させます — PASS 後の編集が再チェックを静かにすり抜ける抜け穴を塞ぎます。`--compute-hash PATH` は provenance フィールドを埋めます。ツールレベルでは opt-in、文書化されたゲートコマンドでは標準で有効です。
-- **STOP signals.** CLAUDE.md の anti-rationalization テーブルが、verifier では捉えられない人間レベルのショートカット（「この数値はたぶん大丈夫」→ CSV を確認；「もう PASS した」→ 変更された成果物は stale）を捕捉します。
+- **STOP signals.** WORKFLOW.md の anti-rationalization テーブルが、verifier では捉えられない人間レベルのショートカット（「この数値はたぶん大丈夫」→ CSV を確認；「もう PASS した」→ 変更された成果物は stale）を捕捉します。
 - **Socratic draft-plan brainstorming.** `docs/draft_plan_template.md` の「Step 0」が、計画を埋める前に論文の意図を一度に 1 問ずつ研ぎ澄まします — `/paper-debate` とは別物で、その R0 準備として供給されます。
 - **Reviewer-response triage.** `docs/revision_guide.md` は各査読コメントに accept / partial / rebut の姿勢を割り当て、`[CHANGE]` マーカーと ghost-revision ゲートに対応付けます。
 - **Command `use-when` guidance.** 各 `.claude/commands/*.md` が、それを起動すべき状況を明示するようになりました。
@@ -252,7 +254,8 @@ Claude 統合スラッシュコマンド：
 
 | ドキュメント | 目的 |
 |-------------|------|
-| [CLAUDE.md](CLAUDE.md) | コアルールとプロジェクト設定 |
+| [WORKFLOW.md](WORKFLOW.md) | コアルールとプロジェクト設定（全ランタイム共有） |
+| [CLAUDE.md](CLAUDE.md) | Claude Code ブートストラップ；WORKFLOW.md を import |
 | [docs/writing_guide.md](docs/writing_guide.md) | セクション別執筆ガイド ＋ Style Reference Tables ＋ Writing Principles (4 Pillars) |
 | [docs/drafting_protocol.md](docs/drafting_protocol.md) | outline → evidence-bound draft → style/QC pass の必須 drafting workflow |
 | [docs/section_templates.md](docs/section_templates.md) | セクション別 paragraph function と sentence patterns |
@@ -332,12 +335,22 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 ## 変更履歴
 
+### v1.7.1 (260908)
+
+**v1.7.0（PR #1）merge 後の検証 — 欠陥 4 件修正、ドキュメント同期**
+
+- **v1.7.0 では CI が一度も実行されていなかった。** `.github/workflows/tests.yml` の OS マトリクス行が setup-python の `with:` 配下に誤って入り、すべての実行が YAML 解析段階で失敗（0 秒）。3 OS × 3 Python のマトリクスが実際に実行されるようになった（main で 9/9 成功）。
+- **Windows cp949:** 新規の `test_harness.py` / `test_review_regressions.py` が `encoding='utf-8'` なしでファイルを読み、韓国語 Windows で 3 件失敗 — 停止していた CI に隠れていた。修正；333 テスト成功。
+- **ビルドのファイル名:** `harness build` が UTC 日付を付与し（KST 00〜09 時は前日の `_YYMMDD`）、revision パッケージに `_REVn` も付けていなかった（Rule 5）。初回投稿は `manuscript_YYMMDD.docx`、revision は `manuscript_REV1_YYMMDD.docx` / `response_letter_REV1_…` / `table_N_REV1_…` に。合成 REV1 ビルドテストを追加；`docs/harness_guide.md` v1.0.1。
+- **`CLAUDE.md` が `WORKFLOW.md` を import**（`@WORKFLOW.md`）— 「先に読め」という指示に頼らず、Claude Code が共有ルールを自動読み込み。`WORKFLOW.md`/README に残っていた「CLAUDE.md がコアルールファイル」という参照を `WORKFLOW.md` に修正。
+- 合成プロジェクトで実 CLI によるエンドツーエンド検証：draft プロファイル 12 件・revision プロファイル 13 件のエラー注入シナリオ（未登録引用、`todo` evidence、CSV にない数値、承認後の plan 変更、ghost revision、未回答/placeholder 回答、REV2↔REV1 baseline）がすべて設計どおりブロックされた；DOCX 構造は `docs/docx_guide.md` と一致。
+
 ### v1.7.0 (260906)
 
-- Fixed F01–F09: citation status/duplicate IDs, p-value bounds, placeholders, gate identity, plan completeness, revision baseline and reviewer fallback.
-- Added shared WORKFLOW.md, standard AGENTS.md and GEMINI.md bootstraps.
-- Added manifest-based verification profiles, context-bound results, content-bound approvals, review packets/state, and gated DOCX packaging.
-- See [shared engine guide](docs/harness_guide.md) for setup, migration and remaining limits.
+- F01–F09 を修正：引用 status/重複 ID、p 値の境界、placeholder、ゲート identity、plan の完全性、revision baseline、reviewer fallback。
+- 共有 WORKFLOW.md と標準 AGENTS.md・GEMINI.md ブートストラップを追加。
+- manifest ベースの検証プロファイル、context-bound な結果値、content-bound な承認、review packet/state、ゲート付き DOCX パッケージングを追加。
+- セットアップ・移行・残る制限は [shared engine guide](docs/harness_guide.md) を参照。
 
 ### v1.6.4 (2026-08-30)
 

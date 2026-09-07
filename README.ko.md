@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.0** (2026-09-06)
+**v1.7.1** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -58,8 +58,10 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ```
 project/
-├── CLAUDE.md                     # 핵심 규칙 및 설정
-├── AGENTS.md                     # agent 시작 규칙; CLAUDE.md를 source of truth로 참조
+├── WORKFLOW.md                   # 핵심 규칙 및 설정 (Claude/Codex/Gemini 공유)
+├── CLAUDE.md                     # Claude Code 부트스트랩; @WORKFLOW.md로 WORKFLOW.md를 import
+├── AGENTS.md                     # Codex/agent 시작 규칙; WORKFLOW.md를 source of truth로 참조
+├── GEMINI.md                     # Gemini 부트스트랩; WORKFLOW.md 참조
 ├── README.md                     # 영문 README
 ├── .gitattributes                # 줄바꿈 정책 (text=auto eol=lf; OneDrive/Windows 동기화의 CRLF 변경 방지)
 ├── docs/                         # 참조 가이드
@@ -140,7 +142,7 @@ project/
 
 ## 빠른 시작
 
-1. **설정**: `CLAUDE.md`에 연구 주제, 목표 저널, 연구 설계를 입력합니다. `profile/journals.md`에서 인용 형식, `Style/`에서 스타일 앵커를 확인합니다.
+1. **설정**: `WORKFLOW.md`에 연구 주제, 목표 저널, 연구 설계를 입력합니다. `profile/journals.md`에서 인용 형식, `Style/`에서 스타일 앵커를 확인합니다.
 2. **참고문헌**: `/search-evidence [검색어]` 또는 `py scripts\search_pubmed.py`로 PubMed를 검색하고 `knowledge/evidence.md`에 등록합니다
 3. **데이터 분석**: `data/` 폴더에 데이터를 배치 → `analysis_plan.md` 작성 (필수) → 통계 분석 실행
 4. **원고 계획**: `docs/draft_plan_template.md`를 `drafts/draft_plan.md`로 복사 → 10개 항목 작성 (**Claim→Citation Mapping 포함**) (Opus 권장)
@@ -244,7 +246,7 @@ AI 산문의 흔적 — 피상적인 `-ing` "표면 분석" 절, AI가 선호하
 
 - **병렬 verifier + Constraint 우선.** 4개의 섹션 게이트 verifier(Constraint / Citation / Data / Logic)를 동결된(frozen) 산출물에 대해 동시에 dispatch합니다. 검증 도중에는 산출물을 편집하지 않으며, FAIL 시 Constraint(spec 준수) 지적사항을 먼저 수정합니다. `docs/verification_protocol.md` (v0.3.0) 참조.
 - **Gate freshness / provenance** (`scripts/check_gate.py`). PASS 시 게이트 원장에 검증된 산출물(및 citation·numbers 관련 게이트의 경우 `evidence` / `results`; revision에서는 필수)의 sha256을 기록합니다. `check_gate.py --verify-hash LABEL=PATH`는 파일을 다시 해싱하여 PASS 이후 파일이 변경되었으면 게이트를 **stale**로 실패 처리합니다 — PASS 이후의 편집이 재점검을 조용히 빠져나가는 허점을 차단합니다. `--compute-hash PATH`는 provenance 필드를 채웁니다. 도구 수준에서는 opt-in이며, 문서화된 게이트 명령에서는 표준으로 사용합니다.
-- **STOP 신호.** CLAUDE.md의 anti-rationalization 표가 verifier로는 잡을 수 없는 사람 수준의 지름길을 포착합니다 ("이 숫자는 아마 괜찮을 거야" → CSV를 확인; "이미 통과했어" → 변경된 산출물은 stale).
+- **STOP 신호.** WORKFLOW.md의 anti-rationalization 표가 verifier로는 잡을 수 없는 사람 수준의 지름길을 포착합니다 ("이 숫자는 아마 괜찮을 거야" → CSV를 확인; "이미 통과했어" → 변경된 산출물은 stale).
 - **Socratic draft-plan 브레인스토밍.** `docs/draft_plan_template.md`의 "Step 0"가 plan을 채우기 전에 한 번에 한 질문씩 논문의 의도를 다듬습니다 — `/paper-debate`와는 구분되며, 토론의 R0 사전 준비로 연결됩니다.
 - **리뷰어 응답 triage.** `docs/revision_guide.md`가 각 리뷰어 코멘트에 accept / partial / rebut 입장을 부여하고, 이를 `[CHANGE]` 마커 및 ghost-revision 게이트와 연결합니다.
 - **명령어 `use-when` 안내.** 각 `.claude/commands/*.md`가 이제 자신을 트리거해야 하는 상황을 명시합니다.
@@ -281,7 +283,8 @@ Claude 통합 슬래시 명령어:
 
 | 문서 | 목적 |
 |------|------|
-| [CLAUDE.md](CLAUDE.md) | 핵심 규칙 및 프로젝트 설정 |
+| [WORKFLOW.md](WORKFLOW.md) | 핵심 규칙 및 프로젝트 설정 (모든 런타임 공유) |
+| [CLAUDE.md](CLAUDE.md) | Claude Code 부트스트랩; WORKFLOW.md를 import |
 | [docs/writing_guide.md](docs/writing_guide.md) | 섹션별 작성 가이드 + Style Reference Tables + Writing Principles (4 Pillars) |
 | [docs/drafting_protocol.md](docs/drafting_protocol.md) | outline → evidence-bound draft → style/QC pass 필수 drafting workflow |
 | [docs/section_templates.md](docs/section_templates.md) | 섹션별 paragraph function과 문장 패턴 |
@@ -361,12 +364,22 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 
 ## 변경 이력
 
+### v1.7.1 (260908)
+
+**v1.7.0(PR #1) merge 후 검증 — 결함 4건 수정, 문서 동기화**
+
+- **v1.7.0에서 CI가 한 번도 돌지 않았음.** `.github/workflows/tests.yml`의 OS 매트릭스 줄이 setup-python `with:` 아래로 잘못 들어가 모든 실행이 YAML 파싱 단계에서 죽었음(0초). 이제 3 OS × 3 Python 매트릭스가 실제로 실행됨(main에서 9/9 통과).
+- **Windows cp949:** 신규 `test_harness.py` / `test_review_regressions.py`가 `encoding='utf-8'` 없이 파일을 읽어 한글 Windows에서 3개 실패 — 죽어 있던 CI에 가려져 있었음. 수정; 333개 테스트 통과.
+- **빌드 파일명:** `harness build`가 UTC 날짜를 찍어(한국시간 00~09시엔 전날 `_YYMMDD`) revision 패키지에 `_REVn`도 붙이지 않았음(Rule 5). 이제 최초 제출은 `manuscript_YYMMDD.docx`, revision은 `manuscript_REV1_YYMMDD.docx` / `response_letter_REV1_…` / `table_N_REV1_…`. 합성 REV1 빌드 테스트 추가; `docs/harness_guide.md` v1.0.1.
+- **`CLAUDE.md`가 `WORKFLOW.md`를 import** (`@WORKFLOW.md`) — "먼저 읽어라"는 지시문에 의존하지 않고 Claude Code가 공유 규칙을 자동 로드. `WORKFLOW.md`/README에 남아 있던 "CLAUDE.md = 핵심 규칙 파일" 참조를 `WORKFLOW.md`로 정정.
+- 합성 프로젝트에서 실제 CLI로 종단 검증: draft 프로필 12개·revision 프로필 13개 오류 주입 시나리오(미등록 인용, `todo` evidence, CSV에 없는 수치, 승인 후 plan 수정, ghost revision, 미응답/placeholder 응답, REV2↔REV1 baseline)가 모두 설계대로 차단됨; DOCX 구조는 `docs/docx_guide.md`와 일치.
+
 ### v1.7.0 (260906)
 
-- Fixed F01–F09: citation status/duplicate IDs, p-value bounds, placeholders, gate identity, plan completeness, revision baseline and reviewer fallback.
-- Added shared WORKFLOW.md, standard AGENTS.md and GEMINI.md bootstraps.
-- Added manifest-based verification profiles, context-bound results, content-bound approvals, review packets/state, and gated DOCX packaging.
-- See [shared engine guide](docs/harness_guide.md) for setup, migration and remaining limits.
+- F01–F09 수정: 인용 status/중복 ID, p값 경계, placeholder, 게이트 identity, plan 완결성, revision baseline, reviewer fallback.
+- 공유 WORKFLOW.md와 표준 AGENTS.md·GEMINI.md 부트스트랩 추가.
+- manifest 기반 검증 프로필, context-bound 결과값, content-bound 승인, review packet/state, 게이트된 DOCX 패키징 추가.
+- 설정·마이그레이션·남은 제한 사항은 [shared engine guide](docs/harness_guide.md) 참조.
 
 ### v1.6.4 (2026-08-30)
 

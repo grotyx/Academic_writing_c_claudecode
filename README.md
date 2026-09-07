@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.0** (2026-09-06)
+**v1.7.1** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -62,8 +62,10 @@ This project provides a comprehensive framework for writing academic medical pap
 
 ```
 project/
-├── CLAUDE.md                     # Core rules & configuration
-├── AGENTS.md                     # Agent bootstrap rules; points to CLAUDE.md as source of truth
+├── WORKFLOW.md                   # Core rules & configuration (shared by Claude/Codex/Gemini)
+├── CLAUDE.md                     # Claude Code bootstrap; imports WORKFLOW.md via @WORKFLOW.md
+├── AGENTS.md                     # Codex/agent bootstrap rules; points to WORKFLOW.md as source of truth
+├── GEMINI.md                     # Gemini bootstrap; points to WORKFLOW.md
 ├── README.md                     # This file
 ├── .gitattributes                # Line-ending policy (text=auto eol=lf; prevents CRLF churn from OneDrive/Windows sync)
 ├── docs/                         # Reference guides
@@ -146,7 +148,7 @@ project/
 
 ## Quick Start
 
-1. **Setup**: Update `CLAUDE.md` with your research topic, target journal, and study design. Check `profile/journals.md` for citation format and `Style/` for style anchors.
+1. **Setup**: Update `WORKFLOW.md` with your research topic, target journal, and study design. Check `profile/journals.md` for citation format and `Style/` for style anchors.
 2. **References**: Use `/search-evidence [query]` or `py scripts\search_pubmed.py` to search PubMed and register in `knowledge/evidence.md`
 3. **Data Analysis**: Place data in `data/` folder → create `analysis_plan.md` (required) → run statistical analysis
 4. **Draft Plan**: Copy `docs/draft_plan_template.md` → `drafts/draft_plan.md`, fill in all 10 items including **Claim→Citation Mapping** (Opus recommended)
@@ -254,7 +256,7 @@ Improvements adapted from the "superpowers" skills framework, focused on the ver
 
 - **Parallel verifiers + Constraint-first.** The four section-gate verifiers (Constraint / Citation / Data / Logic) are dispatched concurrently against a frozen artifact; the artifact is not edited mid-verification, and on FAIL the Constraint (spec-compliance) findings are fixed first. See `docs/verification_protocol.md` (v0.3.0).
 - **Gate freshness / provenance** (`scripts/check_gate.py`). On PASS the gate ledger records a sha256 of the verified artifact (and `evidence` / `results` for citation- and numbers-bearing gates; required for revision). `check_gate.py --verify-hash LABEL=PATH` re-hashes and fails the gate as **stale** if the file changed since the PASS — closing the hole where a post-PASS edit silently survives re-checking. `--compute-hash PATH` fills the provenance fields. Opt-in at the tool level, standard in the documented gate commands.
-- **STOP signals.** A CLAUDE.md anti-rationalization table catches the human-level shortcuts the verifiers can't ("this number is probably fine" → check the CSV; "I already passed" → a changed artifact is stale).
+- **STOP signals.** A WORKFLOW.md anti-rationalization table catches the human-level shortcuts the verifiers can't ("this number is probably fine" → check the CSV; "I already passed" → a changed artifact is stale).
 - **Socratic draft-plan brainstorming.** A "Step 0" in `docs/draft_plan_template.md` sharpens the paper's intent one question at a time before the plan is filled — distinct from `/paper-debate`, which it feeds as R0 prep.
 - **Reviewer-response triage.** `docs/revision_guide.md` assigns each reviewer comment an accept / partial / rebut posture, mapped to the `[CHANGE]` marker and the ghost-revision gate.
 - **Command `use-when` guidance.** Each `.claude/commands/*.md` now declares the situation that should trigger it.
@@ -291,7 +293,8 @@ Slash commands for Claude integration:
 
 | Document | Purpose |
 |----------|---------|
-| [CLAUDE.md](CLAUDE.md) | Core rules and project configuration |
+| [WORKFLOW.md](WORKFLOW.md) | Core rules and project configuration (shared by every runtime) |
+| [CLAUDE.md](CLAUDE.md) | Claude Code bootstrap; imports WORKFLOW.md |
 | [docs/writing_guide.md](docs/writing_guide.md) | Section-by-section writing guide + Style Reference Tables + Writing Principles (4 Pillars) |
 | [docs/drafting_protocol.md](docs/drafting_protocol.md) | Mandatory drafting workflow from outline to evidence-bound draft to style/QC pass |
 | [docs/section_templates.md](docs/section_templates.md) | Section-specific paragraph functions and sentence patterns |
@@ -370,6 +373,16 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.1 (260908)
+
+**Post-merge verification of v1.7.0 (PR #1) — 4 defects fixed, doc sync**
+
+- **CI never ran on v1.7.0.** `.github/workflows/tests.yml` had the OS-matrix line nested under setup-python `with:`, so every run died at workflow-parse time (0 s). The 3-OS × 3-Python matrix now executes (9/9 green on main).
+- **Windows cp949:** the new `test_harness.py` / `test_review_regressions.py` read files without `encoding='utf-8'` → 3 failures on Korean Windows, hidden by the dead CI. Fixed; 333 tests pass.
+- **Build filenames:** `harness build` stamped the UTC date (yesterday's `_YYMMDD` between 00:00–09:00 KST) and omitted `_REVn` for revision packages (Rule 5). Now `manuscript_YYMMDD.docx` for initial submissions and `manuscript_REV1_YYMMDD.docx` / `response_letter_REV1_…` / `table_N_REV1_…` for revisions. Synthetic REV1 build test added; `docs/harness_guide.md` v1.0.1.
+- **`CLAUDE.md` now imports `WORKFLOW.md`** (`@WORKFLOW.md`), so Claude Code auto-loads the shared rules instead of relying on a "read it first" instruction. Stale "CLAUDE.md is the core-rules file" references in `WORKFLOW.md`/README updated to `WORKFLOW.md`.
+- Verified end-to-end on synthetic projects through the real CLI: 12 draft-profile and 13 revision-profile error-injection scenarios (unregistered citation, `todo` evidence, number not in CSV, plan edited after approval, ghost revision, unanswered/placeholder response, REV2-vs-REV1 baseline) were all blocked as designed; DOCX structure matches `docs/docx_guide.md`.
 
 ### v1.7.0 (260906)
 
