@@ -137,3 +137,14 @@ def test_standard_agent_bootstraps_exist():
         assert (ROOT/name).is_file()
         assert 'WORKFLOW.md' in (ROOT/name).read_text(encoding='utf-8')
     assert 'AGENTS.MD' not in [p.name for p in ROOT.iterdir()]
+
+
+@pytest.mark.parametrize('header', ['12-month outcome', 'Group 1 (n=40)', 'Outcome'])
+@pytest.mark.parametrize('claim,expected', [('=0.001',False), ('<0.001',True)])
+def test_numeric_table_headers_preserve_p_bounds(tmp_path, header, claim, expected):
+    m=module('check_numbers')
+    rd=tmp_path/'results';rd.mkdir()
+    (rd/'p.csv').write_text('p_value,n,group\n<0.001,40,1\n',encoding='utf-8')
+    artifact=tmp_path/'table.md'
+    artifact.write_text(f'| {header} | p-value |\n| --- | --- |\n| Fusion | {claim} |\n',encoding='utf-8')
+    assert m.check_numbers([artifact],results_dir=rd).passed is expected

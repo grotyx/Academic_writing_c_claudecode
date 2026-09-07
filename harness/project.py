@@ -2,6 +2,7 @@
 from __future__ import annotations
 import importlib.util
 import json
+import re
 from pathlib import Path
 from .results import inside, digest, validate_bindings
 
@@ -107,6 +108,50 @@ def receipt_problem(path, dependencies, *, human=False):
     return None
 
 
+def revision_scope(root, config, artifacts):
+    module = checker('check_revision_claims')
+    response = inside(root, config['response'])
+    draft_root = module.infer_draft_root(response)
+    included = set(artifacts)
+    for claim in module.parse_change_blocks(response.read_text(encoding='utf-8')):
+        revised = module.resolve_revised_section_path(claim, response, draft_root)
+        if revised is None or revised.resolve() not in included:
+            return 'revision claim target is absent from submission artifacts'
+    revision = module.infer_revision_id(response)
+    if revision:
+        number = int(revision[3:])
+        for artifact in artifacts:
+            stem = re.sub(r'_REV\d+$', '', artifact.stem, flags=re.I)
+            versions = [draft_root / 'revision' / f'REV{n}' / name
+                        for n in range(number, 0, -1)
+                        for name in (f'{stem}_REV{n}.md', f'{stem}.md')]
+            latest = next((p.resolve() for p in versions if p.is_file()), None)
+            if latest is not None and artifact != latest:
+                return f'stale revision artifact: {artifact.name}; use {latest.name}'
+    return True
+
+
+def numeric_scope(root, config, artifacts, number_checker):
+    included = {inside(root, name) for name in config.get('numeric_artifacts', [])}
+    exemptions = config.get('numeric_exemptions', {})
+    if not isinstance(exemptions, dict):
+        return 'numeric_exemptions must map artifact paths to reasons'
+    excluded = {inside(root, name): reason for name, reason in exemptions.items()}
+    if any(p not in artifacts or p in included or not isinstance(reason, str) or not reason.strip()
+           for p, reason in excluded.items()):
+        return 'invalid numeric exemption: use an omitted artifact and a nonempty reason'
+    tables = {inside(root, name) for name in config.get('tables', [])}
+    for artifact in artifacts:
+        if artifact in included or artifact.name.startswith(('01_title', '08_references')):
+            continue
+        if not number_checker.iter_artifact_numbers(artifact):
+            continue
+        core = artifact in tables or bool(re.search(r'(?:abstract|results)', artifact.stem, re.I))
+        if artifact not in excluded or core:
+            return f'unchecked numeric artifact: {artifact.relative_to(root)}'
+    return True
+
+
 def verify(path, profile='draft'):
     path, config = load_project(path)
     root = path.parent
@@ -144,6 +189,7 @@ def verify(path, profile='draft'):
         run(key, validate_plan)
     numeric = config.get('numeric_artifacts', [])
     cn = checker('check_numbers')
+    run('numeric_scope', lambda: numeric_scope(root, config, artifacts, cn))
     if numeric:
         run('number_tokens', lambda: cn.check_numbers([inside(root, item) for item in numeric],
             results_dir=inside(root, config['results'])).passed)
@@ -192,6 +238,7 @@ def verify(path, profile='draft'):
         return not result.unknown and not result.missing_citation
     run('bibliography', bibliography)
     if profile == 'revision' or config.get('response'):
+        run('revision_scope', lambda: revision_scope(root, config, artifacts))
         run('response_citations', lambda: cc.check_citations([inside(root, config['response'])],
             evidence_path=inside(root, config['evidence'])).passed)
         run('revision_claims', lambda: checker('check_revision_claims').check_revision_claims(

@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.1)
+# Shared manuscript engine (v1.0.2)
 
-Project release: v1.7.1. Python 3.10+; install `requirements.txt` and pytest for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.7.2. Python 3.10+; install `requirements.txt` and pytest for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -65,3 +65,9 @@ AI JSON: `used` boolean and `reviewed_by`; when used, also tools and disclosure.
 Build re-verifies submission, creates a unique output directory, converts EVID tags, writes separate manuscript/title/table DOCX files, copies figures, and optionally compiles the response. Output names carry the local `_YYMMDD` date; when `response` lives under `drafts/revision/REVn/`, they carry `_REVn_YYMMDD` (`manuscript_REV1_YYMMDD.docx`, `response_letter_REV1_YYMMDD.docx`). It checks input and approval freshness again before publishing the package and records output hashes. It never edits source drafts. Citation formatting preserves source Citation strings and is not a CSL journal-style engine. Markdown support is intentionally limited to prose, headings and simple pipe tables; code fences, display math and embedded images block conversion. Inspect/render the DOCX and apply journal-specific formatting before submission. A built package is not automatically visually approved or submitted.
 
 The engine is a foundation, not autonomous scientific validation: statistical reproducibility, complete reporting-item coverage, semantic claim support, reviewer identity and final layout still require documented human review. No live provider calls are part of the automated test suite.
+
+## v1.7.2 submission scope checks
+
+`revision_scope` requires each resolved CHANGE target to be included in artifacts/tables, and rejects listed sections when a newer version exists through the current REVn. A revision label alone cannot validate an older manuscript. Update the manifest before obtaining fresh review receipts.
+
+`numeric_scope` checks every manuscript/table artifact for numeric tokens. Any omitted numeric file fails, including in the draft profile. Title-page and reference-list metadata are excluded. For non-result sections only, `numeric_exemptions` may map a project-relative path to a nonempty reason (for example literature-derived sample sizes reviewed against evidence). Results, abstract and table numeric tokens must remain covered by numeric_artifacts. Exemptions are part of the hashed manifest and require semantic review; they do not verify excluded numbers. Simple pipe-table p columns are recognized from their separator row even when a header contains numbers; header numbers are still checked.

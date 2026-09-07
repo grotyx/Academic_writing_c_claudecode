@@ -123,7 +123,9 @@ def test_path_escape_rejected(project):
 def test_no_numerical_exemption_for_original_research(project):
     data=json.loads(project.read_text(encoding='utf-8'));data['numeric_artifacts']=[];data['numbers_not_applicable']='No numbers'
     put(project,data)
-    assert verify(project)['status']=='BLOCKED'
+    report=verify(project)
+    assert report['status']=='FAIL'
+    assert any(c['check']=='numeric_scope' and c['status']=='FAIL' for c in report['checks'])
 
 
 def test_packet_and_status_cli_share_snapshot(project,capsys):
@@ -173,3 +175,45 @@ def test_build_stamps_revision_suffix(project):
     assert any(name.startswith('manuscript_REV1_') and name.endswith('.docx') for name in names),names
     assert any(name.startswith('response_letter_REV1_') and name.endswith('.docx') for name in names),names
     assert not any(name.startswith('manuscript_2') for name in names),names
+
+
+def test_revision_old_artifact_blocks_build(project):
+    test_build_stamps_revision_suffix(project)
+    data=json.loads(project.read_text(encoding='utf-8'))
+    data['artifacts'][0]='drafts/03_introduction.md'
+    put(project,data);sign(project)
+    report=verify(project,'submission')
+    assert any(c['check']=='revision_scope' and c['status']=='FAIL' for c in report['checks'])
+    with pytest.raises(ValueError,match='revision_scope'):
+        build(project)
+
+
+def test_omitted_results_numbers_block_submission(project):
+    data=json.loads(project.read_text(encoding='utf-8'))
+    data['numeric_artifacts']=['drafts/03_introduction.md']
+    put(project,data)
+    put(project.parent/'review/bindings.json',{'results':[], 'bindings':[]})
+    put(project.parent/'drafts/05_results.md','# Results\n\nMean age was 999 years.\n')
+    sign(project)
+    report=verify(project,'submission')
+    assert any(c['check']=='numeric_scope' and c['status']=='FAIL' for c in report['checks'])
+    with pytest.raises(ValueError,match='numeric_scope'):
+        build(project)
+
+
+@pytest.mark.parametrize('reason', ['', 'These are result values'])
+def test_results_cannot_be_exempted(project, reason):
+    data=json.loads(project.read_text(encoding='utf-8'))
+    data['numeric_artifacts']=[]
+    data['numeric_exemptions']={'drafts/05_results.md':reason}
+    put(project,data)
+    assert verify(project)['status']=='FAIL'
+
+
+def test_nonresult_numeric_exemption_requires_reason(project):
+    put(project.parent/'drafts/03_introduction.md','# Introduction\n\nPrior studies enrolled 80 participants.\n')
+    data=json.loads(project.read_text(encoding='utf-8'))
+    assert verify(project)['status']=='FAIL'
+    data['numeric_exemptions']={'drafts/03_introduction.md':'Literature sample size; verify against cited evidence in semantic review.'}
+    put(project,data)
+    assert verify(project)['status']=='PASS'

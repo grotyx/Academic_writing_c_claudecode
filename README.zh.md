@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.1** (2026-09-08)
+**v1.7.2** (2026-09-07)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -340,6 +340,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.2 (260907)
+
+- Bind revision claims and latest section versions to the actual submission files.
+- Reject unchecked numerical artifacts; require explicit reasons for non-result exclusions.
+- Detect p-value table columns even when headers contain numbers; preserve header number checks.
+- Synchronize doctor version and add regression tests for submission scope.
 
 ### v1.7.1 (260908)
 

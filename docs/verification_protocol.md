@@ -1,4 +1,4 @@
-# Verification Protocol (검증 하네스) (v0.3.2)
+# Verification Protocol (검증 하네스) (v0.3.3)
 
 > v1.7.0 update: Use `docs/harness_guide.md` for shared profiles. Artifact provenance and cross-check paths must resolve to the declared artifact. Missing required submission reviews are BLOCKED. Plan approvals bind exact content; checker and dependency changes invalidate reviews.
 
@@ -210,3 +210,7 @@ required_action: replace with 54.3 or remove
 | 5 Style-pass | style 게이트 | Style-Conformance | 섹션 단위 (자율) |
 | 6 QC | 최종 확인 (경량) | — (인라인 게이트가 이미 수행) | 원고 전체 |
 | 8 Revision | 응답 게이트 | Constraint + Citation + Data + ghost-revision diff + Response alignment | 응답 단위 (자율) |
+
+## Submission scope (v1.7.2)
+
+The shared verifier checks revision-to-build file identity and numeric coverage across declared submission files. See `harness_guide.md` for `revision_scope`, `numeric_scope` and explicit non-result exemptions. Missing scope coverage fails even if independent review receipts are present.
