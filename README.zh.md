@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.6.4** (2026-08-30)
+**v1.7.0** (2026-09-06)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -58,7 +58,7 @@
 ```text
 project/
 ├── CLAUDE.md                     # 核心规则与配置
-├── AGENTS.MD                     # agent 启动规则；以 CLAUDE.md 为 source of truth
+├── AGENTS.md                     # agent 启动规则；以 CLAUDE.md 为 source of truth
 ├── README.md                     # 英文 README
 ├── .gitattributes                # 换行符策略 (text=auto eol=lf；防止 OneDrive/Windows 同步导致的 CRLF 变更)
 ├── docs/                         # 参考指南
@@ -338,6 +338,13 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 ## 变更记录
 
+### v1.7.0 (260906)
+
+- Fixed F01–F09: citation status/duplicate IDs, p-value bounds, placeholders, gate identity, plan completeness, revision baseline and reviewer fallback.
+- Added shared WORKFLOW.md, standard AGENTS.md and GEMINI.md bootstraps.
+- Added manifest-based verification profiles, context-bound results, content-bound approvals, review packets/state, and gated DOCX packaging.
+- See [shared engine guide](docs/harness_guide.md) for setup, migration and remaining limits.
+
 ### v1.6.4 (2026-08-30)
 
 **框架全面评审（Claude Fable）— 修复 16 项缺陷，新增 33 个回归测试**
@@ -475,7 +482,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 **medical-kag MCP 集成 —— 知识图谱与 evidence.md 并行**
 
 - **保持 grounding 的 KAG 集成** —— `medical-kag-remote` MCP（一个面向脊柱外科的知识增强图谱）作为上游的发现/分析/格式化引擎接入，而 `knowledge/evidence.md` 仍然是唯一权威的引用台账：图谱检索到的任何内容，都必须先注册为 `[EVID:id]`（经 PMID/DOI 核验）才能被引用，因此 `check_citations.py` 依然对所有引用进行把关。新增的 `docs/medical_kag_protocol.md` 将各工具映射到对应阶段 —— 发现 + 结构化抽取（Phase 1），用于 claim 和 Discussion 的证据链 / 干预对比 / GRADE 综合（Phase 3-4），冲突 / 过度声明防护（Phase 6），以及符合期刊格式的参考文献列表（Phase 7）。
-- **附加式 + 回退机制** —— 该 MCP 绝不构成依赖：当它不可用时（例如未认证的远程会话），工作流会降级为 `scripts/search_pubmed.py` + 手动维护 evidence.md。已接入 CLAUDE.md（Rule 1、STOP 信号、Phase 1、Quick Commands）+ AGENTS.MD，以保持与 Codex 的一致性。
+- **附加式 + 回退机制** —— 该 MCP 绝不构成依赖：当它不可用时（例如未认证的远程会话），工作流会降级为 `scripts/search_pubmed.py` + 手动维护 evidence.md。已接入 CLAUDE.md（Rule 1、STOP 信号、Phase 1、Quick Commands）+ AGENTS.md，以保持与 Codex 的一致性。
 
 ### v1.1.2 (2026-06-21)
 
@@ -488,7 +495,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 **风格强制执行 —— 可度量的门 + 与 Codex 对齐**
 
 - **确定性风格度量** —— `scripts/check_style.py`（`extract` / `check --spec`）测量字数、平均句长、段落数、引用密度和模糊化措辞，并标记出与 Style Spec 目标值的偏差 —— 即“面向风格的 check_numbers”。它已接入 `lint_on_edit.py`（当存在 Style Spec 时，在每次初稿编辑时浮现 `[STYLE-METRIC]` 偏差）以及 Phase 5/6 的门。已新增测试。
-- **与 Codex 对齐 + 校准** —— `AGENTS.MD` 现在会指示非 Claude 的运行时显式运行风格转换流程（`check_style.py` + Style-Conformance verifier），因为这些 hooks 仅在 Claude Code 中可用。Style Spec 模板新增了一个 before→after 的校准示例（相比抽象规则，少量示例能更好地引导转换）。
+- **与 Codex 对齐 + 校准** —— `AGENTS.md` 现在会指示非 Claude 的运行时显式运行风格转换流程（`check_style.py` + Style-Conformance verifier），因为这些 hooks 仅在 Claude Code 中可用。Style Spec 模板新增了一个 before→after 的校准示例（相比抽象规则，少量示例能更好地引导转换）。
 
 ### v1.1.0 (2026-06-21)
 
@@ -501,7 +508,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 **跨运行时 critical review + 模型选择**
 
-- **Claude-CLI 评审者** — `scripts/critical_review.py --include-claude` 会调用本地的 `claude -p`（headless 模式），使得非 Claude-Code 的调用方（Codex 或普通 shell）也能引入 Claude 的对抗式评审。`OPENROUTER_API_KEY` 现在仅在实际请求某个 OpenRouter 模型时才需要。相关说明见 `docs/critical_review_protocol.md` 与 `AGENTS.MD`。
+- **Claude-CLI 评审者** — `scripts/critical_review.py --include-claude` 会调用本地的 `claude -p`（headless 模式），使得非 Claude-Code 的调用方（Codex 或普通 shell）也能引入 Claude 的对抗式评审。`OPENROUTER_API_KEY` 现在仅在实际请求某个 OpenRouter 模型时才需要。相关说明见 `docs/critical_review_protocol.md` 与 `AGENTS.md`。
 - **更大的模型池 + 选约 2 个** — `scripts/critical_models.txt` 现在提供 MiniMax M3、GLM 5.2、Qwen3-Max 和 DeepSeek V4 Pro；`/critical-review` 将它们作为各自独立的 `AskUserQuestion` 选项呈现，并建议选择约 2 个（兼顾成本与盲点多样性），随后运行 `--models <selected>`。
 
 ### v1.0.2 (2026-06-20)
@@ -600,7 +607,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 - 将 `Style/terminology.md` 扩展为项目术语 registry，涵盖脊柱外科、试验、AI/radiomics 与报告语境中的 preferred/forbidden terms。
 - 新增 `docs/drafting_protocol.md` 与 `docs/section_templates.md`，以强制执行 outline → evidence-bound draft → style pass → QC 的撰写流程。
 - 新增 `scripts/lint_manuscript.py` 并更新 draft/table 模板，使 manuscript linting 在 Windows 上以 `py scripts/lint_manuscript.py drafts --quiet` 通过。
-- 新增 `AGENTS.MD` 作为 agent 启动指令，以 `CLAUDE.md` 为权威的 source of truth。
+- 新增 `AGENTS.md` 作为 agent 启动指令，以 `CLAUDE.md` 为权威的 source of truth。
 - 更新 `.gitignore`，使受版权保护的 PDF 和私有 style-anchor 摘要保持 local，而公开的 workflow 文件与示例仍可提交。
 
 ### v0.7.1 (2026-05-15)

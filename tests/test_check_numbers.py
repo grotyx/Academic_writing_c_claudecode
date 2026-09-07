@@ -150,7 +150,8 @@ class CheckNumbersTests(unittest.TestCase):
 
             result = module.check_numbers([artifact], results_dir=results_dir)
 
-            self.assertTrue(result.passed)
+            self.assertFalse(result.passed)
+            self.assertIn("placeholder", result.failures[0].reason)
             self.assertEqual(result.checked_numbers, 0)
 
     def test_check_numbers_matches_percentage_value(self) -> None:

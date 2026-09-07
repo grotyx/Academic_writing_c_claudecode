@@ -4,9 +4,13 @@
 
 A structured workflow system for academic medical paper writing using Claude AI.
 
+## Shared runtime support
+
+Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harness_guide.md](docs/harness_guide.md) and `python -m harness doctor`. Hooks and slash commands remain Claude-specific.
+
 ## Version
 
-**v1.6.4** (2026-08-30)
+**v1.7.0** (2026-09-06)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -59,7 +63,7 @@ This project provides a comprehensive framework for writing academic medical pap
 ```
 project/
 ├── CLAUDE.md                     # Core rules & configuration
-├── AGENTS.MD                     # Agent bootstrap rules; points to CLAUDE.md as source of truth
+├── AGENTS.md                     # Agent bootstrap rules; points to CLAUDE.md as source of truth
 ├── README.md                     # This file
 ├── .gitattributes                # Line-ending policy (text=auto eol=lf; prevents CRLF churn from OneDrive/Windows sync)
 ├── docs/                         # Reference guides
@@ -367,6 +371,13 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 ## Changelog
 
+### v1.7.0 (260906)
+
+- Fixed F01–F09: citation status/duplicate IDs, p-value bounds, placeholders, gate identity, plan completeness, revision baseline and reviewer fallback.
+- Added shared WORKFLOW.md, standard AGENTS.md and GEMINI.md bootstraps.
+- Added manifest-based verification profiles, context-bound results, content-bound approvals, review packets/state, and gated DOCX packaging.
+- See [shared engine guide](docs/harness_guide.md) for setup, migration and remaining limits.
+
 ### v1.6.4 (2026-08-30)
 
 **Full harness review (Claude Fable) — 16 defects fixed, 33 regression tests**
@@ -504,7 +515,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 **medical-kag MCP integration — knowledge graph alongside evidence.md**
 
 - **Grounding-preserving KAG integration** — the `medical-kag-remote` MCP (a spine-surgery knowledge-augmented graph) plugs in as an upstream discovery/analysis/format engine, while `knowledge/evidence.md` stays the single canonical citation ledger: anything the graph surfaces is registered as `[EVID:id]` (PMID/DOI verified) before it can be cited, so `check_citations.py` still gates everything. New `docs/medical_kag_protocol.md` maps the tools to phases — discovery + structured extraction (Phase 1), evidence-chain / intervention-comparison / GRADE synthesis for claims + Discussion (Phase 3-4), conflict / overclaim guard (Phase 6), journal-style reference lists (Phase 7).
-- **Additive + fallback** — the MCP is never a dependency: if it is unavailable (e.g. an unauthenticated remote session), the workflow degrades to `scripts/search_pubmed.py` + manual evidence.md. Wired into CLAUDE.md (Rule 1, STOP signals, Phase 1, Quick Commands) + AGENTS.MD for Codex parity.
+- **Additive + fallback** — the MCP is never a dependency: if it is unavailable (e.g. an unauthenticated remote session), the workflow degrades to `scripts/search_pubmed.py` + manual evidence.md. Wired into CLAUDE.md (Rule 1, STOP signals, Phase 1, Quick Commands) + AGENTS.md for Codex parity.
 
 ### v1.1.2 (2026-06-21)
 
@@ -517,7 +528,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 **Style enforcement — measurable gate + Codex parity**
 
 - **Deterministic style metrics** — `scripts/check_style.py` (`extract` / `check --spec`) measures word count, mean sentence length, paragraphs, citation density, and hedging, and flags deviations from the Style Spec targets — the "check_numbers for style". Wired into `lint_on_edit.py` (surfaces `[STYLE-METRIC]` deviations on each draft edit when a Style Spec exists) and the Phase 5/6 gates. Tests added.
-- **Codex parity + calibration** — `AGENTS.MD` now tells non-Claude runtimes to run the style-pass (`check_style.py` + Style-Conformance verifier) explicitly, since the hooks are Claude Code-only. The Style Spec template gains a before→after calibration example (few-shot steers the transform better than abstract rules).
+- **Codex parity + calibration** — `AGENTS.md` now tells non-Claude runtimes to run the style-pass (`check_style.py` + Style-Conformance verifier) explicitly, since the hooks are Claude Code-only. The Style Spec template gains a before→after calibration example (few-shot steers the transform better than abstract rules).
 
 ### v1.1.0 (2026-06-21)
 
@@ -530,7 +541,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 **Cross-runtime critical review + model selection**
 
-- **Claude-CLI reviewer** — `scripts/critical_review.py --include-claude` shells out to the local `claude -p` (headless) so a non-Claude-Code caller (Codex or a plain shell) can pull in Claude's adversarial review. `OPENROUTER_API_KEY` is now only required when an OpenRouter model is actually requested. Documented in `docs/critical_review_protocol.md` + `AGENTS.MD`.
+- **Claude-CLI reviewer** — `scripts/critical_review.py --include-claude` shells out to the local `claude -p` (headless) so a non-Claude-Code caller (Codex or a plain shell) can pull in Claude's adversarial review. `OPENROUTER_API_KEY` is now only required when an OpenRouter model is actually requested. Documented in `docs/critical_review_protocol.md` + `AGENTS.md`.
 - **Larger model pool + pick ~2** — `scripts/critical_models.txt` now offers MiniMax M3, GLM 5.2, Qwen3-Max, and DeepSeek V4 Pro; `/critical-review` presents them as individual `AskUserQuestion` options and recommends choosing ~2 (cost + blind-spot diversity), then runs `--models <selected>`.
 
 ### v1.0.2 (2026-06-20)
@@ -629,7 +640,7 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 - Expanded `Style/terminology.md` into the project terminology registry for preferred/forbidden terms across spine surgery, trials, AI/radiomics, and reporting contexts.
 - Added `docs/drafting_protocol.md` and `docs/section_templates.md` to enforce outline → evidence-bound draft → style pass → QC drafting.
 - Added `scripts/lint_manuscript.py` and updated draft/table templates so manuscript linting passes with `py scripts/lint_manuscript.py drafts --quiet` on Windows.
-- Added `AGENTS.MD` as agent bootstrap instructions, with `CLAUDE.md` as the authoritative source of truth.
+- Added `AGENTS.md` as agent bootstrap instructions, with `CLAUDE.md` as the authoritative source of truth.
 - Updated `.gitignore` so copyrighted PDFs and private style-anchor summaries remain local, while public workflow files and examples remain commit-eligible.
 
 ### v0.7.1 (2026-05-15)

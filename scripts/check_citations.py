@@ -25,6 +25,8 @@ LOOSE_EVID_RE = re.compile(r"\[EVID:([^\]]*)\]")
 HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", flags=re.MULTILINE)
 FIELD_RE = re.compile(r"^-\s+\*\*(.+?):\*\*\s*(.*)$")
 FENCE_RE = re.compile(r"```.*?```", flags=re.DOTALL)
+ALLOWED_SOURCE_STATUSES = frozenset({"verified", "full-text-reviewed", "abstract-only"})
+
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 
 
@@ -119,6 +121,8 @@ def parse_evidence_entries(evidence_text: str) -> dict[str, EvidenceEntry]:
         )
         if not evidence_id:
             continue
+        if evidence_id in entries:
+            raise ValueError(f"duplicate Evidence ID: {evidence_id}; disambiguate before citing")
         entries[evidence_id] = EvidenceEntry(
             evidence_id=evidence_id,
             heading=heading,
@@ -156,7 +160,12 @@ def check_citations(
     fail_abstract_only: bool = False,
 ) -> CitationCheckResult:
     registry_path = evidence_path or ROOT / "knowledge" / "evidence.md"
-    evidence_entries = parse_evidence_entries(registry_path.read_text(encoding="utf-8"))
+    try:
+        evidence_entries = parse_evidence_entries(registry_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        issue = CitationIssue(registry_path, "<registry>", 0, str(exc),
+                              "Repair the evidence registry and rerun verification.")
+        return CitationCheckResult(False, 0, [issue], [])
     failures: list[CitationIssue] = []
     warnings: list[CitationIssue] = []
     checked_tokens = 0
@@ -234,6 +243,13 @@ def check_citations(
                         "Verify the source and update Source Status before citing it.",
                     )
                 )
+                continue
+
+            if entry.source_status not in ALLOWED_SOURCE_STATUSES:
+                failures.append(CitationIssue(
+                    artifact, citation_id, line_number,
+                    f"unrecognized or disallowed Source Status: {entry.source_status}",
+                    "Verify the source and use an explicitly supported status."))
                 continue
 
             if entry.source_status == "abstract-only":

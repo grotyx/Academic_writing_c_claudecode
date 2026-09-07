@@ -162,6 +162,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Format [EVID:id] citations into a reference list and convert in-text tags."
     )
+    parser.add_argument("--strict", action="store_true", help="Block invalid source status or incomplete bibliography before conversion")
     parser.add_argument("artifacts", nargs="+", type=Path, help="Manuscript section markdown files.")
     parser.add_argument(
         "--evidence",
@@ -192,6 +193,14 @@ def main() -> int:
     args = build_arg_parser().parse_args()
     result = build(args.artifacts, evidence_path=args.evidence, style=args.style)
     print(format_report(result))
+    if args.strict:
+        citation_check = _cc.check_citations(args.artifacts, evidence_path=args.evidence)
+        if result.unknown or result.missing_citation or not citation_check.passed:
+            print("Strict bibliography validation failed; no files written.")
+            return 1
+    if args.convert and not args.out_suffix:
+        print("Output suffix cannot be empty (would overwrite the source).")
+        return 2
 
     if args.convert:
         print("")

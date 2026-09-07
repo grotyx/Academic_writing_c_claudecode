@@ -59,7 +59,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
-    args = build_parser().parse_args()
+    parser = build_parser()
+    args = parser.parse_args()
+    if not args.gate and (args.artifact or args.require_check or args.verify_hash or args.cross_check):
+        parser.error('gate options require --gate; they cannot be silently ignored')
     results: list[tuple[str, int, str]] = []
 
     rc, out = run("check_citations.py", [*args.artifacts, "--evidence", args.evidence])
@@ -84,6 +87,7 @@ def main() -> int:
         results.append(("gate", rc, out))
 
     print("=== verify_all ===")
+    print("Scope: citation and numeric tokens, plus the gate only if requested. For submission use python -m harness verify --profile submission.")
     for name, rc, out in results:
         print(f"\n--- {name}: {'PASS' if rc == 0 else 'FAIL'} ---")
         if out:

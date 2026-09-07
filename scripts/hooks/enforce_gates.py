@@ -24,6 +24,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from plan_validation import validate_plan_content, approval_problem
+
 # Tools that can create or modify files in Claude Code.
 WRITE_TOOLS = ("Write", "Edit", "MultiEdit")
 
@@ -74,7 +77,10 @@ def plan_problem(plan: Path) -> str | None:
         return "unresolved template or not approved"
     if not CHECKED_APPROVAL_RE.search(text):
         return "not approved"
-    return None
+    kind = "analysis" if plan.name == "analysis_plan.md" else "draft"
+    if validate_plan_content(text, kind):
+        return "incomplete plan: required sections are absent or empty"
+    return approval_problem(plan)
 
 
 def decide(event: dict) -> str | None:

@@ -180,10 +180,10 @@ class FreshnessTests(unittest.TestCase):
     """Provenance hashing: a PASS must go stale when its artifact changes."""
 
     @staticmethod
-    def _gate_with_provenance(artifact_hash: str) -> str:
+    def _gate_with_provenance(artifact_hash: str, artifact="drafts/05_results.md") -> str:
         return (
             "phase: Phase 4 - Draft Sections\n"
-            "artifact: drafts/05_results.md\n"
+            f"artifact: {artifact}\n"
             "status: PASS\n"
             "checks:\n"
             "  constraint: PASS\n"
@@ -209,7 +209,7 @@ class FreshnessTests(unittest.TestCase):
             artifact.write_text("primary outcome 54.3\n", encoding="utf-8")
             digest = module.sha256_file(artifact)
             gate_path = Path(tmp) / "phase_04_draft.GATE.md"
-            gate_path.write_text(self._gate_with_provenance(digest), encoding="utf-8")
+            gate_path.write_text(self._gate_with_provenance(digest, artifact), encoding="utf-8")
 
             result = module.check_gate(
                 gate_path,
@@ -228,7 +228,7 @@ class FreshnessTests(unittest.TestCase):
             artifact.write_text("primary outcome 54.3\n", encoding="utf-8")
             digest = module.sha256_file(artifact)
             gate_path = Path(tmp) / "phase_04_draft.GATE.md"
-            gate_path.write_text(self._gate_with_provenance(digest), encoding="utf-8")
+            gate_path.write_text(self._gate_with_provenance(digest, artifact), encoding="utf-8")
             # Artifact edited after the gate PASS -> the gate is now stale.
             artifact.write_text("primary outcome 99.9\n", encoding="utf-8")
 
@@ -263,7 +263,7 @@ class FreshnessTests(unittest.TestCase):
             artifact.write_text("payload\n", encoding="utf-8")
             digest = module.sha256_file(artifact)
             gate_path = Path(tmp) / "phase_04_draft.GATE.md"
-            gate_path.write_text(self._gate_with_provenance(f"sha256:{digest}"), encoding="utf-8")
+            gate_path.write_text(self._gate_with_provenance(f"sha256:{digest}", artifact), encoding="utf-8")
 
             result = module.check_gate(gate_path, verify_hashes=[("artifact", artifact)])
 
@@ -340,7 +340,7 @@ class FreshnessTests(unittest.TestCase):
             res = Path(tmp) / "table2.csv"
             res.write_text("value\n", encoding="utf-8")
             gate_text = (
-                "artifact: drafts/05_results.md\n"
+                f"artifact: {art}\n"
                 "status: PASS\n"
                 "checks:\n"
                 "  numbers: PASS\n"
@@ -481,7 +481,7 @@ class FreshnessTests(unittest.TestCase):
             artifact.write_text("payload\n", encoding="utf-8")
             digest = module.sha256_file(artifact)
             gate_path = Path(tmp) / "phase_04_draft.GATE.md"
-            gate_path.write_text(self._gate_with_provenance(digest), encoding="utf-8")
+            gate_path.write_text(self._gate_with_provenance(digest, artifact), encoding="utf-8")
 
             result = module.check_gate(gate_path, verify_hashes=[("artifact", artifact)])
             self.assertTrue(result.passed)

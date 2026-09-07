@@ -131,6 +131,8 @@ def run_live_check(
     if label == "citation":
         module = _load_sibling("check_citations")
         ev = resolve(evidence_path) if evidence_path else base / "knowledge" / "evidence.md"
+        if not ev.is_file():
+            raise FileNotFoundError(f"evidence source not found: {ev}")
         return module.check_citations([art], evidence_path=ev).passed
     if label == "numbers":
         module = _load_sibling("check_numbers")
@@ -349,6 +351,22 @@ def check_gate(
                     f"Fix the {check_key} failure and rerun the verifier before proceeding.",
                 )
             )
+
+    # Every artifact hash/live check must refer to the ledger's own artifact.
+    # Dependencies use other provenance labels, never an alternate artifact.
+    def resolved_path(value):
+        path = normalize_path_obj(Path(value))
+        return (path if path.is_absolute() else (base_dir or ROOT) / path).resolve()
+
+    declared = entry.fields.get("artifact", "")
+    bound_paths = [("provenance.artifact", path) for label, path in verify_hashes or []
+                   if normalize_key(label) == "artifact"]
+    bound_paths += [("cross_check." + label, path) for label, path in cross_checks or []]
+    for field, path in bound_paths:
+        if not declared or resolved_path(declared) != resolved_path(path):
+            failures.append(GateIssue(gate_path, field,
+                f"artifact mismatch: ledger declares {declared or '<missing>'}, checker targets {path}",
+                "Use the declared artifact for both freshness and live verification."))
 
     # Freshness / provenance: a PASS is only valid for the artifact state it was
     # recorded against. Re-hash each tracked file and compare to the digest the

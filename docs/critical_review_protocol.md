@@ -1,4 +1,4 @@
-# Critical-Review Protocol (외부 멀티모델 적대적 검토)
+# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.0.0)
 
 > 완성된 원고/response를 여러 리뷰어가 적대적으로 공격해 허점을 발굴하는 절차의 단일 기준. `/critical-review` command와 `qc_guide.md`는 이 문서를 참조한다. QC Round 6 Critical Review의 외부 멀티모델 강화판.
 > 공개 운영 기준은 이 문서가 원본입니다. 내부 설계 노트 경로는 런타임 의존성으로 두지 않습니다.
@@ -6,7 +6,7 @@
 ## 0. 원칙
 
 - **review-only** — 허점을 발굴만 하고 자동 수정하지 않는다.
-- **합의도 = 신뢰도** — 여러 리뷰어가 같은 허점을 지적하면 거의 확실한 약점.
+- **합의는 검토 우선순위** — 모델들이 같은 오류를 공유할 수 있으므로 사실 판정은 원자료와 대조한다.
 - **폴백** — OpenRouter/Codex가 안 돼도 Claude 서브에이전트 단독으로 가능. 막히지 않는다.
 
 ## 1. 절차
@@ -63,3 +63,7 @@
 - **벤치마크 강화(선택):** medical-kag MCP 연결 시 `search`/`compare_interventions`/`best_evidence`로 해당 분야 high-impact 문헌의 설계·n·근거수준을 끌어와 근거화. 미연결 시 LLM 지식 + `search_pubmed.py`.
 - **성격:** grounded 게이트가 **아니라** 판정형 평가(임상·분야 지식 사용). **advisory** — 게이트를 대체하지 않는다. 수치·인용 grounding은 여전히 `check_numbers`/`check_citations` 담당. Phase 6에서 사용.
 - 에러·폴백은 §4와 동일.
+
+## v1.7.0 provider execution
+
+See `harness_guide.md`. Missing OpenRouter credentials do not cancel CLI reviewers. `--include-codex` and repeatable `--context` are available. `--out` now creates unique run subdirectories with `run.json` (requested/completed/failures/source hashes). Partial results are advisory, never an automatic gate PASS. Authorize each external destination and input scope before calling it.
