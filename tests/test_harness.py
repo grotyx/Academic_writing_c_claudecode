@@ -82,13 +82,13 @@ def test_build_requires_fresh_reviews_and_preserves_sources(project):
 
 @pytest.mark.parametrize('key,value',[('outcome','fusion'),('timepoint','month12'),('unit','percent'),('comparison','control_minus_treatment')])
 def test_context_swap_is_rejected(project,key,value):
-    path=project.parent/'review/bindings.json';data=json.loads(path.read_text())
+    path=project.parent/'review/bindings.json';data=json.loads(path.read_text(encoding='utf-8'))
     data['bindings'][0]['context'][key]=value;put(path,data)
     assert verify(project)['status']=='BLOCKED'
 
 
 def test_wrong_paper_rejected(project):
-    path=project.parent/'review/bindings.json';data=json.loads(path.read_text())
+    path=project.parent/'review/bindings.json';data=json.loads(path.read_text(encoding='utf-8'))
     data['results'][0]['paper_id']='p2';put(path,data)
     assert verify(project)['status']=='BLOCKED'
 
@@ -99,12 +99,12 @@ def test_csv_change_invalidates_binding(project):
 
 
 def test_analysis_plan_change_invalidates_approval(project):
-    plan=project.parent/'data/analysis_plan.md';put(plan,plan.read_text()+'\nChanged endpoint.\n')
+    plan=project.parent/'data/analysis_plan.md';put(plan,plan.read_text(encoding='utf-8')+'\nChanged endpoint.\n')
     assert verify(project)['status']=='FAIL'
 
 
 def test_receipt_does_not_claim_self_review_independence(project):
-    sign(project);path=project.parent/'review/semantic.json';data=json.loads(path.read_text())
+    sign(project);path=project.parent/'review/semantic.json';data=json.loads(path.read_text(encoding='utf-8'))
     data['method']='self';put(path,data)
     assert verify(project,'submission')['status']=='FAIL'
 
@@ -115,13 +115,13 @@ def test_dependency_added_after_review_is_stale(project):
 
 
 def test_path_escape_rejected(project):
-    data=json.loads(project.read_text());data['artifacts']=['../outside.md'];put(project,data)
+    data=json.loads(project.read_text(encoding='utf-8'));data['artifacts']=['../outside.md'];put(project,data)
     with pytest.raises(ValueError,match='escapes'):
         load_project(project)
 
 
 def test_no_numerical_exemption_for_original_research(project):
-    data=json.loads(project.read_text());data['numeric_artifacts']=[];data['numbers_not_applicable']='No numbers'
+    data=json.loads(project.read_text(encoding='utf-8'));data['numeric_artifacts']=[];data['numbers_not_applicable']='No numbers'
     put(project,data)
     assert verify(project)['status']=='BLOCKED'
 
@@ -130,7 +130,7 @@ def test_packet_and_status_cli_share_snapshot(project,capsys):
     with patch('sys.argv',['harness','packet','--project',str(project)]):
         assert main()==0
     result=json.loads(capsys.readouterr().out)
-    packet=json.loads(Path(result['packet']).read_text())
+    packet=json.loads(Path(result['packet']).read_text(encoding='utf-8'))
     assert packet['paper_id']=='p1'
     assert packet['files']
     with patch('sys.argv',['harness','verify','--project',str(project)]):

@@ -135,5 +135,5 @@ def test_scientific_p_value(tmp_path):
 def test_standard_agent_bootstraps_exist():
     for name in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'):
         assert (ROOT/name).is_file()
-        assert 'WORKFLOW.md' in (ROOT/name).read_text()
+        assert 'WORKFLOW.md' in (ROOT/name).read_text(encoding='utf-8')
     assert 'AGENTS.MD' not in [p.name for p in ROOT.iterdir()]
