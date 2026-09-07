@@ -106,7 +106,7 @@ def build(path):
     references=formatter.build(paths,evidence_path=inside(root,config['evidence']),style='numbered')
     if references.unknown or references.missing_citation:
         raise ValueError('incomplete bibliography')
-    date=datetime.now(timezone.utc).strftime('%y%m%d')
+    date=datetime.now().strftime('%y%m%d')
     destination=inside(root, config.get('output','output'))
     destination.mkdir(parents=True,exist_ok=True)
     final=destination/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'_'+uuid4().hex[:8])
