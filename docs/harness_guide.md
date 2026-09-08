@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.3)
+# Shared manuscript engine (v1.0.4)
 
-Project release: v1.7.3. Python 3.10+; install `requirements.txt` and pytest for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.7.4. Python 3.10+; install `requirements.txt` and pytest for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 

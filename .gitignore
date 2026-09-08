@@ -8,8 +8,12 @@
 # Presentation files (not part of manuscript workflow)
 presentation/
 
-# Personal profile (author info, contacts, funding)
-profile/
+# Personal profile (author info, contacts, funding).
+# Use profile/* (not profile/) so the example_ templates below can be re-included:
+# git cannot un-ignore a file whose parent directory itself is excluded.
+profile/*
+!profile/example_authors.md
+!profile/example_journals.md
 
 # Superpowers planning/spec notes — internal, not for public release
 docs/superpowers/

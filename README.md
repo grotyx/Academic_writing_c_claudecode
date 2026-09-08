@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.3** (2026-09-08)
+**v1.7.4** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -373,6 +373,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.4 (260908)
+
+- **`profile/` templates are now shipped**: `profile/example_authors.md` (placeholder skeleton for corresponding author, co-authors, funding boilerplate, IRB/trial registry) and `profile/example_journals.md` (13 worked journal entries — in-text style, author cutoff, page range, ORCID policy, submission checklist). Copy them to `profile/authors.md` / `profile/journals.md`, which stay gitignored.
+- `.gitignore`: `profile/` → `profile/*` plus negations. Git cannot re-include a file whose parent directory is excluded, so the templates were unreachable under the old pattern; real profile files remain ignored (verified).
+- **Test portability fix**: `test_cli_verify_hash_resolves_relative_paths_from_project_root` hashed `drafts/05_results.md`, a fixture that only exists in this template repo — it failed in every downstream project, which lays `drafts/` out per paper. It now hashes a file the harness itself ships.
 
 ### v1.7.3 (260908)
 

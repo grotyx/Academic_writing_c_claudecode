@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.3** (2026-09-08)
+**v1.7.4** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -363,6 +363,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.4 (260908)
+
+- **`profile/` 템플릿 제공**: `profile/example_authors.md`(교신저자·공동저자·funding 보일러플레이트·IRB/임상시험 등록 placeholder 골격)와 `profile/example_journals.md`(저널 13종 완성 예시 — 본문 인용 방식, 저자 cutoff, page range, ORCID 정책, 제출 체크리스트). 복사해서 `profile/authors.md`·`profile/journals.md`로 쓰면 되고, 그 두 파일은 계속 gitignored.
+- `.gitignore`: `profile/` → `profile/*` + 부정 패턴. git은 부모 디렉터리가 제외되면 하위 파일을 다시 포함할 수 없어 기존 패턴으로는 템플릿을 올릴 수 없었음. 실제 profile 파일은 여전히 무시됨(실증 확인).
+- **테스트 이식성 수정**: `test_cli_verify_hash_resolves_relative_paths_from_project_root`가 이 템플릿 저장소에만 있는 `drafts/05_results.md`를 해싱해서, `drafts/`를 논문별로 나눠 쓰는 실제 프로젝트에서는 항상 실패했음. 하네스가 항상 배포하는 파일을 해싱하도록 변경.
 
 ### v1.7.3 (260908)
 

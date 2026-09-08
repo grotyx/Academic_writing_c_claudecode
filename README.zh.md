@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.3** (2026-09-08)
+**v1.7.4** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -340,6 +340,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.4 (260908)
+
+- **随附 `profile/` 模板**：`profile/example_authors.md`（通讯作者、共同作者、funding 套语、IRB/临床试验注册的 placeholder 骨架）与 `profile/example_journals.md`（13 种期刊的完整示例 — 正文引用格式、作者 cutoff、页码范围、ORCID 政策、投稿清单）。复制为 `profile/authors.md`、`profile/journals.md` 使用，这两个文件仍然 gitignored。
+- `.gitignore`：`profile/` → `profile/*` 加否定模式。git 无法重新包含父目录已被排除的文件，因此旧模式下模板根本无法提交。真实的 profile 文件仍被忽略（已实证确认）。
+- **测试可移植性修复**：`test_cli_verify_hash_resolves_relative_paths_from_project_root` 此前哈希仅存在于本模板仓库的 `drafts/05_results.md`，导致按论文划分 `drafts/` 的真实项目必然失败。现改为哈希 harness 自身随附的文件。
 
 ### v1.7.3 (260908)
 

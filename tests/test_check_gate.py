@@ -379,11 +379,15 @@ class FreshnessTests(unittest.TestCase):
     def test_cli_verify_hash_resolves_relative_paths_from_project_root(self) -> None:
         module = load_module()
 
-        artifact = ROOT / "drafts" / "05_results.md"
+        # Hash a file the harness itself always ships, not a manuscript fixture:
+        # real projects lay drafts/ out per paper and have no drafts/05_results.md,
+        # so this test used to fail everywhere except this template repo.
+        relative = "scripts/check_gate.py"
+        artifact = ROOT / relative
         digest = module.sha256_file(artifact)
         gate_text = (
             "phase: Phase 4 - Draft Sections\n"
-            "artifact: drafts/05_results.md\n"
+            f"artifact: {relative}\n"
             "status: PASS\n"
             "checks:\n"
             "  constraint: PASS\n"
@@ -402,11 +406,11 @@ class FreshnessTests(unittest.TestCase):
                     str(SCRIPT_PATH),
                     str(gate_path),
                     "--artifact",
-                    "drafts/05_results.md",
+                    relative,
                     "--require-check",
                     "constraint",
                     "--verify-hash",
-                    "artifact=drafts/05_results.md",
+                    f"artifact={relative}",
                 ],
                 cwd=other_cwd,
                 text=True,

@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.3** (2026-09-08)
+**v1.7.4** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -334,6 +334,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.7.4 (260908)
+
+- **`profile/` テンプレートを同梱**：`profile/example_authors.md`（責任著者・共著者・funding 定型文・IRB/臨床試験登録の placeholder 骨格）と `profile/example_journals.md`（13 誌の完成例 — 本文引用形式、著者 cutoff、page range、ORCID 方針、投稿チェックリスト）。コピーして `profile/authors.md`・`profile/journals.md` として使い、その 2 ファイルは引き続き gitignored。
+- `.gitignore`：`profile/` → `profile/*` と否定パターン。git は親ディレクトリが除外されているとその配下のファイルを再包含できないため、従来のパターンではテンプレートを追加できなかった。実際の profile ファイルは引き続き無視される（実証確認済み）。
+- **テスト移植性の修正**：`test_cli_verify_hash_resolves_relative_paths_from_project_root` がこのテンプレートリポジトリにしか存在しない `drafts/05_results.md` をハッシュしていたため、`drafts/` を論文ごとに分ける実プロジェクトでは常に失敗していた。ハーネス自身が同梱するファイルをハッシュするよう変更。
 
 ### v1.7.3 (260908)
 

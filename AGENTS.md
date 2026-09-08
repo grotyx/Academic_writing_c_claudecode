@@ -25,7 +25,8 @@ Never stage or commit these unless the user explicitly overrides the rule:
 - `Style/own/*.md` except `Style/own/example_*.md`
 - `Style/landmark/*.md`
 - `Style/target_journal/*.md`
-- `profile/`
+- `profile/` — except the tracked public templates `profile/example_authors.md`
+  and `profile/example_journals.md`. Never move real author data into them.
 
 ## Manuscript Workflow
 

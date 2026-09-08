@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.7.3)
+# Academic Paper Writing Project (v1.7.4)
 
-## Shared Engine (v1.7.3)
+## Shared Engine (v1.7.4)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -155,8 +155,8 @@ project/
 | `docs/draft_plan_template.md` | Draft plan 10개 항목 템플릿 (Phase 3에서 복사하여 사용) | Phase 3 시작 시 복사 → `drafts/draft_plan.md` |
 | `docs/debate_protocol.md` | Claude–Codex co-author 토론 절차 (라운드·역할·로그·폴백) | Phase 2·3·4·8 (`/paper-debate` 토론 시) |
 | `docs/critical_review_protocol.md` | 외부 멀티모델 적대적 검토 절차 (리뷰어 풀·합의도·폴백) | Phase 6 QC·Phase 8 (`/critical-review`) |
-| `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿) | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
-| `profile/journals.md` | 저널별 인용 형식 (bracket vs superscript, et al. 기준, volume 형식) | 참고문헌 목록 작성 시 확인 |
+| `profile/authors.md` | 저자 정보 (소속·연락처·ORCID·funding 문구 템플릿); gitignored — `profile/example_authors.md`를 복사해 작성 | Title page 작성 시 **반드시** 참조 — 직접 입력 금지 |
+| `profile/journals.md` | 저널별 인용 형식 (bracket vs superscript, et al. 기준, volume 형식); gitignored — `profile/example_journals.md`를 복사해 작성 | 참고문헌 목록 작성 시 확인 |
 | `knowledge/evidence.md` | 참고문헌 요약 정리 자료집 (논문별 요약·핵심·서지정보) | Phase 1 (setup) + 인용 시 참조 |
 | `docs/medical_kag_protocol.md` | medical-kag MCP 통합 (KG 발굴·conflict·GRADE·레퍼런스 포맷); evidence.md 정본 유지 규율·fallback | Phase 1·3·4·6·7 (MCP 사용 시) |
 | `knowledge/pdf/` | Original reference PDFs (**gitignored**; copyright-protected, local only) | When verifying claims |
