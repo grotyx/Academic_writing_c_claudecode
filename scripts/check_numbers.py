@@ -174,14 +174,16 @@ def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
     text = strip_ignored_text(artifact.read_text(encoding="utf-8"))
     tokens: list[NumberToken] = []
     p_columns = set()
-    for line_number, line in enumerate(text.splitlines(), start=1):
+    lines = text.splitlines()
+    for line_number, line in enumerate(lines, start=1):
         if not line.strip().startswith('|'):
             p_columns = set()
-        elif re.search(r'[A-Za-z]', line) and not re.search(r'\d', line):
-            candidates = {i for i, cell in enumerate(line.split('|'))
-                          if cell.strip().strip('*').casefold() in P_VALUE_COLUMNS}
-            if candidates:
-                p_columns = candidates
+        elif line_number < len(lines) and re.fullmatch(
+                r'\s*\|(?:\s*:?-{3,}:?\s*\|)+\s*', lines[line_number]):
+            # A pipe header is identified by its separator row, not by whether
+            # the header contains group sizes or follow-up time points.
+            p_columns = {i for i, cell in enumerate(line.split('|'))
+                         if cell.strip().strip('*').casefold() in P_VALUE_COLUMNS}
         for match in NUMBER_RE.finditer(line):
             raw_number = match.group("num")
             full_token = match.group(0)

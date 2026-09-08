@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.1** (2026-09-08)
+**v1.7.2** (2026-09-07)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -363,6 +363,13 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.2 (260907)
+
+- Bind revision claims and latest section versions to the actual submission files.
+- Reject unchecked numerical artifacts; require explicit reasons for non-result exclusions.
+- Detect p-value table columns even when headers contain numbers; preserve header number checks.
+- Synchronize doctor version and add regression tests for submission scope.
 
 ### v1.7.1 (260908)
 
