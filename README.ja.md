@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.2** (2026-09-07)
+**v1.7.3** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -335,12 +335,18 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 ## 変更履歴
 
+### v1.7.3 (260908)
+
+- 韓国語 Windows で v1.7.2 を検証：344 テスト、CI 9/9、実 CLI による合成エラー注入シナリオ 37 件 — v1.7.1 の draft/revision 25 件に加え、`numeric_scope`（numeric_artifacts/除外なしで結果以外のセクションに数値、空の理由、結果ファイルの除外試行、バインド済みファイルの除外試行）・`revision_scope`（REVn があるのに元セクションを列挙、CHANGE 対象が artifacts にない、REV2 レターに REV1 artifacts）の新規 12 件。すべて設計どおりブロック/通過。
+- `docs/project.example.json`：v1.7.2 の新フィールド `numeric_exemptions` キーをテンプレート manifest に追加。
+- README ko/ja/zh：v1.7.2 の changelog 項目をローカライズ（英語のみだった）。ヘッダー → v1.7.3；`harness/__init__.py`（doctor）→ 1.7.3；`docs/harness_guide.md` → v1.0.3。
+
 ### v1.7.2 (260907)
 
-- Bind revision claims and latest section versions to the actual submission files.
-- Reject unchecked numerical artifacts; require explicit reasons for non-result exclusions.
-- Detect p-value table columns even when headers contain numbers; preserve header number checks.
-- Synchronize doctor version and add regression tests for submission scope.
+- revision claim と各セクションの最新版を実際の投稿ファイルにバインド（`revision_scope`）。
+- 数値チェック対象から漏れた原稿ファイルを拒否；結果以外のセクションの除外は `numeric_exemptions` に明示的な理由が必要（`numeric_scope`）。
+- ヘッダーに数字が含まれていても p 値の表カラムを区切り行から認識；ヘッダーの数字チェックは維持。
+- doctor のバージョンを同期し、submission scope の回帰テストを追加。
 
 ### v1.7.1 (260908)
 

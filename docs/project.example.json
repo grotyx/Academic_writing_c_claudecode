@@ -10,6 +10,7 @@
   "analysis_plan": "data/analysis_plan.md",
   "results": "results",
   "numeric_artifacts": ["drafts/02_abstract.md", "drafts/05_results.md", "drafts/table_1.md"],
+  "numeric_exemptions": {},
   "abstract": "drafts/02_abstract.md",
   "result_bindings": "review/result_bindings.json",
   "semantic_review": "review/semantic_review.json",

@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.2** (2026-09-07)
+**v1.7.3** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -364,12 +364,18 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 
 ## 변경 이력
 
+### v1.7.3 (260908)
+
+- 한글 Windows에서 v1.7.2 검증: 344 tests, CI 9/9, 실제 CLI로 합성 오류 주입 시나리오 37개 — v1.7.1의 draft/revision 25개에 더해 `numeric_scope`(numeric_artifacts/예외 없이 결과 외 섹션에 숫자, 빈 사유, 결과 파일 예외 시도, 이미 바인딩된 파일 예외 시도)·`revision_scope`(REVn이 있는데 원본 섹션 나열, CHANGE 대상이 artifacts에 없음, REV2 편지에 REV1 artifacts) 12개 신규. 전부 설계대로 차단/통과.
+- `docs/project.example.json`: v1.7.2 신규 필드 `numeric_exemptions` 키를 템플릿 manifest에 추가.
+- README ko/ja/zh: v1.7.2 changelog 항목 현지화(영어만 있었음). 헤더 → v1.7.3; `harness/__init__.py`(doctor) → 1.7.3; `docs/harness_guide.md` → v1.0.3.
+
 ### v1.7.2 (260907)
 
-- Bind revision claims and latest section versions to the actual submission files.
-- Reject unchecked numerical artifacts; require explicit reasons for non-result exclusions.
-- Detect p-value table columns even when headers contain numbers; preserve header number checks.
-- Synchronize doctor version and add regression tests for submission scope.
+- revision claim과 각 섹션의 최신 버전을 실제 제출 파일에 바인딩 (`revision_scope`).
+- 수치 검사에서 빠진 원고 파일을 거부; 결과 외 섹션의 제외는 `numeric_exemptions`에 명시적 사유 필요 (`numeric_scope`).
+- 헤더에 숫자가 있어도 p값 표 컬럼을 구분자 행으로 인식; 헤더 숫자 검사는 유지.
+- doctor 버전 동기화, submission scope 회귀 테스트 추가.
 
 ### v1.7.1 (260908)
 

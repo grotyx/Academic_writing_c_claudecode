@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.2** (2026-09-07)
+**v1.7.3** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -341,12 +341,18 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 ## 变更记录
 
+### v1.7.3 (260908)
+
+- 在韩文 Windows 上验证 v1.7.2：344 个测试、CI 9/9、通过真实 CLI 的 37 个合成错误注入场景 — v1.7.1 的 25 个 draft/revision 场景之外，新增 `numeric_scope`（非结果章节含数字但无 numeric_artifacts/豁免、空理由、试图豁免结果文件、试图豁免已绑定文件）与 `revision_scope`（存在 REVn 却列出原始章节、CHANGE 目标不在 artifacts 中、REV2 信函搭配 REV1 artifacts）12 个。全部按设计拦截/通过。
+- `docs/project.example.json`：在模板 manifest 中加入 v1.7.2 新字段 `numeric_exemptions`。
+- README ko/ja/zh：本地化 v1.7.2 changelog 条目（此前仅有英文）。页眉 → v1.7.3；`harness/__init__.py`（doctor）→ 1.7.3；`docs/harness_guide.md` → v1.0.3。
+
 ### v1.7.2 (260907)
 
-- Bind revision claims and latest section versions to the actual submission files.
-- Reject unchecked numerical artifacts; require explicit reasons for non-result exclusions.
-- Detect p-value table columns even when headers contain numbers; preserve header number checks.
-- Synchronize doctor version and add regression tests for submission scope.
+- 将 revision claim 与各节最新版本绑定到实际投稿文件（`revision_scope`）。
+- 拒绝未纳入数值检查的稿件文件；非结果章节的排除须在 `numeric_exemptions` 中给出明确理由（`numeric_scope`）。
+- 即使表头含数字也能通过分隔行识别 p 值列；表头数字检查保持不变。
+- 同步 doctor 版本，并新增 submission scope 回归测试。
 
 ### v1.7.1 (260908)
 

@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.2** (2026-09-07)
+**v1.7.3** (2026-09-08)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -373,6 +373,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.3 (260908)
+
+- Verified v1.7.2 on Korean Windows: 344 tests, 9/9 CI, and 37 synthetic error-injection scenarios through the real CLI — the 25 draft/revision scenarios from v1.7.1 plus 12 new ones for `numeric_scope` (number in a non-result section without `numeric_artifacts`/exemption, empty reason, exempting a results file, exempting an already-bound file) and `revision_scope` (stale original section listed while REVn exists, CHANGE target missing from artifacts, REV2 letter with REV1 artifacts). All blocked/passed as designed.
+- `docs/project.example.json`: add the `numeric_exemptions` key so the new v1.7.2 field is discoverable from the template manifest.
+- README ko/ja/zh: localize the v1.7.2 changelog entry (was English-only). Headers → v1.7.3; `harness/__init__.py` (doctor) → 1.7.3; `docs/harness_guide.md` → v1.0.3.
 
 ### v1.7.2 (260907)
 
