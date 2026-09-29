@@ -303,16 +303,16 @@ def agents(engine, args):
     for agent in chosen:
         executable = 'opencode' if agent == 'opencode' else agent
         if not shutil.which(executable):
-            print(f'[{agent}] not installed; skipped')
+            print(f'[{agent}] not installed; skipped', flush=True)
             continue
         for step in agent_steps(engine, agent, mode):
             if step[0] == 'copy':
-                print(f'[{agent}] copy {step[1]} -> {step[2]}')
+                print(f'[{agent}] copy {step[1]} -> {step[2]}', flush=True)
                 if not dry:
                     shutil.rmtree(step[2], ignore_errors=True)
                     shutil.copytree(step[1], step[2])
                 continue
-            print(f'[{agent}] ' + ' '.join(step))
+            print(f'[{agent}] ' + ' '.join(step), flush=True)
             if not dry:
                 code = subprocess.call(step)
                 if code:

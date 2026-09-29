@@ -14,12 +14,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]  # scripts/hooks/ -> repo root
 MAX_LINES = 20
-WRITE_TOOLS = ("Write", "Edit", "MultiEdit")
+WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "apply_patch")  # apply_patch = Codex
 
 
 def _load_lint():
@@ -71,7 +72,10 @@ def evaluate(event: dict) -> tuple[int, str]:
     """Return (exit_code, stderr_message). Pure function for testing."""
     if event.get("tool_name") not in WRITE_TOOLS:
         return 0, ""
-    raw_path = (event.get("tool_input") or {}).get("file_path") or ""
+    tool_input = event.get("tool_input") or {}
+    patched = re.findall(r"^\*\*\* (?:Add File|Update File|Move to): (.+?)\s*$",
+                         str(tool_input.get("command") or ""), re.M)
+    raw_path = tool_input.get("file_path") or next(iter(patched), "")
     if not raw_path:
         return 0, ""
     cwd = (event.get("cwd") or ".").replace("\\", "/")

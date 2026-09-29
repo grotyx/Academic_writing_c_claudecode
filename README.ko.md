@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.8.0** (2026-09-30)
+**v1.8.1** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -375,6 +375,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.8.1 (260930)
+
+- **Codex 강제 수정**: Codex 는 `apply_patch` 로 파일을 쓰고 patch 를 `tool_input.command` 에 넣음(`file_path` 없음). 그래서 plan-first 게이트가 Codex 에서 전혀 동작하지 않았음. gate·lint hook 이 patch 안의 모든 파일 경로를 읽도록 수정하고, hook matcher 에 `apply_patch` 를 명시함. v1.8.0 설치 후 실제 Codex 세션에서 발견.
+- `doctor` 의 pytest 경고는 소스 checkout 에서만 표시. `paperflow agents` 출력이 하위 명령 출력과 섞이지 않게 함.
+- 401 tests 통과(Codex patch 테스트 +3).
 
 ### v1.8.0 (260930)
 

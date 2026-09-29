@@ -273,3 +273,29 @@ class DecideTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CodexApplyPatchTests(unittest.TestCase):
+    """Codex reports file edits as tool_name 'apply_patch' with the patch in tool_input.command."""
+
+    def test_blocks_patch_that_adds_section_without_plan(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            patch = "*** Begin Patch\n*** Add File: drafts/04_methods.md\n+Methods\n*** End Patch\n"
+            event = {"tool_name": "apply_patch", "cwd": tmp, "tool_input": {"command": patch}}
+            self.assertIn("Rule 8", module.decide(event) or "")
+
+    def test_checks_every_file_in_a_patch(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            patch = ("*** Begin Patch\n*** Update File: notes.md\n@@\n-a\n+b\n"
+                     "*** Update File: drafts/05_results.md\n@@\n-a\n+b\n*** End Patch\n")
+            event = {"tool_name": "apply_patch", "cwd": tmp, "tool_input": {"command": patch}}
+            self.assertIn("Rule 8", module.decide(event) or "")
+
+    def test_allows_patch_outside_manuscript(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            patch = "*** Begin Patch\n*** Add File: notes/todo.md\n+x\n*** End Patch\n"
+            event = {"tool_name": "apply_patch", "cwd": tmp, "tool_input": {"command": patch}}
+            self.assertIsNone(module.decide(event))

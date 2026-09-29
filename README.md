@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.8.0** (2026-09-30)
+**v1.8.1** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -385,6 +385,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.8.1 (260930)
+
+- **Codex enforcement fix**: Codex writes files with `apply_patch` and reports the patch in `tool_input.command` (no `file_path`), so the plan-first gate never fired there. The gate and lint hooks now read every file path in the patch; hooks match `apply_patch` explicitly. Found in a live Codex session after installing v1.8.0.
+- `doctor` warns about missing pytest only in a source checkout. `paperflow agents` output no longer interleaves with child output.
+- 401 tests pass (+3 Codex patch tests).
 
 ### v1.8.0 (260930)
 

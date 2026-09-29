@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from plan_validation import validate_plan_content, approval_problem
 
 # Tools that can create or modify files in Claude Code.
-WRITE_TOOLS = ("Write", "Edit", "MultiEdit")
+WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "apply_patch")  # apply_patch = Codex
 
 # Manuscript section files: 01_title.md ... 09_figure_legends.md (basename only,
 # anchored on a leading slash so e.g. draft_plan.md / table_1.md never match).
@@ -83,17 +83,30 @@ def plan_problem(plan: Path) -> str | None:
     return approval_problem(plan)
 
 
+PATCH_PATH_RE = re.compile(r"^\*\*\* (?:Add File|Update File|Move to): (.+?)\s*$", re.M)
+
+
+def event_paths(event: dict) -> list[str]:
+    """Target paths of a write event: Claude `file_path`, or Codex `apply_patch` headers."""
+    if event.get("tool_name") not in WRITE_TOOLS:
+        return []
+    tool_input = event.get("tool_input") or {}
+    if tool_input.get("file_path"):
+        return [tool_input["file_path"]]
+    return PATCH_PATH_RE.findall(str(tool_input.get("command") or tool_input.get("patch") or ""))
+
+
 def decide(event: dict) -> str | None:
     """Return a block reason, or None to allow. Pure function for testing."""
-    if event.get("tool_name") not in WRITE_TOOLS:
-        return None
+    for raw_path in event_paths(event):
+        reason = decide_path(event.get("cwd") or ".", raw_path)
+        if reason:
+            return reason
+    return None
 
-    tool_input = event.get("tool_input") or {}
-    raw_path = tool_input.get("file_path") or ""
-    if not raw_path:
-        return None
 
-    cwd = _norm(event.get("cwd") or ".")
+def decide_path(event_cwd: str, raw_path: str) -> str | None:
+    cwd = _norm(event_cwd)
     target = Path(_norm(raw_path))
     if not target.is_absolute():
         target = Path(cwd) / target

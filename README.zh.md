@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.8.0** (2026-09-30)
+**v1.8.1** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -352,6 +352,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.8.1 (260930)
+
+- **Codex 强制修复**：Codex 用 `apply_patch` 写文件，并把 patch 放在 `tool_input.command`（无 `file_path`），因此 plan-first 门禁在 Codex 中从未生效。现在 gate 与 lint hook 会读取 patch 中的所有文件路径，hook matcher 显式包含 `apply_patch`。于安装 v1.8.0 后的真实 Codex 会话中发现。
+- `doctor` 仅在源码 checkout 中提示缺少 pytest。`paperflow agents` 的输出不再与子进程输出交错。
+- 401 个测试通过（Codex patch 测试 +3）。
 
 ### v1.8.0 (260930)
 

@@ -1,6 +1,6 @@
 {
   "name": "paperflow",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Evidence-bound medical manuscript workflow. Requires the paperflow CLI of the same version.",
   "contextFileName": "docs/agent_bootstrap.md"
 }

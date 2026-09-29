@@ -67,7 +67,7 @@ def main():
                   'note':'Presence does not verify authentication, model access or CLI flags. No network calls made.'}
             data['warnings']=[w for ok,w in [
                 (data['python_supported'],'Python 3.10+ is required; run commands with a newer interpreter.'),
-                (data['dependencies']['pytest'],'pytest missing: pip install -r requirements-dev.txt'),
+                (data['dependencies']['pytest'] or not (Path(__file__).resolve().parents[1]/'.git').exists(),'pytest missing: pip install -r requirements-dev.txt'),
                 (data['hooks']['ok'],'Claude hooks cannot run: '+data['hooks']['detail']+' (plan-first gates are OFF).')] if not ok]
         elif args.command=='record-approval':
             m=checker('plan_validation');plan=args.plan.resolve()

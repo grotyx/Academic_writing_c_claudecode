@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.8)
+# Shared manuscript engine (v1.0.9)
 
-Project release: v1.8.0. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.1. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -42,7 +42,7 @@ paperflow agents install [--only claude,codex,agy,opencode,muse]
 paperflow agents update                     # after paperflow update
 ```
 
-The installed engine folder is itself the plugin and marketplace root, so every adapter matches the CLI that installed it. Claude Code and Codex get a plugin with two skills (`paperflow`, `paperflow-verify`) and hooks (`hooks/hooks.json`: SessionStart contract + update check, PreToolUse plan-first gate, PostToolUse lint, UserPromptSubmit style intent). Hooks call `paperflow hook <name>`; without the CLI they print a warning that enforcement is off. In a template checkout whose `.claude/settings.json` already runs `scripts/hooks/`, plugin hooks stay silent so nothing fires twice. Antigravity (`agy`, root `plugin.json`), Muse and opencode get the skills only; there `paperflow verify` is the enforcement. Mandatory rules come from each paper folder's `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` (`paperflow init`, text in `docs/agent_bootstrap.md`). The session hook warns when plugin and CLI versions differ; with auto-update on it refreshes the adapters in the background.
+The installed engine folder is itself the plugin and marketplace root, so every adapter matches the CLI that installed it. Claude Code and Codex get a plugin with two skills (`paperflow`, `paperflow-verify`) and hooks (`hooks/hooks.json`: SessionStart contract + update check, PreToolUse plan-first gate, PostToolUse lint, UserPromptSubmit style intent). Hooks call `paperflow hook <name>`; without the CLI they print a warning that enforcement is off. In a template checkout whose `.claude/settings.json` already runs `scripts/hooks/`, plugin hooks stay silent so nothing fires twice. Codex edits files with `apply_patch`; its hook input has no `file_path`, so the gate and lint hooks read every `*** Add File:` / `*** Update File:` / `*** Move to:` path from the patch (`tool_input.command`) and block if any target needs an approved plan. Codex asks once to trust new plugin hooks; until trusted they do not run. Antigravity (`agy`, root `plugin.json`), Muse and opencode get the skills only; there `paperflow verify` is the enforcement. Mandatory rules come from each paper folder's `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` (`paperflow init`, text in `docs/agent_bootstrap.md`). The session hook warns when plugin and CLI versions differ; with auto-update on it refreshes the adapters in the background.
 
 Setup and updates (installed CLI):
 
