@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.9** (2026-09-30)
+**v1.7.10** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -374,6 +374,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.10 (260930)
+
+- **Phase 4, agent adapters**: one install now carries a Claude Code and Codex plugin (skills `paperflow` and `paperflow-verify`, hooks for the session contract, plan-first gate, lint and style intent), a root `plugin.json` for Antigravity (`agy`), and skills for Muse and opencode. `paperflow agents install|update [--only ...] [--dry-run]` runs each agent's native command, using the installed engine folder as the plugin root so adapters always match the CLI. Plugin hooks call `paperflow hook <name>`, stay silent inside a template checkout that already runs its own hooks, warn on plugin/CLI version skew, and refresh adapters in the background when auto-update is on.
+- `paperflow init` writes the shared `docs/agent_bootstrap.md` rules into `CLAUDE.md`/`AGENTS.md`/`GEMINI.md`.
+- 398 tests pass (+8 adapter tests). Validated with `claude plugin validate`, `agy plugin validate` and `muse skills validate`.
 
 ### v1.7.9 (260930)
 

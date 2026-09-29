@@ -1,0 +1,55 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v paperflow >/dev/null 2>&1; then paperflow hook session --plugin-root \"${CLAUDE_PLUGIN_ROOT}\"; else echo \"paperflow CLI not found: install it (see README) - workflow hooks are OFF\" >&2; fi",
+            "commandWindows": "if (Get-Command paperflow -ErrorAction SilentlyContinue) { paperflow hook session --plugin-root \"$env:CLAUDE_PLUGIN_ROOT\" } else { Write-Error \"paperflow CLI not found - workflow hooks are OFF\" }",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v paperflow >/dev/null 2>&1; then paperflow hook gate; else echo \"paperflow CLI not found: install it (see README) - workflow hooks are OFF\" >&2; fi",
+            "commandWindows": "if (Get-Command paperflow -ErrorAction SilentlyContinue) { paperflow hook gate } else { Write-Error \"paperflow CLI not found - workflow hooks are OFF\" }",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v paperflow >/dev/null 2>&1; then paperflow hook lint; else echo \"paperflow CLI not found: install it (see README) - workflow hooks are OFF\" >&2; fi",
+            "commandWindows": "if (Get-Command paperflow -ErrorAction SilentlyContinue) { paperflow hook lint } else { Write-Error \"paperflow CLI not found - workflow hooks are OFF\" }",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v paperflow >/dev/null 2>&1; then paperflow hook style; else echo \"paperflow CLI not found: install it (see README) - workflow hooks are OFF\" >&2; fi",
+            "commandWindows": "if (Get-Command paperflow -ErrorAction SilentlyContinue) { paperflow hook style } else { Write-Error \"paperflow CLI not found - workflow hooks are OFF\" }",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

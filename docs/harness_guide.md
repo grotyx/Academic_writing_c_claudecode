@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.7)
+# Shared manuscript engine (v1.0.8)
 
-Project release: v1.7.9. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.7.10. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -32,7 +32,17 @@ paperflow citations drafts/03_introduction.md   # = python scripts/check_citatio
 paperflow --help                        # all tools: citations, numbers, gate, lint, verify-all, search, ...
 ```
 
-Run standalone tools from the paper folder. When a project-path flag is absent, the CLI fills it from the current folder (`--evidence knowledge/evidence.md`, `--results results`, `--base-dir .` for gates, `--terminology Style/terminology.md` if that file exists). An explicit flag always wins. Uninstalled use is unchanged: `python scripts/x.py` keeps its engine-relative defaults (`tests/test_compat_contract.py` freezes this). `check_gate.py` and `verify_all.py` accept `--base-dir` for the project root. The wheel ships only code and public runtime assets (see the allowlist in `pyproject.toml`). Agent plugins and multi-agent adapters follow in later phases (`docs/distribution_plan.md`).
+Run standalone tools from the paper folder. When a project-path flag is absent, the CLI fills it from the current folder (`--evidence knowledge/evidence.md`, `--results results`, `--base-dir .` for gates, `--terminology Style/terminology.md` if that file exists). An explicit flag always wins. Uninstalled use is unchanged: `python scripts/x.py` keeps its engine-relative defaults (`tests/test_compat_contract.py` freezes this). `check_gate.py` and `verify_all.py` accept `--base-dir` for the project root. The wheel ships only code and public runtime assets (see the allowlist in `pyproject.toml`). Agent adapters (below) ship inside the same install.
+
+Agent adapters (installed CLI):
+
+```sh
+paperflow agents install --dry-run          # show the native commands first
+paperflow agents install [--only claude,codex,agy,opencode,muse]
+paperflow agents update                     # after paperflow update
+```
+
+The installed engine folder is itself the plugin and marketplace root, so every adapter matches the CLI that installed it. Claude Code and Codex get a plugin with two skills (`paperflow`, `paperflow-verify`) and hooks (`hooks/hooks.json`: SessionStart contract + update check, PreToolUse plan-first gate, PostToolUse lint, UserPromptSubmit style intent). Hooks call `paperflow hook <name>`; without the CLI they print a warning that enforcement is off. In a template checkout whose `.claude/settings.json` already runs `scripts/hooks/`, plugin hooks stay silent so nothing fires twice. Antigravity (`agy`, root `plugin.json`), Muse and opencode get the skills only; there `paperflow verify` is the enforcement. Mandatory rules come from each paper folder's `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` (`paperflow init`, text in `docs/agent_bootstrap.md`). The session hook warns when plugin and CLI versions differ; with auto-update on it refreshes the adapters in the background.
 
 Setup and updates (installed CLI):
 

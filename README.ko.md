@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.9** (2026-09-30)
+**v1.7.10** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -364,6 +364,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.10 (260930)
+
+- **4단계, 에이전트 어댑터**: 설치 하나에 Claude Code·Codex plugin(skill `paperflow`·`paperflow-verify`, 세션 규칙·plan-first 게이트·lint·style hook), Antigravity(`agy`)용 루트 `plugin.json`, Muse·opencode 용 skill 이 들어 있음. `paperflow agents install|update [--only ...] [--dry-run]` 이 각 에이전트의 기본 명령을 실행함. 설치된 엔진 폴더를 plugin 루트로 쓰므로 어댑터 버전이 항상 CLI 와 같음. plugin hook 은 `paperflow hook <이름>` 을 부르고, 자체 hook 이 있는 템플릿 checkout 에서는 조용히 넘어가며, plugin·CLI 버전이 다르면 경고하고, 자동 업데이트가 켜져 있으면 백그라운드로 어댑터를 갱신함.
+- `paperflow init` 이 공용 `docs/agent_bootstrap.md` 규칙을 `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` 에 씀.
+- 398 tests 통과(어댑터 +8). `claude plugin validate`·`agy plugin validate`·`muse skills validate` 로 검증.
 
 ### v1.7.9 (260930)
 

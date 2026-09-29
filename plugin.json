@@ -1,0 +1,5 @@
+{
+  "name": "paperflow",
+  "version": "1.7.10",
+  "description": "Evidence-bound medical manuscript workflow (Antigravity adapter: skills). Requires the paperflow CLI of the same version."
+}

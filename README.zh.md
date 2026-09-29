@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.9** (2026-09-30)
+**v1.7.10** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -341,6 +341,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.10 (260930)
+
+- **阶段 4，智能体适配器**：一次安装即包含 Claude Code 与 Codex 的 plugin（skill `paperflow`、`paperflow-verify`，以及会话规则、plan-first 门禁、lint、style 的 hook）、供 Antigravity（`agy`）使用的根目录 `plugin.json`，以及供 Muse 与 opencode 使用的 skill。`paperflow agents install|update [--only ...] [--dry-run]` 调用各智能体的原生命令，并以已安装的引擎目录作为 plugin 根目录，因此适配器版本始终与 CLI 一致。plugin hook 调用 `paperflow hook <name>`；在已运行自身 hook 的模板 checkout 中保持静默；plugin 与 CLI 版本不一致时发出警告；开启自动更新时在后台刷新适配器。
+- `paperflow init` 将共享的 `docs/agent_bootstrap.md` 规则写入 `CLAUDE.md`/`AGENTS.md`/`GEMINI.md`。
+- 398 个测试通过（适配器 +8）。已用 `claude plugin validate`、`agy plugin validate`、`muse skills validate` 验证。
 
 ### v1.7.9 (260930)
 

@@ -116,11 +116,12 @@ def install_command(tag):
 def update(engine, args):
     """paperflow update [--check] [--auto] [--to X.Y.Z]"""
     current, api = engine_api(engine)
-    if (engine / '.git').exists():
-        print('paperflow: running from a source checkout (Track A); update with git pull.')
-        return 1
-    state = load('state.json', {})
     auto = '--auto' in args
+    if (engine / '.git').exists():
+        if not auto:
+            print('paperflow: running from a source checkout (Track A); update with git pull.')
+        return 0 if auto else 1
+    state = load('state.json', {})
     if auto and os.environ.get('PAPERFLOW_NO_UPDATE_CHECK'):
         return 0
     if auto and state.get('last_check'):
@@ -151,10 +152,19 @@ def update(engine, args):
     for path in stale:
         print(f'note: {path} review/signoff will need re-review after this update.')
     command = install_command(target)
-    print('running: ' + ' '.join(command))
-    code = subprocess.call(command)
     log = home() / 'update.log'
     home().mkdir(parents=True, exist_ok=True)
+    if '--background' in args:  # session hooks have short timeouts; never kill an install midway
+        handle = log.open('a', encoding='utf-8')
+        handle.write(f'{datetime.now(timezone.utc).isoformat()} {current} -> {target} started (auto, background)\n')
+        handle.flush()
+        subprocess.Popen(command, stdout=handle, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                         start_new_session=True)
+        print(f'paperflow {current} -> {target}: auto-update running in the background '
+              f'(log: {log}). New sessions use it; then run `paperflow agents update`.')
+        return 0
+    print('running: ' + ' '.join(command))
+    code = subprocess.call(command)
     with log.open('a', encoding='utf-8') as handle:
         handle.write(f'{datetime.now(timezone.utc).isoformat()} {current} -> {target} exit={code}'
                      f'{" auto" if auto else ""}\n')
@@ -178,17 +188,6 @@ def config(args):
 
 # --- init / rules -----------------------------------------------------------
 
-AGENT_BOOTSTRAP = """# {title}
-
-This paper uses the paperflow manuscript engine.
-
-- Rules: run `paperflow rules` (full workflow) before work; `paperflow rules <keyword>` for one section.
-- Never write a manuscript section without an approved `drafts/draft_plan.md`, or analysis code
-  without an approved `data/analysis_plan.md` (checked box `- [x] 사용자 승인 완료`).
-- Cite only `[EVID:id]` entries in `knowledge/evidence.md`; use only numbers present in `results/*.csv`.
-- Verify with `paperflow verify --project project.json --profile draft|revision|submission`.
-- Never invent approvals or review records.
-"""
 ANALYSIS_PLAN = """# Analysis Plan
 
 ## Research Question
@@ -214,15 +213,16 @@ def init(engine, args):
         print(f'paperflow: {root / "project.json"} already exists; nothing changed.', file=sys.stderr)
         return 1
     manifest = json.loads((engine / 'docs' / 'project.example.json').read_text(encoding='utf-8'))
+    bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
     manifest['paper_id'] = re.sub(r'[^a-z0-9]+', '_', root.name.lower()).strip('_') or 'paper'
     files = {
         'project.json': json.dumps(manifest, indent=2, ensure_ascii=False) + '\n',
         'drafts/draft_plan.md': (engine / 'docs' / 'draft_plan_template.md').read_text(encoding='utf-8'),
         'data/analysis_plan.md': ANALYSIS_PLAN,
         'knowledge/evidence.md': '# Evidence\n',
-        'AGENTS.md': AGENT_BOOTSTRAP.format(title='Agent instructions'),
-        'CLAUDE.md': AGENT_BOOTSTRAP.format(title='Claude Code instructions'),
-        'GEMINI.md': AGENT_BOOTSTRAP.format(title='Gemini / Antigravity instructions'),
+        'AGENTS.md': bootstrap,
+        'CLAUDE.md': bootstrap,
+        'GEMINI.md': bootstrap,
     }
     for folder in ('data', 'drafts', 'knowledge/pdf', 'results', 'review/gates', 'output'):
         (root / folder).mkdir(parents=True, exist_ok=True)
@@ -256,3 +256,68 @@ def rules(engine, args):
     print('\n'.join(hits) if hits else f'No section heading contains {keyword!r}. Headings:\n'
           + '\n'.join(line for line in text.splitlines() if line.startswith(('## ', '### '))))
     return 0 if hits else 1
+
+
+# --- agent adapters ---------------------------------------------------------
+
+AGENTS = ('claude', 'codex', 'agy', 'opencode', 'muse')
+
+
+def agent_steps(engine, agent, mode):
+    """Native commands (or a copy step) that install/update this engine's adapters for one agent.
+
+    The installed engine folder is itself the plugin/marketplace root, so adapters always
+    match the CLI version that installed them.
+    """
+    root, skills = str(engine), sorted(p for p in (engine / 'skills').iterdir() if (p / 'SKILL.md').is_file())
+    if agent == 'claude':
+        if mode == 'install':
+            return [['claude', 'plugin', 'marketplace', 'add', root], ['claude', 'plugin', 'install', 'paperflow@paperflow']]
+        return [['claude', 'plugin', 'marketplace', 'update', 'paperflow'], ['claude', 'plugin', 'update', 'paperflow@paperflow']]
+    if agent == 'codex':
+        first = ['codex', 'plugin', 'marketplace', 'add', root] if mode == 'install' else ['codex', 'plugin', 'marketplace', 'upgrade']
+        return [first, ['codex', 'plugin', 'add', 'paperflow@paperflow']]
+    if agent == 'agy':
+        return [['agy', 'plugin', 'install', root]]
+    if agent == 'muse':
+        return [['muse', 'skills', 'install', str(s), '--scope', 'user', '--force'] for s in skills]
+    if agent == 'opencode':
+        base = Path(os.environ.get('XDG_CONFIG_HOME') or Path.home() / '.config') / 'opencode' / 'skills'
+        return [('copy', s, base / s.name) for s in skills]
+    raise ValueError(agent)
+
+
+def agents(engine, args):
+    """paperflow agents install|update [--only a,b] [--dry-run]"""
+    if not args or args[0] not in {'install', 'update'}:
+        print('usage: paperflow agents install|update [--only claude,codex,agy,opencode,muse] [--dry-run]',
+              file=sys.stderr)
+        return 2
+    mode, dry = args[0], '--dry-run' in args
+    chosen = args[args.index('--only') + 1].split(',') if '--only' in args else list(AGENTS)
+    unknown = set(chosen) - set(AGENTS)
+    if unknown:
+        print(f'unknown agent(s): {", ".join(sorted(unknown))}', file=sys.stderr)
+        return 2
+    failed = 0
+    for agent in chosen:
+        executable = 'opencode' if agent == 'opencode' else agent
+        if not shutil.which(executable):
+            print(f'[{agent}] not installed; skipped')
+            continue
+        for step in agent_steps(engine, agent, mode):
+            if step[0] == 'copy':
+                print(f'[{agent}] copy {step[1]} -> {step[2]}')
+                if not dry:
+                    shutil.rmtree(step[2], ignore_errors=True)
+                    shutil.copytree(step[1], step[2])
+                continue
+            print(f'[{agent}] ' + ' '.join(step))
+            if not dry:
+                code = subprocess.call(step)
+                if code:
+                    failed += 1
+                    print(f'[{agent}] exit {code}; continuing with the next agent')
+                    break
+    print('Mandatory rules come from each paper folder (CLAUDE.md / AGENTS.md / GEMINI.md, see paperflow init).')
+    return 1 if failed else 0

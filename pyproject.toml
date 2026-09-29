@@ -31,8 +31,17 @@ exclude = ["**/__pycache__", "**/*.pyc"]
 "WORKFLOW.md" = "paperflow/WORKFLOW.md"
 "docs" = "paperflow/docs"
 "review/gates/_TEMPLATE.GATE.md" = "paperflow/review/gates/_TEMPLATE.GATE.md"
+# Agent adapters: the installed engine folder doubles as the plugin/marketplace root.
+"skills" = "paperflow/skills"
+"hooks" = "paperflow/hooks"
+".claude-plugin" = "paperflow/.claude-plugin"
+".codex-plugin" = "paperflow/.codex-plugin"
+".agents/plugins" = "paperflow/.agents/plugins"
+"gemini-extension.json" = "paperflow/gemini-extension.json"
+"plugin.json" = "paperflow/plugin.json"
 
 [tool.hatch.build.targets.sdist]
 only-include = ["pyproject.toml", "README.md", "paperflow", "harness", "scripts",
-                "Style/terminology.md", "WORKFLOW.md", "docs", "review/gates/_TEMPLATE.GATE.md"]
+                "Style/terminology.md", "WORKFLOW.md", "docs", "review/gates/_TEMPLATE.GATE.md",
+                "skills", "hooks", ".claude-plugin", ".codex-plugin", ".agents/plugins", "gemini-extension.json", "plugin.json"]
 exclude = ["**/__pycache__", "**/*.pyc"]

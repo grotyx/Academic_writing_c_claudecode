@@ -97,3 +97,57 @@ def test_auto_update_waits_for_fresh_reviews(fake_release, project, capsys):
 
 def test_update_refuses_source_checkout():
     assert lifecycle.update(ENGINE, ['--check']) == 1
+
+
+# --- phase 4: agent adapters -------------------------------------------------
+
+MANIFESTS = ['.claude-plugin/plugin.json', '.codex-plugin/plugin.json', 'plugin.json', 'gemini-extension.json']
+
+
+@pytest.mark.parametrize('manifest', MANIFESTS)
+def test_adapter_versions_match_engine(manifest):
+    assert json.loads((ENGINE / manifest).read_text(encoding='utf-8'))['version'] == __version__
+
+
+def test_adapter_references_exist():
+    hooks = json.loads((ENGINE / 'hooks/hooks.json').read_text(encoding='utf-8'))['hooks']
+    names = {h['command'].split('paperflow hook ')[1].split()[0].rstrip(';') for event in hooks.values()
+             for group in event for h in group['hooks']}
+    from paperflow.cli import HOOKS
+    assert names == set(HOOKS)
+    assert all((ENGINE / 'scripts/hooks' / script).is_file() for script in HOOKS.values())
+    assert (ENGINE / json.loads((ENGINE / 'gemini-extension.json').read_text(encoding='utf-8'))['contextFileName']).is_file()
+    for skill in (ENGINE / 'skills').iterdir():
+        head = (skill / 'SKILL.md').read_text(encoding='utf-8').split('---')[1]
+        assert f'name: {skill.name}' in head and 'description:' in head
+
+
+def test_agents_dry_run_lists_native_commands(monkeypatch, capsys):
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/' + name)
+    monkeypatch.setattr(lifecycle.subprocess, 'call', lambda cmd: pytest.fail('dry run executed ' + str(cmd)))
+    assert lifecycle.agents(ENGINE, ['install', '--dry-run']) == 0
+    out = capsys.readouterr().out
+    for line in ('claude plugin marketplace add', 'codex plugin add paperflow@paperflow',
+                 'agy plugin install', 'muse skills install', '[opencode] copy'):
+        assert line in out
+    assert lifecycle.agents(ENGINE, ['install', '--only', 'cursor']) == 2
+
+
+def hook_run(args, cwd, stdin='{}'):
+    import subprocess, sys
+    return subprocess.run([sys.executable, str(ENGINE / 'paperflow/cli.py'), 'hook', *args], cwd=cwd, input=stdin,
+                          capture_output=True, text=True, encoding='utf-8', timeout=60,
+                          env={k: v for k, v in __import__('os').environ.items() if k != 'CLAUDE_PROJECT_DIR'})
+
+
+def test_plugin_hook_gates_paper_folder_and_skips_template_checkout(tmp_path):
+    event = json.dumps({'tool_name': 'Write', 'cwd': str(tmp_path), 'tool_input': {'file_path': 'drafts/04_methods.md'}})
+    blocked = hook_run(['gate'], tmp_path, event)
+    assert blocked.returncode == 2 and 'BLOCKED' in blocked.stderr
+    put(tmp_path / '.claude/settings.json', '{"hooks": {"x": "sh scripts/hooks/run.sh scripts/hooks/enforce_gates.py"}}')
+    assert hook_run(['gate'], tmp_path, event).returncode == 0  # local template hooks already enforce
+
+
+def test_plugin_session_hook_prints_contract(tmp_path):
+    out = hook_run(['session'], tmp_path).stdout
+    assert 'WORKFLOW CONTRACT' in out and 'paperflow verify' in out

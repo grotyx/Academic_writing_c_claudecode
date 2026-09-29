@@ -51,6 +51,9 @@ Setup and updates:
   rules [keyword|--path]     print the workflow rules (or one section)
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
   config [set auto-update on|off]      opt-in patch-only auto-update
+  agents install|update [--only claude,codex,agy,opencode,muse] [--dry-run]
+                             install/refresh plugins and skills for each agent
+  hook session|gate|lint|style         entry point for agent plugin hooks
   --version
 """
 
@@ -73,6 +76,49 @@ def project_defaults(args, defaults, cwd):
     return extra
 
 
+HOOKS = {'session': 'session_contract.py', 'gate': 'enforce_gates.py', 'lint': 'lint_on_edit.py',
+         'style': 'style_intent.py'}
+
+
+def hook(args):
+    """paperflow hook <session|gate|lint|style>: plugin hook entry (Claude Code, Codex)."""
+    if not args or args[0] not in HOOKS:
+        print('usage: paperflow hook session|gate|lint|style', file=sys.stderr)
+        return 2
+    project = Path(os.environ.get('CLAUDE_PROJECT_DIR') or Path.cwd())
+    settings = project / '.claude' / 'settings.json'
+    try:
+        if 'scripts/hooks/' in settings.read_text(encoding='utf-8'):
+            return 0  # template checkout: its own hooks already run; never fire twice
+    except OSError:
+        pass
+    script = [sys.executable, str(ENGINE / 'scripts' / 'hooks' / HOOKS[args[0]])]
+    if args[0] != 'session':
+        return subprocess.call(script)  # hook event JSON passes through on stdin
+    subprocess.call(script + [str(project)])
+    print('- TOOLS: paperflow verify --project project.json | paperflow citations|numbers|gate ... | '
+          'paperflow rules <section>')
+    if '--plugin-root' in args and args.index('--plugin-root') + 1 < len(args):
+        root = Path(args[args.index('--plugin-root') + 1])
+        try:
+            plugin = (root / 'harness' / '__init__.py').read_text(encoding='utf-8')
+            plugin = plugin.split("__version__ = '")[1].split("'")[0]
+        except (OSError, IndexError):
+            plugin = None
+        if plugin and plugin != version():
+            lifecycle = load_lifecycle()
+            if lifecycle.load('config.json', {}).get('auto_update'):
+                subprocess.Popen([sys.executable, '-m', 'paperflow.cli', 'agents', 'update'], stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
+                                 cwd=str(HERE.parent))
+                print(f'paperflow plugin {plugin} -> CLI {version()}: refreshing agent adapters in the background.')
+            else:
+                print(f'WARNING: paperflow plugin {plugin} != CLI {version()}. Run `paperflow agents update` '
+                      'so hooks, skills and engine match.')
+    load_lifecycle().update(ENGINE, ['--auto', '--background'])
+    return 0
+
+
 def load_lifecycle():
     if not __package__:  # run as a file (python paperflow/cli.py) in a source checkout
         sys.path.insert(0, str(HERE.parent))
@@ -89,7 +135,9 @@ def main(argv=None):
     if command in {'--version', 'version'}:
         print(f'paperflow {version()} ({ENGINE})')
         return 0
-    if command in {'init', 'rules', 'update', 'config'}:
+    if command == 'hook':
+        return hook(rest)
+    if command in {'init', 'rules', 'update', 'config', 'agents'}:
         lifecycle = load_lifecycle()
         if command == 'config':
             return lifecycle.config(rest)

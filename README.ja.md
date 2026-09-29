@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.9** (2026-09-30)
+**v1.7.10** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -335,6 +335,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.7.10 (260930)
+
+- **フェーズ 4、エージェントアダプター**：1 つのインストールに Claude Code・Codex 用 plugin（skill `paperflow`・`paperflow-verify`、セッション規則・plan-first ゲート・lint・style の hook）、Antigravity（`agy`）用のルート `plugin.json`、Muse・opencode 用 skill を同梱。`paperflow agents install|update [--only ...] [--dry-run]` が各エージェントのネイティブコマンドを実行。インストール済みエンジンフォルダを plugin ルートとして使うため、アダプターは常に CLI と同じバージョン。plugin hook は `paperflow hook <name>` を呼び、独自 hook を持つテンプレート checkout では何もしない。plugin と CLI のバージョン差を警告し、自動更新が有効ならバックグラウンドでアダプターを更新。
+- `paperflow init` が共通の `docs/agent_bootstrap.md` の規則を `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` に書き込む。
+- 398 tests 通過（アダプター +8）。`claude plugin validate`・`agy plugin validate`・`muse skills validate` で検証。
 
 ### v1.7.9 (260930)
 
