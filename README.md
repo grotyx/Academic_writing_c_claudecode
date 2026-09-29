@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.5** (2026-09-29)
+**v1.7.6** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -374,6 +374,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.6 (260930)
+
+- **Distribution plan** (`docs/distribution_plan.md`): two tracks from one repository. Track A keeps the clone-and-run template. Track B (planned v1.8.0) adds an installed `paperflow` CLI plus thin adapters for Claude Code, Codex, Antigravity (`agy`), opencode and Muse. Updates are checked automatically and applied explicitly, with opt-in auto-update that never stales a paper's fresh reviews. Reviewed with Codex (gpt-6-astra) and compared with Spec Kit, OpenSpec, caveman and ponytail.
+- **Phase 1, compatibility contract** (`tests/test_compat_contract.py`, 22 tests): every script runs from a raw checkout and an unrelated cwd (space and Unicode path) without `PYTHONPATH`; legacy citation/number defaults stay engine-relative; the gate hook resolves the edited file from the event cwd; two manifests in one process stay independent.
+- 379 tests pass.
 
 ### v1.7.5 (260929)
 

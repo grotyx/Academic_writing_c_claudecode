@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.5** (2026-09-29)
+**v1.7.6** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -364,6 +364,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.6 (260930)
+
+- **배포 계획** (`docs/distribution_plan.md`): 한 저장소에서 두 방식 제공. A 는 지금처럼 clone 해서 쓰는 템플릿. B(v1.8.0 예정)는 설치형 `paperflow` CLI 와 Claude Code·Codex·Antigravity(`agy`)·opencode·Muse 용 얇은 어댑터. 업데이트는 자동으로 확인하고 적용은 명시적으로 함. 선택형 자동 업데이트는 논문의 유효한 리뷰를 절대 stale 로 만들지 않음. Codex(gpt-6-astra)와 검토했고 Spec Kit·OpenSpec·caveman·ponytail 과 비교함.
+- **1단계 호환성 계약** (`tests/test_compat_contract.py`, 22 tests): 모든 스크립트가 설치 없이, 관계없는 폴더(공백·한글 경로)에서, `PYTHONPATH` 없이 실행됨. 기존 citation·number 기본 경로는 엔진 기준 유지. gate hook 은 이벤트 cwd 로 편집 파일을 찾음. 한 프로세스의 manifest 두 개가 서로 섞이지 않음.
+- 379 tests 통과.
 
 ### v1.7.5 (260929)
 

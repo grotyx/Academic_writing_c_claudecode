@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.5** (2026-09-29)
+**v1.7.6** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -335,6 +335,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.7.6 (260930)
+
+- **配布計画**（`docs/distribution_plan.md`）：1 つのリポジトリで 2 方式。A は従来どおり clone して使うテンプレート。B（v1.8.0 予定）はインストール型 `paperflow` CLI と Claude Code・Codex・Antigravity（`agy`）・opencode・Muse 向けの薄いアダプター。更新は自動で確認し、適用は明示的に行う。任意の自動更新は論文の有効なレビューを stale にしない。Codex（gpt-6-astra）とレビューし、Spec Kit・OpenSpec・caveman・ponytail と比較。
+- **フェーズ 1 互換性契約**（`tests/test_compat_contract.py`、22 tests）：全スクリプトがインストールなし・無関係な cwd（空白・非 ASCII パス）・`PYTHONPATH` なしで動作。従来の citation/number の既定パスはエンジン基準のまま。gate hook はイベント cwd から編集ファイルを解決。1 プロセス内の 2 つの manifest は独立。
+- 379 tests 通過。
 
 ### v1.7.5 (260929)
 

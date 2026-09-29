@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.5** (2026-09-29)
+**v1.7.6** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -341,6 +341,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.6 (260930)
+
+- **分发计划**（`docs/distribution_plan.md`）：一个仓库提供两种方式。A 保持现有的 clone 即用模板。B（计划 v1.8.0）提供安装式 `paperflow` CLI，以及面向 Claude Code、Codex、Antigravity（`agy`）、opencode、Muse 的轻量适配器。更新自动检查、显式应用；可选的自动更新绝不会让论文的有效评审变为 stale。已与 Codex（gpt-6-astra）评审，并与 Spec Kit、OpenSpec、caveman、ponytail 对比。
+- **阶段 1 兼容性契约**（`tests/test_compat_contract.py`，22 个测试）：所有脚本无需安装、在无关 cwd（含空格与非 ASCII 路径）且无 `PYTHONPATH` 时可运行；旧的 citation/number 默认路径仍以引擎为基准；gate hook 按事件 cwd 解析被编辑文件；同一进程中的两个 manifest 互不干扰。
+- 379 个测试通过。
 
 ### v1.7.5 (260929)
 
