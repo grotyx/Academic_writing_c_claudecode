@@ -95,6 +95,23 @@ def snapshot(path, config):
     return result
 
 
+def version_tuple(text):
+    return tuple(int(part) for part in re.findall(r'\d+', str(text))[:3])
+
+
+def engine_problem(spec, version):
+    """Check an optional manifest pin such as '>=1.8,<1.9' against an engine version."""
+    ops = {'>=': lambda a, b: a >= b, '<=': lambda a, b: a <= b, '==': lambda a, b: a == b,
+           '>': lambda a, b: a > b, '<': lambda a, b: a < b}
+    for clause in filter(None, (c.strip() for c in str(spec).split(','))):
+        match = re.fullmatch(r'(>=|<=|==|>|<)\s*v?([\d.]+)', clause)
+        if not match:
+            return f'invalid engine pin clause: {clause!r}'
+        if not ops[match.group(1)](version_tuple(version), version_tuple(match.group(2))):
+            return f'engine {version} does not satisfy project pin {spec!r}'
+    return None
+
+
 def explain(result, limit=5):
     """Checker result -> True, or the first few issues with artifact/line detail."""
     if result.passed:
@@ -221,6 +238,10 @@ def verify(path, profile='draft'):
             record(name, 'PASS' if value is None or value is True else 'FAIL', '' if value in (None, True) else str(value))
         except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError) as exc:
             record(name, 'BLOCKED', str(exc))
+    if config.get('engine'):
+        from . import __version__
+        problem = engine_problem(config['engine'], __version__)
+        record('engine_pin', 'BLOCKED' if problem else 'PASS', problem or '')
     artifacts = [inside(root, item) for item in config['artifacts'] + config.get('tables', [])]
     initial = snapshot(path, config)
     cc = checker('check_citations')

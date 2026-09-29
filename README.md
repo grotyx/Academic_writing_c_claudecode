@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.8** (2026-09-30)
+**v1.7.9** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -374,6 +374,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.9 (260930)
+
+- **Phase 3, setup and updates**: `paperflow init` (starter paper folder from the engine templates; never overwrites, never approves), `paperflow rules [keyword]`, `paperflow update [--check|--to]` (reinstalls a tagged release, logged, one-command rollback) and opt-in `paperflow config set auto-update on`. Auto-update applies patch releases only, at most once a day, and waits when a registered project pins the engine or holds a fresh semantic review/human signoff.
+- Manifest `engine` pin (e.g. `">=1.8,<1.9"`); `verify` reports `engine_pin` BLOCKED on mismatch.
+- 390 tests pass (+10 lifecycle).
 
 ### v1.7.8 (260930)
 

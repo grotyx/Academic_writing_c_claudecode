@@ -1,0 +1,258 @@
+"""paperflow init / rules / update / config (docs/distribution_plan.md, phase 3).
+
+Update policy: check automatically, apply explicitly. Opt-in auto-update applies
+only patch releases, and only when no known project pins the engine away from
+the new version or holds a fresh semantic review / human signoff that an
+engine change would invalidate.
+"""
+from __future__ import annotations
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+REPO_URL = 'https://github.com/grotyx/Academic_writing_c_claudecode'
+
+
+def home():
+    return Path(os.environ.get('PAPERFLOW_HOME') or Path.home() / '.paperflow')
+
+
+def load(name, default):
+    try:
+        return json.loads((home() / name).read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return default
+
+
+def save(name, data):
+    home().mkdir(parents=True, exist_ok=True)
+    (home() / name).write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+
+
+def engine_api(engine):
+    """Import the engine's harness package (installed or checkout) without copying code."""
+    if str(engine) not in sys.path:
+        sys.path.insert(0, str(engine))
+    import harness
+    from harness import project
+    return harness.__version__, project
+
+
+# --- project registry -------------------------------------------------------
+
+def register(manifest):
+    path = str(Path(manifest).resolve())
+    known = load('projects.json', [])
+    if path not in known:
+        save('projects.json', known + [path])
+
+
+def known_projects():
+    return [Path(p) for p in load('projects.json', []) if Path(p).is_file()]
+
+
+def fresh_reviews(project_api, manifests):
+    """Manifests whose semantic review or human signoff is valid right now."""
+    fresh = []
+    for manifest in manifests:
+        try:
+            path, config = project_api.load_project(manifest)
+            deps = project_api.snapshot(path, config)
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        for key in ('semantic_review', 'human_signoff'):
+            receipt = path.parent / config.get(key, '') if config.get(key) else None
+            try:
+                if receipt and json.loads(receipt.read_text(encoding='utf-8')).get('dependencies') == deps:
+                    fresh.append(path); break
+            except (OSError, ValueError):
+                pass
+    return fresh
+
+
+# --- releases ---------------------------------------------------------------
+
+def latest_release():
+    """Newest vX.Y.Z tag on the public repository, or None when offline."""
+    try:
+        out = subprocess.run(['git', 'ls-remote', '--tags', '--refs', REPO_URL], capture_output=True,
+                             text=True, timeout=20).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    tags = re.findall(r'refs/tags/v(\d+\.\d+\.\d+)$', out, re.M)
+    return max(tags, key=lambda t: tuple(map(int, t.split('.'))), default=None)
+
+
+def auto_blockers(project_api, current, new, manifests):
+    """Reasons an automatic update must not run (empty list = safe)."""
+    cur, nxt = project_api.version_tuple(current), project_api.version_tuple(new)
+    reasons = []
+    if nxt[:2] != cur[:2]:
+        reasons.append(f'{new} is a minor/major release; auto-update applies patches only')
+    for manifest in manifests:
+        try:
+            pin = json.loads(manifest.read_text(encoding='utf-8')).get('engine')
+        except (OSError, ValueError):
+            continue
+        if pin and project_api.engine_problem(pin, new):
+            reasons.append(f'{manifest} pins engine {pin!r}')
+    for path in fresh_reviews(project_api, manifests):
+        reasons.append(f'{path} has a fresh review that the update would invalidate')
+    return reasons
+
+
+def install_command(tag):
+    source = f'git+{REPO_URL}@v{tag}'
+    if shutil.which('uv') and 'uv' in Path(sys.prefix).parts:
+        return ['uv', 'tool', 'install', '--force', source]
+    return [sys.executable, '-m', 'pip', 'install', '--upgrade', source]
+
+
+def update(engine, args):
+    """paperflow update [--check] [--auto] [--to X.Y.Z]"""
+    current, api = engine_api(engine)
+    if (engine / '.git').exists():
+        print('paperflow: running from a source checkout (Track A); update with git pull.')
+        return 1
+    state = load('state.json', {})
+    auto = '--auto' in args
+    if auto and os.environ.get('PAPERFLOW_NO_UPDATE_CHECK'):
+        return 0
+    if auto and state.get('last_check'):
+        last = datetime.fromisoformat(state['last_check'])
+        if datetime.now(timezone.utc) - last < timedelta(days=1):
+            return 0
+    target = args[args.index('--to') + 1] if '--to' in args else latest_release()
+    save('state.json', {**state, 'last_check': datetime.now(timezone.utc).isoformat(), 'latest': target})
+    if not target:
+        print('paperflow: no release found (offline or no tags yet).', file=sys.stderr if auto else sys.stdout)
+        return 0 if auto else 1
+    target = target.lstrip('v')
+    newer = api.version_tuple(target) > api.version_tuple(current)
+    if '--check' in args or (auto and not newer):
+        print(f'paperflow {current}; latest {target}' + ('' if newer else ' (up to date)'))
+        return 0
+    manifests = known_projects()
+    if auto:
+        if not load('config.json', {}).get('auto_update'):
+            print(f'paperflow {target} available: run `paperflow update`.')
+            return 0
+        blockers = auto_blockers(api, current, target, manifests)
+        if blockers:
+            print(f'paperflow {target} available, not auto-applied:\n  - ' + '\n  - '.join(blockers)
+                  + '\n  Run `paperflow update` when ready.')
+            return 0
+    stale = fresh_reviews(api, manifests)
+    for path in stale:
+        print(f'note: {path} review/signoff will need re-review after this update.')
+    command = install_command(target)
+    print('running: ' + ' '.join(command))
+    code = subprocess.call(command)
+    log = home() / 'update.log'
+    home().mkdir(parents=True, exist_ok=True)
+    with log.open('a', encoding='utf-8') as handle:
+        handle.write(f'{datetime.now(timezone.utc).isoformat()} {current} -> {target} exit={code}'
+                     f'{" auto" if auto else ""}\n')
+    if code == 0:
+        print(f'paperflow {current} -> {target}. Roll back: paperflow update --to {current}')
+    return code
+
+
+def config(args):
+    """paperflow config [set auto-update on|off]"""
+    data = load('config.json', {})
+    if args[:2] == ['set', 'auto-update'] and len(args) == 3 and args[2] in {'on', 'off'}:
+        data['auto_update'] = args[2] == 'on'
+        save('config.json', data)
+    elif args:
+        print('usage: paperflow config [set auto-update on|off]', file=sys.stderr)
+        return 2
+    print(json.dumps({'home': str(home()), **data, 'projects': [str(p) for p in known_projects()]}, indent=2))
+    return 0
+
+
+# --- init / rules -----------------------------------------------------------
+
+AGENT_BOOTSTRAP = """# {title}
+
+This paper uses the paperflow manuscript engine.
+
+- Rules: run `paperflow rules` (full workflow) before work; `paperflow rules <keyword>` for one section.
+- Never write a manuscript section without an approved `drafts/draft_plan.md`, or analysis code
+  without an approved `data/analysis_plan.md` (checked box `- [x] 사용자 승인 완료`).
+- Cite only `[EVID:id]` entries in `knowledge/evidence.md`; use only numbers present in `results/*.csv`.
+- Verify with `paperflow verify --project project.json --profile draft|revision|submission`.
+- Never invent approvals or review records.
+"""
+ANALYSIS_PLAN = """# Analysis Plan
+
+## Research Question
+
+## Study Population
+
+## Variable Definitions
+
+## Statistical Methods
+
+## Significance and Multiple Comparisons
+
+## Missing Data
+
+- [ ] 사용자 승인 완료
+"""
+
+
+def init(engine, args):
+    """paperflow init [folder]: starter paper folder; never overwrites, never approves."""
+    root = Path(args[0] if args else '.').resolve()
+    if (root / 'project.json').exists():
+        print(f'paperflow: {root / "project.json"} already exists; nothing changed.', file=sys.stderr)
+        return 1
+    manifest = json.loads((engine / 'docs' / 'project.example.json').read_text(encoding='utf-8'))
+    manifest['paper_id'] = re.sub(r'[^a-z0-9]+', '_', root.name.lower()).strip('_') or 'paper'
+    files = {
+        'project.json': json.dumps(manifest, indent=2, ensure_ascii=False) + '\n',
+        'drafts/draft_plan.md': (engine / 'docs' / 'draft_plan_template.md').read_text(encoding='utf-8'),
+        'data/analysis_plan.md': ANALYSIS_PLAN,
+        'knowledge/evidence.md': '# Evidence\n',
+        'AGENTS.md': AGENT_BOOTSTRAP.format(title='Agent instructions'),
+        'CLAUDE.md': AGENT_BOOTSTRAP.format(title='Claude Code instructions'),
+        'GEMINI.md': AGENT_BOOTSTRAP.format(title='Gemini / Antigravity instructions'),
+    }
+    for folder in ('data', 'drafts', 'knowledge/pdf', 'results', 'review/gates', 'output'):
+        (root / folder).mkdir(parents=True, exist_ok=True)
+    for name, text in files.items():
+        target = root / name
+        if target.exists():
+            print(f'kept existing {name}')
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding='utf-8')
+        print(f'created {name}')
+    register(root / 'project.json')
+    print(f'\nNext: fill drafts/draft_plan.md and data/analysis_plan.md, get approval, then edit '
+          f'project.json artifacts. `paperflow verify --project {root / "project.json"}` reports what is missing.')
+    return 0
+
+
+def rules(engine, args):
+    """paperflow rules [keyword] | --path"""
+    workflow = engine / 'WORKFLOW.md'
+    if args[:1] == ['--path']:
+        print(workflow)
+        return 0
+    text = workflow.read_text(encoding='utf-8')
+    if not args:
+        print(text)
+        return 0
+    keyword = ' '.join(args).lower()
+    parts = re.split(r'(?m)^(?=#{2,3} )', text)
+    hits = [part for part in parts if keyword in part.splitlines()[0].lower()]
+    print('\n'.join(hits) if hits else f'No section heading contains {keyword!r}. Headings:\n'
+          + '\n'.join(line for line in text.splitlines() if line.startswith(('## ', '### '))))
+    return 0 if hits else 1

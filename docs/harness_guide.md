@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.6)
+# Shared manuscript engine (v1.0.7)
 
-Project release: v1.7.8. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.7.9. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -32,7 +32,24 @@ paperflow citations drafts/03_introduction.md   # = python scripts/check_citatio
 paperflow --help                        # all tools: citations, numbers, gate, lint, verify-all, search, ...
 ```
 
-Run standalone tools from the paper folder. When a project-path flag is absent, the CLI fills it from the current folder (`--evidence knowledge/evidence.md`, `--results results`, `--base-dir .` for gates, `--terminology Style/terminology.md` if that file exists). An explicit flag always wins. Uninstalled use is unchanged: `python scripts/x.py` keeps its engine-relative defaults (`tests/test_compat_contract.py` freezes this). `check_gate.py` and `verify_all.py` accept `--base-dir` for the project root. The wheel ships only code and public runtime assets (see the allowlist in `pyproject.toml`). Plugins, `paperflow init/update` and multi-agent adapters follow in later phases (`docs/distribution_plan.md`).
+Run standalone tools from the paper folder. When a project-path flag is absent, the CLI fills it from the current folder (`--evidence knowledge/evidence.md`, `--results results`, `--base-dir .` for gates, `--terminology Style/terminology.md` if that file exists). An explicit flag always wins. Uninstalled use is unchanged: `python scripts/x.py` keeps its engine-relative defaults (`tests/test_compat_contract.py` freezes this). `check_gate.py` and `verify_all.py` accept `--base-dir` for the project root. The wheel ships only code and public runtime assets (see the allowlist in `pyproject.toml`). Agent plugins and multi-agent adapters follow in later phases (`docs/distribution_plan.md`).
+
+Setup and updates (installed CLI):
+
+```sh
+paperflow init my-paper            # starter folder: project.json, plan templates (unapproved), evidence.md, AGENTS/CLAUDE/GEMINI.md
+paperflow rules "Citation"         # print one WORKFLOW section (or all with no argument; --path for the file)
+paperflow update --check           # compare with the newest vX.Y.Z tag
+paperflow update [--to X.Y.Z]      # reinstall that release (uv tool install --force, else pip); logs to ~/.paperflow/update.log
+paperflow config set auto-update on
+paperflow update --auto            # for SessionStart hooks or shell startup: at most one check a day
+```
+
+`init` never overwrites an existing file and never ticks an approval box. A fresh folder is expected to be BLOCKED by `verify` until artifacts exist. `verify`/`status` with `--project` register the manifest in `~/.paperflow/projects.json` (`PAPERFLOW_HOME` overrides the folder).
+
+Auto-update is opt-in and applies patch releases only. It does not run when any registered project pins the engine away from the new version, or holds a semantic review or human signoff that is fresh right now (an engine change would invalidate it). Then it prints why and leaves `paperflow update` to the user. `PAPERFLOW_NO_UPDATE_CHECK=1` disables the check. Roll back with `paperflow update --to <previous>`.
+
+Manifest `engine` (optional) pins the engine for one paper, for example `">=1.8,<1.9"`. `verify` reports `engine_pin` BLOCKED when the running engine does not satisfy it.
 
 ## Project manifest
 

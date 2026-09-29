@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.8** (2026-09-30)
+**v1.7.9** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -341,6 +341,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.9 (260930)
+
+- **阶段 3，设置与更新**：`paperflow init`（用引擎模板创建论文文件夹，不覆盖、不勾选审批）、`paperflow rules [keyword]`、`paperflow update [--check|--to]`（重新安装带标签的版本，记录日志，一条命令回滚），以及可选的 `paperflow config set auto-update on`。自动更新仅应用 patch 版本、每天最多一次；若已登记项目固定了引擎或持有有效的 semantic review / human signoff，则不应用并等待。
+- manifest `engine` 固定（例：`">=1.8,<1.9"`），不匹配时 `verify` 报告 `engine_pin` BLOCKED。
+- 390 个测试通过（lifecycle +10）。
 
 ### v1.7.8 (260930)
 

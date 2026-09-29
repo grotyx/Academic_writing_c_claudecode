@@ -46,8 +46,12 @@ Manifest profiles (same as python -m harness):
 Standalone tools (same flags as scripts/*.py; project paths default to the current folder):
   {' | '.join(TOOLS)}
   paperflow <tool> --help    shows that tool's own options
-Other:
-  paperflow --version
+Setup and updates:
+  init [folder]              starter paper folder (never overwrites, never approves)
+  rules [keyword|--path]     print the workflow rules (or one section)
+  update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
+  config [set auto-update on|off]      opt-in patch-only auto-update
+  --version
 """
 
 
@@ -69,6 +73,13 @@ def project_defaults(args, defaults, cwd):
     return extra
 
 
+def load_lifecycle():
+    if not __package__:  # run as a file (python paperflow/cli.py) in a source checkout
+        sys.path.insert(0, str(HERE.parent))
+    from paperflow import lifecycle
+    return lifecycle
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv or argv[0] in {'-h', '--help', 'help'}:
@@ -78,7 +89,18 @@ def main(argv=None):
     if command in {'--version', 'version'}:
         print(f'paperflow {version()} ({ENGINE})')
         return 0
+    if command in {'init', 'rules', 'update', 'config'}:
+        lifecycle = load_lifecycle()
+        if command == 'config':
+            return lifecycle.config(rest)
+        return getattr(lifecycle, command)(ENGINE, rest)
     if command in HARNESS_COMMANDS:
+        if '--project' in rest and rest.index('--project') + 1 < len(rest):
+            lifecycle = load_lifecycle()
+            try:
+                lifecycle.register(rest[rest.index('--project') + 1])
+            except OSError:
+                pass  # registry is a convenience for update safety checks
         env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, [str(ENGINE), os.environ.get('PYTHONPATH')])))
         return subprocess.call([sys.executable, '-m', 'harness', command, *rest], env=env)
     if command not in TOOLS:

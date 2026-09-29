@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.8** (2026-09-30)
+**v1.7.9** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -364,6 +364,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.9 (260930)
+
+- **3단계, 설정과 업데이트**: `paperflow init`(엔진 템플릿으로 논문 폴더 생성, 덮어쓰기·승인 체크 없음), `paperflow rules [키워드]`, `paperflow update [--check|--to]`(태그 릴리스 재설치, 기록 남김, 명령 한 줄로 롤백), 선택형 `paperflow config set auto-update on`. 자동 업데이트는 patch 릴리스만, 하루 최대 1회. 등록된 논문이 엔진을 고정했거나 유효한 semantic review·human signoff 가 있으면 적용하지 않고 기다림.
+- manifest `engine` 고정(예: `">=1.8,<1.9"`). 맞지 않으면 `verify` 가 `engine_pin` BLOCKED.
+- 390 tests 통과(lifecycle +10).
 
 ### v1.7.8 (260930)
 
