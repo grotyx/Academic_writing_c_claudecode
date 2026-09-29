@@ -612,6 +612,13 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="results/ dir used by --cross-check numbers (default results).",
     )
     parser.add_argument(
+        "--base-dir",
+        type=Path,
+        default=ROOT,
+        help="Project root that ledger artifact/provenance paths resolve against "
+        "(default: this checkout; the installed paperflow CLI passes the current project).",
+    )
+    parser.add_argument(
         "--compute-hash",
         type=Path,
         metavar="PATH",
@@ -656,7 +663,7 @@ def main() -> int:
         cross_checks=cross_checks,
         evidence_path=args.evidence,
         results_dir=args.results,
-        base_dir=ROOT,
+        base_dir=args.base_dir,
     )
     print(format_result(result, args.gate))
     return 0 if result.passed else 1

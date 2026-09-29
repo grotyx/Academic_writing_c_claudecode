@@ -82,3 +82,45 @@ def test_manifests_in_one_process_stay_independent(project, tmp_path_factory):
     assert verify(project)['status'] == 'PASS'
     assert verify(other / 'project.json')['status'] == 'FAIL'
     assert verify(project)['status'] == 'PASS'
+
+
+# --- Track B: installed wheel (CI sets PAPERFLOW_INSTALLED=1 after `pip install dist/*.whl`) ---
+installed = pytest.mark.skipif(not os.environ.get('PAPERFLOW_INSTALLED') or not shutil.which('paperflow'),
+                               reason='needs an installed paperflow wheel')
+
+
+def paperflow(*args, cwd):
+    env = {k: v for k, v in os.environ.items() if k != 'PYTHONPATH'}
+    return subprocess.run(['paperflow', *map(str, args)], cwd=cwd, capture_output=True, text=True,
+                          encoding='utf-8', env=env, timeout=120)
+
+
+@installed
+def test_installed_engine_is_not_the_checkout(tmp_path):
+    out = paperflow('--version', cwd=tmp_path).stdout
+    assert 'paperflow ' in out and str(ENGINE) not in out, out
+    doctor = json.loads(paperflow('doctor', cwd=tmp_path).stdout)
+    assert doctor['hooks']['ok'], doctor
+
+
+@installed
+def test_installed_tools_read_the_current_project(project):
+    root = project.parent
+    put(root / 'drafts/03_introduction.md', '# Introduction\n\nA claim [EVID:ghost_2020].\n')
+    out = paperflow('citations', 'drafts/03_introduction.md', cwd=root).stdout
+    assert f'evidence: {root / "knowledge" / "evidence.md"}' in out, out
+    assert paperflow('verify', '--project', project, cwd=root).returncode == 1
+
+
+@installed
+def test_installed_verify_passes_synthetic_project(project):
+    result = paperflow('verify', '--project', project, cwd=project.parent)
+    assert result.returncode == 0 and '"status": "PASS"' in result.stdout, result.stdout + result.stderr
+
+
+def test_source_cli_fills_project_paths_from_cwd(project):
+    root = project.parent
+    out = run([ENGINE / 'paperflow/cli.py', 'citations', 'drafts/05_results.md'], root).stdout
+    assert f'evidence: {root / "knowledge" / "evidence.md"}' in out, out
+    out = run([ENGINE / 'paperflow/cli.py', 'citations', 'drafts/05_results.md', '--evidence', ENGINE / 'knowledge/evidence.md'], root).stdout
+    assert f'evidence: {ENGINE / "knowledge" / "evidence.md"}' in out, out

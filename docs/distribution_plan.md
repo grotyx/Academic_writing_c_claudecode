@@ -1,4 +1,4 @@
-# Distribution Plan: Two-Track Install (v0.4.0, 2026-09-30; phase 1 done in v1.7.6)
+# Distribution Plan: Two-Track Install (v0.5.0, 2026-09-30; phases 1-2 done in v1.7.6-v1.7.7)
 
 Status: proposal, not implemented. Target release: v1.8.0.
 v0.2.0 folds in a Codex (gpt-6-astra) design review and a survey of comparable projects (section 9).
@@ -90,7 +90,7 @@ Target agents: Claude Code, Codex, Antigravity CLI (`agy`, Gemini), opencode, Mu
 | # | Work | Done when |
 |---|---|---|
 | 1 ✅ | Compatibility contract + tests (`tests/test_compat_contract.py`, v1.7.6): freeze legacy CLI semantics; tests run scripts from repo root, a nested folder and an unrelated cwd with no install; conflicting env var; manifest outside repo; two projects in one process; hooks with event cwd != engine cwd, spaces/Unicode paths | Suite green on current code (tests describe today's behavior) |
-| 2 | `pyproject.toml`, `paperflow` entry + dispatch table, asset allowlist, snapshot coverage; CI builds the wheel and runs it outside the checkout | Installed and source tests both green; docs/version bumped in same PR |
+| 2 ✅ | (v1.7.7) `pyproject.toml`, `paperflow` entry + dispatch table, asset allowlist, snapshot coverage; CI builds the wheel and runs it outside the checkout | Installed and source tests both green; docs/version bumped in same PR |
 | 3 | `paperflow init`, `paperflow rules`, bootstrap snippets for CLAUDE/AGENTS/GEMINI (preserving local text) | Fresh init reports incomplete; synthetic complete project passes |
 | 4 | Claude plugin: manifest, marketplace, hooks, a few entry skills; version-match check; duplicate-hook guard for migrating folders | Plugin commands work on a paper outside the repo |
 | 5 | README for both tracks, opt-in migration guide, tag v1.8.0 | Tag cut only after installed + source tests pass |

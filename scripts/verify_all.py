@@ -36,6 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--evidence", default="knowledge/evidence.md", help="evidence.md for citation checks."
     )
     parser.add_argument("--gate", help="Optional gate ledger to verify with check_gate.py.")
+    parser.add_argument("--base-dir", help="Project root passed to check_gate.py --base-dir (default: its own).")
     parser.add_argument("--artifact", help="Artifact path passed to check_gate.py --artifact.")
     parser.add_argument(
         "--require-check", action="append", default=[], help="Required gate check (repeatable)."
@@ -83,6 +84,8 @@ def main() -> int:
             gate_args += ["--cross-check", item]
         if args.cross_check:  # share the same sources the live checks used
             gate_args += ["--evidence", args.evidence, "--results", args.results]
+        if args.base_dir:
+            gate_args += ["--base-dir", args.base_dir]
         rc, out = run("check_gate.py", gate_args)
         results.append(("gate", rc, out))
 

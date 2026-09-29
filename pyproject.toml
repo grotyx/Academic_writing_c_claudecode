@@ -1,0 +1,38 @@
+# Track B packaging (docs/distribution_plan.md). Track A never needs this file:
+# the checkout still runs as `python -m harness` / `python scripts/x.py`.
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "paperflow"
+dynamic = ["version"]
+description = "Verification engine for AI-assisted medical manuscript writing"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["python-docx>=1.1.0", "requests>=2.31.0"]
+
+[project.scripts]
+paperflow = "paperflow.cli:main"
+
+[tool.hatch.version]
+path = "harness/__init__.py"
+
+# Allowlist only: code plus the public runtime assets commands rely on.
+# Never PDFs, profile/, Style anchors, drafts, data, results or review records.
+[tool.hatch.build.targets.wheel]
+packages = ["paperflow"]
+exclude = ["**/__pycache__", "**/*.pyc"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"harness" = "paperflow/harness"
+"scripts" = "paperflow/scripts"
+"Style/terminology.md" = "paperflow/Style/terminology.md"
+"WORKFLOW.md" = "paperflow/WORKFLOW.md"
+"docs" = "paperflow/docs"
+"review/gates/_TEMPLATE.GATE.md" = "paperflow/review/gates/_TEMPLATE.GATE.md"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["pyproject.toml", "README.md", "paperflow", "harness", "scripts",
+                "Style/terminology.md", "WORKFLOW.md", "docs", "review/gates/_TEMPLATE.GATE.md"]
+exclude = ["**/__pycache__", "**/*.pyc"]

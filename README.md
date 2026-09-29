@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.6** (2026-09-30)
+**v1.7.7** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -374,6 +374,12 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.7 (260930)
+
+- **Installed CLI, phase 2 (preview)**: `pyproject.toml` packages the engine as `paperflow` (`uv tool install git+...@tag`). `paperflow doctor|status|verify|packet|build|record-approval` wraps `python -m harness`; `paperflow citations|numbers|gate|lint|verify-all|search|...` wraps each script with the same flags and fills project paths from the current folder when omitted. The wheel is an allowlist (code, terminology, WORKFLOW, docs, gate template); no PDFs, profiles, drafts or data.
+- `check_gate.py` / `verify_all.py`: new `--base-dir` for the project root (default unchanged).
+- CI builds and installs the wheel, then runs installed-engine tests outside the package. 380 tests pass (+3 installed-only).
 
 ### v1.7.6 (260930)
 

@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.6** (2026-09-30)
+**v1.7.7** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -341,6 +341,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.7 (260930)
+
+- **安装式 CLI，阶段 2（预览）**：`pyproject.toml` 将引擎打包为 `paperflow`（`uv tool install git+...@tag`）。`paperflow doctor|status|verify|packet|build|record-approval` 等同于 `python -m harness`；`paperflow citations|numbers|gate|lint|verify-all|search|...` 以相同参数运行各脚本，省略项目路径时按当前文件夹补全。wheel 仅含允许清单（代码、术语表、WORKFLOW、docs、gate 模板），不含 PDF、profile、稿件或数据。
+- `check_gate.py` / `verify_all.py`：新增项目根目录参数 `--base-dir`（默认值不变）。
+- CI 构建并安装 wheel，在包外运行安装版测试。380 个测试通过（另有 3 个仅安装版测试）。
 
 ### v1.7.6 (260930)
 

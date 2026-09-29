@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.6** (2026-09-30)
+**v1.7.7** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -335,6 +335,12 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.7.7 (260930)
+
+- **インストール型 CLI、フェーズ 2（プレビュー）**：`pyproject.toml` でエンジンを `paperflow` としてパッケージ化（`uv tool install git+...@tag`）。`paperflow doctor|status|verify|packet|build|record-approval` は `python -m harness` と同等。`paperflow citations|numbers|gate|lint|verify-all|search|...` は各スクリプトを同じオプションで実行し、省略されたプロジェクトパスを現在のフォルダから補う。wheel は許可リストのみ（コード・用語集・WORKFLOW・docs・gate テンプレート）。PDF・profile・原稿・データは含まない。
+- `check_gate.py` / `verify_all.py`：プロジェクトルート用 `--base-dir` を追加（既定値は変更なし）。
+- CI が wheel をビルド・インストールし、パッケージ外でインストール版テストを実行。380 tests 通過（インストール専用 +3）。
 
 ### v1.7.6 (260930)
 

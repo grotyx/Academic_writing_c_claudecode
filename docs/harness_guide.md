@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.5)
+# Shared manuscript engine (v1.0.6)
 
-Project release: v1.7.6. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.7.7. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -19,6 +19,20 @@ python -m harness build --project /path/to/private-paper/project.json
 Doctor reports installed capabilities only; it does not authenticate CLIs or contact providers. It also runs the Claude PreToolUse gate through `scripts/hooks/run.sh` with a harmless event (`hooks.ok`) and lists `warnings` for an unsupported Python, missing pytest, or hooks that cannot run. Hooks still fail open, but a hook error now prints a WARNING instead of passing silently. Packet creates a local, size-limited source bundle; it does not send it. It includes declared checklist, AI-usage, terminology and Style Spec records, and lists `omitted_sources`: dependencies known only by hash (for example results CSVs and revision baselines). Reviewers must treat those as UNVERIFIABLE unless selected through `review_sources`. For an authorized external review, `scripts/critical_review.py --target FILE --context PACKET --include-claude` or `--include-codex` invokes the chosen CLI. OpenRouter uses `--models`/`--models-file`. Gemini can coordinate the common workflow but has no automated reviewer subprocess here. Live CLI authentication/flag compatibility must be checked in the user's environment. The Codex subprocess uses a read-only filesystem sandbox, which is not a guarantee against all configured network/MCP capabilities.
 
 One unavailable reviewer does not cancel other reviewers. Review output includes requested/completed providers, source hashes, and complete/partial/failed status. Exit 0 means at least one response, not a gate PASS. `--out` creates a unique run directory. Consensus prioritizes investigation; it does not establish correctness. Sources missing from the packet must be reported UNVERIFIABLE.
+
+## Installed CLI (preview, Track B)
+
+The same engine installs as a command (`pyproject.toml`, requires Python 3.10+):
+
+```sh
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z   # or: pipx install ...
+paperflow --version                     # prints the version and the engine location
+paperflow doctor | status | verify | packet | build | record-approval   # = python -m harness ...
+paperflow citations drafts/03_introduction.md   # = python scripts/check_citations.py ...
+paperflow --help                        # all tools: citations, numbers, gate, lint, verify-all, search, ...
+```
+
+Run standalone tools from the paper folder. When a project-path flag is absent, the CLI fills it from the current folder (`--evidence knowledge/evidence.md`, `--results results`, `--base-dir .` for gates, `--terminology Style/terminology.md` if that file exists). An explicit flag always wins. Uninstalled use is unchanged: `python scripts/x.py` keeps its engine-relative defaults (`tests/test_compat_contract.py` freezes this). `check_gate.py` and `verify_all.py` accept `--base-dir` for the project root. The wheel ships only code and public runtime assets (see the allowlist in `pyproject.toml`). Plugins, `paperflow init/update` and multi-agent adapters follow in later phases (`docs/distribution_plan.md`).
 
 ## Project manifest
 

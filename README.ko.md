@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.6** (2026-09-30)
+**v1.7.7** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -364,6 +364,12 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.7 (260930)
+
+- **설치형 CLI, 2단계(미리보기)**: `pyproject.toml` 로 엔진을 `paperflow` 로 패키징(`uv tool install git+...@태그`). `paperflow doctor|status|verify|packet|build|record-approval` 은 `python -m harness` 와 같음. `paperflow citations|numbers|gate|lint|verify-all|search|...` 는 각 스크립트를 같은 옵션으로 실행하고, 프로젝트 경로를 생략하면 현재 폴더 기준으로 채움. wheel 은 허용 목록만 포함(코드, 용어집, WORKFLOW, docs, gate 템플릿). PDF·profile·원고·데이터는 제외.
+- `check_gate.py` / `verify_all.py`: 프로젝트 루트용 `--base-dir` 추가(기본값은 그대로).
+- CI 가 wheel 을 빌드·설치한 뒤 패키지 밖에서 설치형 테스트를 실행. 380 tests 통과(설치 전용 +3).
 
 ### v1.7.6 (260930)
 
