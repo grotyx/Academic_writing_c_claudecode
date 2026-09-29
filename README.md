@@ -1,921 +1,165 @@
-🇺🇸 [English](README.md) | 🇰🇷 [한국어](README.ko.md) | 🇯🇵 [日本語](README.ja.md) | 🇨🇳 [中文](README.zh.md)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
+    <img src="assets/logo.png" width="220" alt="manuwright, the careful senior author">
+  </picture>
+</p>
 
-# Medical Academic Paper Writing Workflow for Claude
+<h1 align="center">manuwright</h1>
 
-A structured workflow system for academic medical paper writing using Claude AI.
+<p align="center">
+  <em>He will not let you cite a paper you have not registered.</em>
+</p>
 
-## Shared runtime support
+<p align="center">
+  <a href="https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/grotyx/Academic_writing_c_claudecode/tests.yml?style=flat-square&color=111111&label=tests" alt="Tests"></a>
+  <img src="https://img.shields.io/github/v/tag/grotyx/Academic_writing_c_claudecode?style=flat-square&color=111111&label=release" alt="Release">
+  <img src="https://img.shields.io/badge/python-3.10%2B-111111?style=flat-square" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/works%20with-5%20agents-111111?style=flat-square" alt="Works with 5 agents">
+  <img src="https://img.shields.io/badge/license-CC%20BY%204.0-111111?style=flat-square" alt="CC BY 4.0">
+</p>
 
-Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harness_guide.md](docs/harness_guide.md) and `python -m harness doctor`. Hooks and slash commands remain Claude-specific.
+<p align="center">
+  <strong>Plan first &middot; every citation registered &middot; every number from your data &middot; gates before submission</strong><br>
+  <sub>A medical-manuscript workflow for AI agents: Claude Code, Codex, Antigravity, opencode and Muse share one verification engine.</sub>
+</p>
 
-## Version
-
-**v1.8.3** (2026-09-30)
-
-[![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
-
----
-
-## Overview
-
-This project provides a comprehensive framework for writing academic medical papers with Claude AI assistance. It includes:
-
-- **Structured project organization** for manuscripts, data, and references
-- **Multi-paper project support** with per-paper subfolder organization
-- **File versioning system** (date-based default, _v1, _REV1 styles)
-- **Revision workflow** with dedicated revision folders and file naming
-- **Expert team simulation** (Clinical Expert, Methodology Expert, Statistician, Editor)
-- **Statistical analysis workflow** with Python script generation
-- **Quality control procedures** with minimum 3-round verification (6 rounds recommended) plus revision QC re-run workflow
-- **Study-type specific checklists** (STROBE, CONSORT, PRISMA, CARE, etc.)
-- **Natural Academic Writing Style system** with Style Reference Tables (Voice/Tense, Transition Words, Verb Upgrades, Common Corrections, Statistical Notation, Hedging Language) and Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
-- **Reliable style transformation** (`/style-pass`) — convert a rough draft to a bound journal style: a per-project Style Spec (one chosen exemplar) + section-by-section transform + an independent Style-Conformance verifier (auto-fix loop) + a measurable `scripts/check_style.py` gate (sentence length, citation density, hedging) + auto-trigger on "make it academic" intent (`docs/style_transform_protocol.md`)
-- **Citation quality control** — Claim→Citation Mapping (20 key claims mapped to citations before writing starts; prevents write-first, cite-later)
-- **Style anchor library** (`Style/`) — own, landmark, and target-journal anchors for terminology, tone, framing, and house style
-- **Terminology registry** (`Style/terminology.md`) — preferred/forbidden terms with definitions and context
-- **Drafting protocol** (`docs/drafting_protocol.md`) — outline → evidence-bound draft → style pass → QC
-- **Manuscript linting** (`scripts/lint_manuscript.py`) — automated checks for terminology, placeholders, overclaiming, and section-specific issues
-- **Citation evidence checking** (`scripts/check_citations.py`) — verifies `[EVID:id]` tags against `knowledge/evidence.md`
-- **Data number checking** (`scripts/check_numbers.py`) — verifies manuscript/table numbers against `results/*.csv`
-- **Phase gate ledger checking** (`scripts/check_gate.py`) — blocks progression unless `review/gates/*.GATE.md` records required PASS checks
-- **Gate freshness / provenance** (`scripts/check_gate.py --verify-hash`) — records a sha256 of the verified artifact (and evidence/results) on PASS; a later edit makes the gate **stale** and forces re-verification, closing the parallel-verifier hole
-- **Gate cross-check** (`scripts/check_gate.py --cross-check`) — re-runs the canonical checker live for the deterministic dimensions (`citation` / `numbers` / `revision_claims`) and fails the gate when the ledger's recorded status disagrees, catching a stale or fabricated `PASS` (loud-fails if a source is unreachable)
-- **Revision claim checking** (`scripts/check_revision_claims.py`) — verifies response-letter `[CHANGE]` claims against revised manuscript files
-- **LLM verifier prompt templates** (`docs/verifier_prompt_templates.md`) — structured prompts for constraint, semantic-citation, data, logic/redundancy, style-conformance, citation-stance, and revision-alignment checks
-- **Citation assist** — `/suggest-citation` (find the best `[EVID:id]` for a claim), `/verify-claims` (per-sentence SUPPORTED/PARTIAL/UNSUPPORTED claim map via `scripts/extract_claims.py`), `/cite-stance` (supporting/contrasting/mentioning, Scite-style), and `/evidence-table` (a "summary of included studies" table via `scripts/evidence_table.py`, Elicit-style) (`docs/citation_assist_protocol.md`)
-- **Knowledge-graph integration** (optional) — the medical-kag MCP (GraphRAG) as an upstream discovery / conflict / GRADE-synthesis / reference engine, with `knowledge/evidence.md` kept canonical and `scripts/search_pubmed.py` as the fallback (`docs/medical_kag_protocol.md`)
-- **Process-enforcement hooks** (`scripts/hooks/`) — SessionStart contract injection, PreToolUse plan-first gate, PostToolUse style/terminology lint, and UserPromptSubmit style auto-trigger
-- **One-shot verification** (`/verify`, `scripts/verify_all.py`) — runs citation + number + gate checks together
-- **Author response DOCX generation** (`scripts/compile_response_docx.py`) — converts DOCX-ready Markdown to the `Author_response_220803_Final.docx` house style
-- **Author response Markdown template** (`docs/response_letter_template.md`) — keeps reviewer responses, manuscript locations, and machine-readable `[CHANGE]` blocks aligned
-- **Draft plan template** (`docs/draft_plan_template.md`) — 10-item template with claim→citation tables and approval checklist
-- **PubMed search tool** with built-in Python script (no MCP or external packages required)
-- **Co-author debate** (`/paper-debate`) — pre-writing Claude–Codex discussion for analysis plans, draft plans, argument structure, and reviewer responses (`docs/debate_protocol.md`)
-- **Multi-model critical review** (`/critical-review`) — post-writing adversarial review at senior reviewer/editor level via Claude subagent, Codex, and/or OpenRouter models, ranked by consensus × severity (`docs/critical_review_protocol.md`)
-- **Editorial desk-screen** (`/editor-review`) — a high-impact-journal editor's substantive call beyond mechanical QC: identifies the paper's field, benchmarks it against what that field's high-impact journals actually publish, and judges clinical validity, scope fit, and analysis adequacy — then a `SEND FOR PEER REVIEW` / `BORDERLINE` / `DESK REJECT` verdict with what to add to compete (or a realistic lower-tier journal). Single Opus subagent or multi-model panel; optional medical-kag benchmark (`docs/critical_review_protocol.md` §5)
-- **AI-Draft De-bloat** — writing-guide pass that strips AI tells (hollow `-ing` analysis, AI vocabulary, signposting) so disclosed AI assistance still reads naturally (`docs/writing_guide.md`)
-- **Slash commands** for evidence registration (`/search-evidence`, `/import-doi`)
+<p align="center">
+  <sub><a href="README.ko.md">한국어</a> &middot; <a href="README.ja.md">日本語</a> &middot; <a href="README.zh.md">中文</a></sub>
+</p>
 
 ---
 
-## Project Structure
+You know him. The senior author in every good lab. Reads the draft with a pen in hand. Circles a sentence and asks, quietly, *"Which paper says that?"* Circles a number: *"Which table?"* Nothing leaves the lab until he signs it.
 
-```
-project/
-├── WORKFLOW.md                   # Core rules & configuration (shared by Claude/Codex/Gemini)
-├── CLAUDE.md                     # Claude Code bootstrap; imports WORKFLOW.md via @WORKFLOW.md
-├── AGENTS.md                     # Codex/agent bootstrap rules; points to WORKFLOW.md as source of truth
-├── GEMINI.md                     # Gemini bootstrap; points to WORKFLOW.md
-├── README.md                     # This file
-├── .gitattributes                # Line-ending policy (text=auto eol=lf; prevents CRLF churn from OneDrive/Windows sync)
-├── docs/                         # Reference guides
-│   ├── workflow_reference.md     # Tree, file roles, command catalog (moved from WORKFLOW.md)
-│   ├── writing_guide.md          # Section-by-section writing guide
-│   ├── drafting_protocol.md      # Mandatory drafting sequence
-│   ├── section_templates.md      # Section-specific sentence patterns
-│   ├── expert_roles.md           # Expert team roles & responsibilities
-│   ├── checklist_guide.md        # Study-type specific checklists
-│   ├── qc_guide.md               # Quality control procedures
-│   ├── verification_protocol.md  # Verification gates, 4 verifiers, autonomous loop
-│   ├── verifier_prompt_templates.md  # LLM verifier prompts and output schema
-│   ├── statistical_analysis_guide.md  # Statistical analysis guide
-│   ├── evidence_guide.md         # Evidence writing guide
-│   ├── revision_guide.md         # Reviewer response guide
-│   ├── response_letter_template.md  # DOCX-ready author response template
-│   ├── figure_guide.md           # Figure generation guide
-│   ├── docx_guide.md             # DOCX conversion guide
-│   ├── draft_plan_template.md    # Draft plan template (copy to drafts/ for Phase 3)
-│   ├── debate_protocol.md        # Claude–Codex co-author debate procedure
-│   ├── critical_review_protocol.md  # External multi-model adversarial review
-│   ├── style_transform_protocol.md  # /style-pass transform + Style verifier
-│   ├── style_spec_template.md    # Style Spec template (bind one exemplar)
-│   ├── citation_assist_protocol.md  # Citation suggestion / verification / stance / table
-│   └── medical_kag_protocol.md   # medical-kag MCP (GraphRAG); evidence.md canonical
-├── knowledge/                    # Reference materials
-│   ├── evidence.md               # Reference summary collection
-│   ├── pdf/                      # Original PDF files — gitignored, local only
-│   ├── summaries/                # Detailed full-text paper summaries
-├── Style/                        # Writing-style anchors, separate from references
-│   ├── PDF/                      # Source PDFs for style analysis — gitignored, local only
-│   │   ├── own/
-│   │   ├── landmark/
-│   │   └── target_journal/
-│   ├── own/                      # Own-paper style anchors
-│   ├── landmark/                 # Argument/framing anchors
-│   ├── target_journal/           # Target-journal house-style anchors
-│   ├── style_guide.md            # Style anchor workflow and extraction rules
-│   └── terminology.md            # Preferred/forbidden terminology registry
-├── profile/                      # Personal info — gitignored, local only
-│   ├── authors.md                # Author affiliations, contacts, ORCIDs, funding
-│   └── journals.md               # Journal-specific citation formats (verified)
-├── data/                         # Statistical analysis
-│   ├── raw_data.csv              # Original dataset
-│   ├── analysis_plan.md          # Analysis plan (required before analysis)
-│   └── py/                       # Python analysis scripts
-├── scripts/                      # Utility scripts
-│   ├── lint_manuscript.py        # Manuscript terminology/style lint checks
-│   ├── check_citations.py        # Evidence citation gate
-│   ├── check_numbers.py          # Results CSV number gate
-│   ├── check_gate.py             # Phase gate ledger check
-│   ├── check_revision_claims.py  # Revision claim gate
-│   ├── compile_response_docx.py  # Author response DOCX compiler
-│   ├── search_pubmed.py          # PubMed search tool (no external deps)
-│   ├── check_style.py            # Measurable style gate vs the Style Spec
-│   ├── extract_claims.py         # Extract [EVID:id]-tagged sentences (claim verification)
-│   ├── evidence_table.py         # Structured study records → markdown comparison table
-│   ├── verify_all.py             # /verify — citation + number (+ gate) in one run
-│   ├── critical_review.py        # OpenRouter multi-model adversarial caller
-│   ├── critical_models.txt       # OpenRouter model list (externalized)
-│   ├── critical_prompts/         # Adversarial prompt single-source (manuscript.txt, response.txt)
-│   └── hooks/                    # Enforcement hooks (enforce_gates, session_contract, lint_on_edit, style_intent) + run.sh launcher (py → python3 fallback)
-├── tests/                        # Pytest suite for the verification scripts
-├── results/                      # Analysis outputs
-├── drafts/                       # Manuscript sections, tables & figures
-│   ├── draft_plan.md             # Manuscript outline & strategy (required before drafting)
-│   ├── table_*.md
-│   └── figures/
-├── review/                       # QC documents
-│   ├── qc_log.md
-│   ├── gates/                    # Verification gate ledger (phase_NN_*.GATE.md)
-│   ├── debates/                  # Claude–Codex debate logs
-│   └── critical/                 # External multi-model critical-review reports
-└── output/                       # Final compiled manuscript
-    ├── title_page_YYMMDD.docx
-    ├── manuscript_YYMMDD.docx
-    └── table_N_YYMMDD.docx
+manuwright puts him inside your AI agent.
+
+## Before / after
+
+You ask your agent to write the Results section before the plan is settled.
+
+Without manuwright, it writes fluent prose, cites a plausible paper that does not exist, and rounds a mean it never read.
+
+With manuwright:
+
+```text
+BLOCKED by workflow gate (Rule 8): drafts/draft_plan.md has not been approved.
+Create the draft plan first, get author approval, then draft sections.
 ```
 
----
+And once the plan is approved, every claim has to survive the checkers:
 
-## Installation: two tracks
+```text
+$ manuwright citations drafts/03_introduction.md
+GATE FAIL
+citation: EVID:smith_2021
+reason: citation id not found in knowledge/evidence.md
 
-| | A. Template (no install) | B. Installed engine |
+$ manuwright numbers drafts/05_results.md
+GATE FAIL
+number: 54.3
+reason: number not found in results CSV files
+```
+
+## How it works
+
+```text
+ evidence.md   ┐
+ results/*.csv ┼──▶ approved plan ──▶ draft ──▶ gates ──▶ QC ×3 ──▶ signed build
+ style spec    ┘                                  ├ citations
+                          ▲                       ├ numbers
+                    hooks block                   └ semantic review (independent)
+                    writes without it
+```
+
+| Guarantee | Enforced by |
+|---|---|
+| No section before an approved draft plan; no analysis code before an approved analysis plan | Agent hooks (Claude Code, Codex) and `manuwright verify` |
+| Every `[EVID:id]` exists in `knowledge/evidence.md` with a verified source | `manuwright citations` |
+| Every reported number exists in `results/*.csv` | `manuwright numbers` and result bindings |
+| Reviews go stale when a source, plan or the engine changes | sha256 snapshots in every receipt |
+| Submission needs human signoff, AI-use disclosure and a completed checklist | `manuwright verify --profile submission` |
+
+The engine never invents approvals or reviews. It records decisions that humans made.
+
+## Install
+
+Two ways, one engine. Pick one.
+
+**A. Template (no install).** Clone the repository and write inside it. Claude Code picks up `.claude/`; Codex and Gemini read `AGENTS.md` and `GEMINI.md`.
+
+```sh
+git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
+```
+
+**B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
+
+```sh
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.4
+manuwright agents install --dry-run     # preview, then run without --dry-run
+manuwright init my-paper
+```
+
+| Agent | What `manuwright agents install` adds | Plan-first enforcement |
 |---|---|---|
-| Get it | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
-| Start a paper | work inside the copied folder | `manuwright init my-paper` |
-| Agents | Claude Code via `.claude/`; Codex/Gemini via `AGENTS.md`/`GEMINI.md` | `manuwright agents install` (Claude Code, Codex, Antigravity, opencode, Muse) |
-| Update | `git pull` (clones) or replace public engine files | `manuwright update`; opt-in `manuwright config set auto-update on` (patch-only, never stales fresh reviews) |
+| Claude Code | plugin `manuwright@manuwright`: skills + hooks | hook blocks the write |
+| Codex | plugin `manuwright@manuwright`: skills + hooks (trust once) | hook blocks `apply_patch` |
+| Antigravity (`agy`) | plugin with skills | `manuwright verify` |
+| opencode | skills in `~/.config/opencode/skills` | `manuwright verify` |
+| Muse | user skills | `manuwright verify` |
 
-Both tracks run the same engine and rules. Details: [docs/harness_guide.md](docs/harness_guide.md), migration: [docs/migration_guide.md](docs/migration_guide.md), design: [docs/distribution_plan.md](docs/distribution_plan.md).
+**Update.** `manuwright update` installs the newest release and `manuwright agents update` refreshes the adapters. Opt in to automatic patch updates with `manuwright config set auto-update on`: it checks once a day and never applies an update that would invalidate a paper's current review. Template users: `git pull`, or see the [migration guide](docs/migration_guide.md).
 
-## Quick Start
+**Uninstall.** `claude plugin uninstall manuwright@manuwright`, `codex plugin remove manuwright@manuwright`, `agy plugin uninstall manuwright`, `muse skills uninstall manuwright`, then `uv tool uninstall manuwright`.
 
-1. **Setup**: Update `WORKFLOW.md` with your research topic, target journal, and study design. Check `profile/journals.md` for citation format and `Style/` for style anchors.
-2. **References**: Use `/search-evidence [query]` or `python scripts/search_pubmed.py` to search PubMed and register in `knowledge/evidence.md`
-3. **Data Analysis**: Place data in `data/` folder → create `analysis_plan.md` (required) → run statistical analysis
-4. **Draft Plan**: Copy `docs/draft_plan_template.md` → `drafts/draft_plan.md`, fill in all 10 items including **Claim→Citation Mapping** (Opus recommended)
-5. **Drafting**: Follow `docs/drafting_protocol.md` and write sections in recommended order (Methods → Results → Introduction → Discussion)
-6. **Verification gates**: Run citation, number, phase-gate, and revision-claim checks; record PASS in `review/gates/`
-7. **Revision response**: Use `docs/response_letter_template.md` and compile with `scripts/compile_response_docx.py` when reviewer responses are needed
-8. **QC**: Run minimum 3 QC rounds before submission
-9. **Finalize**: Compile manuscript to DOCX (see `docs/docx_guide.md`)
+## Commands
 
----
+| Command | What it does |
+|---|---|
+| `manuwright init [folder]` | Start a paper folder: manifest, plan templates (unapproved), evidence registry, agent rules |
+| `manuwright rules [keyword]` | Print the workflow rules, or one section |
+| `manuwright verify --project project.json --profile draft\|revision\|submission` | Run every check for that stage |
+| `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | Run one checker on one file |
+| `manuwright gate` / `verify-all` | Check a phase-gate ledger against live checkers |
+| `manuwright search "<query>"` | Search PubMed and print evidence entries |
+| `manuwright packet` / `build` | Local review packet / gated DOCX build |
+| `manuwright update`, `agents install\|update`, `config` | Releases, agent adapters, auto-update |
 
-## Key Features
+In Claude Code the template also ships slash commands: `/verify`, `/search-evidence`, `/import-doi`, `/style-pass`, `/verify-claims`, `/suggest-citation`, `/cite-stance`, `/evidence-table`, `/paper-debate`, `/critical-review`, `/editor-review`.
 
-### Expert Team Simulation
+## The workflow
 
-- **Dr. Researcher A**: Clinical perspective (Introduction, Discussion)
-- **Dr. Researcher B**: Methodology (Methods, Results, Tables)
-- **Dr. Statistician**: Statistical validation, parsimony, MCID/NNT assessment
-- **Dr. Editor**: Final polish, consistency check
+| Phase | You and the agent | Gate |
+|---|---|---|
+| 1 Setup | Topic, journal, study design; register references | sources verified in `evidence.md` |
+| 2 Analysis | Analysis plan, scripts, results CSV, tables | plan approved before any script |
+| 3 Draft plan | Key message, claim-to-citation map, outline | plan approved before any section |
+| 4 Draft | Methods, Results, Introduction, Discussion, Conclusion, Abstract | citation, number, logic, constraint checks per section |
+| 5 Style | Journal style from your own exemplar | measurable style metrics |
+| 6 QC | At least 3 rounds; checklist (CONSORT, STROBE, PRISMA, CARE) | recorded in `review/qc_log.md` |
+| 7 Finalize | DOCX manuscript, title page, tables | submission profile PASS + human signoff |
+| 8 Revision | Response letter, revised sections | every change claim and every reviewer comment checked |
 
-### Mandatory Planning Before Writing
+Full rules: [WORKFLOW.md](WORKFLOW.md). Everything that used to live in this README (features, project structure, document list): [docs/guide/overview.md](docs/guide/overview.md).
 
-- **Analysis Plan** (`data/analysis_plan.md`): Required before any statistical analysis — defines research questions, endpoints, and test selection
-- **Draft Plan** (`drafts/draft_plan.md`): Required before any section drafting — 10 required items including key message, tone/voice, essential references, evidence gaps, **Claim→Citation Mapping**, table/figure plan, and section outlines
-- Both plans require user approval before proceeding to the next phase
-- Per-paper plans for multi-paper projects
+## FAQ
 
-### Claim→Citation Mapping (NEW in v0.7.0)
+**Does it write the paper for me?** It helps an agent draft inside your rules. You decide the message, approve the plans, and sign off. Human and co-author review stay mandatory.
 
-A pre-writing step in the draft plan that maps ~20 key claims to their supporting citations before any writing begins:
+**Does anything leave my machine?** Checks run locally. Sending text to another model (external review, PubMed search) happens only when you run those commands.
 
-- **Introduction background**: 5–8 claims (epidemiology, prior evidence)
-- **Methods rationale**: 2–3 claims (why this outcome measure, why this design)
-- **Discussion comparisons**: 5–8 claims (how findings compare to prior work)
+**Where do my real manuscripts go?** In a private folder or repository, never in a public clone of this template. `manuwright init` creates one.
 
-If a citation cannot be identified for a claim, go back to Phase 1 and search first. This eliminates the write-first, cite-later anti-pattern and hallucinated references.
-
-### Style Anchor Library (`Style/`)
-
-Style anchors are separated from reference management. Source PDFs stay under `Style/PDF/` and extracted style notes are stored under `Style/own/`, `Style/landmark/`, or `Style/target_journal/`.
-A template is provided at `Style/own/example_YYYY_Journal_keyword.md`.
-
-Each summary captures:
-
-- Field-specific terminology (correct vs incorrect)
-- Methods boilerplate patterns (reusable text)
-- Key claims with exact data (ready for cross-citation)
-- Tone and voice consistency across papers
-
-### Model Selection by Phase
-
-- **Opus recommended**: Analysis Plan, Draft Plan, Revision — strategic decisions that determine paper quality
-- **Sonnet default (Opus if budget allows)**: Drafting, Style Polish, QC — plan-guided execution
-- Core principle: "Plan with Opus → Write with Sonnet"
-
-### Redundancy Prevention
-
-- Avoid triple duplication (Results text + Table + Figure)
-- Clear guidelines for Table vs Figure decision
-- Standard table structure (Table 1: Demographics, Table 2: Main Results)
-
-### Statistical Analysis Guide (v0.3.0)
-
-- Statistical Parsimony — RCT Table 1 without p-values
-- Analysis Hierarchy — Primary > Secondary > Exploratory
-- Clinical Significance — Effect size, MCID, NNT
-- Subgroup Analysis Rules — Interaction test required
-- Non-significant Results Reporting Guide
-
-### Quality Control (6 Rounds)
-
-- Round 1: Number consistency
-- Round 2: Reference verification (+ order of appearance, placeholder detection, format consistency, citation distribution)
-- Round 3: Logic and flow
-- Round 4: Terminology, abbreviation, and tense consistency
-- Round 5: Statistical quality
-- Round 6: Critical review (overclaiming, logical fallacy, bias, generalizability) — internal experts plus optional external multi-model `/critical-review`
-
-### Verification Harness
-
-The harness combines deterministic checks with constrained LLM verifier prompts:
-
-- `scripts/check_citations.py` verifies every `[EVID:id]` citation against `knowledge/evidence.md` and fails unverified or unknown evidence.
-- `scripts/check_numbers.py` verifies manuscript and table numbers against `results/*.csv`.
-- `scripts/check_gate.py` verifies that phase gate ledgers contain `status: PASS` and required checks.
-- `scripts/check_revision_claims.py` verifies reviewer-response `[CHANGE]` blocks against revised manuscript files.
-- `docs/verifier_prompt_templates.md` provides structured prompts for semantic support, logic, redundancy, and revision-response alignment.
-
-### Co-author Collaboration (NEW in v0.9.3)
-
-Two complementary Codex/multi-model features bracket the writing process:
-
-- **`/paper-debate <topic>`** — *before* writing. Claude and Codex act as co-authors and debate analysis approach, draft-plan key message, argument structure, or reviewer-response strategy across bounded rounds (consensus cap 3). The debate log is saved under `review/debates/` and the agreed conclusion feeds the next produce step. Falls back to Claude-solo if Codex is unavailable. See `docs/debate_protocol.md`.
-- **`/critical-review <target>`** — *after* writing. The finished manuscript (or response letter) is attacked in parallel by any combination of a fresh Claude subagent, Codex, and OpenRouter models (default `minimax/minimax-m3`, `z-ai/glm-5.2`). Each reviewer is prompted at **senior peer-reviewer / editor-in-chief level** — pushing past surface defects to design soundness, whether the data support the conclusions, and publication-worthiness. Findings are merged and ranked by **consensus × severity** (Critical / Important / Minor) and stored under `review/critical/`. See `docs/critical_review_protocol.md`.
-
-The adversarial prompts live as a single source under `scripts/critical_prompts/` (`manuscript.txt`, `response.txt`); the OpenRouter script, the Claude subagent, and Codex all read the same files. OpenRouter access uses `OPENROUTER_API_KEY` (set in `.claude/settings.local.json`, gitignored); when absent, OpenRouter is skipped and the other reviewers proceed.
-
-### AI-Draft De-bloat (NEW in v0.9.3)
-
-A `docs/writing_guide.md` pass (applied in Phase 5 for AI-written drafts) that removes the tells of AI prose — hollow `-ing` "surface analysis" clauses, AI-favored vocabulary, and over-signposting — while explicitly **excluding** patterns that legitimately conflict (necessary hedging, copula, passive voice). AI authorship is still disclosed; this only keeps disclosed assistance from reading as bloated and tedious.
-
-### Verification Hardening (NEW in v1.0.0)
-
-Improvements adapted from the "superpowers" skills framework, focused on the verification gate:
-
-- **Parallel verifiers + Constraint-first.** The four section-gate verifiers (Constraint / Citation / Data / Logic) are dispatched concurrently against a frozen artifact; the artifact is not edited mid-verification, and on FAIL the Constraint (spec-compliance) findings are fixed first. See `docs/verification_protocol.md` (v0.3.0).
-- **Gate freshness / provenance** (`scripts/check_gate.py`). On PASS the gate ledger records a sha256 of the verified artifact (and `evidence` / `results` for citation- and numbers-bearing gates; required for revision). `check_gate.py --verify-hash LABEL=PATH` re-hashes and fails the gate as **stale** if the file changed since the PASS — closing the hole where a post-PASS edit silently survives re-checking. `--compute-hash PATH` fills the provenance fields. Opt-in at the tool level, standard in the documented gate commands.
-- **STOP signals.** A WORKFLOW.md anti-rationalization table catches the human-level shortcuts the verifiers can't ("this number is probably fine" → check the CSV; "I already passed" → a changed artifact is stale).
-- **Socratic draft-plan brainstorming.** A "Step 0" in `docs/draft_plan_template.md` sharpens the paper's intent one question at a time before the plan is filled — distinct from `/paper-debate`, which it feeds as R0 prep.
-- **Reviewer-response triage.** `docs/revision_guide.md` assigns each reviewer comment an accept / partial / rebut posture, mapped to the `[CHANGE]` marker and the ghost-revision gate.
-- **Command `use-when` guidance.** Each `.claude/commands/*.md` now declares the situation that should trigger it.
-
-### Author Response DOCX Workflow
-
-Reviewer responses should be drafted in `docs/response_letter_template.md` format, with each manuscript edit recorded as a `[CHANGE]` block. Final response letters can be compiled with:
-
-```powershell
-python scripts/compile_response_docx.py drafts/revision/REV1/response_letter_REV1.md
-```
-
-The compiler reproduces the `Author_response_220803_Final.docx` house style — Times New Roman 11 pt, with bold response / location / revised-text lines and a justified body. It does not read that .docx file as a template; the formatting is built in.
-
-### PubMed Search Tool
-
-Built-in Python script (`scripts/search_pubmed.py`) for reference search without MCP:
-
-```bash
-python scripts/search_pubmed.py search "endoscopic spine surgery"  # Search
-python scripts/search_pubmed.py fetch 35486828                     # Import by PMID
-python scripts/search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # Import by DOI
-python scripts/search_pubmed.py related 35486828                   # Related articles
-```
-
-Slash commands for Claude integration:
-
-- `/search-evidence [query]` - Search, select, and register in evidence.md
-- `/import-doi [doi]` - Import by DOI and register in evidence.md
-
----
+**Why "manuwright"?** Manuscript + *wright*, an old word for a maker: playwright, shipwright. Someone who builds manuscripts carefully.
 
 ## Documentation
 
-| Document | Purpose |
-|----------|---------|
-| [WORKFLOW.md](WORKFLOW.md) | Core rules and project configuration (shared by every runtime) |
-| [CLAUDE.md](CLAUDE.md) | Claude Code bootstrap; imports WORKFLOW.md |
-| [docs/writing_guide.md](docs/writing_guide.md) | Section-by-section writing guide + Style Reference Tables + Writing Principles (4 Pillars) |
-| [docs/drafting_protocol.md](docs/drafting_protocol.md) | Mandatory drafting workflow from outline to evidence-bound draft to style/QC pass |
-| [docs/section_templates.md](docs/section_templates.md) | Section-specific paragraph functions and sentence patterns |
-| [docs/expert_roles.md](docs/expert_roles.md) | Expert team descriptions |
-| [docs/checklist_guide.md](docs/checklist_guide.md) | STROBE, CONSORT, PRISMA, CARE checklists |
-| [docs/qc_guide.md](docs/qc_guide.md) | Quality control procedures |
-| [docs/verification_protocol.md](docs/verification_protocol.md) | Verification gates, 4 verifier charters, autonomous fix loop, gate ledger |
-| [docs/verifier_prompt_templates.md](docs/verifier_prompt_templates.md) | LLM semantic verifier prompts and structured output schema |
-| [docs/statistical_analysis_guide.md](docs/statistical_analysis_guide.md) | Statistical analysis workflow |
-| [docs/evidence_guide.md](docs/evidence_guide.md) | Evidence writing guide (format, summary methods, workflow) |
-| [docs/revision_guide.md](docs/revision_guide.md) | Reviewer response guide (response letter, diplomatic language, QC re-run checklist) |
-| [docs/response_letter_template.md](docs/response_letter_template.md) | DOCX-ready author response Markdown template |
-| [docs/figure_guide.md](docs/figure_guide.md) | Figure generation guide (DPI, palettes, Python templates) |
-| [docs/docx_guide.md](docs/docx_guide.md) | DOCX conversion guide (formatting, table style, naming rules) |
-| [docs/draft_plan_template.md](docs/draft_plan_template.md) | Draft plan template — 10-item with claim→citation tables and approval checklist |
-| [docs/debate_protocol.md](docs/debate_protocol.md) | Claude–Codex co-author debate procedure (rounds, roles, logging, fallback) |
-| [docs/critical_review_protocol.md](docs/critical_review_protocol.md) | External multi-model adversarial review (reviewer pool, consensus × severity, fallback) |
-| [Style/style_guide.md](Style/style_guide.md) | Style anchor workflow, extraction framework, and PDF-to-MD mirror rules |
-| [Style/terminology.md](Style/terminology.md) | Preferred/forbidden terminology registry with definition and context |
-| [Style/own/example_YYYY_Journal_keyword.md](Style/own/example_YYYY_Journal_keyword.md) | Own-paper style-anchor template |
-| [scripts/lint_manuscript.py](scripts/lint_manuscript.py) | Manuscript lint script for terminology, placeholders, overclaiming, and section issues |
-| [scripts/check_citations.py](scripts/check_citations.py) | Verify `[EVID:id]` citations against `knowledge/evidence.md` |
-| [scripts/check_coverage.py](scripts/check_coverage.py) | Citation coverage audit — **over-citation** (too many refs on one claim) and **unknown citations** as the quality signals, plus per-section density; uncited/unrealized reported neutrally (curation, not waste) |
-| [scripts/format_references.py](scripts/format_references.py) | `[EVID:id]` → journal reference list (numbered/author-year) + in-text tag conversion to a sibling `*_formatted.md`; **MCP-independent** (Phase 7) |
-| [scripts/check_abstract.py](scripts/check_abstract.py) | Abstract ↔ body number consistency — flags any abstract number absent from the body (Rule 3; p-values excluded by default) (Phase 6 QC Round 1) |
-| [scripts/check_crossrefs.py](scripts/check_crossrefs.py) | Table/Figure cross-reference check — in-text "Table N"/"Figure N" mentions vs actual `table_*.md`/figure legends: **broken references** (primary signal), unreferenced items, out-of-order first mentions; advisory by default, `--fail-on-*` to gate (Phase 6 QC) |
-| [scripts/check_abbreviations.py](scripts/check_abbreviations.py) | Abbreviation define-at-first-use check — abstract and body as separate scopes (UNDEFINED / DEFINED_AFTER_USE / REDEFINED / SINGLE_USE); advisory by design (false positives expected), `--allow` / `--strict` (Phase 6 QC) |
-| [scripts/check_response_coverage.py](scripts/check_response_coverage.py) | Reviewer-comment response coverage — every `Comment N)` must have a real `Response:` (missing/empty/placeholder blocked), `--comments` cross-checks against the original comments file; complements the ghost-revision gate (Phase 8) |
-| [scripts/check_numbers.py](scripts/check_numbers.py) | Verify manuscript/table numbers against `results/*.csv` |
-| [scripts/check_gate.py](scripts/check_gate.py) | Verify `review/gates/*.GATE.md` status and required checks |
-| [scripts/check_revision_claims.py](scripts/check_revision_claims.py) | Verify response-letter `[CHANGE]` claims against revised manuscript files |
-| [scripts/compile_response_docx.py](scripts/compile_response_docx.py) | Compile `response_letter_REV*.md` to Author_response-style DOCX |
-| [scripts/search_pubmed.py](scripts/search_pubmed.py) | PubMed search script (NCBI E-utilities, no external packages) |
-| [scripts/critical_review.py](scripts/critical_review.py) | OpenRouter multi-model adversarial reviewer caller (one model failure does not abort) |
-
----
-
-## Requirements
-
-- Claude AI (Claude Code CLI or VSCode extension)
-- Python 3.10+ (`python -m harness doctor` warns on older interpreters; tests: `pip install -r requirements-dev.txt`)
-- Python packages for statistical analysis: pandas, numpy, scipy, statsmodels, python-docx
-- PubMed search script (`scripts/search_pubmed.py`) uses only Python standard library (no additional packages)
-
----
+[Harness guide](docs/harness_guide.md) &middot; [Workflow reference](docs/workflow_reference.md) &middot; [Verification protocol](docs/verification_protocol.md) &middot; [Writing guide](docs/writing_guide.md) &middot; [QC guide](docs/qc_guide.md) &middot; [Distribution design](docs/distribution_plan.md) &middot; [Changelog](CHANGELOG.md)
 
 ## Author
 
-**Professor Sang-Min Park, M.D., Ph.D.**
-
-Department of Orthopaedic Surgery,
-Seoul National University Bundang Hospital,
-Seoul National University College of Medicine
-
-https://sangmin.me/
-
----
+**Professor Sang-Min Park, M.D., Ph.D.**, Department of Orthopaedic Surgery, Seoul National University Bundang Hospital, Seoul National University College of Medicine. <https://sangmin.me/>
 
 ## License
 
-This work is licensed under the **Creative Commons Attribution 4.0 International License (CC BY 4.0)**.
-
-Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
-
-### You are free to:
-- **Share** — copy and redistribute the material in any medium or format
-- **Adapt** — remix, transform, and build upon the material for any purpose, even commercially
-
-### Under the following terms:
-- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made.
-
-[![CC BY 4.0](https://licensebuttons.net/l/by/4.0/88x31.png)](https://creativecommons.org/licenses/by/4.0/)
-
-Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
-
----
-
-## Changelog
-
-### v1.8.3 (260930)
-
-- Test isolation: the installed-engine tests registered their temporary projects in the real `~/.manuwright/projects.json`. They now use a throwaway `MANUWRIGHT_HOME`. No engine change.
-
-### v1.8.2 (260930)
-
-- **Renamed `paperflow` to `manuwright`** ("manuscript" + "-wright", a maker, as in playwright). `paperflow` is already taken on PyPI and GitHub. Command `manuwright`, package `manuwright/`, plugin `manuwright@manuwright`, skills `manuwright` and `manuwright-verify`, settings folder `~/.manuwright`, environment variables `MANUWRIGHT_*`. Entries below keep the old name as released.
-- Upgrading from v1.8.0/1.8.1: remove the old install first (`paperflow` plugins/skills in each agent, `uv tool uninstall paperflow`), then install `manuwright` and run `manuwright agents install`. Move `~/.paperflow` to `~/.manuwright` to keep the project registry and settings.
-
-### v1.8.1 (260930)
-
-- **Codex enforcement fix**: Codex writes files with `apply_patch` and reports the patch in `tool_input.command` (no `file_path`), so the plan-first gate never fired there. The gate and lint hooks now read every file path in the patch; hooks match `apply_patch` explicitly. Found in a live Codex session after installing v1.8.0.
-- `doctor` warns about missing pytest only in a source checkout. `paperflow agents` output no longer interleaves with child output.
-- 401 tests pass (+3 Codex patch tests).
-
-### v1.8.0 (260930)
-
-Milestone: **two-track distribution**. The same engine now runs as the clone-and-run template (Track A, unchanged) or as an installed `paperflow` CLI with adapters for Claude Code, Codex, Antigravity, opencode and Muse (Track B). Summary of v1.7.6 to v1.7.10 plus:
-
-- README "Installation: two tracks" section; `docs/migration_guide.md` (opt-in, non-destructive migration of a copied folder; Track A update set).
-- `docs/distribution_plan.md` marked implemented.
-- Release tags `vX.Y.Z` are the update channel for `paperflow update`.
-
-### v1.7.10 (260930)
-
-- **Phase 4, agent adapters**: one install now carries a Claude Code and Codex plugin (skills `paperflow` and `paperflow-verify`, hooks for the session contract, plan-first gate, lint and style intent), a root `plugin.json` for Antigravity (`agy`), and skills for Muse and opencode. `paperflow agents install|update [--only ...] [--dry-run]` runs each agent's native command, using the installed engine folder as the plugin root so adapters always match the CLI. Plugin hooks call `paperflow hook <name>`, stay silent inside a template checkout that already runs its own hooks, warn on plugin/CLI version skew, and refresh adapters in the background when auto-update is on.
-- `paperflow init` writes the shared `docs/agent_bootstrap.md` rules into `CLAUDE.md`/`AGENTS.md`/`GEMINI.md`.
-- 398 tests pass (+8 adapter tests). Validated with `claude plugin validate`, `agy plugin validate` and `muse skills validate`.
-
-### v1.7.9 (260930)
-
-- **Phase 3, setup and updates**: `paperflow init` (starter paper folder from the engine templates; never overwrites, never approves), `paperflow rules [keyword]`, `paperflow update [--check|--to]` (reinstalls a tagged release, logged, one-command rollback) and opt-in `paperflow config set auto-update on`. Auto-update applies patch releases only, at most once a day, and waits when a registered project pins the engine or holds a fresh semantic review/human signoff.
-- Manifest `engine` pin (e.g. `">=1.8,<1.9"`); `verify` reports `engine_pin` BLOCKED on mismatch.
-- 390 tests pass (+10 lifecycle).
-
-### v1.7.8 (260930)
-
-- Windows CI fix: two v1.7.5 tests compared snapshot keys with `/`; snapshot keys use the OS separator. Tests now build the expected key with `Path`. No engine change.
-
-### v1.7.7 (260930)
-
-- **Installed CLI, phase 2 (preview)**: `pyproject.toml` packages the engine as `paperflow` (`uv tool install git+...@tag`). `paperflow doctor|status|verify|packet|build|record-approval` wraps `python -m harness`; `paperflow citations|numbers|gate|lint|verify-all|search|...` wraps each script with the same flags and fills project paths from the current folder when omitted. The wheel is an allowlist (code, terminology, WORKFLOW, docs, gate template); no PDFs, profiles, drafts or data.
-- `check_gate.py` / `verify_all.py`: new `--base-dir` for the project root (default unchanged).
-- CI builds and installs the wheel, then runs installed-engine tests outside the package. 380 tests pass (+3 installed-only).
-
-### v1.7.6 (260930)
-
-- **Distribution plan** (`docs/distribution_plan.md`): two tracks from one repository. Track A keeps the clone-and-run template. Track B (planned v1.8.0) adds an installed `paperflow` CLI plus thin adapters for Claude Code, Codex, Antigravity (`agy`), opencode and Muse. Updates are checked automatically and applied explicitly, with opt-in auto-update that never stales a paper's fresh reviews. Reviewed with Codex (gpt-6-astra) and compared with Spec Kit, OpenSpec, caveman and ponytail.
-- **Phase 1, compatibility contract** (`tests/test_compat_contract.py`, 22 tests): every script runs from a raw checkout and an unrelated cwd (space and Unicode path) without `PYTHONPATH`; legacy citation/number defaults stay engine-relative; the gate hook resolves the edited file from the event cwd; two manifests in one process stay independent.
-- 379 tests pass.
-
-### v1.7.5 (260929)
-
-Improvements from a Claude + Codex (gpt-6-astra) co-review.
-
-- **Submission records are validated field by field**: every checklist item needs a unique id, and PASS needs a manuscript location, NOT_APPLICABLE a reason; other statuses fail. Previously `{"status":"PASS"}` alone passed. When AI was used, each `tools` entry needs `tool` and `role`.
-- **Abstract identity**: the manifest's `abstract` must be one of the published `artifacts`, and a published abstract file must be declared, so the check cannot test a different file or silently skip.
-- **Project terminology and Style Spec**: optional `terminology` and `style_spec` manifest keys. Lint uses the project registry, `style_metrics` runs `check_style.py`, and both files enter the review snapshot.
-- **Actionable failures**: harness `detail` now lists the first issues (artifact, line, value) instead of `False`. Packets include checklist/AI records and list `omitted_sources` known only by hash.
-- **Preflight**: `doctor` reports `python_supported`, exercises the Claude gate hook (`hooks.ok`), and prints `warnings`. Hook errors print a WARNING instead of passing silently; `run.sh` warns when no Python exists. New `requirements-dev.txt` (used by CI).
-- **Leaner context**: project tree, file-role table, command catalog and PubMed options moved from `WORKFLOW.md` (56 KB to 30 KB, loaded every session) to `docs/workflow_reference.md`. Command examples use portable `python scripts/...` paths. `/verify` example adds the `--cross-check` flags.
-- 357 tests pass. `docs/harness_guide.md` v1.0.5.
-
-### v1.7.4 (260908)
-
-- **`profile/` templates are now shipped**: `profile/example_authors.md` (placeholder skeleton for corresponding author, co-authors, funding boilerplate, IRB/trial registry) and `profile/example_journals.md` (13 worked journal entries — in-text style, author cutoff, page range, ORCID policy, submission checklist). Copy them to `profile/authors.md` / `profile/journals.md`, which stay gitignored.
-- `.gitignore`: `profile/` → `profile/*` plus negations. Git cannot re-include a file whose parent directory is excluded, so the templates were unreachable under the old pattern; real profile files remain ignored (verified).
-- **Test portability fix**: `test_cli_verify_hash_resolves_relative_paths_from_project_root` hashed `drafts/05_results.md`, a fixture that only exists in this template repo — it failed in every downstream project, which lays `drafts/` out per paper. It now hashes a file the harness itself ships.
-
-### v1.7.3 (260908)
-
-- Verified v1.7.2 on Korean Windows: 344 tests, 9/9 CI, and 37 synthetic error-injection scenarios through the real CLI — the 25 draft/revision scenarios from v1.7.1 plus 12 new ones for `numeric_scope` (number in a non-result section without `numeric_artifacts`/exemption, empty reason, exempting a results file, exempting an already-bound file) and `revision_scope` (stale original section listed while REVn exists, CHANGE target missing from artifacts, REV2 letter with REV1 artifacts). All blocked/passed as designed.
-- `docs/project.example.json`: add the `numeric_exemptions` key so the new v1.7.2 field is discoverable from the template manifest.
-- README ko/ja/zh: localize the v1.7.2 changelog entry (was English-only). Headers → v1.7.3; `harness/__init__.py` (doctor) → 1.7.3; `docs/harness_guide.md` → v1.0.3.
-
-### v1.7.2 (260907)
-
-- Bind revision claims and latest section versions to the actual submission files.
-- Reject unchecked numerical artifacts; require explicit reasons for non-result exclusions.
-- Detect p-value table columns even when headers contain numbers; preserve header number checks.
-- Synchronize doctor version and add regression tests for submission scope.
-
-### v1.7.1 (260908)
-
-**Post-merge verification of v1.7.0 (PR #1) — 4 defects fixed, doc sync**
-
-- **CI never ran on v1.7.0.** `.github/workflows/tests.yml` had the OS-matrix line nested under setup-python `with:`, so every run died at workflow-parse time (0 s). The 3-OS × 3-Python matrix now executes (9/9 green on main).
-- **Windows cp949:** the new `test_harness.py` / `test_review_regressions.py` read files without `encoding='utf-8'` → 3 failures on Korean Windows, hidden by the dead CI. Fixed; 333 tests pass.
-- **Build filenames:** `harness build` stamped the UTC date (yesterday's `_YYMMDD` between 00:00–09:00 KST) and omitted `_REVn` for revision packages (Rule 5). Now `manuscript_YYMMDD.docx` for initial submissions and `manuscript_REV1_YYMMDD.docx` / `response_letter_REV1_…` / `table_N_REV1_…` for revisions. Synthetic REV1 build test added; `docs/harness_guide.md` v1.0.1.
-- **`CLAUDE.md` now imports `WORKFLOW.md`** (`@WORKFLOW.md`), so Claude Code auto-loads the shared rules instead of relying on a "read it first" instruction. Stale "CLAUDE.md is the core-rules file" references in `WORKFLOW.md`/README updated to `WORKFLOW.md`.
-- Verified end-to-end on synthetic projects through the real CLI: 12 draft-profile and 13 revision-profile error-injection scenarios (unregistered citation, `todo` evidence, number not in CSV, plan edited after approval, ghost revision, unanswered/placeholder response, REV2-vs-REV1 baseline) were all blocked as designed; DOCX structure matches `docs/docx_guide.md`.
-
-### v1.7.0 (260906)
-
-- Fixed F01–F09: citation status/duplicate IDs, p-value bounds, placeholders, gate identity, plan completeness, revision baseline and reviewer fallback.
-- Added shared WORKFLOW.md, standard AGENTS.md and GEMINI.md bootstraps.
-- Added manifest-based verification profiles, context-bound results, content-bound approvals, review packets/state, and gated DOCX packaging.
-- See [shared engine guide](docs/harness_guide.md) for setup, migration and remaining limits.
-
-### v1.6.4 (2026-08-30)
-
-**Full harness review (Claude Fable) — 16 defects fixed, 33 regression tests**
-
-- **Gate false-PASS / false-FAIL / crash (HIGH):** `check_citations.py` now FAILs malformed or non-ASCII `[EVID:…]` tags (`o'brien_2021`, `müller_2020`) instead of silently reporting PASS with 0 tokens; `search_pubmed.py` slugifies generated ids and uses the full last name. `check_numbers.py`: a ragged results-CSV row no longer crashes the gate; manuscript `p<0.001` matches a CSV cell `<0.001` (same or looser bound); uppercase `P<0.05` is a p-comparison; spine-level / code-style suffixes (`L4-5`, `C5-6`, `COVID-19`, `ICD-10`) are structural, not results; ROUND_HALF_UP accepted alongside banker's rounding (2.675 → 2.68).
-- **Enforcement actually on across platforms:** hooks run via new `scripts/hooks/run.sh` (`py` if present, else `python3`) — previously every hook exited 127 on macOS/Linux and Rule 7/8 was silently off. `enforce_gates.py` now also rejects a plan with *no* approval checkbox (Rule 9 wording was not enforced).
-- **`check_gate.py`:** artifact paths compared slash-insensitively (`drafts\05_results.md` == `drafts/05_results.md`, incl. `--verify-hash` / `--cross-check`); multi-block gate files are split per `artifact:` and `--artifact` selects the block — an earlier block's FAIL can no longer be masked by a later PASS; multiple blocks without `--artifact` fail loudly. `_TEMPLATE.GATE.md` documents this.
-- **`check_response_coverage.py`:** citation-shaped brackets (`[12]`, `[3-5]`, `[EVID:id]`) are no longer treated as placeholders — rebuttals citing literature pass.
-- **Minor:** `check_abstract.py` half-up rounding; `format_references.py` accepts `author_year_keyword` ids in author-year mode (docs aligned: `evidence_guide.md` v0.3.1); `compile_response_docx.py` no longer rewrites "# Response to Reviewers" as "Response: to Reviewers"; line numbers after code fences correct in `check_citations` / `check_numbers` / `check_coverage`; `check_coverage.py` counts markdown-table rows separately; `check_abbreviations.py` allowlist matches `COVID-19` via stem; `lint_manuscript.py` catches italic `*p* = .02` and stops flagging "group = 30".
-- Tests 262 → 295.
-
-### v1.6.3 (2026-07-02)
-
-**Mechanical submission-error checkers (advisory-first)**
-
-- **`scripts/check_crossrefs.py`** — verifies in-text "Table N"/"Figure N" mentions against the actual `table_*.md` files and figure-legend entries: broken references (the desk-reject trigger nothing else caught), unreferenced tables/figures, and out-of-order first mentions. Handles "Tables 1 and 2", "Figure 2-4", "Fig. 1A"; ignores code fences/HTML comments; skips a kind loudly instead of flagging everything when its inventory is missing. Advisory by default; `--fail-on-broken` / `--fail-on-unreferenced` / `--fail-on-order` to gate.
-- **`scripts/check_abbreviations.py`** — define-at-first-use audit with abstract and body as independent scopes (journals require both). Emits `ABBREV_UNDEFINED` / `ABBREV_DEFINED_AFTER_USE` / `ABBREV_REDEFINED` / always-advisory `ABBREV_SINGLE_USE`. Deliberately advisory — detection is capitals-only (2-6 letters, `-digits`, plural `s`) with a built-in statistical allowlist (CI, SD, OR, HR, ...) extendable via `--allow`; `--strict` gates definition issues only.
-- **`scripts/check_response_coverage.py`** — the opposite face of the ghost-revision gate: did the response letter answer **every** reviewer comment? Parses the `Reviewer #N:` / `Comment N)` / `Response:` structure, blocks missing/empty/`[placeholder]` responses, and with `--comments` cross-checks the original reviewer_comments file (`COMMENT_UNANSWERED` fails; unparseable original warns, `--strict` fails). Fails by default — a skipped comment is binary.
-- Design principle per author feedback: mechanization only for binary facts; judgment stays human+LLM. Docs updated (`CLAUDE.md`, `docs/qc_guide.md` §3.7/§4.2, `docs/revision_guide.md`). 40 tests (262 total).
-
-### v1.6.2 (2026-07-02)
-
-**Abstract Keywords enforced**
-
-- The `**Keywords:**` line at the bottom of `drafts/02_abstract.md` was easy to miss (no lint, no explicit rule). Three-layer enforcement: (1) the template now names the requirement and gives an example, (2) `docs/writing_guide.md` § 02. Abstract lists a Keywords rule (3-6 MeSH-preferred terms, semicolon-separated), and (3) `scripts/lint_manuscript.py` detects abstract files and emits `KEYWORDS_MISSING` / `KEYWORDS_EMPTY` / `KEYWORDS_TOO_FEW` / `KEYWORDS_TOO_MANY` — the PostToolUse `lint_on_edit` hook already surfaces lint on edits, so an empty Keywords line is now caught the moment the abstract is touched. Semicolon and comma separators both counted. 7 tests (222 total).
-
-### v1.6.1 (2026-06-30)
-
-**`/editor-review` uses the same reviewer picker as `/critical-review`**
-
-- The editorial desk-screen now offers the identical model-selection UX as `/critical-review`: an `AskUserQuestion` reviewer picker over the same pool — the four OpenRouter models (`scripts/critical_models.txt`) + local Claude + Codex — only the role differs (`--role editor`, prompt `editor.txt`). Selecting just `Claude` gives the single Opus subagent (no key). Codex is orchestrated via `codex:codex-rescue` (it is not a `critical_review.py` model — that script handles OpenRouter + local Claude). Command + protocol §5 updated; also fixes the ja/zh README headers that were left at v1.5.10 while their changelog already listed v1.6.0.
-
-### v1.6.0 (2026-06-29)
-
-**Editorial desk-screen — high-impact-journal editor assessment (`/editor-review`)**
-
-- A new evaluation that goes beyond mechanical QC and reviewer-level critique: an **Editor-in-Chief / Clinical Editor desk-screen at the high-impact tier**. It identifies the manuscript's own field, benchmarks the paper against what that field's high-impact journals actually publish, and judges **clinical validity** (practice-changing? MCID/effect, not just p?), **scope/novelty fit**, and **methodological/analytic adequacy** — then returns a `SEND FOR PEER REVIEW` / `BORDERLINE` / `DESK REJECT` verdict with the concrete **additional validation needed to compete**, or a realistic lower-tier journal if the bar is out of reach.
-- Canonical prompt `scripts/critical_prompts/editor.txt` (single source). Runs as a single Opus subagent (no API key) **or** a multi-model panel via `scripts/critical_review.py --role editor`; optional medical-kag / PubMed benchmark of the real high-impact literature. Exposed as `/editor-review`; documented in `docs/critical_review_protocol.md` §5. Advisory (judgment-based) — does not replace the grounded gates. Tests added.
-
-### v1.5.10 (2026-06-28)
-
-**Test-coverage hardening, round 2 (MEDIUM gaps)**
-
-- Added tests for the remaining coverage gaps from the full review: `search_pubmed.py` pure formatters (`format_citation` author-count branches, `guess_study_design` ladder); `check_abstract.py` (abstract more precise than body → fail, integer match, multi-file body aggregation, comparator preserved in the issue); `check_numbers.py` (p-value `>` comparator pass/fail, `is_structural_number` for heading/`Table N`/`Figure N`/bare-year); `check_style.py` (`mean_sentence_length`/`paragraph_count` tolerance, `split_sentences` abbreviation/decimal protection); `check_citations.py` (`require_citations`, `fail_abstract_only` toggles); `format_references.py` (`smith_2020a` disambiguation, `--convert` write path); `check_coverage.py` (`--fail-on-unrealized`). 214 tests total (was 170).
-
-### v1.5.9 (2026-06-28)
-
-**Test-coverage hardening on enforcement paths**
-
-- A full-review coverage analysis found that several *enforcement contracts* had no test, so a regression could silently disable them. Added tests for: `verify_all.py` top-level `OVERALL: PASS` verdict and its `--cross-check` (+ `--evidence`/`--results`) pass-through to `check_gate.py`; `check_coverage.py` exit codes for `--fail-on-over-citation` / `--fail-on-unknown` / `--fail-on-uncited-verified` (advisory-by-default vs blocking); and `check_revision_claims.py` `--strict` escalation (a missing original section is a warning by default, a failure under `--strict`). 170 tests total (was 163).
-
-### v1.5.8 (2026-06-28)
-
-**Unify the `[EVID:id]` regex (full-review consistency fix)**
-
-- `extract_claims.py` defined its own permissive `[EVID:([^\]]+)]` pattern while `check_citations.py` (and the scripts that reuse it — `check_coverage.py`, `format_references.py`) use the restrictive `[A-Za-z0-9_.-]+`. Valid slugified ids match both identically, but the drift meant a malformed tag could be extracted yet not validated/converted. `extract_claims.py` now imports the canonical `EVID_RE` from `check_citations.py`, so all four scripts share one source of truth. No behavior change for valid ids; 163 tests green.
-
-### v1.5.7 (2026-06-28)
-
-**Bug fixes from a full code audit**
-
-- **Gate cross-check now fails on any live FAIL** (`check_gate.py`) — previously, if a cross-checked dimension failed the live re-run *and* the ledger also recorded FAIL, the gate treated that as "consistent" and did not add a failure, so a broken artifact could still pass when the dimension was not also a `--require-check`. A live deterministic failure now always fails the gate, regardless of the ledger.
-- **Plan-first hook no longer fails open on a relative cwd** (`hooks/enforce_gates.py`, `hooks/lint_on_edit.py`) — a relative/missing `cwd` normalized the path to e.g. `drafts/05_results.md` (no leading slash), so the `"/drafts/"` / `"/data/.../py/"` checks did not match and the Rule 7/8 gate was skipped. Paths are now normalized to a leading slash before the check. (Latent: production always sends an absolute cwd.)
-- +2 regression tests (163 total).
-
-### v1.5.6 (2026-06-28)
-
-**Abstract↔body number consistency + medical-kag synthesis workflow**
-
-- **`scripts/check_abstract.py`** — checks that every number stated in the abstract also appears somewhere in the body sections (rounding-tolerant), catching the classic reviewer complaint of an abstract-only figure. Complements `check_numbers.py` (which ties numbers to `results/*.csv`); p-value tokens are excluded by default (`--include-p-values` to include). Automates the Abstract↔Methods↔Results↔Tables consistency that Rule 3 / QC Round 1 require. 5 tests.
-- **medical-kag synthesis → Discussion/Limitations workflow** (`docs/medical_kag_protocol.md`) — `compare_interventions` / `conflict synthesize` output is rich but noisy (bibliometric outcomes, empty values, KG-normalized names); documents how to filter to clinical outcomes, ground every number/citation, and gate the result, with a Discussion/Limitations skeleton.
-
-### v1.5.5 (2026-06-28)
-
-**CI: run the test suite on every push/PR**
-
-- **`.github/workflows/tests.yml`** — GitHub Actions runs the full pytest suite on pushes to `main` and on pull requests, across Python 3.10 / 3.11 / 3.12, so a change that breaks any verification script is caught before it lands. A status badge is shown at the top of the README.
-
-### v1.5.4 (2026-06-28)
-
-**MCP-independent reference formatter (Phase 7)**
-
-- **`scripts/format_references.py`** — converts drafting-time `[EVID:id]` tags into a submission-ready reference list and in-text citations, reading only `knowledge/evidence.md` (no medical-kag required). Two styles: **numbered** (Vancouver — `[EVID:id]` → `[N]` by first appearance, list numbered in that order) and **author-year** (`(Author, Year)`, alphabetical list). `--convert` writes each section with tags replaced to a sibling `*_formatted.md` (never in place); a cited id absent from evidence.md is left unconverted and reported (and makes the run non-zero). Complements the medical-kag `reference` tool, which stays available when connected. 7 tests (156 total).
-
-### v1.5.3 (2026-06-28)
-
-**Coverage audit refocused on over-citation (not orphan-as-waste)**
-
-- **Over-citation detection** — `check_coverage.py` now flags sentences carrying more than `--max-citations-per-sentence` (default 4) `[EVID:id]` citations (citation stuffing / padding). This and **unknown citations** are the real quality signals; `--fail-on-over-citation` / `--fail-on-unknown` are the meaningful blocking flags.
-- **Reframed orphan/uncited as neutral** — an uncited-but-registered reference is normal curation (you cite only what is necessary), **not** wasted work. The prior "verified work unused" framing is removed; uncited refs and unrealized draft_plan items are reported as neutral information. `--fail-on-uncited-verified` / `--fail-on-unrealized` remain only for strict full-use policies and are off by default. Coverage tests now total 8 (149 suite-wide).
-
-### v1.5.2 (2026-06-27)
-
-**Citation coverage / orphan audit**
-
-- **`scripts/check_coverage.py`** — a Phase 6 QC audit against `knowledge/evidence.md`: reports **orphan references** (registered but never cited; verified-but-uncited flagged as wasted work), **citation density** per manuscript section, **unknown citations** (cited but unregistered), and — with `--draft-plan` — **unrealized claims** (planned in the Claim→Citation map but never cited in the body). Advisory by default; `--fail-on-orphan-verified` / `--fail-on-unrealized` / `--fail-on-unknown` make any dimension blocking. Reuses `check_citations.py` parsing so the two stay in lockstep. 7 tests (148 total).
-
-### v1.5.1 (2026-06-26)
-
-**Translated-README documentation-table parity**
-
-- Added the missing File Roles rows to the Korean/Japanese/Chinese READMEs so they match `README.md`: `docs/debate_protocol.md` and `docs/critical_review_protocol.md` (all three), plus `scripts/critical_review.py` (ja/zh). Docs-only; no code change.
-
-### v1.5.0 (2026-06-26)
-
-**Gate cross-check (ledger ↔ live) + doc/version auto-sync policy**
-
-- **Gate cross-check** (`scripts/check_gate.py --cross-check LABEL=PATH`) — re-runs the canonical checker live for the deterministic dimensions (`citation` / `numbers` / `revision_claims`) and fails the gate when the ledger's recorded status disagrees in either direction, catching a stale or fabricated `PASS`; loud-fails when a source is unreachable. Forwarded by `scripts/verify_all.py` and wired into the canonical gate commands (`review/gates/_TEMPLATE.GATE.md`, `docs/verification_protocol.md` v0.3.0, CLAUDE.md). +6 regression tests (141 total).
-- **Doc/version sync + auto commit-push policy** (CLAUDE.md Rule 12) — every harness code/bug change now bumps the version, updates the affected docs, and auto-commits/pushes (with explicit STOP conditions for sensitive or destructive cases).
-
-### v1.4.1 (2026-06-24)
-
-**Template-gate hardening + `/verify` freshness forwarding**
-
-- **Template-aware plan gates** — `scripts/hooks/enforce_gates.py` now treats unresolved `analysis_plan.md` / `draft_plan.md` templates or unchecked approval boxes as not approved, applies to `Write|Edit|MultiEdit`, and avoids false positives for legitimate citation-style `[N]` text.
-- **Fresh `/verify` gate checks** — `scripts/verify_all.py` now forwards `--verify-hash` to `check_gate.py`; README/CLAUDE/slash-command examples include freshness inputs.
-- **Windows/template hygiene** — PubMed command examples use `python scripts/search_pubmed.py`, generated root-level DOCX artifacts are ignored, and regression tests cover the new hook and freshness-forwarding behavior.
-
-### v1.4.0 (2026-06-24)
-
-**Citation stance + evidence comparison table (GraphRAG-backed)**
-
-- **Citation stance** (`/cite-stance [claim|section]`) — classify how each cited source relates to a claim (supporting / contrasting / mentioning) so the Discussion stays balanced; flags "one-sided" when contrasting evidence exists but is not cited (overclaim-by-omission guard). New Citation-Stance verifier (`docs/verifier_prompt_templates.md`); medical-kag `conflict` surfaces missing contrasts, evidence.md fallback. Scite-style, claim-specific.
-- **Evidence comparison table** (`/evidence-table [topic|ids]`) — assemble a "summary of included studies" table (study / design / n / intervention / outcome / result / LoE) for the Discussion or a PRISMA supplement. `scripts/evidence_table.py` is the deterministic formatter; medical-kag structured data primary, evidence.md fallback. Elicit-style. Tests added.
-
-### v1.3.0 (2026-06-24)
-
-**Citation assist — suggestion + per-claim verification (GraphRAG-backed)**
-
-- **Citation suggestion** (`/suggest-citation [claim]`) — given a draft claim, retrieve the best `[EVID:id]` candidates via the medical-kag knowledge graph (GraphRAG), falling back to `knowledge/evidence.md` + `scripts/search_pubmed.py` when the MCP is unavailable. The author picks; new sources are registered in evidence.md (PMID/DOI verified) before they become citable, so grounding holds.
-- **Per-claim verification report** (`/verify-claims [section]`) — `scripts/extract_claims.py` pulls every `[EVID:id]`-tagged sentence, then the Semantic-Citation Verifier classifies each as SUPPORTED / PARTIAL / UNSUPPORTED into `review/claim_verification.md` (a Phase-6 QC "claim map", deeper than `check_citations.py`'s existence check). New `docs/citation_assist_protocol.md`; both operations degrade gracefully to evidence.md. Tests added.
-
-### v1.2.0 (2026-06-22)
-
-**medical-kag MCP integration — knowledge graph alongside evidence.md**
-
-- **Grounding-preserving KAG integration** — the `medical-kag-remote` MCP (a spine-surgery knowledge-augmented graph) plugs in as an upstream discovery/analysis/format engine, while `knowledge/evidence.md` stays the single canonical citation ledger: anything the graph surfaces is registered as `[EVID:id]` (PMID/DOI verified) before it can be cited, so `check_citations.py` still gates everything. New `docs/medical_kag_protocol.md` maps the tools to phases — discovery + structured extraction (Phase 1), evidence-chain / intervention-comparison / GRADE synthesis for claims + Discussion (Phase 3-4), conflict / overclaim guard (Phase 6), journal-style reference lists (Phase 7).
-- **Additive + fallback** — the MCP is never a dependency: if it is unavailable (e.g. an unauthenticated remote session), the workflow degrades to `scripts/search_pubmed.py` + manual evidence.md. Wired into CLAUDE.md (Rule 1, STOP signals, Phase 1, Quick Commands) + AGENTS.md for Codex parity.
-
-### v1.1.2 (2026-06-21)
-
-**Fix — hooks read UTF-8 stdin (Korean intent on Windows)**
-
-- The `UserPromptSubmit` / `PreToolUse` / `PostToolUse` hooks now reconfigure stdin to UTF-8. On Windows (cp949 default) the JSON payload Claude Code emits was mis-decoded, so non-ASCII prompts — e.g. the Korean auto-trigger "학술적으로 바꿔줘" — silently failed to match. Added an end-to-end UTF-8 stdin test.
-
-### v1.1.1 (2026-06-21)
-
-**Style enforcement — measurable gate + Codex parity**
-
-- **Deterministic style metrics** — `scripts/check_style.py` (`extract` / `check --spec`) measures word count, mean sentence length, paragraphs, citation density, and hedging, and flags deviations from the Style Spec targets — the "check_numbers for style". Wired into `lint_on_edit.py` (surfaces `[STYLE-METRIC]` deviations on each draft edit when a Style Spec exists) and the Phase 5/6 gates. Tests added.
-- **Codex parity + calibration** — `AGENTS.md` now tells non-Claude runtimes to run the style-pass (`check_style.py` + Style-Conformance verifier) explicitly, since the hooks are Claude Code-only. The Style Spec template gains a before→after calibration example (few-shot steers the transform better than abstract rules).
-
-### v1.1.0 (2026-06-21)
-
-**Style transformation — rough draft → bound journal style, reliably**
-
-- **Style Spec + Style-Conformance Verifier** — bind ONE exemplar (`Style/own/` or `Style/target_journal/`) into a compact, always-loaded `drafts/style_spec.md` (`docs/style_spec_template.md`), then transform section-by-section and verify each section against the spec with an independent **Style-Conformance Verifier** (auto-fix loop, max 2; `docs/verifier_prompt_templates.md` + `verification_protocol.md`). This reaches the holistic style layer (structure, sentence length, hedging, claim strength, reference format) that lint cannot. New `/style-pass` command + `docs/style_transform_protocol.md`.
-- **Auto-trigger on intent** — a `UserPromptSubmit` hook (`scripts/hooks/style_intent.py`) detects "make it academic / 학술적으로 바꿔줘" and injects the style-pass protocol, so the transform fires without remembering the command. SessionStart now also surfaces the active Style Spec. Advisory + fail-open. Tests added.
-
-### v1.0.3 (2026-06-20)
-
-**Cross-runtime critical review + model selection**
-
-- **Claude-CLI reviewer** — `scripts/critical_review.py --include-claude` shells out to the local `claude -p` (headless) so a non-Claude-Code caller (Codex or a plain shell) can pull in Claude's adversarial review. `OPENROUTER_API_KEY` is now only required when an OpenRouter model is actually requested. Documented in `docs/critical_review_protocol.md` + `AGENTS.md`.
-- **Larger model pool + pick ~2** — `scripts/critical_models.txt` now offers MiniMax M3, GLM 5.2, Qwen3-Max, and DeepSeek V4 Pro; `/critical-review` presents them as individual `AskUserQuestion` options and recommends choosing ~2 (cost + blind-spot diversity), then runs `--models <selected>`.
-
-### v1.0.2 (2026-06-20)
-
-**Process enforcement + CLAUDE.md condensation**
-
-- **Plan-first enforcement (hooks)** — `.claude/settings.json` adds committed hooks: a PreToolUse `Write|Edit|MultiEdit` gate (`scripts/hooks/enforce_gates.py`) that BLOCKS drafting a section without a completed/approved `drafts/.../draft_plan.md` (Rule 8) or creating an analysis script without a completed/approved `data/.../analysis_plan.md` (Rule 7), and a SessionStart hook (`scripts/hooks/session_contract.py`) that injects the workflow contract every session. Revisions are exempt; multi-paper subfolders handled; fails open; UTF-8 safe. (Windows `py`; macOS/Linux use `python3`.)
-- **`/verify`** — `scripts/verify_all.py` runs check_citations + check_numbers (+ optional check_gate) in one command before recording a gate PASS, and forwards `--verify-hash` to keep documented freshness checks active. Hook and freshness-forwarding behavior is covered by regression tests.
-- **CLAUDE.md condensed 808 → 696 lines (~14%)** — collapsed the Multi-Paper/Revision structure trees and the Phase-2 Notes / test-selection / style-priority / gate-placement duplicates into pointers to their canonical docs; no MUST-FOLLOW rule removed.
-
-### v1.0.1 (2026-06-20)
-
-**Post-release hardening + concision tooling**
-
-- **Same-day hardening (code review + project audit)** — `check_gate.py` freshness now fails cleanly on non-file paths (directory/missing) instead of crashing, anchors relative paths on the repo `ROOT`, rejects blank/placeholder digests with a clear message, and reports `provenance_verified` / `provenance_unverified` in PASS output; Phase 8 verifier set aligned (Logic is Draft-only; Revision adds Revision-claims + Response-alignment) with `--require-check constraint` in the gate commands; "3 verifiers" corrected to "4"; Critical Rules renumbered 9/10/11; `lint_manuscript.py` skips nonexistent `.md` arguments (first lint tests added); `check_numbers.py` requires an explicit p-value (not any 0–1 proportion); `search_pubmed.py` evidence entries gain Evidence ID + Source Status; `failure_code` added to checker FAIL output; test suite expanded to 77 tests.
-- **Concision Pass** — `docs/writing_guide.md` gains a journal word-limit compression pass (Phase 5): 10 Before→After patterns distilled from a senior English edit, plus an over-compression guardrail (keep primary-outcome definitions, statistical spec, eligibility, and key limitations in text or move to Supplement — never silently delete).
-
-### v1.0.0 (2026-06-20)
-
-**Verification hardening (superpowers-inspired)**
-
-- **Gate freshness / provenance** — `check_gate.py` gains a `provenance:` block (sha256 of artifact/evidence/results), `--verify-hash LABEL=PATH` (fails a gate as *stale* when a verified file changed after PASS), and `--compute-hash PATH`. Closes the stale-PASS hole opened by parallel verification; backward compatible (opt-in flag). `review/gates/_TEMPLATE.GATE.md` and `docs/verification_protocol.md` (v0.2.0) document it; pytest coverage expanded to 70 tests.
-- **Parallel verifiers + Constraint-first** — the four section-gate verifiers run concurrently against a frozen artifact; fixes prioritize Constraint (spec) violations; all PASSes are discarded and re-run after any edit (`docs/verification_protocol.md`).
-- **STOP signals** — CLAUDE.md anti-rationalization table (§10) guarding the human-level shortcuts verifiers miss.
-- **Socratic draft-plan brainstorming** — `docs/draft_plan_template.md` Step 0 (one question at a time; distinct from `/paper-debate`, feeds it as R0 prep), wired into CLAUDE.md Phase 3 + Rule 8.
-- **Reviewer-response triage** — `docs/revision_guide.md` accept/partial/rebut posture per comment, tied to `[CHANGE]` + ghost-revision; Phase 8 verifier set aligned to include Constraint.
-- **Command `use-when` lines** added to `.claude/commands/*.md`; TodoWrite documented as non-authoritative QC/gate tracking (CLAUDE.md Rule 4).
-
-### v0.9.3 (2026-06-19)
-
-**Co-author collaboration and multi-model critical review**
-
-- Added **`/paper-debate`** (`docs/debate_protocol.md`, `.claude/commands/paper-debate.md`) — pre-writing Claude–Codex co-author debate for analysis plans, draft plans, argument structure, and reviewer responses; bounded rounds with consensus cap 3, debate logs under `review/debates/`, Claude-solo fallback.
-- Added **`/critical-review`** (`docs/critical_review_protocol.md`, `.claude/commands/critical-review.md`) — post-writing adversarial review by any combination of a fresh Claude subagent, Codex, and OpenRouter models (default `minimax/minimax-m3`, `z-ai/glm-5.2`), merged and ranked by consensus × severity, reports under `review/critical/`.
-- Added `scripts/critical_review.py` (OpenRouter caller; one model's failure is skipped, not fatal), `scripts/critical_models.txt` (externalized model list), and `scripts/critical_prompts/` (single-source adversarial prompts `manuscript.txt` / `response.txt` shared by the script, the Claude subagent, and Codex).
-- Critical-review prompts framed at **senior peer-reviewer / editor-in-chief level** — design soundness, data-to-conclusion support, and publication-worthiness, not just surface defects.
-- `build_prompt` uses `str.replace` (not `str.format`) so literal braces (JSON/LaTeX examples) in a prompt or target text cannot crash substitution; regression test added.
-- Added **AI-Draft De-bloat** section to `docs/writing_guide.md` — strips AI tells (hollow `-ing` analysis, AI vocabulary, signposting) while excluding legitimately conflicting patterns (hedging/copula/passive).
-- OpenRouter access via `OPENROUTER_API_KEY` in `.claude/settings.local.json` (gitignored); absent key skips OpenRouter and proceeds with the other reviewers.
-- CLAUDE.md integrates both commands (Collaboration commands, Phase 2/3/4/8 debate prompts, Round 6 two-layer critical review, File Roles, structure trees).
-
-### v0.9.2 (2026-06-18)
-
-**Verification harness hardening** (bug fixes + doc consistency)
-
-- `check_numbers.py`: no longer crashes on percentages (e.g. 42.5%); rejects p-values backed only by an unrelated value (e.g. a count of 0); handles thousands separators (1,234) and ignores ISO dates and inline `code` spans.
-- `check_gate.py`: strips inline `# ...` comments so the documented gate template passes and round-overflow escalation works.
-- Added `requirements.txt` (python-docx) and a `tests/` pytest suite (run with `pytest`).
-- Docs: verifier set corrected to Constraint / Citation / Data / Logic (Revision adds Revision-claims and Response-alignment); response compiler description corrected (it reproduces formatting, it does not read a reference .docx).
-
-### v0.9.1 (2026-06-18)
-
-**Multilingual README and Author Response DOCX Completion**
-
-- Synchronized English, Korean, Japanese, and Chinese READMEs with the verification harness scripts and DOCX response workflow.
-- Added Author response Markdown template documentation and `compile_response_docx.py` usage.
-- Added deterministic checker references for citation evidence, numeric grounding, phase gates, and revision claims.
-- Added LLM verifier prompt-template documentation for hallucination control, redundancy control, logic checks, and revision alignment.
-
-### v0.9.0 (2026-06-16)
-
-**Verification Harness** — inline produce→verify→fix→re-verify gates (new `docs/verification_protocol.md`)
-
-- Inline verification gates after each produce step (Phase 3/4/8) — replaces end-loaded manual QC with a produce→verify→fix→re-verify loop
-- Verifier subagents: Constraint (instruction compliance), Citation (citation grounding vs evidence.md), Data (numbers vs results CSV), Logic (cross-section logic/redundancy); the Revision gate adds Revision-claims and Response-alignment
-- Autonomous fix loop (max 2 retries) then user escalation
-- `[EVID:author_year]` citation tags and results-CSV-as-single-source grounding
-- Gate ledger (`review/gates/`) blocks progress until `status: PASS` is recorded
-- `evidence.md` entries gain a Source Status field; Phase 6 QC lightened to a final-confirmation pass
-- Programmatic citation checker: `python scripts/check_citations.py drafts/03_introduction.md --evidence knowledge/evidence.md`
-- Programmatic number checker: `python scripts/check_numbers.py drafts/05_results.md drafts/table_1.md --results results`
-- Programmatic phase gate checker: `python scripts/check_gate.py review/gates/phase_04_draft.GATE.md --artifact drafts/05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts/05_results.md`
-- Programmatic ghost-revision checker: `python scripts/check_revision_claims.py drafts/revision/REV1/response_letter_REV1.md --strict`
-- LLM semantic verifier schema: `docs/verifier_prompt_templates.md` for logic, redundancy, semantic citation support, and revision-response alignment
-
-### v0.8.1 (2026-06-16)
-
-**Response Letter Formatting Rules** — `docs/revision_guide.md` internal version v0.3.0 → v0.4.0
-
-- Reworked the response letter format to a minimal-formatting standard:
-  - Bold only the words **"Comment x.x"** and **"Response"**; all other formatting removed (no headings, colors, indentation, tables, or bullet/numbered lists)
-  - Quoted revised manuscript text is set in *italic*
-  - Responses are written as prose (no numbered/itemized points), flowing thanks → position → rationale → action in a single paragraph
-  - Revision locations use lead-in placement — state the location first, then quote the revised text (no trailing "(See ...)")
-  - No hyphens or em-dashes
-  - Persuasive, reviewer-convincing tone
-- Added a **minimal change principle** for manuscript edits — make only the smallest sentence changes needed to address each comment, keeping revisions concise rather than verbose
-- Updated the "during writing" checklist to match the new formatting rules
-
-### v0.8.0 (2026-06-16)
-
-**Style Workflow, Linting, and Agent Instructions**
-
-- Promoted writing-style material into the top-level `Style/` workflow, separate from reference evidence under `knowledge/`.
-- Added `Style/style_guide.md` for style-anchor extraction rules, PDF-to-MD mirror rules, and publisher generic filename handling.
-- Expanded `Style/terminology.md` into the project terminology registry for preferred/forbidden terms across spine surgery, trials, AI/radiomics, and reporting contexts.
-- Added `docs/drafting_protocol.md` and `docs/section_templates.md` to enforce outline → evidence-bound draft → style pass → QC drafting.
-- Added `scripts/lint_manuscript.py` and updated draft/table templates so manuscript linting passes with `python scripts/lint_manuscript.py drafts --quiet` on Windows.
-- Added `AGENTS.md` as agent bootstrap instructions, with `CLAUDE.md` as the authoritative source of truth.
-- Updated `.gitignore` so copyrighted PDFs and private style-anchor summaries remain local, while public workflow files and examples remain commit-eligible.
-
-### v0.7.1 (2026-05-15)
-
-**Terminology & Template**
-
-- Added `Style/terminology.md` — field-standard terminology registry for BESS/spine surgery
-  - Correct vs incorrect usage for 60+ terms across: procedure names, instruments, outcome measures, study design, statistics, complications
-  - Common mistake list (creatine phosphokinase vs creatinine kinase; assessor-blind vs double-blind; VAS vs NRS; etc.)
-- Added `docs/draft_plan_template.md` — complete 10-item draft plan template
-  - Claim→Citation Mapping tables (Introduction/Methods/Discussion)
-  - Approval checklist (all 10 items must be complete before Phase 4)
-- CLAUDE.md Phase 1: Added journals format check and Style anchor review at project setup
-- CLAUDE.md: Updated File Roles table, Phase 3 workflow, and Quick Commands to reference template
-- Fix: `profile/journals.md` citation examples corrected — TSJ now shows 6 authors before et al. (not 3); BJJ now lists all 8 authors without et al. (per BJJ policy)
-
-### v0.7.0 (2026-05-14)
-
-**Citation Quality & Style Consistency**
-
-- Added `Style/` — own, landmark, and target-journal style anchors
-  - 2018 Spine — Depression & chronic LBP cross-sectional (KNHANES)
-  - 2020 Spine J — Biportal endoscopic vs microscopic laminectomy RCT
-  - 2023 Spine J — Biportal endoscopic vs microscopic discectomy RCT
-  - 2024 Neurospine — BESS safety profile: pooled analysis of 2 RCTs
-  - 2025 Bone Joint J — ENDOBH multicentre RCT (6 hospitals)
-  - Each file: full citation, key terminology table, methods boilerplate, key claims with data
-- CLAUDE.md Rule 8: Added **Claim→Citation Mapping** as required item 10 in draft_plan.md
-  - ~20 key claims mapped to citations before writing starts
-  - Intro background (5–8), methods rationale (2–3), discussion comparisons (5–8)
-- CLAUDE.md: Phase Completion Criteria 3→4 updated (9 → 10 required draft_plan items)
-- Added `profile/journals.md` (local only, gitignored) — verified citation formats for 8 target journals
-  - The Spine Journal: bracket [N], 6 authors then et al.
-  - Spine (Phila Pa 1976): superscript, "(Phila Pa 1976)" required in citation
-  - Bone Joint J: all authors listed, Vol-B(issue) format
-  - Neurospine: superscript, et al. after 3 authors
-  - Also: J Neurosurg Spine, Global Spine J, Clin Orthop Relat Res, Asian Spine J
-- Added ORCIDs for 5 co-authors in `profile/authors.md` (local only, gitignored)
-
-### v0.6.0 (2026-04-18)
-
-**Writing Guide Major Refactor** — `docs/writing_guide.md` internal version v0.3.0 → v0.4.0
-
-- **Role separation** between CLAUDE.md (orchestrator) and writing_guide.md (rules)
-  - CLAUDE.md "Natural Academic Writing Style" section collapsed to pointer-only (~115 lines removed)
-  - All writing style rules, tables, and examples consolidated in writing_guide.md
-- **New section: Style Reference Tables** in writing_guide.md
-  - Voice & Tense by Section (6 sections: Abstract/Intro/Methods/Results/Discussion/Conclusion)
-  - Transition Words (but → nonetheless)
-  - Verb Upgrades (showed → demonstrated)
-  - Common Corrections (elderly → older adult, etc.)
-  - Statistical Notation (italic *p*, en-dash for ranges, never *p* = 0.000)
-  - Hedging Language (4-level guide: Strong/Moderate/Weak/Very weak for Discussion)
-- **New section: Writing Principles (4 Pillars)** in writing_guide.md
-  - Clarity, Conciseness, Objectivity, Consistency with expanded examples
-- **General Principles expanded** with 6 new rules:
-  - No bold text in manuscript body
-  - Abbreviation define-once rule
-  - Clinical findings as sentence subject (not statistical method)
-  - No synonym mixing (dural tear ↔ durotomy, etc.) with draft_plan.md term selection
-  - Numerical formatting consistency (decimals, units)
-  - No sentence-initial numbers (spell out or restructure)
-- **Results section**: added non-significant p-value omission guideline (primary outcome exception)
-- **Discussion section**: three new subsections
-  - No specific numbers/p-values (literature comparison exception)
-  - No directional-trend framing for non-significant results
-  - Neutral tone with banned exaggeration list
-- **Tables section**: 2 new Tips
-  - Methods Statistics vs Table footnote role separation
-  - Supplementary Table for pre-specified sensitivity analyses
-
-**Cross-file Consistency Fixes**
-
-- CLAUDE.md Phase 2: explicit reference to `docs/statistical_analysis_guide.md` + `analysis_plan.md` required items (endpoint hierarchy, tests, multiple comparison, missing data)
-- CLAUDE.md Phase 6 QC: per-round responsibility annotation (Claude / Dr. Editor / Dr. Statistician) with CRITICAL vs RECOMMENDED marking
-- CLAUDE.md Phase 3→4 Completion Criteria: expanded to list all 9 `draft_plan.md` required items
-- `docs/revision_guide.md`: new "QC Re-run for Revision" section with per-round re-run checklist and pre-submission checklist
-- `docs/evidence_guide.md`: Search Log query examples updated to actual PubMed syntax (field tags `[tiab]`/`[MeSH]`, boolean AND/OR/NOT, quoted phrases)
-
-### v0.5.2 (2026-04-15)
-
-- Fixed cross-file inconsistencies across all documentation
-- Updated figure format workflow: PNG for drafts (300 DPI), TIFF with LZW compression for final submission (600+ DPI), PPT/vector as options
-- Updated `save_figure()` template: `draft=True` (PNG) / `final=True` (TIFF LZW) parameter split
-- Added `review/reviewer_comments_REV{N}.md` to CLAUDE.md revision structure and File Roles table
-- Fixed `analysis_plan.md` placeholder from `[FROM CLAUDE.md]` to user-friendly `[연구 설계 입력]`
-- Aligned `revision_guide.md` file structure with CLAUDE.md (R1→REV1 naming convention)
-- Added Round 4 template to `qc_guide.md` QC log and Final Sign-off
-- Updated `statistical_analysis_guide.md` figure output format to include TIFF
-- Updated `checklist_guide.md` figure submission requirements (TIFF LZW 600+ DPI)
-
-### v0.5.1 (2026-04-15)
-
-- Added Analysis Plan Mandatory (Critical Rule #7) — `analysis_plan.md` must be created and approved before running any statistical analysis
-  - Per-paper analysis plans for multi-paper projects (`data/paper{N}_xxx/analysis_plan.md`)
-  - Required contents: research questions, inclusion/exclusion criteria, variable definitions, test selection rationale, significance level
-- Added Draft Plan Mandatory (Critical Rule #8) — `drafts/draft_plan.md` must be created and approved before drafting any sections
-  - Required contents: key message, tone/voice, essential references, evidence gaps, table/figure plan, introduction/discussion outlines, limitation points
-  - Per-paper draft plans for multi-paper projects
-- Added Model Selection by Phase (Critical Rule #9) — cost-efficient model guidance
-  - Opus recommended: Analysis Plan, Draft Plan, Revision (strategic phases)
-  - Sonnet default with Opus optional: Drafting, Style Polish, QC (plan-guided execution)
-  - Plan Mode (`/plan`) recommended for Draft Plan creation
-- Workflow phases renumbered (7 → 8 phases): added Phase 3 (Draft Plan) between Analysis and Drafting
-- Updated Phase Completion Criteria with draft_plan.md approval gate
-
-### v0.5.0 (2026-04-14)
-
-- Enhanced QC Round 2 (Reference Verification) with 4 new sub-checks:
-  - 2.5 Placeholder Reference Detection — detect fake/temporary citations ([ref1], [TBD], [X], etc.)
-  - 2.6 Order of Appearance Check — verify citation numbering follows Vancouver style order
-  - 2.7 Reference Format Consistency — check bibliographic style uniformity across all references
-  - 2.8 Citation Distribution Check — section-wise citation balance, self-citation rate, recency
-- Strengthened Reference List Integrity (2.4) — added number continuity and duplicate number checks
-- Updated QC Log template with Round 2 enhanced sections
-- Added File Versioning rules (Critical Rule #5) — date-based default (`_YYMMDD`), `_v1`, `_REV1`, `_FINAL`
-- Added Multi-Paper Organization (Critical Rule #6) — per-paper subfolders for data, results, drafts, output, review
-- Added Multi-Paper Project structure diagram (shared docs/knowledge/scripts, separate per-paper folders)
-- Added Revision folder structure — `drafts/revision/REV{N}/`, `output/revision/REV{N}/`
-- Added Phase 7 (Revision) to Recommended Workflow with QC re-run requirement
-- Updated Phase Completion Criteria with Submit → Revision path
-- Updated File Roles table with revision folder entries
-
-### v0.4.0 (2026-04-09)
-
-- Added `docs/revision_guide.md` - Reviewer response and revision guide
-- Added `docs/figure_guide.md` - Publication-quality figure generation guide
-- Added `drafts/00_cover_letter.md` - Concise cover letter template
-- Updated CLAUDE.md: project structure, file roles, Quick Commands for revision and figures
-- Removed Spine GraphRAG project-specific references from project structure
-
-### v0.3.0 (2026-03-09)
-
-- Major rewrite of `docs/statistical_analysis_guide.md` (v0.2.1 → v0.3.0)
-  - Statistical Parsimony, Analysis Hierarchy, Clinical Significance, Subgroup Analysis, Sensitivity Analysis
-  - Methods Statistical Section Checklist (10 mandatory items per ICMJE/SAMPL)
-- Updated `docs/writing_guide.md`, `docs/expert_roles.md`, `docs/qc_guide.md` for statistical consistency
-
-### v0.2.5 (2026-03-09)
-
-- Added `scripts/search_pubmed.py` - PubMed search tool using NCBI E-utilities API (no MCP, no external packages)
-- Added slash commands: `/search-evidence [query]`, `/import-doi [doi]`
-
-### v0.2.4 (2026-03-04)
-
-- Added `.gitattributes` for LF line ending normalization
-- Added `.gitignore` rules for `.DS_Store`, local settings, IDE config
-
-### v0.2.3 (2026-02-15)
-
-- Added `docs/docx_guide.md` for DOCX conversion rules
-- Date-suffixed output files, separate title page and table DOCX files
-
-### v0.2.2 (2026-02-10)
-
-- Separated evidence guide from evidence registry
-- Added `docs/evidence_guide.md` with detailed summarization instructions
-
-### v0.2.1 (2026-02-07)
-
-- Various structural fixes and template improvements
-
-### v0.2 (2026-02-03)
-
-- Added Statistical Analysis Guide
-- Added Table/Figure/Results redundancy prevention rules
-
-### v0.1 (Initial)
-
-- Basic project structure
-- Writing guide, expert roles, checklists, QC guide
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital. Share and adapt for any purpose with attribution.
