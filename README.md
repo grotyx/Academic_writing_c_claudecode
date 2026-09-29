@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.8.2** (2026-09-30)
+**v1.8.3** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -385,6 +385,10 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.8.3 (260930)
+
+- Test isolation: the installed-engine tests registered their temporary projects in the real `~/.manuwright/projects.json`. They now use a throwaway `MANUWRIGHT_HOME`. No engine change.
 
 ### v1.8.2 (260930)
 

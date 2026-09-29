@@ -35,6 +35,7 @@ def elsewhere(tmp_path):
 
 def run(args, cwd, stdin=None):
     env = {k: v for k, v in os.environ.items() if k not in {'PYTHONPATH', 'MANUWRIGHT_PROJECT'}}
+    env['MANUWRIGHT_HOME'] = str(Path(cwd) / '.manuwright-test-home')
     return subprocess.run([sys.executable, *map(str, args)], cwd=cwd, input=stdin,
                           capture_output=True, text=True, encoding='utf-8', env=env, timeout=60)
 
@@ -91,6 +92,7 @@ installed = pytest.mark.skipif(not os.environ.get('MANUWRIGHT_INSTALLED') or not
 
 def manuwright(*args, cwd):
     env = {k: v for k, v in os.environ.items() if k != 'PYTHONPATH'}
+    env['MANUWRIGHT_HOME'] = str(Path(cwd) / '.manuwright-test-home')  # never touch the real registry
     return subprocess.run(['manuwright', *map(str, args)], cwd=cwd, capture_output=True, text=True,
                           encoding='utf-8', env=env, timeout=120)
 

@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.8.2** (2026-09-30)
+**v1.8.3** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -352,6 +352,10 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.8.3 (260930)
+
+- 测试隔离：安装版测试曾把临时项目登记到真实的 `~/.manuwright/projects.json`，现改用临时 `MANUWRIGHT_HOME`。引擎无变更。
 
 ### v1.8.2 (260930)
 

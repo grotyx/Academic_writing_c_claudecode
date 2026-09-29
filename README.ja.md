@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.8.2** (2026-09-30)
+**v1.8.3** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -346,6 +346,10 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.8.3 (260930)
+
+- テスト分離：インストール版テストが一時プロジェクトを実際の `~/.manuwright/projects.json` に登録していた。一時的な `MANUWRIGHT_HOME` を使うよう修正。エンジン変更なし。
 
 ### v1.8.2 (260930)
 
