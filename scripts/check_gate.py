@@ -409,7 +409,7 @@ def check_gate(
                     f"provenance.{prov_key}",
                     f"provenance hash for {prov_key} is not a 64-char sha256: {recorded.strip()[:24]!r}",
                     "Replace the placeholder/typo with a real digest: "
-                    "py scripts/check_gate.py --compute-hash <path>.",
+                    "python scripts/check_gate.py --compute-hash <path>.",
                 )
             )
             continue

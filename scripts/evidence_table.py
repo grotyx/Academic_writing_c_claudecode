@@ -10,9 +10,9 @@ Columns are taken from --columns, else inferred from the records (union, first-s
 Missing values render blank; `|` and newlines in cells are escaped/flattened.
 
 Usage:
-  py scripts/evidence_table.py studies.json
-  py scripts/evidence_table.py studies.json --columns study,design,n,intervention,outcome,result,loe
-  echo '[{...}]' | py scripts/evidence_table.py -
+  python scripts/evidence_table.py studies.json
+  python scripts/evidence_table.py studies.json --columns study,design,n,intervention,outcome,result,loe
+  echo '[{...}]' | python scripts/evidence_table.py -
 """
 
 from __future__ import annotations

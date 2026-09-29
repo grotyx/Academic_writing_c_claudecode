@@ -94,13 +94,13 @@ expected_terms: eligibility criteria; excluded; prior surgery
 검증 게이트는 `scripts/check_revision_claims.py`로 실행한다. 이 스크립트는 (a) 해당 revised 섹션 파일 존재, (b) `expected_terms`가 revised 섹션에 포함되는지, (c) 응답서의 `Revised text:` 문구가 revised 섹션에 실제로 있는지, (d) 원본 섹션 파일이 있으면 revised 섹션이 원본과 동일하지 않은지 확인한다. 불일치 시 `GATE FAIL`을 출력하므로 원고를 고치거나 응답 문구를 수정한다 (최대 2회).
 
 ```powershell
-py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict
+python scripts/check_revision_claims.py drafts/revision/REV1/response_letter_REV1.md --strict
 ```
 
 **응답 전수 커버리지 (`scripts/check_response_coverage.py`):** ghost-revision 게이트가 "주장한 변경이 진짜인가"를 본다면, 이 검사는 반대면 — **모든 리뷰어 코멘트에 응답이 존재하는가**를 본다. 누락 응답은 자동 reject 사유이므로 기본 fail(exit 1).
 
 ```powershell
-py scripts\check_response_coverage.py drafts\revision\REV1\response_letter_REV1.md --comments review\reviewer_comments_REV1.md
+python scripts/check_response_coverage.py drafts/revision/REV1/response_letter_REV1.md --comments review/reviewer_comments_REV1.md
 ```
 
 - `RESPONSE_MISSING`(Response 블록 없음) / `RESPONSE_EMPTY` / `RESPONSE_PLACEHOLDER`(템플릿 `[...]` 잔존) — 실패
@@ -110,7 +110,7 @@ py scripts\check_response_coverage.py drafts\revision\REV1\response_letter_REV1.
 After deterministic revision-claim checking, run the Revision-Alignment verifier in `docs/verifier_prompt_templates.md` to confirm that the response directly answers the reviewer and that the manuscript is not written in response-letter style. Record `revision_claims: PASS` and `response_alignment: PASS` in `review/gates/phase_08_revision.GATE.md`, then confirm the ledger:
 
 ```powershell
-py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv
+python scripts/check_gate.py review/gates/phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts/revision/REV1/05_results_REV1.md --verify-hash evidence=knowledge/evidence.md --verify-hash results=results/table2_outcomes.csv
 ```
 
 ### 본문 수정 원칙
@@ -342,7 +342,7 @@ output/revision/
 | `Draft response to reviewer [N]` | 특정 리뷰어 응답서 초안 작성 |
 | `Draft response letter` | 전체 응답서 초안 작성 |
 | `Review response letter` | Dr. Editor 관점에서 응답서 검토 |
-| `Check response completeness` | `py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict` 실행 |
-| `Check response coverage` | `py scripts\check_response_coverage.py drafts\revision\REV1\response_letter_REV1.md --comments review\reviewer_comments_REV1.md` 실행 (모든 코멘트에 실제 응답 존재 확인) |
-| `Check revision gate` | `py scripts\check_gate.py review\gates\phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts\revision\REV1\05_results_REV1.md --verify-hash evidence=knowledge\evidence.md --verify-hash results=results\table2_outcomes.csv` 실행 |
-| `Compile response letter` | `py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md` 실행 |
+| `Check response completeness` | `python scripts/check_revision_claims.py drafts/revision/REV1/response_letter_REV1.md --strict` 실행 |
+| `Check response coverage` | `python scripts/check_response_coverage.py drafts/revision/REV1/response_letter_REV1.md --comments review/reviewer_comments_REV1.md` 실행 (모든 코멘트에 실제 응답 존재 확인) |
+| `Check revision gate` | `python scripts/check_gate.py review/gates/phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts/revision/REV1/05_results_REV1.md --verify-hash evidence=knowledge/evidence.md --verify-hash results=results/table2_outcomes.csv` 실행 |
+| `Compile response letter` | `python scripts/compile_response_docx.py drafts/revision/REV1/response_letter_REV1.md` 실행 |

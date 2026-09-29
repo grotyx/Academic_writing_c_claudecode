@@ -22,7 +22,7 @@ Goal: given a draft claim that needs support, propose the best `[EVID:id]` candi
 1. **Retrieve (KAG primary):** medical-kag `search` action `evidence`/`evidence_chain`/
    `best_evidence` (or `search`) on the claim → candidate papers, ranked, with evidence level.
 2. **Fallback (KAG down):** scan `knowledge/evidence.md` for entries whose summary/key points
-   match the claim; if nothing fits, `py scripts/search_pubmed.py search "<claim terms>"` for new
+   match the claim; if nothing fits, `python scripts/search_pubmed.py search "<claim terms>"` for new
    candidates.
 3. **Register before citing:** for any candidate not yet in `evidence.md`, register it as
    `[EVID:author_year]` (verify PMID/DOI) per `docs/evidence_guide.md`.
@@ -37,7 +37,7 @@ Use in Phase 3 (claim→citation mapping, Rule 8) and Phase 4 (drafting).
 
 Goal: a per-sentence "claim map" — is each cited sentence actually supported by its evidence?
 
-1. **Extract claims (deterministic):** `py scripts/extract_claims.py <section> --json` → each
+1. **Extract claims (deterministic):** `python scripts/extract_claims.py <section> --json` → each
    `[EVID:id]`-tagged sentence.
 2. **Retrieve evidence:** for each claim's `[EVID:id]`, pull the source content — medical-kag
    (KAG primary: the paper's structured data / chunks) or the `evidence.md` entry (fallback).
@@ -77,7 +77,7 @@ supplement.
 1. **Gather structured records** for the target papers — KAG primary (`analyze` fields /
    `compare_interventions`: design, n, intervention, outcome, effect, p, evidence level);
    evidence.md fallback (from the entry summaries; rougher).
-2. **Format:** emit JSON records, then `py scripts/evidence_table.py <records.json> --columns
+2. **Format:** emit JSON records, then `python scripts/evidence_table.py <records.json> --columns
    study,design,n,intervention,outcome,result,loe` → a markdown table.
 3. **Save** to `drafts/table_evidence.md` (or a supplement). Verify every number against the
    source (grounding) — KAG values can be sparse/noisy; `evidence.md` / `results` are canonical.

@@ -44,6 +44,14 @@ def load_project(path):
     for item in config.get('numeric_artifacts', []):
         if inside(path.parent, item) not in resolved:
             raise ValueError('numeric_artifacts must be in artifacts or tables')
+    listed = set(resolved[:len(artifacts)])
+    if config.get('abstract') and inside(path.parent, config['abstract']) not in listed:
+        raise ValueError('abstract must be one of the published artifacts')
+    if not config.get('abstract') and any(re.search(r'abstract', Path(a).stem, re.I) for a in artifacts):
+        raise ValueError('an abstract artifact is published; declare it in the abstract field')
+    for key in ('terminology', 'style_spec'):
+        if config.get(key) and not inside(path.parent, config[key]).is_file():
+            raise ValueError(f'missing {key}')
     return path, config
 
 
@@ -53,7 +61,7 @@ def snapshot(path, config):
     for key in ('artifacts', 'tables', 'figures', 'dependencies'):
         files.update(inside(root, item) for item in config.get(key, []))
     for key in ('evidence', 'draft_plan', 'analysis_plan', 'result_bindings', 'abstract',
-                'response', 'comments', 'ai_usage', 'checklist'):
+                'response', 'comments', 'ai_usage', 'checklist', 'terminology', 'style_spec'):
         if config.get(key):
             files.add(inside(root, config[key]))
     for key in ('draft_plan', 'analysis_plan'):
@@ -71,7 +79,6 @@ def snapshot(path, config):
         files.update(inside(root, item['source']['file']) for item in bindings['results'])
     if config.get('response'):
         response = inside(root, config['response'])
-        import re
         revision = re.fullmatch(r'REV(\d+)', response.parent.name)
         if revision and response.parent.parent.name == 'revision':
             draft_root = response.parent.parent.parent
@@ -86,6 +93,56 @@ def snapshot(path, config):
             result['@engine/' + file.relative_to(REPO).as_posix()] = digest(file)
     result['@engine/Style/terminology.md'] = digest(REPO / 'Style/terminology.md')
     return result
+
+
+def explain(result, limit=5):
+    """Checker result -> True, or the first few issues with artifact/line detail."""
+    if result.passed:
+        return True
+    issues = getattr(result, 'failures', None) or getattr(result, 'issues', None) or []
+    lines = ['; '.join(f'{k}={v}' for k, v in issue._asdict().items()) if hasattr(issue, '_asdict') else str(issue)
+             for issue in issues[:limit]]
+    more = f' (+{len(issues) - limit} more)' if len(issues) > limit else ''
+    return (' | '.join(lines) or 'check failed') + more
+
+
+def completion_problem(key, value):
+    """Validate submission completion records (docs/harness_guide.md, Submission output)."""
+    if not isinstance(value, dict) or not str(value.get('reviewed_by') or '').strip():
+        return f'{key}: object with nonempty reviewed_by required'
+    if key == 'ai_usage':
+        if type(value.get('used')) is not bool:
+            return 'ai_usage: used must be true or false'
+        if value['used'] is False:
+            return None
+        tools = value.get('tools')
+        if not str(value.get('disclosure') or '').strip() or not isinstance(tools, list) or not tools:
+            return 'ai_usage: disclosure and a nonempty tools list are required when used'
+        for tool in tools:
+            if not isinstance(tool, dict) or not all(str(tool.get(f) or '').strip() for f in ('tool', 'role')):
+                return 'ai_usage: every tools entry needs nonempty tool and role'
+        return None
+    for field in ('guideline', 'version', 'source_url'):
+        if not str(value.get(field) or '').strip():
+            return f'checklist: missing {field}'
+    items = value.get('items')
+    if not isinstance(items, list) or not items:
+        return 'checklist: items must be a nonempty list'
+    seen = set()
+    for item in items:
+        ident = str(item.get('id') or '').strip() if isinstance(item, dict) else ''
+        if not ident or ident in seen:
+            return f'checklist: every item needs a unique nonempty id ({ident or "missing"})'
+        seen.add(ident)
+        if item.get('status') == 'PASS':
+            if not str(item.get('location') or '').strip():
+                return f'checklist item {ident}: PASS requires a manuscript location'
+        elif item.get('status') == 'NOT_APPLICABLE':
+            if not str(item.get('reason') or '').strip():
+                return f'checklist item {ident}: NOT_APPLICABLE requires a reason'
+        else:
+            return f'checklist item {ident}: status must be PASS or NOT_APPLICABLE'
+    return None
 
 
 def receipt_problem(path, dependencies, *, human=False):
@@ -167,13 +224,26 @@ def verify(path, profile='draft'):
     artifacts = [inside(root, item) for item in config['artifacts'] + config.get('tables', [])]
     initial = snapshot(path, config)
     cc = checker('check_citations')
-    run('citations', lambda: cc.check_citations(artifacts, evidence_path=inside(root, config['evidence'])).passed)
+    run('citations', lambda: explain(cc.check_citations(artifacts, evidence_path=inside(root, config['evidence']))))
     lint = checker('lint_manuscript')
     def lint_check():
-        terms = lint.load_forbidden_terms(lint.TERMINOLOGY_FILE)
+        registry = inside(root, config['terminology']) if config.get('terminology') else lint.TERMINOLOGY_FILE
+        terms = lint.load_forbidden_terms(registry)
         issues = [issue for artifact in artifacts for issue in lint.lint_file(artifact, terms)]
-        return True if not issues else f'{len(issues)} lint findings; run scripts/lint_manuscript.py for details'
+        if not issues:
+            return True
+        shown = ' | '.join(f'{code} {Path(path).name}:{line} {message}' for code, path, line, message in issues[:5])
+        return f'{len(issues)} lint findings: {shown}'
     run('manuscript_lint', lint_check)
+    if config.get('style_spec'):
+        style = checker('check_style')
+        def style_check():
+            targets = style.parse_spec_targets(inside(root, config['style_spec']))
+            if not targets:
+                raise ValueError('style_spec has no parsable Target Metrics')
+            issues = [f'{a.name}: {msg}' for a in artifacts for msg in style.check_file(a, targets)[1]]
+            return True if not issues else ' | '.join(issues)
+        run('style_metrics', style_check)
     plan_module = checker('plan_validation')
     for key, kind in [('draft_plan', 'draft'), ('analysis_plan', 'analysis')]:
         if not config.get(key):
@@ -191,8 +261,8 @@ def verify(path, profile='draft'):
     cn = checker('check_numbers')
     run('numeric_scope', lambda: numeric_scope(root, config, artifacts, cn))
     if numeric:
-        run('number_tokens', lambda: cn.check_numbers([inside(root, item) for item in numeric],
-            results_dir=inside(root, config['results'])).passed)
+        run('number_tokens', lambda: explain(cn.check_numbers([inside(root, item) for item in numeric],
+            results_dir=inside(root, config['results']))))
         if config.get('result_bindings'):
             def bound():
                 validate_bindings(root, inside(root, config['result_bindings']), config['paper_id'], numeric, cn)
@@ -206,7 +276,7 @@ def verify(path, profile='draft'):
         record('numbers', 'BLOCKED', 'Declare numeric_artifacts or a justified non-research exemption.')
     if config.get('abstract'):
         body = [item for item in artifacts if item != inside(root, config['abstract'])]
-        run('abstract', lambda: checker('check_abstract').check_abstract(inside(root, config['abstract']), body).passed)
+        run('abstract', lambda: explain(checker('check_abstract').check_abstract(inside(root, config['abstract']), body)))
     else:
         record('abstract', 'NOT_APPLICABLE', 'No separate abstract declared.')
     cross = checker('check_crossrefs')
@@ -239,12 +309,12 @@ def verify(path, profile='draft'):
     run('bibliography', bibliography)
     if profile == 'revision' or config.get('response'):
         run('revision_scope', lambda: revision_scope(root, config, artifacts))
-        run('response_citations', lambda: cc.check_citations([inside(root, config['response'])],
-            evidence_path=inside(root, config['evidence'])).passed)
-        run('revision_claims', lambda: checker('check_revision_claims').check_revision_claims(
-            inside(root, config['response']), strict=True).passed)
-        run('response_coverage', lambda: checker('check_response_coverage').check_response_coverage(
-            inside(root, config['response']), comments_path=inside(root, config['comments']), strict=True).passed)
+        run('response_citations', lambda: explain(cc.check_citations([inside(root, config['response'])],
+            evidence_path=inside(root, config['evidence']))))
+        run('revision_claims', lambda: explain(checker('check_revision_claims').check_revision_claims(
+            inside(root, config['response']), strict=True)))
+        run('response_coverage', lambda: explain(checker('check_response_coverage').check_response_coverage(
+            inside(root, config['response']), comments_path=inside(root, config['comments']), strict=True)))
     if profile != 'draft':
         def semantic():
             return receipt_problem(inside(root, config['semantic_review']), initial)
@@ -252,14 +322,7 @@ def verify(path, profile='draft'):
     if profile == 'submission':
         run('human_signoff', lambda: receipt_problem(inside(root, config['human_signoff']), initial, human=True))
         def required_json(key):
-            value = json.loads(inside(root, config[key]).read_text(encoding='utf-8'))
-            if key == 'ai_usage':
-                return (type(value.get('used')) is bool and bool(value.get('reviewed_by')) and
-                        (value['used'] is False or (bool(value.get('disclosure')) and bool(value.get('tools')))))
-            return (bool(value.get('guideline')) and bool(value.get('version')) and
-                    bool(value.get('source_url')) and bool(value.get('reviewed_by')) and
-                    bool(value.get('items')) and all(item.get('status') == 'PASS' or
-                    (item.get('status') == 'NOT_APPLICABLE' and item.get('reason')) for item in value['items']))
+            return completion_problem(key, json.loads(inside(root, config[key]).read_text(encoding='utf-8')))
         run('ai_disclosure', lambda: required_json('ai_usage'))
         run('reporting_checklist', lambda: required_json('checklist'))
     if snapshot(path, config) != initial:

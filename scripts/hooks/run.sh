@@ -5,4 +5,6 @@
 # requires there); macOS/Linux have `python3` but no `py`. Without this shim
 # every hook exits 127 on macOS/Linux and enforcement is silently OFF.
 command -v py >/dev/null 2>&1 && exec py "$@"
-exec python3 "$@"
+command -v python3 >/dev/null 2>&1 && exec python3 "$@"
+echo "WARNING: no py/python3 found; workflow hooks (plan-first gates) are OFF." >&2
+exit 1

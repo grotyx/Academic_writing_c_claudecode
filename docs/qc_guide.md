@@ -26,7 +26,7 @@
 
 ## Round 1: Number Consistency Check
 
-**Deterministic helpers:** run `py scripts\check_numbers.py drafts\02_abstract.md drafts\05_results.md drafts\table_1.md drafts\table_2.md --results results` (numbers ↔ results CSV), then `py scripts\check_abstract.py drafts\04_methods.md drafts\05_results.md drafts\table_1.md drafts\table_2.md --abstract drafts\02_abstract.md` (every abstract number must also appear in the body — catches abstract-only figures, Rule 3). Then manually review any remaining cross-section issues.
+**Deterministic helpers:** run `python scripts/check_numbers.py drafts/02_abstract.md drafts/05_results.md drafts/table_1.md drafts/table_2.md --results results` (numbers ↔ results CSV), then `python scripts/check_abstract.py drafts/04_methods.md drafts/05_results.md drafts/table_1.md drafts/table_2.md --abstract drafts/02_abstract.md` (every abstract number must also appear in the body — catches abstract-only figures, Rule 3). Then manually review any remaining cross-section issues.
 
 ### 1.1 Patient/Sample Numbers
 모든 섹션에서 환자/샘플 수가 일치하는지 확인
@@ -118,7 +118,7 @@ Table 1의 인구통계와 본문 기술 일치 여부
 존재·정확성과 별개로 **인용 분포**를 점검한다 (advisory). 진짜 위험은 *잘못된 인용*(2.1·2.2 + semantic verifier)과 ***과잉 인용***이다 — **등록됐는데 안 쓴 ref(uncited)는 결함이 아니다.** 문헌고찰로 꼭 필요한 것만 인용하는 게 정상이므로 uncited는 중립 정보로만 보고한다.
 
 ```
-py scripts\check_coverage.py drafts\03_introduction.md drafts\06_discussion.md --evidence knowledge\evidence.md --draft-plan drafts\draft_plan.md
+python scripts/check_coverage.py drafts/03_introduction.md drafts/06_discussion.md --evidence knowledge/evidence.md --draft-plan drafts/draft_plan.md
 ```
 
 - **Over-citation (주신호)** — 한 문장에 임계(기본 4) 초과 인용 → 인용 남발/padding 의심. `--max-citations-per-sentence N`으로 조정
@@ -364,7 +364,7 @@ Conclusion이 Results에 의해 지지되는지 확인
 본문의 "Table N"/"Figure N" 언급이 실제 존재하는 table/figure와 일치하는지 결정적으로 대조한다 (advisory). Revision에서 table 번호를 바꾸거나 삭제하면 본문 참조가 조용히 깨진다 — desk reject 단골 사유.
 
 ```powershell
-py scripts\check_crossrefs.py drafts\05_results.md drafts\06_discussion.md
+python scripts/check_crossrefs.py drafts/05_results.md drafts/06_discussion.md
 ```
 
 - **Broken reference (주신호)** — 본문이 참조하는 Table/Figure가 존재하지 않음 → 즉시 수정
@@ -379,7 +379,7 @@ py scripts\check_crossrefs.py drafts\05_results.md drafts\06_discussion.md
 
 > Round 1-3이 내용과 숫자에 집중한다면, Round 4는 표현의 일관성을 검증합니다.
 > Abbreviation과 Tense 오류는 리뷰어가 자주 지적하는 항목이므로 반드시 수행을 권장합니다.
-> 용어 검증 기준은 `Style/terminology.md`이며, 자동 점검은 Windows에서 `py scripts/lint_manuscript.py drafts --quiet`로 수행합니다.
+> 용어 검증 기준은 `Style/terminology.md`이며, 자동 점검은 Windows에서 `python scripts/lint_manuscript.py drafts --quiet`로 수행합니다.
 
 ### 4.1 Terminology Consistency
 동일한 개념에 동일한 용어 사용 확인
@@ -388,7 +388,7 @@ py scripts\check_crossrefs.py drafts\05_results.md drafts\06_discussion.md
 - [ ] `Style/terminology.md`의 Preferred Term을 사용했는가?
 - [ ] Forbidden Terms가 남아 있지 않은가?
 - [ ] target journal 또는 연구 특성상 예외가 필요한 경우 `drafts/draft_plan.md`에 기록했는가?
-- [ ] `py scripts/lint_manuscript.py drafts --quiet`를 실행했는가?
+- [ ] `python scripts/lint_manuscript.py drafts --quiet`를 실행했는가?
 
 **Common Issues:**
 | Check | Consistent? |
@@ -407,7 +407,7 @@ py scripts\check_crossrefs.py drafts\05_results.md drafts\06_discussion.md
 **결정적 보조 (`scripts/check_abbreviations.py`, advisory):**
 
 ```powershell
-py scripts\check_abbreviations.py drafts\02_abstract.md drafts\03_introduction.md drafts\04_methods.md drafts\05_results.md drafts\06_discussion.md
+python scripts/check_abbreviations.py drafts/02_abstract.md drafts/03_introduction.md drafts/04_methods.md drafts/05_results.md drafts/06_discussion.md
 ```
 
 - abstract와 본문을 **별도 scope**로 검사 (둘 다 각자 첫 사용 시 정의 필요)
@@ -686,7 +686,7 @@ Q6: Missing data가 결과에 영향을 줄 수 있는가?
 
 | Command | Action |
 |---------|--------|
-| `Run QC Round 1` | Number consistency check (`py scripts\check_numbers.py ... --results results`) |
+| `Run QC Round 1` | Number consistency check (`python scripts/check_numbers.py ... --results results`) |
 | `Run QC Round 2` | Reference verification |
 | `Run QC Round 3` | Logic and flow check |
 | `Run QC Round 4` | Terminology, abbreviation & tense check |

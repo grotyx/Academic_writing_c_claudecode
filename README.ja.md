@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.4** (2026-09-08)
+**v1.7.5** (2026-09-29)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -64,6 +64,7 @@ project/
 ├── README.md                     # 英語版 README
 ├── .gitattributes                # 改行コードポリシー (text=auto eol=lf；OneDrive/Windows 同期による CRLF 変更を防止)
 ├── docs/                         # 参照ガイド
+│   ├── workflow_reference.md     # Tree, file roles, command catalog (moved from WORKFLOW.md)
 │   ├── writing_guide.md          # セクション別執筆ガイド
 │   ├── drafting_protocol.md      # 必須 drafting sequence
 │   ├── section_templates.md      # セクション別 sentence patterns
@@ -136,7 +137,7 @@ project/
 ## クイックスタート
 
 1. **設定**：`WORKFLOW.md` に研究テーマ、対象ジャーナル、研究デザインを入力します
-2. **参考文献**：`/search-evidence [クエリ]` または `py scripts\search_pubmed.py` で PubMed を検索し、`knowledge/evidence.md` に登録します
+2. **参考文献**：`/search-evidence [クエリ]` または `python scripts/search_pubmed.py` で PubMed を検索し、`knowledge/evidence.md` に登録します
 3. **データ分析**：`data/` フォルダにデータを配置 → `analysis_plan.md` 作成（必須）→ 統計分析実行
 4. **原稿計画**：`docs/draft_plan_template.md` を `drafts/draft_plan.md` にコピーし、Claim→Citation Mapping を含む10項目を作成（Opus 推奨）
 5. **執筆**：`docs/drafting_protocol.md` に従い、推奨順序でセクションを作成
@@ -227,7 +228,7 @@ project/
 Reviewer response は `docs/response_letter_template.md` 形式で作成し、各原稿修正は `[CHANGE]` block として記録します。最終 response letter は次のコマンドでコンパイルします：
 
 ```powershell
-py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md
+python scripts/compile_response_docx.py drafts/revision/REV1/response_letter_REV1.md
 ```
 
 compiler は `Author_response_220803_Final.docx` の house style を再現します — Times New Roman 11 pt、response・位置・修正テキストの行は bold、本文は justified。この .docx ファイルをテンプレートとして読み込むことはなく、書式はコードに組み込まれています。
@@ -237,10 +238,10 @@ compiler は `Author_response_220803_Final.docx` の house style を再現しま
 MCP 不要で参考文献を検索できる内蔵 Python スクリプト（`scripts/search_pubmed.py`）：
 
 ```bash
-py scripts\search_pubmed.py search "endoscopic spine surgery"  # 検索
-py scripts\search_pubmed.py fetch 35486828                     # PMIDで取得
-py scripts\search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # DOIで取得
-py scripts\search_pubmed.py related 35486828                   # 関連論文
+python scripts/search_pubmed.py search "endoscopic spine surgery"  # 検索
+python scripts/search_pubmed.py fetch 35486828                     # PMIDで取得
+python scripts/search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # DOIで取得
+python scripts/search_pubmed.py related 35486828                   # 関連論文
 ```
 
 Claude 統合スラッシュコマンド：
@@ -296,7 +297,7 @@ Claude 統合スラッシュコマンド：
 ## 要件
 
 - Claude AI（Claude Code CLI または VSCode 拡張機能）
-- Python 3.x（統計分析および PubMed 検索用）
+- Python 3.10+（古いインタープリタは `python -m harness doctor` が警告；テスト：`pip install -r requirements-dev.txt`）
 - 統計分析用 Python パッケージ：pandas、numpy、scipy、statsmodels、python-docx
 - PubMed 検索スクリプト（`scripts/search_pubmed.py`）は Python 標準ライブラリのみ使用（追加パッケージ不要）
 
@@ -334,6 +335,18 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.7.5 (260929)
+
+Claude + Codex（gpt-6-astra）共同レビューによる改善。
+
+- **提出記録をフィールド単位で検証**：チェックリスト項目ごとに一意の id が必要、PASS には原稿内の位置、NOT_APPLICABLE には理由が必要、その他のステータスは失敗。以前は `{"status":"PASS"}` だけで通過していた。AI 使用時は `tools` の各項目に `tool` と `role` が必要。
+- **abstract の同一性**：manifest の `abstract` は公開 `artifacts` に含まれる必要があり、公開される abstract ファイルは必ず宣言する。別ファイルの検査や無言のスキップを防ぐ。
+- **プロジェクト用語集・Style Spec**：manifest に任意キー `terminology`・`style_spec` を追加。lint はプロジェクト用語集を使い、`style_metrics` が `check_style.py` を実行し、両ファイルが review snapshot に入る。
+- **失敗理由の表示**：harness の `detail` に `False` ではなく最初の問題（ファイル・行・値）を表示。packet にチェックリスト・AI 記録を含め、ハッシュのみの `omitted_sources` を一覧表示。
+- **事前点検**：`doctor` が `python_supported` を報告し、Claude gate hook を実際に実行し（`hooks.ok`）、`warnings` を出力。hook のエラーは黙って通過せず WARNING を出力。Python がない場合 `run.sh` が警告。`requirements-dev.txt` を新設（CI で使用）。
+- **コンテキスト削減**：フォルダツリー・ファイル役割表・コマンド一覧・PubMed オプションを毎セッション読み込まれる `WORKFLOW.md`（56 KB → 30 KB）から `docs/workflow_reference.md` へ移動。コマンド例は `python scripts/...` 形式に統一。`/verify` の例に `--cross-check` を追加。
+- 357 tests 通過。`docs/harness_guide.md` v1.0.5。
 
 ### v1.7.4 (260908)
 
@@ -487,7 +500,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 - **Template-aware plan gates** — `scripts/hooks/enforce_gates.py` は、未解決の `analysis_plan.md` / `draft_plan.md` テンプレートや未チェックの承認欄を承認済み plan として扱わず、`Write|Edit|MultiEdit` すべてに適用されます。正当な citation-style `[N]` テキストは誤検出しないよう保守的に判定します。
 - **Fresh `/verify` gate checks** — `scripts/verify_all.py` が `--verify-hash` を `check_gate.py` に転送します。README/CLAUDE/slash-command の例にも freshness 入力を含めました。
-- **Windows/template hygiene** — PubMed コマンド例を `py scripts\search_pubmed.py` に統一し、ルート直下の生成 DOCX 成果物を ignore し、hook と freshness 転送の挙動を回帰テストで保護します。
+- **Windows/template hygiene** — PubMed コマンド例を `python scripts/search_pubmed.py` に統一し、ルート直下の生成 DOCX 成果物を ignore し、hook と freshness 転送の挙動を回帰テストで保護します。
 
 ### v1.4.0 (2026-06-24)
 
@@ -604,10 +617,10 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 - `[EVID:author_year]` citation tags と results-CSV-as-single-source grounding。
 - ゲート台帳（`review/gates/`）が `status: PASS` 記録まで進行を停止。
 - `evidence.md` エントリに Source Status フィールドを追加；Phase 6 QC を最終確認パスに軽量化。
-- プログラム的 citation checker：`py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md`
-- プログラム的 number checker：`py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results`
-- プログラム的 phase gate checker：`py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md`
-- プログラム的 ghost-revision checker：`py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict`
+- プログラム的 citation checker：`python scripts/check_citations.py drafts/03_introduction.md --evidence knowledge/evidence.md`
+- プログラム的 number checker：`python scripts/check_numbers.py drafts/05_results.md drafts/table_1.md --results results`
+- プログラム的 phase gate checker：`python scripts/check_gate.py review/gates/phase_04_draft.GATE.md --artifact drafts/05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts/05_results.md`
+- プログラム的 ghost-revision checker：`python scripts/check_revision_claims.py drafts/revision/REV1/response_letter_REV1.md --strict`
 - LLM semantic verifier schema：logic、redundancy、semantic citation support、revision-response alignment のための `docs/verifier_prompt_templates.md`
 
 ### v0.8.1 (2026-06-16)
@@ -632,7 +645,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 - style-anchor 抽出ルール、PDF-to-MD mirror ルール、出版社の汎用ファイル名処理のための `Style/style_guide.md` を追加。
 - `Style/terminology.md` を、脊椎外科・臨床試験・AI/radiomics・報告コンテキストにわたる preferred/forbidden 用語のプロジェクト用語 registry に拡張。
 - outline → evidence-bound draft → style pass → QC の drafting を強制する `docs/drafting_protocol.md` と `docs/section_templates.md` を追加。
-- `scripts/lint_manuscript.py` を追加し、Windows 上で `py scripts/lint_manuscript.py drafts --quiet` により manuscript linting が通過するよう draft/table テンプレートを更新。
+- `scripts/lint_manuscript.py` を追加し、Windows 上で `python scripts/lint_manuscript.py drafts --quiet` により manuscript linting が通過するよう draft/table テンプレートを更新。
 - agent 起動指示として `AGENTS.md` を追加し、`CLAUDE.md` を権威ある source of truth とする。
 - 著作権付き PDF と非公開の style-anchor 要約をローカルに保ちつつ、公開ワークフローファイルと例は commit 可能なまま残すよう `.gitignore` を更新。
 

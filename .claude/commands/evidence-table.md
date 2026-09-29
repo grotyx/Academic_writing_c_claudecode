@@ -10,5 +10,5 @@ args: topic_or_ids
 대상: **$ARGUMENTS** (주제 또는 `[EVID:id]` 목록)
 
 1. **구조화 데이터 수집:** KAG 주 — medical-kag `analyze` 필드 / `compare_interventions`(design·n·intervention·outcome·effect·p·근거수준). evidence.md 보조(요약 기반, 거침).
-2. **JSON 레코드 → 표:** `py scripts\evidence_table.py <records.json> --columns study,design,n,intervention,outcome,result,loe`.
+2. **JSON 레코드 → 표:** `python scripts/evidence_table.py <records.json> --columns study,design,n,intervention,outcome,result,loe`.
 3. **저장:** `drafts/table_evidence.md`(또는 supplement). **모든 수치는 원문 대조**(grounding — KAG 값은 빈/노이즈 가능, evidence.md/results가 정본).

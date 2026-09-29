@@ -7,8 +7,8 @@ checked against its evidence (medical-kag GraphRAG primary, `knowledge/evidence.
 fallback). Headings, tables, blockquotes, and code fences are skipped.
 
 Usage:
-  py scripts/extract_claims.py drafts/06_discussion.md          # readable table
-  py scripts/extract_claims.py drafts/06_discussion.md --json   # JSON for tooling
+  python scripts/extract_claims.py drafts/06_discussion.md          # readable table
+  python scripts/extract_claims.py drafts/06_discussion.md --json   # JSON for tooling
 """
 
 from __future__ import annotations

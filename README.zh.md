@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.4** (2026-09-08)
+**v1.7.5** (2026-09-29)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -64,6 +64,7 @@ project/
 ├── README.md                     # 英文 README
 ├── .gitattributes                # 换行符策略 (text=auto eol=lf；防止 OneDrive/Windows 同步导致的 CRLF 变更)
 ├── docs/                         # 参考指南
+│   ├── workflow_reference.md     # Tree, file roles, command catalog (moved from WORKFLOW.md)
 │   ├── writing_guide.md          # 分节写作指南
 │   ├── drafting_protocol.md      # 必须遵循的 drafting sequence
 │   ├── section_templates.md      # 分节 sentence patterns
@@ -136,7 +137,7 @@ project/
 ## 快速开始
 
 1. **设置**：在 `WORKFLOW.md` 中填写研究主题、目标期刊和研究设计
-2. **参考文献**：使用 `/search-evidence [关键词]` 或 `py scripts\search_pubmed.py` 搜索 PubMed 并注册到 `knowledge/evidence.md`
+2. **参考文献**：使用 `/search-evidence [关键词]` 或 `python scripts/search_pubmed.py` 搜索 PubMed 并注册到 `knowledge/evidence.md`
 3. **数据分析**：将数据放入 `data/` 文件夹 → 创建 `analysis_plan.md`（必须）→ 运行统计分析
 4. **稿件计划**：将 `docs/draft_plan_template.md` 复制到 `drafts/draft_plan.md`，填写包含 Claim→Citation Mapping 的10项内容（推荐 Opus）
 5. **撰写初稿**：遵循 `docs/drafting_protocol.md`，按推荐顺序撰写各章节
@@ -231,7 +232,7 @@ project/
 Reviewer response 应按照 `docs/response_letter_template.md` 格式撰写，每一处稿件修改都记录为 `[CHANGE]` block。最终 response letter 可用以下命令编译：
 
 ```powershell
-py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md
+python scripts/compile_response_docx.py drafts/revision/REV1/response_letter_REV1.md
 ```
 
 compiler 会复现 `Author_response_220803_Final.docx` 的 house style — Times New Roman 11 pt，response/位置/修改文本行为 bold，正文为 justified。它不会将该 .docx 文件作为模板读取，格式是内置的。
@@ -241,10 +242,10 @@ compiler 会复现 `Author_response_220803_Final.docx` 的 house style — Times
 无需 MCP 即可搜索参考文献的内置 Python 脚本（`scripts/search_pubmed.py`）：
 
 ```bash
-py scripts\search_pubmed.py search "endoscopic spine surgery"  # 搜索
-py scripts\search_pubmed.py fetch 35486828                     # 按 PMID 获取
-py scripts\search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # 按 DOI 获取
-py scripts\search_pubmed.py related 35486828                   # 相关论文
+python scripts/search_pubmed.py search "endoscopic spine surgery"  # 搜索
+python scripts/search_pubmed.py fetch 35486828                     # 按 PMID 获取
+python scripts/search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # 按 DOI 获取
+python scripts/search_pubmed.py related 35486828                   # 相关论文
 ```
 
 Claude 集成斜杠命令：
@@ -300,7 +301,7 @@ Claude 集成斜杠命令：
 ## 系统要求
 
 - Claude AI（Claude Code CLI 或 VSCode 扩展）
-- Python 3.x（用于统计分析和 PubMed 搜索）
+- Python 3.10+（旧版本会由 `python -m harness doctor` 警告；测试：`pip install -r requirements-dev.txt`）
 - 统计分析所需 Python 包：pandas、numpy、scipy、statsmodels、python-docx
 - PubMed 搜索脚本（`scripts/search_pubmed.py`）仅使用 Python 标准库（无需额外包）
 
@@ -340,6 +341,18 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.5 (260929)
+
+来自 Claude + Codex（gpt-6-astra）联合评审的改进。
+
+- **逐字段校验提交记录**：每个检查清单条目需唯一 id，PASS 需稿件位置，NOT_APPLICABLE 需理由，其他状态判为失败。此前仅有 `{"status":"PASS"}` 即可通过。使用 AI 时，`tools` 每一项需 `tool` 与 `role`。
+- **abstract 一致性**：manifest 的 `abstract` 必须属于发布的 `artifacts`，且发布的 abstract 文件必须声明，避免检查错误文件或静默跳过。
+- **项目术语表与 Style Spec**：manifest 新增可选键 `terminology`、`style_spec`。lint 使用项目术语表，`style_metrics` 运行 `check_style.py`，两个文件进入 review snapshot。
+- **可操作的失败信息**：harness `detail` 显示前几个问题（文件、行、值），而非 `False`。packet 包含检查清单与 AI 记录，并列出仅以哈希存在的 `omitted_sources`。
+- **预检**：`doctor` 报告 `python_supported`，实际运行 Claude gate hook（`hooks.ok`），并输出 `warnings`。hook 出错时输出 WARNING 而不是静默通过；无 Python 时 `run.sh` 发出警告。新增 `requirements-dev.txt`（CI 使用）。
+- **精简上下文**：目录树、文件角色表、命令目录与 PubMed 选项从每次会话加载的 `WORKFLOW.md`（56 KB → 30 KB）移至 `docs/workflow_reference.md`。命令示例统一为 `python scripts/...`。`/verify` 示例加入 `--cross-check`。
+- 357 个测试通过。`docs/harness_guide.md` v1.0.5。
 
 ### v1.7.4 (260908)
 
@@ -493,7 +506,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 
 - **Template-aware plan gates** — `scripts/hooks/enforce_gates.py` 不再把未完成的 `analysis_plan.md` / `draft_plan.md` 模板或未勾选的审批项视为已批准 plan，并覆盖 `Write|Edit|MultiEdit`。合法的 citation-style `[N]` 文本会被保守处理，避免误报。
 - **Fresh `/verify` gate checks** — `scripts/verify_all.py` 会把 `--verify-hash` 转发给 `check_gate.py`；README/CLAUDE/slash-command 示例也加入了 freshness 输入。
-- **Windows/template hygiene** — PubMed 命令示例统一为 `py scripts\search_pubmed.py`，根目录生成的 DOCX 产物加入 ignore，并用回归测试覆盖新的 hook 与 freshness 转发行为。
+- **Windows/template hygiene** — PubMed 命令示例统一为 `python scripts/search_pubmed.py`，根目录生成的 DOCX 产物加入 ignore，并用回归测试覆盖新的 hook 与 freshness 转发行为。
 
 ### v1.4.0 (2026-06-24)
 
@@ -610,10 +623,10 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 - `[EVID:author_year]` citation tags 与「results CSV 作为单一正本」的 grounding。
 - gate ledger（`review/gates/`）在记录 `status: PASS` 之前阻止进度推进。
 - `evidence.md` 条目新增 Source Status 字段；Phase 6 QC 减轻为一次最终确认 pass。
-- 程序化 citation checker：`py scripts\check_citations.py drafts\03_introduction.md --evidence knowledge\evidence.md`
-- 程序化 number checker：`py scripts\check_numbers.py drafts\05_results.md drafts\table_1.md --results results`
-- 程序化 phase gate checker：`py scripts\check_gate.py review\gates\phase_04_draft.GATE.md --artifact drafts\05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts\05_results.md`
-- 程序化 ghost-revision checker：`py scripts\check_revision_claims.py drafts\revision\REV1\response_letter_REV1.md --strict`
+- 程序化 citation checker：`python scripts/check_citations.py drafts/03_introduction.md --evidence knowledge/evidence.md`
+- 程序化 number checker：`python scripts/check_numbers.py drafts/05_results.md drafts/table_1.md --results results`
+- 程序化 phase gate checker：`python scripts/check_gate.py review/gates/phase_04_draft.GATE.md --artifact drafts/05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts/05_results.md`
+- 程序化 ghost-revision checker：`python scripts/check_revision_claims.py drafts/revision/REV1/response_letter_REV1.md --strict`
 - LLM semantic verifier schema：`docs/verifier_prompt_templates.md`，用于 logic、redundancy、semantic citation support 与 revision-response alignment。
 
 ### v0.8.1 (2026-06-16)
@@ -638,7 +651,7 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 - 新增 `Style/style_guide.md`，用于 style-anchor 提取规则、PDF-to-MD mirror rules，以及出版商通用文件名处理。
 - 将 `Style/terminology.md` 扩展为项目术语 registry，涵盖脊柱外科、试验、AI/radiomics 与报告语境中的 preferred/forbidden terms。
 - 新增 `docs/drafting_protocol.md` 与 `docs/section_templates.md`，以强制执行 outline → evidence-bound draft → style pass → QC 的撰写流程。
-- 新增 `scripts/lint_manuscript.py` 并更新 draft/table 模板，使 manuscript linting 在 Windows 上以 `py scripts/lint_manuscript.py drafts --quiet` 通过。
+- 新增 `scripts/lint_manuscript.py` 并更新 draft/table 模板，使 manuscript linting 在 Windows 上以 `python scripts/lint_manuscript.py drafts --quiet` 通过。
 - 新增 `AGENTS.md` 作为 agent 启动指令，以 `CLAUDE.md` 为权威的 source of truth。
 - 更新 `.gitignore`，使受版权保护的 PDF 和私有 style-anchor 摘要保持 local，而公开的 workflow 文件与示例仍可提交。
 

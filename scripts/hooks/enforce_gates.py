@@ -147,12 +147,11 @@ def main() -> int:
         pass
     try:
         event = json.loads(sys.stdin.read() or "{}")
-    except Exception:
-        return 0  # fail open
-    try:
         reason = decide(event)
-    except Exception:
-        return 0  # fail open
+    except Exception as exc:
+        # Fail open, but never silently: the gate did not run for this edit.
+        sys.stderr.write(f"WARNING: workflow gate hook error, plan-first check skipped: {exc!r}\n")
+        return 0
     if reason:
         sys.stderr.write(reason + "\n")
         return 2

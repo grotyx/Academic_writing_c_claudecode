@@ -9,7 +9,7 @@ args: section
 
 대상: **$ARGUMENTS** (생략 시 drafts의 본문 섹션들)
 
-1. **claim 추출:** `py scripts\extract_claims.py <section> --json` → `[EVID:id]` 문장 목록.
+1. **claim 추출:** `python scripts/extract_claims.py <section> --json` → `[EVID:id]` 문장 목록.
 2. **근거 회수:** 각 `[EVID:id]`의 출처 내용 — medical-kag(KAG 주: 구조화 데이터/chunk) 또는 evidence.md 항목(보조).
 3. **분류 (Semantic-Citation Verifier):** `docs/verifier_prompt_templates.md`로 (문장, 근거) → **SUPPORTED / PARTIAL / UNSUPPORTED** + 1줄 사유·조치.
 4. **리포트:** `review/claim_verification.md`에 `위치 | claim | [EVID:id] | 판정 | 조치` 표. PARTIAL/UNSUPPORTED는 수정 대상(주장 약화·인용 교체·근거 보강).

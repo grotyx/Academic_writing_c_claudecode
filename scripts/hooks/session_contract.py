@@ -18,7 +18,8 @@ WORKFLOW CONTRACT (enforced - academic paper template; full rules in CLAUDE.md):
   data/.../analysis_plan.md (Rule 7). A PreToolUse hook blocks violations.
 - GATES: never proceed past a phase gate without a recorded `status: PASS` in
   review/gates/ (Rule 9). Verify deterministically with `/verify`
-  (py scripts/verify_all.py ...).
+  (python scripts/verify_all.py ...). Hooks fail open: confirm they run with
+  `python -m harness doctor` (hooks.ok).
 - GROUNDING: cite only [EVID:id] entries present in knowledge/evidence.md; use
   only numbers present in results/*.csv. Never fabricate references or statistics.
 - QC: minimum 3 rounds before submission; human + co-author review mandatory.

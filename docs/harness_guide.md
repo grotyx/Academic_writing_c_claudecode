@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.4)
+# Shared manuscript engine (v1.0.5)
 
-Project release: v1.7.4. Python 3.10+; install `requirements.txt` and pytest for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.7.5. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -16,13 +16,15 @@ python -m harness verify --project /path/to/private-paper/project.json --profile
 python -m harness build --project /path/to/private-paper/project.json
 ```
 
-Doctor reports installed capabilities only; it does not authenticate CLIs or contact providers. Packet creates a local, size-limited source bundle; it does not send it. For an authorized external review, `scripts/critical_review.py --target FILE --context PACKET --include-claude` or `--include-codex` invokes the chosen CLI. OpenRouter uses `--models`/`--models-file`. Gemini can coordinate the common workflow but has no automated reviewer subprocess here. Live CLI authentication/flag compatibility must be checked in the user's environment. The Codex subprocess uses a read-only filesystem sandbox, which is not a guarantee against all configured network/MCP capabilities.
+Doctor reports installed capabilities only; it does not authenticate CLIs or contact providers. It also runs the Claude PreToolUse gate through `scripts/hooks/run.sh` with a harmless event (`hooks.ok`) and lists `warnings` for an unsupported Python, missing pytest, or hooks that cannot run. Hooks still fail open, but a hook error now prints a WARNING instead of passing silently. Packet creates a local, size-limited source bundle; it does not send it. It includes declared checklist, AI-usage, terminology and Style Spec records, and lists `omitted_sources`: dependencies known only by hash (for example results CSVs and revision baselines). Reviewers must treat those as UNVERIFIABLE unless selected through `review_sources`. For an authorized external review, `scripts/critical_review.py --target FILE --context PACKET --include-claude` or `--include-codex` invokes the chosen CLI. OpenRouter uses `--models`/`--models-file`. Gemini can coordinate the common workflow but has no automated reviewer subprocess here. Live CLI authentication/flag compatibility must be checked in the user's environment. The Codex subprocess uses a read-only filesystem sandbox, which is not a guarantee against all configured network/MCP capabilities.
 
 One unavailable reviewer does not cancel other reviewers. Review output includes requested/completed providers, source hashes, and complete/partial/failed status. Exit 0 means at least one response, not a gate PASS. `--out` creates a unique run directory. Consensus prioritizes investigation; it does not establish correctness. Sources missing from the packet must be reported UNVERIFIABLE.
 
 ## Project manifest
 
 Copy `docs/project.example.json` to the private project root as `project.json` and fill it. Paths resolve relative to that manifest and cannot escape its root. `artifacts` is publication order, not drafting order. For revisions, explicitly list the latest submitted overlay: changed REVn files plus unchanged sections from earlier revisions or the initial draft. Do not list both old and new versions of the same section.
+
+Optional `terminology` and `style_spec` point to the project's own term registry and Style Spec. When declared, lint uses that registry instead of the engine's `Style/terminology.md`, `style_metrics` runs `check_style.py` against the Spec's Target Metrics, and both files enter the review snapshot, so editing them invalidates reviews. Bind exemplars through `dependencies`. `abstract` must name a file listed in `artifacts`, and a published artifact whose name contains `abstract` must be declared as `abstract`. Failed checks report the first issues (artifact, line, value) in `detail`.
 
 Supported study types: original_research, systematic_review, narrative_review, case_report. Non-original studies may provide an explicit `analysis_not_applicable` or `numbers_not_applicable` reason where appropriate. Original research requires analysis and numerical checks. The engine does not decide scientific appropriateness of exemptions.
 
@@ -60,7 +62,7 @@ REVn comparisons search the latest earlier revision containing each section befo
 
 ## Submission output and limits
 
-AI JSON: `used` boolean and `reviewed_by`; when used, also tools and disclosure. Record actual tool/model/version/date/role/input scope/human reviewer in tools. Distinguish writing assistance from AI used as a study method. Checklist JSON: guideline, version, source_url, reviewed_by, items with id/status/location (or NOT_APPLICABLE with reason). Use the current applicable official checklist; the engine validates completion records, not official item coverage.
+AI JSON: `used` boolean and `reviewed_by`; when used, also tools and disclosure. Record actual tool/model/version/date/role/input scope/human reviewer in tools. Distinguish writing assistance from AI used as a study method. Each `tools` entry is an object with at least nonempty `tool` and `role`. Checklist JSON: guideline, version, source_url, reviewed_by, items with a unique nonempty id and status PASS (with location) or NOT_APPLICABLE (with reason); any other status fails. Use the current applicable official checklist; the engine validates completion records, not official item coverage.
 
 Build re-verifies submission, creates a unique output directory, converts EVID tags, writes separate manuscript/title/table DOCX files, copies figures, and optionally compiles the response. Output names carry the local `_YYMMDD` date; when `response` lives under `drafts/revision/REVn/`, they carry `_REVn_YYMMDD` (`manuscript_REV1_YYMMDD.docx`, `response_letter_REV1_YYMMDD.docx`). It checks input and approval freshness again before publishing the package and records output hashes. It never edits source drafts. Citation formatting preserves source Citation strings and is not a CSL journal-style engine. Markdown support is intentionally limited to prose, headings and simple pipe tables; code fences, display math and embedded images block conversion. Inspect/render the DOCX and apply journal-specific formatting before submission. A built package is not automatically visually approved or submitted.
 

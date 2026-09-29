@@ -217,3 +217,79 @@ def test_nonresult_numeric_exemption_requires_reason(project):
     data['numeric_exemptions']={'drafts/03_introduction.md':'Literature sample size; verify against cited evidence in semantic review.'}
     put(project,data)
     assert verify(project)['status']=='PASS'
+
+
+def checklist_status(project, items):
+    put(project.parent/'review/checklist.json',{'guideline':'Synthetic checklist','version':'1',
+        'source_url':'https://example.org/checklist','reviewed_by':'Synthetic reviewer','items':items})
+    sign(project)
+    return next(c for c in verify(project,'submission')['checks'] if c['check']=='reporting_checklist')
+
+
+@pytest.mark.parametrize('items', [[{'status':'PASS'}], [{'id':'1','status':'PASS'}],
+    [{'id':'1','status':'PASS','location':'Results'},{'id':'1','status':'PASS','location':'Methods'}],
+    [{'id':'2','status':'NOT_APPLICABLE'}], [{'id':'3','status':'TODO','location':'x'}], ['PASS']])
+def test_incomplete_checklist_records_fail(project, items):
+    assert checklist_status(project, items)['status']=='FAIL'
+
+
+def test_complete_checklist_record_passes(project):
+    assert checklist_status(project, [{'id':'1','status':'PASS','location':'Results'},
+        {'id':'2','status':'NOT_APPLICABLE','reason':'No harms outcome'}])['status']=='PASS'
+
+
+def test_used_ai_requires_tool_records(project):
+    put(project.parent/'review/ai.json',{'used':True,'reviewed_by':'Synthetic reviewer',
+        'disclosure':'Drafting assistance','tools':['some model']})
+    sign(project)
+    check=next(c for c in verify(project,'submission')['checks'] if c['check']=='ai_disclosure')
+    assert check['status']=='FAIL' and 'tool and role' in check['detail']
+
+
+def test_abstract_must_be_published_and_declared(project):
+    put(project.parent/'drafts/02_abstract.md','# Abstract\n\nMean age was 54 years.\n')
+    data=json.loads(project.read_text(encoding='utf-8'))
+    data['abstract']='drafts/02_abstract.md'
+    put(project,data)
+    with pytest.raises(ValueError,match='published artifacts'):
+        load_project(project)
+    data['artifacts'].insert(0,'drafts/02_abstract.md'); data['numeric_artifacts'].append('drafts/02_abstract.md')
+    del data['abstract']
+    put(project,data)
+    with pytest.raises(ValueError,match='declare it'):
+        load_project(project)
+
+
+def test_project_terminology_drives_lint_and_invalidates_review(project):
+    put(project.parent/'Style/terminology.md','| Preferred Term | Forbidden Terms |\n|---|---|\n| issue | question |\n')
+    data=json.loads(project.read_text(encoding='utf-8'))
+    before=snapshot(*load_project(project))
+    data['terminology']='Style/terminology.md'
+    put(project,data)
+    path,c=load_project(project)
+    assert 'Style/terminology.md' in snapshot(path,c) and snapshot(path,c)!=before
+    lint=next(x for x in verify(project)['checks'] if x['check']=='manuscript_lint')
+    assert lint['status']=='FAIL' and '03_introduction.md' in lint['detail'], lint
+
+
+def test_failed_citation_reports_location(project):
+    put(project.parent/'drafts/03_introduction.md','# Introduction\n\nA claim [EVID:ghost_2020].\n')
+    check=next(c for c in verify(project)['checks'] if c['check']=='citations')
+    assert check['status']=='FAIL' and 'ghost_2020' in check['detail'] and 'line=3' in check['detail']
+
+
+def test_packet_lists_omitted_sources(project,capsys):
+    with patch('sys.argv',['harness','packet','--project',str(project)]):
+        assert main()==0
+    result=json.loads(capsys.readouterr().out)
+    assert 'results/table.csv' in result['omitted_sources']
+    assert 'review/checklist.json' not in result['omitted_sources']
+
+
+def test_project_style_spec_is_checked(project):
+    put(project.parent/'drafts/style_spec.md','| Section | Words | Mean sentence | Paragraphs |\n|---|---|---|---|\n| results | 400 | 20 | 4 |\n')
+    data=json.loads(project.read_text(encoding='utf-8'))
+    data['style_spec']='drafts/style_spec.md'
+    put(project,data)
+    check=next(c for c in verify(project)['checks'] if c['check']=='style_metrics')
+    assert check['status']=='FAIL' and '05_results.md' in check['detail'], check

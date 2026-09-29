@@ -16,7 +16,7 @@
 2. 리뷰어 선택  AskUserQuestion 멀티 선택 — OpenRouter 4종(MiniMax M3·GLM 5.2·Qwen3-Max·DeepSeek V4 Pro) 중 ~2개 권장 + Claude/Codex. 최소 1개
 3. 병렬 공격
      - Claude     → (Claude Code) Agent(새 서브에이전트, fresh context) + §2 적대 프롬프트
-                    (Codex/셸) py scripts/critical_review.py --target <file> --include-claude
+                    (Codex/셸) python scripts/critical_review.py --target <file> --include-claude
                     → 로컬 `claude -p` 헤드리스로 Claude 리뷰 호출
      - Codex      → (Claude Code) codex-rescue(read-only) / (셸) codex exec + §2 적대 프롬프트
      - OpenRouter → python scripts/critical_review.py --target <file>

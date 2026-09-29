@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.4** (2026-09-08)
+**v1.7.5** (2026-09-29)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -65,6 +65,7 @@ project/
 ├── README.md                     # 영문 README
 ├── .gitattributes                # 줄바꿈 정책 (text=auto eol=lf; OneDrive/Windows 동기화의 CRLF 변경 방지)
 ├── docs/                         # 참조 가이드
+│   ├── workflow_reference.md     # Tree, file roles, command catalog (moved from WORKFLOW.md)
 │   ├── writing_guide.md          # 섹션별 작성 가이드
 │   ├── drafting_protocol.md      # 필수 drafting sequence
 │   ├── section_templates.md      # 섹션별 문장 패턴
@@ -143,7 +144,7 @@ project/
 ## 빠른 시작
 
 1. **설정**: `WORKFLOW.md`에 연구 주제, 목표 저널, 연구 설계를 입력합니다. `profile/journals.md`에서 인용 형식, `Style/`에서 스타일 앵커를 확인합니다.
-2. **참고문헌**: `/search-evidence [검색어]` 또는 `py scripts\search_pubmed.py`로 PubMed를 검색하고 `knowledge/evidence.md`에 등록합니다
+2. **참고문헌**: `/search-evidence [검색어]` 또는 `python scripts/search_pubmed.py`로 PubMed를 검색하고 `knowledge/evidence.md`에 등록합니다
 3. **데이터 분석**: `data/` 폴더에 데이터를 배치 → `analysis_plan.md` 작성 (필수) → 통계 분석 실행
 4. **원고 계획**: `docs/draft_plan_template.md`를 `drafts/draft_plan.md`로 복사 → 10개 항목 작성 (**Claim→Citation Mapping 포함**) (Opus 권장)
 5. **초안 작성**: `docs/drafting_protocol.md`를 따르고 권장 순서에 따라 섹션 작성
@@ -256,7 +257,7 @@ AI 산문의 흔적 — 피상적인 `-ing` "표면 분석" 절, AI가 선호하
 Reviewer response는 `docs/response_letter_template.md` 형식으로 작성하고, 각 원고 수정은 `[CHANGE]` block으로 기록합니다. 최종 response letter는 다음 명령으로 컴파일합니다:
 
 ```powershell
-py scripts\compile_response_docx.py drafts\revision\REV1\response_letter_REV1.md
+python scripts/compile_response_docx.py drafts/revision/REV1/response_letter_REV1.md
 ```
 
 compiler는 `Author_response_220803_Final.docx`의 house style을 재현합니다 — Times New Roman 11 pt, response/위치/수정문 줄은 bold, 본문은 justified. 이 .docx 파일을 템플릿으로 읽지 않으며, 서식은 코드에 내장되어 있습니다.
@@ -266,10 +267,10 @@ compiler는 `Author_response_220803_Final.docx`의 house style을 재현합니�
 MCP 없이 참고문헌을 검색할 수 있는 내장 Python 스크립트 (`scripts/search_pubmed.py`):
 
 ```bash
-py scripts\search_pubmed.py search "endoscopic spine surgery"  # 검색
-py scripts\search_pubmed.py fetch 35486828                     # PMID로 가져오기
-py scripts\search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # DOI로 가져오기
-py scripts\search_pubmed.py related 35486828                   # 관련 논문
+python scripts/search_pubmed.py search "endoscopic spine surgery"  # 검색
+python scripts/search_pubmed.py fetch 35486828                     # PMID로 가져오기
+python scripts/search_pubmed.py doi 10.1016/j.spinee.2023.01.005  # DOI로 가져오기
+python scripts/search_pubmed.py related 35486828                   # 관련 논문
 ```
 
 Claude 통합 슬래시 명령어:
@@ -325,7 +326,7 @@ Claude 통합 슬래시 명령어:
 ## 요구사항
 
 - Claude AI (Claude Code CLI 또는 VSCode 확장)
-- Python 3.x (통계 분석 및 PubMed 검색용)
+- Python 3.10+ (구버전이면 `python -m harness doctor` 가 경고; 테스트: `pip install -r requirements-dev.txt`)
 - 통계 분석용 Python 패키지: pandas, numpy, scipy, statsmodels, python-docx
 - PubMed 검색 스크립트 (`scripts/search_pubmed.py`)는 Python 표준 라이브러리만 사용 (추가 패키지 불필요)
 
@@ -363,6 +364,18 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.5 (260929)
+
+Claude + Codex(gpt-6-astra) 공동 리뷰에서 나온 개선.
+
+- **제출 기록 필드 단위 검증**: 체크리스트 항목마다 고유 id 필요, PASS 는 원고 위치, NOT_APPLICABLE 은 사유 필요, 그 외 상태는 실패. 전에는 `{"status":"PASS"}` 만 있어도 통과했음. AI 사용 시 `tools` 항목마다 `tool`·`role` 필요.
+- **abstract 일치**: manifest 의 `abstract` 는 출판 `artifacts` 안에 있어야 하고, 출판되는 abstract 파일은 반드시 선언해야 함. 다른 파일을 검사하거나 조용히 건너뛰지 못함.
+- **프로젝트 용어집·Style Spec**: manifest 에 선택 키 `terminology`·`style_spec` 추가. lint 가 프로젝트 용어집을 쓰고, `style_metrics` 가 `check_style.py` 를 돌리며, 두 파일이 review snapshot 에 들어감.
+- **실패 원인 표시**: harness `detail` 에 `False` 대신 첫 이슈들(파일, 줄, 값)을 보여 줌. packet 에 체크리스트·AI 기록을 넣고, 해시로만 알려진 `omitted_sources` 목록을 줌.
+- **사전 점검**: `doctor` 가 `python_supported` 를 보고하고, Claude gate hook 을 실제로 실행해 보며(`hooks.ok`), `warnings` 를 출력함. hook 에러는 조용히 통과하지 않고 WARNING 을 출력. Python 이 없으면 `run.sh` 가 경고. `requirements-dev.txt` 신설(CI 사용).
+- **컨텍스트 절감**: 폴더 트리·파일 역할 표·명령 목록·PubMed 옵션을 매 세션 로드되는 `WORKFLOW.md`(56 KB → 30 KB)에서 `docs/workflow_reference.md` 로 이동. 명령 예시는 `python scripts/...` 형식으로 통일. `/verify` 예시에 `--cross-check` 추가.
+- 357 tests 통과. `docs/harness_guide.md` v1.0.5.
 
 ### v1.7.4 (260908)
 
@@ -516,7 +529,7 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 
 - **Template-aware plan gate** — `scripts/hooks/enforce_gates.py`가 미완성 `analysis_plan.md` / `draft_plan.md` 템플릿이나 미체크 승인 항목을 승인된 plan으로 인정하지 않으며, `Write|Edit|MultiEdit` 모두에 적용됩니다. 정상적인 citation-style `[N]` 문구는 오탐하지 않도록 보수적으로 처리합니다.
 - **Fresh `/verify` gate check** — `scripts/verify_all.py`가 `--verify-hash`를 `check_gate.py`로 전달합니다. README/CLAUDE/slash-command 예시에 freshness 입력을 포함했습니다.
-- **Windows/template 정리** — PubMed 명령 예시는 `py scripts\search_pubmed.py`로 정리했고, 루트의 생성 DOCX 산출물은 ignore 처리했으며, hook과 freshness 전달 동작은 회귀 테스트로 보호합니다.
+- **Windows/template 정리** — PubMed 명령 예시는 `python scripts/search_pubmed.py`로 정리했고, 루트의 생성 DOCX 산출물은 ignore 처리했으며, hook과 freshness 전달 동작은 회귀 테스트로 보호합니다.
 
 ### v1.4.0 (2026-06-24)
 
@@ -656,7 +669,7 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 - `Style/style_guide.md` 추가: style-anchor 추출 규칙, PDF-to-MD mirror 규칙, publisher generic filename 처리 규칙.
 - `Style/terminology.md`를 spine surgery, trial, AI/radiomics, reporting context 전반의 preferred/forbidden terminology registry로 확장.
 - `docs/drafting_protocol.md`, `docs/section_templates.md` 추가: outline → evidence-bound draft → style pass → QC 작성 순서 강제.
-- `scripts/lint_manuscript.py` 추가 및 draft/table template 수정: Windows에서 `py scripts/lint_manuscript.py drafts --quiet` 통과.
+- `scripts/lint_manuscript.py` 추가 및 draft/table template 수정: Windows에서 `python scripts/lint_manuscript.py drafts --quiet` 통과.
 - `AGENTS.md` 추가: agent bootstrap 지침이며 `CLAUDE.md`를 authoritative source of truth로 명시.
 - `.gitignore` 업데이트: 저작권 PDF와 private style-anchor summary는 local-only로 유지하고, 공개 workflow 파일과 예시는 commit 가능하게 정리.
 

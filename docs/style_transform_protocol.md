@@ -44,7 +44,7 @@ Conclusion → Abstract → Title):
    strength, reference format, voice/tense. Keep claims and numbers grounded — do not invent.
 
 ### Step 3 — Verify each section (auto-fix loop)
-First the **measurable layer**: `py scripts/check_style.py check <section> --spec drafts/style_spec.md`
+First the **measurable layer**: `python scripts/check_style.py check <section> --spec drafts/style_spec.md`
 flags metric deviations (word count, mean sentence length, paragraphs, citation density) from
 the Spec targets. Then the **Style-Conformance Verifier** (`docs/verifier_prompt_templates.md`)
 on the section against the Style Spec + exemplar for the qualitative layer (flow, claim
