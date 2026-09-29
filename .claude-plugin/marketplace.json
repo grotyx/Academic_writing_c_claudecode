@@ -1,9 +1,9 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "paperflow",
-  "description": "paperflow manuscript engine adapters",
+  "name": "manuwright",
+  "description": "manuwright manuscript engine adapters",
   "owner": { "name": "Sang-Min Park" },
   "plugins": [
-    { "name": "paperflow", "description": "Evidence-bound medical manuscript workflow", "source": "./", "category": "productivity" }
+    { "name": "manuwright", "description": "Evidence-bound medical manuscript workflow", "source": "./", "category": "productivity" }
   ]
 }

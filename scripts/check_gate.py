@@ -616,7 +616,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         type=Path,
         default=ROOT,
         help="Project root that ledger artifact/provenance paths resolve against "
-        "(default: this checkout; the installed paperflow CLI passes the current project).",
+        "(default: this checkout; the installed manuwright CLI passes the current project).",
     )
     parser.add_argument(
         "--compute-hash",

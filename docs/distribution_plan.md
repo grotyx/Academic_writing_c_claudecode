@@ -45,54 +45,54 @@ repo/
 ├── .claude/, WORKFLOW.md, CLAUDE.md, AGENTS.md, GEMINI.md, docs/   # Track A, unchanged role
 ```
 
-- Console script `paperflow` maps to `harness.__main__` plus an explicit dispatch table for the supported standalone scripts (`check citations|numbers|gate|...`, `search`, `evidence-table`, `extract-claims`, `critical-review`), preserving flags and exit codes.
+- Console script `manuwright` maps to `harness.__main__` plus an explicit dispatch table for the supported standalone scripts (`check citations|numbers|gate|...`, `search`, `evidence-table`, `extract-claims`, `critical-review`), preserving flags and exit codes.
 - Wheel content is an allowlist: code, `Style/terminology.md`, `scripts/critical_prompts/`, `scripts/critical_models.txt`, `WORKFLOW.md`, runtime `docs/` (protocols, templates, verifier prompts), `docs/project.example.json`. Never PDFs, `profile/`, private Style anchors, drafts, data.
 - Sibling-import scripts must still run from a raw checkout with no install and no `PYTHONPATH`.
 
 ## 4. Track B details
 
-- **CLI required for the plugin (v1.8.0).** Plugin commands and hooks call `paperflow`. The plugin checks `paperflow --version` against its own version and fails loudly on mismatch. No silent fallback to a different engine.
-- **Commands:** `paperflow doctor | init | status | verify | packet | build | record-approval | check <name> | rules [phase] | hook <name>`. `paperflow verify --project` (manifest profiles) stays distinct from the legacy artifact-based `/verify` (`scripts/verify_all.py`).
-- **`paperflow init <folder>`** builds a starter from existing templates (`docs/project.example.json`, plan templates), creates `data/ drafts/ knowledge/ results/ review/`, refuses to overwrite, leaves plans unapproved and creates no review receipts. A fresh init is expected to report incomplete setup.
+- **CLI required for the plugin (v1.8.0).** Plugin commands and hooks call `manuwright`. The plugin checks `manuwright --version` against its own version and fails loudly on mismatch. No silent fallback to a different engine.
+- **Commands:** `manuwright doctor | init | status | verify | packet | build | record-approval | check <name> | rules [phase] | hook <name>`. `manuwright verify --project` (manifest profiles) stays distinct from the legacy artifact-based `/verify` (`scripts/verify_all.py`).
+- **`manuwright init <folder>`** builds a starter from existing templates (`docs/project.example.json`, plan templates), creates `data/ drafts/ knowledge/ results/ review/`, refuses to overwrite, leaves plans unapproved and creates no review receipts. A fresh init is expected to report incomplete setup.
 - **Freshness:** snapshot keeps logical `@engine/...` names, so a byte-identical engine installed elsewhere does not stale reviews; real content changes do. New runtime files (dispatch table, packaged docs that affect verification) enter the snapshot.
-- **Always-on rules stay always-on.** The mandatory contract remains in the project bootstrap (`CLAUDE.md` / `AGENTS.md`) and the SessionStart hook. Phase detail loads on demand from skills or `paperflow rules <phase>`.
+- **Always-on rules stay always-on.** The mandatory contract remains in the project bootstrap (`CLAUDE.md` / `AGENTS.md`) and the SessionStart hook. Phase detail loads on demand from skills or `manuwright rules <phase>`.
 - **Updates are pinned:** CLI and plugin are released from the same git tag.
 
 ## 5. Supported agents and updates
 
-Target agents: Claude Code, Codex, Antigravity CLI (`agy`, Gemini), opencode, Muse. All share one engine (`paperflow`) and one project folder. One `skills/` source (SKILL.md format) plus thin per-agent adapters.
+Target agents: Claude Code, Codex, Antigravity CLI (`agy`, Gemini), opencode, Muse. All share one engine (`manuwright`) and one project folder. One `skills/` source (SKILL.md format) plus thin per-agent adapters.
 
 | Agent | Mandatory rules | Install adapter (Track B) | Update | Hook enforcement |
 |---|---|---|---|---|
-| Claude Code | `CLAUDE.md` + SessionStart hook | `/plugin marketplace add grotyx/...`, `/plugin install paperflow@...` | marketplace auto-update toggle, or `/plugin marketplace update`; users move only when plugin `version` changes | yes (PreToolUse) |
-| Codex | `AGENTS.md` | `codex plugin marketplace add <git url>`, `codex plugin add ...` (or `.agents/skills`) | `codex plugin marketplace upgrade` | no; `paperflow verify` gates |
-| Antigravity (`agy`) | `GEMINI.md` / `AGENTS.md` | `agy plugin install paperflow@<marketplace>` (can also `agy plugin import` from Claude) | reinstall from marketplace | check at implementation |
+| Claude Code | `CLAUDE.md` + SessionStart hook | `/plugin marketplace add grotyx/...`, `/plugin install manuwright@...` | marketplace auto-update toggle, or `/plugin marketplace update`; users move only when plugin `version` changes | yes (PreToolUse) |
+| Codex | `AGENTS.md` | `codex plugin marketplace add <git url>`, `codex plugin add ...` (or `.agents/skills`) | `codex plugin marketplace upgrade` | no; `manuwright verify` gates |
+| Antigravity (`agy`) | `GEMINI.md` / `AGENTS.md` | `agy plugin install manuwright@<marketplace>` (can also `agy plugin import` from Claude) | reinstall from marketplace | check at implementation |
 | opencode | `AGENTS.md` | skills in `~/.config/opencode/skills` or project `.opencode/`; plugin via `opencode.json` | re-copy skills / plugin version bump | check at implementation |
 | Muse | `AGENTS.md` | `muse skills install <path>` or `muse skills import --from claude` | `muse skills update <id>` | check at implementation |
 
-`paperflow agents install|update [--only claude,codex,agy,opencode,muse]` runs each agent's native command above (dry-run first). No custom installer beyond calling native commands.
+`manuwright agents install|update [--only claude,codex,agy,opencode,muse]` runs each agent's native command above (dry-run first). No custom installer beyond calling native commands.
 
 ### Update policy
 
 - **Check automatically, apply explicitly.** The engine is bound into review hashes; changing it mid-paper stales semantic and human-signoff receipts. So nothing upgrades silently.
-- SessionStart hook / `paperflow doctor` checks the latest release tag at most once a day (skippable offline, `PAPERFLOW_NO_UPDATE_CHECK=1`) and prints: `paperflow 1.8.2 available: run paperflow update`.
-- `paperflow update` = `uv tool install --force git+...@<latest tag>` + `paperflow agents update` + prints which projects' reviews will go stale.
+- SessionStart hook / `manuwright doctor` checks the latest release tag at most once a day (skippable offline, `MANUWRIGHT_NO_UPDATE_CHECK=1`) and prints: `manuwright 1.8.2 available: run manuwright update`.
+- `manuwright update` = `uv tool install --force git+...@<latest tag>` + `manuwright agents update` + prints which projects' reviews will go stale.
 - Optional per-project pin: `"engine": ">=1.8,<1.9"` in `project.json`; `verify` refuses a mismatched engine, so a paper under submission stays on one engine.
-- **Auto-update (opt-in):** `paperflow config set auto-update on`. At session start (at most once a day) it runs `paperflow update` by itself, but only when every rule below holds; otherwise it falls back to the notice.
+- **Auto-update (opt-in):** `manuwright config set auto-update on`. At session start (at most once a day) it runs `manuwright update` by itself, but only when every rule below holds; otherwise it falls back to the notice.
   - The new release stays inside the current project's `engine` pin (default: same minor, patch-only).
   - No project on this machine has a fresh semantic review or human signoff that the update would stale (checked via each known project's last `review/state.json`); submissions in progress are never broken silently.
-  - The update is logged to `~/.paperflow/update.log` and printed in the session with the previous version, so `paperflow update --to <old tag>` can roll back.
+  - The update is logged to `~/.manuwright/update.log` and printed in the session with the previous version, so `manuwright update --to <old tag>` can roll back.
   - Agent adapters (plugin/skills) are updated in the same run, so CLI and adapters never drift.
-- Claude plugin auto-update can be turned on by the user; it only changes adapters (skills/hooks), and the version check (section 4) blocks a plugin/CLI mismatch until `paperflow update` runs.
+- Claude plugin auto-update can be turned on by the user; it only changes adapters (skills/hooks), and the version check (section 4) blocks a plugin/CLI mismatch until `manuwright update` runs.
 
 ## 6. Phases (reordered)
 
 | # | Work | Done when |
 |---|---|---|
 | 1 ✅ | Compatibility contract + tests (`tests/test_compat_contract.py`, v1.7.6): freeze legacy CLI semantics; tests run scripts from repo root, a nested folder and an unrelated cwd with no install; conflicting env var; manifest outside repo; two projects in one process; hooks with event cwd != engine cwd, spaces/Unicode paths | Suite green on current code (tests describe today's behavior) |
-| 2 ✅ | (v1.7.7) `pyproject.toml`, `paperflow` entry + dispatch table, asset allowlist, snapshot coverage; CI builds the wheel and runs it outside the checkout | Installed and source tests both green; docs/version bumped in same PR |
-| 3 ✅ | (v1.7.9, with `update`/auto-update/`config`/engine pin) `paperflow init`, `paperflow rules`, bootstrap snippets for CLAUDE/AGENTS/GEMINI (preserving local text) | Fresh init reports incomplete; synthetic complete project passes |
-| 4 ✅ | (v1.7.10: Claude/Codex plugin + hooks, agy/Muse/opencode skills, `paperflow agents`) Claude plugin: manifest, marketplace, hooks, a few entry skills; version-match check; duplicate-hook guard for migrating folders | Plugin commands work on a paper outside the repo |
+| 2 ✅ | (v1.7.7) `pyproject.toml`, `manuwright` entry + dispatch table, asset allowlist, snapshot coverage; CI builds the wheel and runs it outside the checkout | Installed and source tests both green; docs/version bumped in same PR |
+| 3 ✅ | (v1.7.9, with `update`/auto-update/`config`/engine pin) `manuwright init`, `manuwright rules`, bootstrap snippets for CLAUDE/AGENTS/GEMINI (preserving local text) | Fresh init reports incomplete; synthetic complete project passes |
+| 4 ✅ | (v1.7.10: Claude/Codex plugin + hooks, agy/Muse/opencode skills, `manuwright agents`) Claude plugin: manifest, marketplace, hooks, a few entry skills; version-match check; duplicate-hook guard for migrating folders | Plugin commands work on a paper outside the repo |
 | 5 ✅ | (v1.8.0, `docs/migration_guide.md`) README for both tracks, opt-in migration guide, tag v1.8.0 | Tag cut only after installed + source tests pass |
 
 Dropped from v1.8.0: WORKFLOW-to-skills prose generator, blind command-text rewriting, CLI-vs-bundled-engine fallback, custom updater, PyPI publishing, automated deletion of copied engine files.
@@ -110,7 +110,7 @@ Track A update: a ZIP/template copy has no upstream. Publish an explicit list of
 
 ## 8. Risks
 
-- Interpreter skew: uv-managed CLI Python vs bare `python3`/`py` in hooks. Hooks call `paperflow hook ...` in Track B; `run.sh` keeps `py` then `python3` for Track A.
+- Interpreter skew: uv-managed CLI Python vs bare `python3`/`py` in hooks. Hooks call `manuwright hook ...` in Track B; `run.sh` keeps `py` then `python3` for Track A.
 - CLI/plugin version skew: same tag, explicit version check.
 - Resource completeness: CI asserts every path a command/skill references exists in the installed package.
 - Private data: sdist/wheel built from an allowlist; Track B keeps papers out of the public template repo.

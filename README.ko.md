@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.8.1** (2026-09-30)
+**v1.8.2** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -146,9 +146,9 @@ project/
 | | A. 템플릿 (설치 없음) | B. 설치형 엔진 |
 |---|---|---|
 | 받기 | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
-| 논문 시작 | 복사한 폴더 안에서 작업 | `paperflow init my-paper` |
-| 에이전트 | Claude Code 는 `.claude/`, Codex/Gemini 는 `AGENTS.md`/`GEMINI.md` | `paperflow agents install` (Claude Code, Codex, Antigravity, opencode, Muse) |
-| 업데이트 | `git pull`(clone) 또는 공개 엔진 파일 교체 | `paperflow update`; 선택형 `paperflow config set auto-update on`(patch 만, 유효한 리뷰를 stale 로 만들지 않음) |
+| 논문 시작 | 복사한 폴더 안에서 작업 | `manuwright init my-paper` |
+| 에이전트 | Claude Code 는 `.claude/`, Codex/Gemini 는 `AGENTS.md`/`GEMINI.md` | `manuwright agents install` (Claude Code, Codex, Antigravity, opencode, Muse) |
+| 업데이트 | `git pull`(clone) 또는 공개 엔진 파일 교체 | `manuwright update`; 선택형 `manuwright config set auto-update on`(patch 만, 유효한 리뷰를 stale 로 만들지 않음) |
 
 두 방식 모두 같은 엔진과 규칙을 씀. 자세한 내용: [docs/harness_guide.md](docs/harness_guide.md), 이전: [docs/migration_guide.md](docs/migration_guide.md), 설계: [docs/distribution_plan.md](docs/distribution_plan.md).
 
@@ -375,6 +375,11 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.8.2 (260930)
+
+- **`paperflow` 를 `manuwright` 로 이름 변경** ("manuscript" + "-wright", playwright 처럼 "만드는 장인"). `paperflow` 는 PyPI 와 GitHub 에 이미 있는 이름이었음. 명령 `manuwright`, 패키지 `manuwright/`, plugin `manuwright@manuwright`, skill `manuwright`·`manuwright-verify`, 설정 폴더 `~/.manuwright`, 환경변수 `MANUWRIGHT_*`. 아래 이전 항목은 릴리스 당시 이름을 그대로 둠.
+- v1.8.0/1.8.1 에서 올리는 방법: 먼저 기존 설치를 제거(각 에이전트의 `paperflow` plugin·skill, `uv tool uninstall paperflow`)한 뒤 `manuwright` 를 설치하고 `manuwright agents install` 실행. 프로젝트 목록과 설정을 유지하려면 `~/.paperflow` 를 `~/.manuwright` 로 옮김.
 
 ### v1.8.1 (260930)
 

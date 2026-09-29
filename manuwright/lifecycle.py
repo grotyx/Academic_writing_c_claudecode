@@ -1,4 +1,4 @@
-"""paperflow init / rules / update / config (docs/distribution_plan.md, phase 3).
+"""manuwright init / rules / update / config (docs/distribution_plan.md, phase 3).
 
 Update policy: check automatically, apply explicitly. Opt-in auto-update applies
 only patch releases, and only when no known project pins the engine away from
@@ -19,7 +19,7 @@ REPO_URL = 'https://github.com/grotyx/Academic_writing_c_claudecode'
 
 
 def home():
-    return Path(os.environ.get('PAPERFLOW_HOME') or Path.home() / '.paperflow')
+    return Path(os.environ.get('MANUWRIGHT_HOME') or Path.home() / '.manuwright')
 
 
 def load(name, default):
@@ -114,15 +114,15 @@ def install_command(tag):
 
 
 def update(engine, args):
-    """paperflow update [--check] [--auto] [--to X.Y.Z]"""
+    """manuwright update [--check] [--auto] [--to X.Y.Z]"""
     current, api = engine_api(engine)
     auto = '--auto' in args
     if (engine / '.git').exists():
         if not auto:
-            print('paperflow: running from a source checkout (Track A); update with git pull.')
+            print('manuwright: running from a source checkout (Track A); update with git pull.')
         return 0 if auto else 1
     state = load('state.json', {})
-    if auto and os.environ.get('PAPERFLOW_NO_UPDATE_CHECK'):
+    if auto and os.environ.get('MANUWRIGHT_NO_UPDATE_CHECK'):
         return 0
     if auto and state.get('last_check'):
         last = datetime.fromisoformat(state['last_check'])
@@ -131,22 +131,22 @@ def update(engine, args):
     target = args[args.index('--to') + 1] if '--to' in args else latest_release()
     save('state.json', {**state, 'last_check': datetime.now(timezone.utc).isoformat(), 'latest': target})
     if not target:
-        print('paperflow: no release found (offline or no tags yet).', file=sys.stderr if auto else sys.stdout)
+        print('manuwright: no release found (offline or no tags yet).', file=sys.stderr if auto else sys.stdout)
         return 0 if auto else 1
     target = target.lstrip('v')
     newer = api.version_tuple(target) > api.version_tuple(current)
     if '--check' in args or (auto and not newer):
-        print(f'paperflow {current}; latest {target}' + ('' if newer else ' (up to date)'))
+        print(f'manuwright {current}; latest {target}' + ('' if newer else ' (up to date)'))
         return 0
     manifests = known_projects()
     if auto:
         if not load('config.json', {}).get('auto_update'):
-            print(f'paperflow {target} available: run `paperflow update`.')
+            print(f'manuwright {target} available: run `manuwright update`.')
             return 0
         blockers = auto_blockers(api, current, target, manifests)
         if blockers:
-            print(f'paperflow {target} available, not auto-applied:\n  - ' + '\n  - '.join(blockers)
-                  + '\n  Run `paperflow update` when ready.')
+            print(f'manuwright {target} available, not auto-applied:\n  - ' + '\n  - '.join(blockers)
+                  + '\n  Run `manuwright update` when ready.')
             return 0
     stale = fresh_reviews(api, manifests)
     for path in stale:
@@ -160,8 +160,8 @@ def update(engine, args):
         handle.flush()
         subprocess.Popen(command, stdout=handle, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                          start_new_session=True)
-        print(f'paperflow {current} -> {target}: auto-update running in the background '
-              f'(log: {log}). New sessions use it; then run `paperflow agents update`.')
+        print(f'manuwright {current} -> {target}: auto-update running in the background '
+              f'(log: {log}). New sessions use it; then run `manuwright agents update`.')
         return 0
     print('running: ' + ' '.join(command))
     code = subprocess.call(command)
@@ -169,18 +169,18 @@ def update(engine, args):
         handle.write(f'{datetime.now(timezone.utc).isoformat()} {current} -> {target} exit={code}'
                      f'{" auto" if auto else ""}\n')
     if code == 0:
-        print(f'paperflow {current} -> {target}. Roll back: paperflow update --to {current}')
+        print(f'manuwright {current} -> {target}. Roll back: manuwright update --to {current}')
     return code
 
 
 def config(args):
-    """paperflow config [set auto-update on|off]"""
+    """manuwright config [set auto-update on|off]"""
     data = load('config.json', {})
     if args[:2] == ['set', 'auto-update'] and len(args) == 3 and args[2] in {'on', 'off'}:
         data['auto_update'] = args[2] == 'on'
         save('config.json', data)
     elif args:
-        print('usage: paperflow config [set auto-update on|off]', file=sys.stderr)
+        print('usage: manuwright config [set auto-update on|off]', file=sys.stderr)
         return 2
     print(json.dumps({'home': str(home()), **data, 'projects': [str(p) for p in known_projects()]}, indent=2))
     return 0
@@ -207,10 +207,10 @@ ANALYSIS_PLAN = """# Analysis Plan
 
 
 def init(engine, args):
-    """paperflow init [folder]: starter paper folder; never overwrites, never approves."""
+    """manuwright init [folder]: starter paper folder; never overwrites, never approves."""
     root = Path(args[0] if args else '.').resolve()
     if (root / 'project.json').exists():
-        print(f'paperflow: {root / "project.json"} already exists; nothing changed.', file=sys.stderr)
+        print(f'manuwright: {root / "project.json"} already exists; nothing changed.', file=sys.stderr)
         return 1
     manifest = json.loads((engine / 'docs' / 'project.example.json').read_text(encoding='utf-8'))
     bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
@@ -236,12 +236,12 @@ def init(engine, args):
         print(f'created {name}')
     register(root / 'project.json')
     print(f'\nNext: fill drafts/draft_plan.md and data/analysis_plan.md, get approval, then edit '
-          f'project.json artifacts. `paperflow verify --project {root / "project.json"}` reports what is missing.')
+          f'project.json artifacts. `manuwright verify --project {root / "project.json"}` reports what is missing.')
     return 0
 
 
 def rules(engine, args):
-    """paperflow rules [keyword] | --path"""
+    """manuwright rules [keyword] | --path"""
     workflow = engine / 'WORKFLOW.md'
     if args[:1] == ['--path']:
         print(workflow)
@@ -272,11 +272,11 @@ def agent_steps(engine, agent, mode):
     root, skills = str(engine), sorted(p for p in (engine / 'skills').iterdir() if (p / 'SKILL.md').is_file())
     if agent == 'claude':
         if mode == 'install':
-            return [['claude', 'plugin', 'marketplace', 'add', root], ['claude', 'plugin', 'install', 'paperflow@paperflow']]
-        return [['claude', 'plugin', 'marketplace', 'update', 'paperflow'], ['claude', 'plugin', 'update', 'paperflow@paperflow']]
+            return [['claude', 'plugin', 'marketplace', 'add', root], ['claude', 'plugin', 'install', 'manuwright@manuwright']]
+        return [['claude', 'plugin', 'marketplace', 'update', 'manuwright'], ['claude', 'plugin', 'update', 'manuwright@manuwright']]
     if agent == 'codex':
         first = ['codex', 'plugin', 'marketplace', 'add', root] if mode == 'install' else ['codex', 'plugin', 'marketplace', 'upgrade']
-        return [first, ['codex', 'plugin', 'add', 'paperflow@paperflow']]
+        return [first, ['codex', 'plugin', 'add', 'manuwright@manuwright']]
     if agent == 'agy':
         return [['agy', 'plugin', 'install', root]]
     if agent == 'muse':
@@ -288,9 +288,9 @@ def agent_steps(engine, agent, mode):
 
 
 def agents(engine, args):
-    """paperflow agents install|update [--only a,b] [--dry-run]"""
+    """manuwright agents install|update [--only a,b] [--dry-run]"""
     if not args or args[0] not in {'install', 'update'}:
-        print('usage: paperflow agents install|update [--only claude,codex,agy,opencode,muse] [--dry-run]',
+        print('usage: manuwright agents install|update [--only claude,codex,agy,opencode,muse] [--dry-run]',
               file=sys.stderr)
         return 2
     mode, dry = args[0], '--dry-run' in args
@@ -319,5 +319,5 @@ def agents(engine, args):
                     failed += 1
                     print(f'[{agent}] exit {code}; continuing with the next agent')
                     break
-    print('Mandatory rules come from each paper folder (CLAUDE.md / AGENTS.md / GEMINI.md, see paperflow init).')
+    print('Mandatory rules come from each paper folder (CLAUDE.md / AGENTS.md / GEMINI.md, see manuwright init).')
     return 1 if failed else 0

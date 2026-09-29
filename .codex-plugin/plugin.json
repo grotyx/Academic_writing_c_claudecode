@@ -1,10 +1,10 @@
 {
-  "name": "paperflow",
-  "version": "1.8.1",
-  "description": "Evidence-bound medical manuscript workflow. Requires the paperflow CLI of the same version.",
+  "name": "manuwright",
+  "version": "1.8.2",
+  "description": "Evidence-bound medical manuscript workflow. Requires the manuwright CLI of the same version.",
   "author": { "name": "Sang-Min Park" },
   "homepage": "https://github.com/grotyx/Academic_writing_c_claudecode",
   "skills": "./skills/",
   "hooks": "./hooks/hooks.json",
-  "interface": { "displayName": "paperflow", "shortDescription": "Medical manuscript workflow gates", "category": "Productivity", "capabilities": ["Instructions", "Lifecycle hooks"] }
+  "interface": { "displayName": "manuwright", "shortDescription": "Medical manuscript workflow gates", "category": "Productivity", "capabilities": ["Instructions", "Lifecycle hooks"] }
 }

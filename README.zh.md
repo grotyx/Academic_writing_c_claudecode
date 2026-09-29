@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.8.1** (2026-09-30)
+**v1.8.2** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -139,9 +139,9 @@ project/
 | | A. 模板（无需安装） | B. 安装式引擎 |
 |---|---|---|
 | 获取 | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
-| 开始论文 | 在复制的文件夹中工作 | `paperflow init my-paper` |
-| 智能体 | Claude Code 用 `.claude/`，Codex/Gemini 用 `AGENTS.md`/`GEMINI.md` | `paperflow agents install`（Claude Code、Codex、Antigravity、opencode、Muse） |
-| 更新 | `git pull`（clone）或替换公开引擎文件 | `paperflow update`；可选 `paperflow config set auto-update on`（仅 patch，不会让有效评审变为 stale） |
+| 开始论文 | 在复制的文件夹中工作 | `manuwright init my-paper` |
+| 智能体 | Claude Code 用 `.claude/`，Codex/Gemini 用 `AGENTS.md`/`GEMINI.md` | `manuwright agents install`（Claude Code、Codex、Antigravity、opencode、Muse） |
+| 更新 | `git pull`（clone）或替换公开引擎文件 | `manuwright update`；可选 `manuwright config set auto-update on`（仅 patch，不会让有效评审变为 stale） |
 
 两种方式使用相同的引擎与规则。详情：[docs/harness_guide.md](docs/harness_guide.md)，迁移：[docs/migration_guide.md](docs/migration_guide.md)，设计：[docs/distribution_plan.md](docs/distribution_plan.md)。
 
@@ -352,6 +352,11 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.8.2 (260930)
+
+- **将 `paperflow` 更名为 `manuwright`**（"manuscript" + "-wright"，如 playwright，意为「制作的工匠」）。`paperflow` 在 PyPI 与 GitHub 上已被占用。命令 `manuwright`、包 `manuwright/`、plugin `manuwright@manuwright`、skill `manuwright` 与 `manuwright-verify`、设置目录 `~/.manuwright`、环境变量 `MANUWRIGHT_*`。以下旧条目保留发布时的名称。
+- 从 v1.8.0/1.8.1 升级：先移除旧安装（各智能体中的 `paperflow` plugin 与 skill，`uv tool uninstall paperflow`），再安装 `manuwright` 并运行 `manuwright agents install`。如需保留项目登记与设置，将 `~/.paperflow` 移至 `~/.manuwright`。
 
 ### v1.8.1 (260930)
 

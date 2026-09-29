@@ -36,10 +36,10 @@ jobs:
 
       # Track B: build and install the wheel (non-editable), then run the
       # installed-engine tests from outside the package.
-      - name: Install paperflow wheel
+      - name: Install manuwright wheel
         run: pip install .
 
       - name: Run installed-engine tests
         env:
-          PAPERFLOW_INSTALLED: "1"
+          MANUWRIGHT_INSTALLED: "1"
         run: python -m pytest -q tests/test_compat_contract.py

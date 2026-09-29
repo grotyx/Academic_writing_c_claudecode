@@ -1,4 +1,4 @@
-"""paperflow: installed entry point for the manuscript engine (Track B).
+"""manuwright: installed entry point for the manuscript engine (Track B).
 
 The same engine runs uninstalled as `python -m harness` / `python scripts/x.py`
 (Track A). This wrapper only locates the engine and, for standalone checkers,
@@ -39,13 +39,13 @@ TOOLS = {
     'compile-response': ('compile_response_docx.py', {}),
 }
 
-USAGE = f"""usage: paperflow <command> [args]
+USAGE = f"""usage: manuwright <command> [args]
 
 Manifest profiles (same as python -m harness):
   {' | '.join(sorted(HARNESS_COMMANDS))}
 Standalone tools (same flags as scripts/*.py; project paths default to the current folder):
   {' | '.join(TOOLS)}
-  paperflow <tool> --help    shows that tool's own options
+  manuwright <tool> --help    shows that tool's own options
 Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
   rules [keyword|--path]     print the workflow rules (or one section)
@@ -81,9 +81,9 @@ HOOKS = {'session': 'session_contract.py', 'gate': 'enforce_gates.py', 'lint': '
 
 
 def hook(args):
-    """paperflow hook <session|gate|lint|style>: plugin hook entry (Claude Code, Codex)."""
+    """manuwright hook <session|gate|lint|style>: plugin hook entry (Claude Code, Codex)."""
     if not args or args[0] not in HOOKS:
-        print('usage: paperflow hook session|gate|lint|style', file=sys.stderr)
+        print('usage: manuwright hook session|gate|lint|style', file=sys.stderr)
         return 2
     project = Path(os.environ.get('CLAUDE_PROJECT_DIR') or Path.cwd())
     settings = project / '.claude' / 'settings.json'
@@ -96,8 +96,8 @@ def hook(args):
     if args[0] != 'session':
         return subprocess.call(script)  # hook event JSON passes through on stdin
     subprocess.call(script + [str(project)])
-    print('- TOOLS: paperflow verify --project project.json | paperflow citations|numbers|gate ... | '
-          'paperflow rules <section>')
+    print('- TOOLS: manuwright verify --project project.json | manuwright citations|numbers|gate ... | '
+          'manuwright rules <section>')
     if '--plugin-root' in args and args.index('--plugin-root') + 1 < len(args):
         root = Path(args[args.index('--plugin-root') + 1])
         try:
@@ -108,21 +108,21 @@ def hook(args):
         if plugin and plugin != version():
             lifecycle = load_lifecycle()
             if lifecycle.load('config.json', {}).get('auto_update'):
-                subprocess.Popen([sys.executable, '-m', 'paperflow.cli', 'agents', 'update'], stdin=subprocess.DEVNULL,
+                subprocess.Popen([sys.executable, '-m', 'manuwright.cli', 'agents', 'update'], stdin=subprocess.DEVNULL,
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
                                  cwd=str(HERE.parent))
-                print(f'paperflow plugin {plugin} -> CLI {version()}: refreshing agent adapters in the background.')
+                print(f'manuwright plugin {plugin} -> CLI {version()}: refreshing agent adapters in the background.')
             else:
-                print(f'WARNING: paperflow plugin {plugin} != CLI {version()}. Run `paperflow agents update` '
+                print(f'WARNING: manuwright plugin {plugin} != CLI {version()}. Run `manuwright agents update` '
                       'so hooks, skills and engine match.')
     load_lifecycle().update(ENGINE, ['--auto', '--background'])
     return 0
 
 
 def load_lifecycle():
-    if not __package__:  # run as a file (python paperflow/cli.py) in a source checkout
+    if not __package__:  # run as a file (python manuwright/cli.py) in a source checkout
         sys.path.insert(0, str(HERE.parent))
-    from paperflow import lifecycle
+    from manuwright import lifecycle
     return lifecycle
 
 
@@ -133,7 +133,7 @@ def main(argv=None):
         return 0
     command, rest = argv[0], argv[1:]
     if command in {'--version', 'version'}:
-        print(f'paperflow {version()} ({ENGINE})')
+        print(f'manuwright {version()} ({ENGINE})')
         return 0
     if command == 'hook':
         return hook(rest)
@@ -152,7 +152,7 @@ def main(argv=None):
         env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, [str(ENGINE), os.environ.get('PYTHONPATH')])))
         return subprocess.call([sys.executable, '-m', 'harness', command, *rest], env=env)
     if command not in TOOLS:
-        print(f'paperflow: unknown command {command!r}\n\n{USAGE}', file=sys.stderr)
+        print(f'manuwright: unknown command {command!r}\n\n{USAGE}', file=sys.stderr)
         return 2
     script, defaults = TOOLS[command]
     if '-h' not in rest and '--help' not in rest:

@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.8.1** (2026-09-30)
+**v1.8.2** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -139,9 +139,9 @@ project/
 | | A. テンプレート（インストール不要） | B. インストール型エンジン |
 |---|---|---|
 | 入手 | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
-| 論文の開始 | コピーしたフォルダ内で作業 | `paperflow init my-paper` |
-| エージェント | Claude Code は `.claude/`、Codex/Gemini は `AGENTS.md`/`GEMINI.md` | `paperflow agents install`（Claude Code、Codex、Antigravity、opencode、Muse） |
-| 更新 | `git pull`（clone）または公開エンジンファイルの置換 | `paperflow update`；任意の `paperflow config set auto-update on`（patch のみ、有効なレビューを stale にしない） |
+| 論文の開始 | コピーしたフォルダ内で作業 | `manuwright init my-paper` |
+| エージェント | Claude Code は `.claude/`、Codex/Gemini は `AGENTS.md`/`GEMINI.md` | `manuwright agents install`（Claude Code、Codex、Antigravity、opencode、Muse） |
+| 更新 | `git pull`（clone）または公開エンジンファイルの置換 | `manuwright update`；任意の `manuwright config set auto-update on`（patch のみ、有効なレビューを stale にしない） |
 
 両方式とも同じエンジンと規則を使う。詳細：[docs/harness_guide.md](docs/harness_guide.md)、移行：[docs/migration_guide.md](docs/migration_guide.md)、設計：[docs/distribution_plan.md](docs/distribution_plan.md)。
 
@@ -346,6 +346,11 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.8.2 (260930)
+
+- **`paperflow` を `manuwright` に改名**（"manuscript" + "-wright"、playwright のように「作る職人」）。`paperflow` は PyPI と GitHub で既に使われていた。コマンド `manuwright`、パッケージ `manuwright/`、plugin `manuwright@manuwright`、skill `manuwright`・`manuwright-verify`、設定フォルダ `~/.manuwright`、環境変数 `MANUWRIGHT_*`。以下の過去の項目はリリース当時の名前のまま。
+- v1.8.0/1.8.1 からの移行：旧インストール（各エージェントの `paperflow` plugin・skill、`uv tool uninstall paperflow`）を先に削除し、`manuwright` をインストールして `manuwright agents install` を実行。プロジェクト一覧と設定を残すには `~/.paperflow` を `~/.manuwright` に移動。
 
 ### v1.8.1 (260930)
 

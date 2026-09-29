@@ -1,9 +1,9 @@
 {
-  "name": "paperflow",
-  "interface": { "displayName": "paperflow" },
+  "name": "manuwright",
+  "interface": { "displayName": "manuwright" },
   "plugins": [
     {
-      "name": "paperflow",
+      "name": "manuwright",
       "source": { "source": "local", "path": "./" },
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Productivity"

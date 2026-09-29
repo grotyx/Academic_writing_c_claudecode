@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.8.1** (2026-09-30)
+**v1.8.2** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -152,9 +152,9 @@ project/
 | | A. Template (no install) | B. Installed engine |
 |---|---|---|
 | Get it | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
-| Start a paper | work inside the copied folder | `paperflow init my-paper` |
-| Agents | Claude Code via `.claude/`; Codex/Gemini via `AGENTS.md`/`GEMINI.md` | `paperflow agents install` (Claude Code, Codex, Antigravity, opencode, Muse) |
-| Update | `git pull` (clones) or replace public engine files | `paperflow update`; opt-in `paperflow config set auto-update on` (patch-only, never stales fresh reviews) |
+| Start a paper | work inside the copied folder | `manuwright init my-paper` |
+| Agents | Claude Code via `.claude/`; Codex/Gemini via `AGENTS.md`/`GEMINI.md` | `manuwright agents install` (Claude Code, Codex, Antigravity, opencode, Muse) |
+| Update | `git pull` (clones) or replace public engine files | `manuwright update`; opt-in `manuwright config set auto-update on` (patch-only, never stales fresh reviews) |
 
 Both tracks run the same engine and rules. Details: [docs/harness_guide.md](docs/harness_guide.md), migration: [docs/migration_guide.md](docs/migration_guide.md), design: [docs/distribution_plan.md](docs/distribution_plan.md).
 
@@ -385,6 +385,11 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.8.2 (260930)
+
+- **Renamed `paperflow` to `manuwright`** ("manuscript" + "-wright", a maker, as in playwright). `paperflow` is already taken on PyPI and GitHub. Command `manuwright`, package `manuwright/`, plugin `manuwright@manuwright`, skills `manuwright` and `manuwright-verify`, settings folder `~/.manuwright`, environment variables `MANUWRIGHT_*`. Entries below keep the old name as released.
+- Upgrading from v1.8.0/1.8.1: remove the old install first (`paperflow` plugins/skills in each agent, `uv tool uninstall paperflow`), then install `manuwright` and run `manuwright agents install`. Move `~/.paperflow` to `~/.manuwright` to keep the project registry and settings.
 
 ### v1.8.1 (260930)
 

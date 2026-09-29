@@ -1,4 +1,4 @@
-"""paperflow init / update / auto-update safety rules (distribution phase 3)."""
+"""manuwright init / update / auto-update safety rules (distribution phase 3)."""
 import json
 from pathlib import Path
 
@@ -7,7 +7,7 @@ import pytest
 from harness import __version__
 from harness import project as api
 from harness.project import engine_problem, verify
-from paperflow import lifecycle
+from manuwright import lifecycle
 from tests.test_harness import project, put, sign  # noqa: F401  (fixture reuse)
 
 ENGINE = Path(__file__).resolve().parents[1]
@@ -15,8 +15,8 @@ ENGINE = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(autouse=True)
 def isolated_home(tmp_path_factory, monkeypatch):
-    monkeypatch.setenv('PAPERFLOW_HOME', str(tmp_path_factory.mktemp('pfhome')))
-    monkeypatch.delenv('PAPERFLOW_NO_UPDATE_CHECK', raising=False)
+    monkeypatch.setenv('MANUWRIGHT_HOME', str(tmp_path_factory.mktemp('pfhome')))
+    monkeypatch.delenv('MANUWRIGHT_NO_UPDATE_CHECK', raising=False)
 
 
 def test_init_creates_unapproved_starter_and_never_overwrites(tmp_path):
@@ -70,7 +70,7 @@ def fake_release(monkeypatch, tmp_path):
     monkeypatch.setattr(lifecycle, 'latest_release', lambda: f'{major}.{minor}.{patch + 1}')
     calls = []
     monkeypatch.setattr(lifecycle.subprocess, 'call', lambda cmd: calls.append(cmd) or 0)
-    return tmp_path / 'site-packages' / 'paperflow', calls
+    return tmp_path / 'site-packages' / 'manuwright', calls
 
 
 def test_auto_update_is_opt_in_and_daily(fake_release, capsys):
@@ -111,9 +111,9 @@ def test_adapter_versions_match_engine(manifest):
 
 def test_adapter_references_exist():
     hooks = json.loads((ENGINE / 'hooks/hooks.json').read_text(encoding='utf-8'))['hooks']
-    names = {h['command'].split('paperflow hook ')[1].split()[0].rstrip(';') for event in hooks.values()
+    names = {h['command'].split('manuwright hook ')[1].split()[0].rstrip(';') for event in hooks.values()
              for group in event for h in group['hooks']}
-    from paperflow.cli import HOOKS
+    from manuwright.cli import HOOKS
     assert names == set(HOOKS)
     assert all((ENGINE / 'scripts/hooks' / script).is_file() for script in HOOKS.values())
     assert (ENGINE / json.loads((ENGINE / 'gemini-extension.json').read_text(encoding='utf-8'))['contextFileName']).is_file()
@@ -127,7 +127,7 @@ def test_agents_dry_run_lists_native_commands(monkeypatch, capsys):
     monkeypatch.setattr(lifecycle.subprocess, 'call', lambda cmd: pytest.fail('dry run executed ' + str(cmd)))
     assert lifecycle.agents(ENGINE, ['install', '--dry-run']) == 0
     out = capsys.readouterr().out
-    for line in ('claude plugin marketplace add', 'codex plugin add paperflow@paperflow',
+    for line in ('claude plugin marketplace add', 'codex plugin add manuwright@manuwright',
                  'agy plugin install', 'muse skills install', '[opencode] copy'):
         assert line in out
     assert lifecycle.agents(ENGINE, ['install', '--only', 'cursor']) == 2
@@ -135,7 +135,7 @@ def test_agents_dry_run_lists_native_commands(monkeypatch, capsys):
 
 def hook_run(args, cwd, stdin='{}'):
     import subprocess, sys
-    return subprocess.run([sys.executable, str(ENGINE / 'paperflow/cli.py'), 'hook', *args], cwd=cwd, input=stdin,
+    return subprocess.run([sys.executable, str(ENGINE / 'manuwright/cli.py'), 'hook', *args], cwd=cwd, input=stdin,
                           capture_output=True, text=True, encoding='utf-8', timeout=60,
                           env={k: v for k, v in __import__('os').environ.items() if k != 'CLAUDE_PROJECT_DIR'})
 
@@ -150,4 +150,4 @@ def test_plugin_hook_gates_paper_folder_and_skips_template_checkout(tmp_path):
 
 def test_plugin_session_hook_prints_contract(tmp_path):
     out = hook_run(['session'], tmp_path).stdout
-    assert 'WORKFLOW CONTRACT' in out and 'paperflow verify' in out
+    assert 'WORKFLOW CONTRACT' in out and 'manuwright verify' in out

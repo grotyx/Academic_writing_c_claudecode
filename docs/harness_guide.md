@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.9)
+# Shared manuscript engine (v1.0.10)
 
-Project release: v1.8.1. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.2. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -26,10 +26,10 @@ The same engine installs as a command (`pyproject.toml`, requires Python 3.10+):
 
 ```sh
 uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z   # or: pipx install ...
-paperflow --version                     # prints the version and the engine location
-paperflow doctor | status | verify | packet | build | record-approval   # = python -m harness ...
-paperflow citations drafts/03_introduction.md   # = python scripts/check_citations.py ...
-paperflow --help                        # all tools: citations, numbers, gate, lint, verify-all, search, ...
+manuwright --version                     # prints the version and the engine location
+manuwright doctor | status | verify | packet | build | record-approval   # = python -m harness ...
+manuwright citations drafts/03_introduction.md   # = python scripts/check_citations.py ...
+manuwright --help                        # all tools: citations, numbers, gate, lint, verify-all, search, ...
 ```
 
 Run standalone tools from the paper folder. When a project-path flag is absent, the CLI fills it from the current folder (`--evidence knowledge/evidence.md`, `--results results`, `--base-dir .` for gates, `--terminology Style/terminology.md` if that file exists). An explicit flag always wins. Uninstalled use is unchanged: `python scripts/x.py` keeps its engine-relative defaults (`tests/test_compat_contract.py` freezes this). `check_gate.py` and `verify_all.py` accept `--base-dir` for the project root. The wheel ships only code and public runtime assets (see the allowlist in `pyproject.toml`). Agent adapters (below) ship inside the same install.
@@ -37,27 +37,27 @@ Run standalone tools from the paper folder. When a project-path flag is absent, 
 Agent adapters (installed CLI):
 
 ```sh
-paperflow agents install --dry-run          # show the native commands first
-paperflow agents install [--only claude,codex,agy,opencode,muse]
-paperflow agents update                     # after paperflow update
+manuwright agents install --dry-run          # show the native commands first
+manuwright agents install [--only claude,codex,agy,opencode,muse]
+manuwright agents update                     # after manuwright update
 ```
 
-The installed engine folder is itself the plugin and marketplace root, so every adapter matches the CLI that installed it. Claude Code and Codex get a plugin with two skills (`paperflow`, `paperflow-verify`) and hooks (`hooks/hooks.json`: SessionStart contract + update check, PreToolUse plan-first gate, PostToolUse lint, UserPromptSubmit style intent). Hooks call `paperflow hook <name>`; without the CLI they print a warning that enforcement is off. In a template checkout whose `.claude/settings.json` already runs `scripts/hooks/`, plugin hooks stay silent so nothing fires twice. Codex edits files with `apply_patch`; its hook input has no `file_path`, so the gate and lint hooks read every `*** Add File:` / `*** Update File:` / `*** Move to:` path from the patch (`tool_input.command`) and block if any target needs an approved plan. Codex asks once to trust new plugin hooks; until trusted they do not run. Antigravity (`agy`, root `plugin.json`), Muse and opencode get the skills only; there `paperflow verify` is the enforcement. Mandatory rules come from each paper folder's `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` (`paperflow init`, text in `docs/agent_bootstrap.md`). The session hook warns when plugin and CLI versions differ; with auto-update on it refreshes the adapters in the background.
+The installed engine folder is itself the plugin and marketplace root, so every adapter matches the CLI that installed it. Claude Code and Codex get a plugin with two skills (`manuwright`, `manuwright-verify`) and hooks (`hooks/hooks.json`: SessionStart contract + update check, PreToolUse plan-first gate, PostToolUse lint, UserPromptSubmit style intent). Hooks call `manuwright hook <name>`; without the CLI they print a warning that enforcement is off. In a template checkout whose `.claude/settings.json` already runs `scripts/hooks/`, plugin hooks stay silent so nothing fires twice. Codex edits files with `apply_patch`; its hook input has no `file_path`, so the gate and lint hooks read every `*** Add File:` / `*** Update File:` / `*** Move to:` path from the patch (`tool_input.command`) and block if any target needs an approved plan. Codex asks once to trust new plugin hooks; until trusted they do not run. Antigravity (`agy`, root `plugin.json`), Muse and opencode get the skills only; there `manuwright verify` is the enforcement. Mandatory rules come from each paper folder's `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` (`manuwright init`, text in `docs/agent_bootstrap.md`). The session hook warns when plugin and CLI versions differ; with auto-update on it refreshes the adapters in the background.
 
 Setup and updates (installed CLI):
 
 ```sh
-paperflow init my-paper            # starter folder: project.json, plan templates (unapproved), evidence.md, AGENTS/CLAUDE/GEMINI.md
-paperflow rules "Citation"         # print one WORKFLOW section (or all with no argument; --path for the file)
-paperflow update --check           # compare with the newest vX.Y.Z tag
-paperflow update [--to X.Y.Z]      # reinstall that release (uv tool install --force, else pip); logs to ~/.paperflow/update.log
-paperflow config set auto-update on
-paperflow update --auto            # for SessionStart hooks or shell startup: at most one check a day
+manuwright init my-paper            # starter folder: project.json, plan templates (unapproved), evidence.md, AGENTS/CLAUDE/GEMINI.md
+manuwright rules "Citation"         # print one WORKFLOW section (or all with no argument; --path for the file)
+manuwright update --check           # compare with the newest vX.Y.Z tag
+manuwright update [--to X.Y.Z]      # reinstall that release (uv tool install --force, else pip); logs to ~/.manuwright/update.log
+manuwright config set auto-update on
+manuwright update --auto            # for SessionStart hooks or shell startup: at most one check a day
 ```
 
-`init` never overwrites an existing file and never ticks an approval box. A fresh folder is expected to be BLOCKED by `verify` until artifacts exist. `verify`/`status` with `--project` register the manifest in `~/.paperflow/projects.json` (`PAPERFLOW_HOME` overrides the folder).
+`init` never overwrites an existing file and never ticks an approval box. A fresh folder is expected to be BLOCKED by `verify` until artifacts exist. `verify`/`status` with `--project` register the manifest in `~/.manuwright/projects.json` (`MANUWRIGHT_HOME` overrides the folder).
 
-Auto-update is opt-in and applies patch releases only. It does not run when any registered project pins the engine away from the new version, or holds a semantic review or human signoff that is fresh right now (an engine change would invalidate it). Then it prints why and leaves `paperflow update` to the user. `PAPERFLOW_NO_UPDATE_CHECK=1` disables the check. Roll back with `paperflow update --to <previous>`.
+Auto-update is opt-in and applies patch releases only. It does not run when any registered project pins the engine away from the new version, or holds a semantic review or human signoff that is fresh right now (an engine change would invalidate it). Then it prints why and leaves `manuwright update` to the user. `MANUWRIGHT_NO_UPDATE_CHECK=1` disables the check. Roll back with `manuwright update --to <previous>`.
 
 Manifest `engine` (optional) pins the engine for one paper, for example `">=1.8,<1.9"`. `verify` reports `engine_pin` BLOCKED when the running engine does not satisfy it.
 

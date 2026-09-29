@@ -5,7 +5,7 @@ requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
 
 [project]
-name = "paperflow"
+name = "manuwright"
 dynamic = ["version"]
 description = "Verification engine for AI-assisted medical manuscript writing"
 readme = "README.md"
@@ -13,7 +13,7 @@ requires-python = ">=3.10"
 dependencies = ["python-docx>=1.1.0", "requests>=2.31.0"]
 
 [project.scripts]
-paperflow = "paperflow.cli:main"
+manuwright = "manuwright.cli:main"
 
 [tool.hatch.version]
 path = "harness/__init__.py"
@@ -21,27 +21,27 @@ path = "harness/__init__.py"
 # Allowlist only: code plus the public runtime assets commands rely on.
 # Never PDFs, profile/, Style anchors, drafts, data, results or review records.
 [tool.hatch.build.targets.wheel]
-packages = ["paperflow"]
+packages = ["manuwright"]
 exclude = ["**/__pycache__", "**/*.pyc"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"harness" = "paperflow/harness"
-"scripts" = "paperflow/scripts"
-"Style/terminology.md" = "paperflow/Style/terminology.md"
-"WORKFLOW.md" = "paperflow/WORKFLOW.md"
-"docs" = "paperflow/docs"
-"review/gates/_TEMPLATE.GATE.md" = "paperflow/review/gates/_TEMPLATE.GATE.md"
+"harness" = "manuwright/harness"
+"scripts" = "manuwright/scripts"
+"Style/terminology.md" = "manuwright/Style/terminology.md"
+"WORKFLOW.md" = "manuwright/WORKFLOW.md"
+"docs" = "manuwright/docs"
+"review/gates/_TEMPLATE.GATE.md" = "manuwright/review/gates/_TEMPLATE.GATE.md"
 # Agent adapters: the installed engine folder doubles as the plugin/marketplace root.
-"skills" = "paperflow/skills"
-"hooks" = "paperflow/hooks"
-".claude-plugin" = "paperflow/.claude-plugin"
-".codex-plugin" = "paperflow/.codex-plugin"
-".agents/plugins" = "paperflow/.agents/plugins"
-"gemini-extension.json" = "paperflow/gemini-extension.json"
-"plugin.json" = "paperflow/plugin.json"
+"skills" = "manuwright/skills"
+"hooks" = "manuwright/hooks"
+".claude-plugin" = "manuwright/.claude-plugin"
+".codex-plugin" = "manuwright/.codex-plugin"
+".agents/plugins" = "manuwright/.agents/plugins"
+"gemini-extension.json" = "manuwright/gemini-extension.json"
+"plugin.json" = "manuwright/plugin.json"
 
 [tool.hatch.build.targets.sdist]
-only-include = ["pyproject.toml", "README.md", "paperflow", "harness", "scripts",
+only-include = ["pyproject.toml", "README.md", "manuwright", "harness", "scripts",
                 "Style/terminology.md", "WORKFLOW.md", "docs", "review/gates/_TEMPLATE.GATE.md",
                 "skills", "hooks", ".claude-plugin", ".codex-plugin", ".agents/plugins", "gemini-extension.json", "plugin.json"]
 exclude = ["**/__pycache__", "**/*.pyc"]

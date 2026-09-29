@@ -50,7 +50,7 @@ def main() -> int:
     except Exception:
         pass
     print(CONTRACT)
-    # Plugin hooks (paperflow hook session) pass the paper folder; a checkout scans itself.
+    # Plugin hooks (manuwright hook session) pass the paper folder; a checkout scans itself.
     addendum = style_spec_addendum(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT)
     if addendum:
         print(addendum)
