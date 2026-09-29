@@ -267,7 +267,7 @@ def test_project_terminology_drives_lint_and_invalidates_review(project):
     data['terminology']='Style/terminology.md'
     put(project,data)
     path,c=load_project(project)
-    assert 'Style/terminology.md' in snapshot(path,c) and snapshot(path,c)!=before
+    assert str(Path('Style/terminology.md')) in snapshot(path,c) and snapshot(path,c)!=before
     lint=next(x for x in verify(project)['checks'] if x['check']=='manuscript_lint')
     assert lint['status']=='FAIL' and '03_introduction.md' in lint['detail'], lint
 
@@ -282,8 +282,8 @@ def test_packet_lists_omitted_sources(project,capsys):
     with patch('sys.argv',['harness','packet','--project',str(project)]):
         assert main()==0
     result=json.loads(capsys.readouterr().out)
-    assert 'results/table.csv' in result['omitted_sources']
-    assert 'review/checklist.json' not in result['omitted_sources']
+    assert str(Path('results/table.csv')) in result['omitted_sources']
+    assert str(Path('review/checklist.json')) not in result['omitted_sources']
 
 
 def test_project_style_spec_is_checked(project):

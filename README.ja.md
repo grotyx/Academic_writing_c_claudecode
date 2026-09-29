@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.7** (2026-09-30)
+**v1.7.8** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -335,6 +335,10 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.7.8 (260930)
+
+- Windows CI 修正：v1.7.5 のテスト 2 件がスナップショットキーを `/` で比較していた。キーは OS の区切り文字を使う。期待値を `Path` で生成するよう修正。エンジン変更なし。
 
 ### v1.7.7 (260930)
 

@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.7** (2026-09-30)
+**v1.7.8** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -364,6 +364,10 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.7.8 (260930)
+
+- Windows CI 수정: v1.7.5 테스트 2개가 스냅샷 키를 `/` 로 비교했음. 스냅샷 키는 OS 구분자를 씀. 기대값을 `Path` 로 만들도록 수정. 엔진 변경 없음.
 
 ### v1.7.7 (260930)
 

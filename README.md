@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.7** (2026-09-30)
+**v1.7.8** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -374,6 +374,10 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.7.8 (260930)
+
+- Windows CI fix: two v1.7.5 tests compared snapshot keys with `/`; snapshot keys use the OS separator. Tests now build the expected key with `Path`. No engine change.
 
 ### v1.7.7 (260930)
 

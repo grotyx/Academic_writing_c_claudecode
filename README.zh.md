@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.7** (2026-09-30)
+**v1.7.8** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -341,6 +341,10 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.7.8 (260930)
+
+- Windows CI 修复：v1.7.5 的两个测试用 `/` 比较快照键，而快照键使用操作系统分隔符。改为用 `Path` 生成期望值。引擎无变更。
 
 ### v1.7.7 (260930)
 
