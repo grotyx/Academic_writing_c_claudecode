@@ -6,7 +6,7 @@
 
 ## 版本
 
-**v1.7.10** (2026-09-30)
+**v1.8.0** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -133,6 +133,17 @@ project/
 ```
 
 ---
+
+## 安装：两种方式
+
+| | A. 模板（无需安装） | B. 安装式引擎 |
+|---|---|---|
+| 获取 | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
+| 开始论文 | 在复制的文件夹中工作 | `paperflow init my-paper` |
+| 智能体 | Claude Code 用 `.claude/`，Codex/Gemini 用 `AGENTS.md`/`GEMINI.md` | `paperflow agents install`（Claude Code、Codex、Antigravity、opencode、Muse） |
+| 更新 | `git pull`（clone）或替换公开引擎文件 | `paperflow update`；可选 `paperflow config set auto-update on`（仅 patch，不会让有效评审变为 stale） |
+
+两种方式使用相同的引擎与规则。详情：[docs/harness_guide.md](docs/harness_guide.md)，迁移：[docs/migration_guide.md](docs/migration_guide.md)，设计：[docs/distribution_plan.md](docs/distribution_plan.md)。
 
 ## 快速开始
 
@@ -341,6 +352,14 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 变更记录
+
+### v1.8.0 (260930)
+
+里程碑：**双轨分发**。同一引擎既可作为 clone 即用的模板（A，保持不变），也可作为带有 Claude Code、Codex、Antigravity、opencode、Muse 适配器的安装式 `paperflow` CLI（B）。汇总 v1.7.6 至 v1.7.10，并新增：
+
+- README「安装：两种方式」一节；`docs/migration_guide.md`（复制文件夹的可选、非破坏性迁移，以及 A 方式的更新文件清单）。
+- `docs/distribution_plan.md` 标记为已实现。
+- `paperflow update` 以发布标签 `vX.Y.Z` 作为更新通道。
 
 ### v1.7.10 (260930)
 

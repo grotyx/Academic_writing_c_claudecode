@@ -6,7 +6,7 @@ Claude AI を活用した医学学術論文執筆のための体系的なワー�
 
 ## バージョン
 
-**v1.7.10** (2026-09-30)
+**v1.8.0** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -133,6 +133,17 @@ project/
 ```
 
 ---
+
+## インストール：2 つの方式
+
+| | A. テンプレート（インストール不要） | B. インストール型エンジン |
+|---|---|---|
+| 入手 | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
+| 論文の開始 | コピーしたフォルダ内で作業 | `paperflow init my-paper` |
+| エージェント | Claude Code は `.claude/`、Codex/Gemini は `AGENTS.md`/`GEMINI.md` | `paperflow agents install`（Claude Code、Codex、Antigravity、opencode、Muse） |
+| 更新 | `git pull`（clone）または公開エンジンファイルの置換 | `paperflow update`；任意の `paperflow config set auto-update on`（patch のみ、有効なレビューを stale にしない） |
+
+両方式とも同じエンジンと規則を使う。詳細：[docs/harness_guide.md](docs/harness_guide.md)、移行：[docs/migration_guide.md](docs/migration_guide.md)、設計：[docs/distribution_plan.md](docs/distribution_plan.md)。
 
 ## クイックスタート
 
@@ -335,6 +346,14 @@ Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital
 ---
 
 ## 変更履歴
+
+### v1.8.0 (260930)
+
+マイルストーン：**2 方式の配布**。同じエンジンを clone して使うテンプレート（A、従来どおり）としても、Claude Code・Codex・Antigravity・opencode・Muse 用アダプター付きのインストール型 `paperflow` CLI（B）としても使える。v1.7.6〜v1.7.10 をまとめ、以下を追加：
+
+- README「インストール：2 つの方式」節、`docs/migration_guide.md`（コピーしたフォルダの任意・非破壊移行、A 方式の更新ファイル一覧）。
+- `docs/distribution_plan.md` を実装済みに更新。
+- `paperflow update` はリリースタグ `vX.Y.Z` を更新チャネルとして使う。
 
 ### v1.7.10 (260930)
 

@@ -10,7 +10,7 @@ Claude Code / Codex / Gemini CLI share the Python engine. Start with [docs/harne
 
 ## Version
 
-**v1.7.10** (2026-09-30)
+**v1.8.0** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -146,6 +146,17 @@ project/
 ```
 
 ---
+
+## Installation: two tracks
+
+| | A. Template (no install) | B. Installed engine |
+|---|---|---|
+| Get it | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
+| Start a paper | work inside the copied folder | `paperflow init my-paper` |
+| Agents | Claude Code via `.claude/`; Codex/Gemini via `AGENTS.md`/`GEMINI.md` | `paperflow agents install` (Claude Code, Codex, Antigravity, opencode, Muse) |
+| Update | `git pull` (clones) or replace public engine files | `paperflow update`; opt-in `paperflow config set auto-update on` (patch-only, never stales fresh reviews) |
+
+Both tracks run the same engine and rules. Details: [docs/harness_guide.md](docs/harness_guide.md), migration: [docs/migration_guide.md](docs/migration_guide.md), design: [docs/distribution_plan.md](docs/distribution_plan.md).
 
 ## Quick Start
 
@@ -374,6 +385,14 @@ Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 ---
 
 ## Changelog
+
+### v1.8.0 (260930)
+
+Milestone: **two-track distribution**. The same engine now runs as the clone-and-run template (Track A, unchanged) or as an installed `paperflow` CLI with adapters for Claude Code, Codex, Antigravity, opencode and Muse (Track B). Summary of v1.7.6 to v1.7.10 plus:
+
+- README "Installation: two tracks" section; `docs/migration_guide.md` (opt-in, non-destructive migration of a copied folder; Track A update set).
+- `docs/distribution_plan.md` marked implemented.
+- Release tags `vX.Y.Z` are the update channel for `paperflow update`.
 
 ### v1.7.10 (260930)
 

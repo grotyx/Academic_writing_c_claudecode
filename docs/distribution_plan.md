@@ -1,6 +1,6 @@
-# Distribution Plan: Two-Track Install (v0.7.0, 2026-09-30; phases 1-4 done in v1.7.6-v1.7.10)
+# Distribution Plan: Two-Track Install (v1.0.0, 2026-09-30; implemented in v1.7.6-v1.8.0)
 
-Status: proposal, not implemented. Target release: v1.8.0.
+Status: implemented. Released as v1.8.0.
 v0.2.0 folds in a Codex (gpt-6-astra) design review and a survey of comparable projects (section 9).
 
 ## 1. Goal
@@ -93,7 +93,7 @@ Target agents: Claude Code, Codex, Antigravity CLI (`agy`, Gemini), opencode, Mu
 | 2 ✅ | (v1.7.7) `pyproject.toml`, `paperflow` entry + dispatch table, asset allowlist, snapshot coverage; CI builds the wheel and runs it outside the checkout | Installed and source tests both green; docs/version bumped in same PR |
 | 3 ✅ | (v1.7.9, with `update`/auto-update/`config`/engine pin) `paperflow init`, `paperflow rules`, bootstrap snippets for CLAUDE/AGENTS/GEMINI (preserving local text) | Fresh init reports incomplete; synthetic complete project passes |
 | 4 ✅ | (v1.7.10: Claude/Codex plugin + hooks, agy/Muse/opencode skills, `paperflow agents`) Claude plugin: manifest, marketplace, hooks, a few entry skills; version-match check; duplicate-hook guard for migrating folders | Plugin commands work on a paper outside the repo |
-| 5 | README for both tracks, opt-in migration guide, tag v1.8.0 | Tag cut only after installed + source tests pass |
+| 5 ✅ | (v1.8.0, `docs/migration_guide.md`) README for both tracks, opt-in migration guide, tag v1.8.0 | Tag cut only after installed + source tests pass |
 
 Dropped from v1.8.0: WORKFLOW-to-skills prose generator, blind command-text rewriting, CLI-vs-bundled-engine fallback, custom updater, PyPI publishing, automated deletion of copied engine files.
 

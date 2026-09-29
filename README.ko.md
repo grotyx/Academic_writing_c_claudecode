@@ -6,7 +6,7 @@ Claude AI를 활용한 의학 학술 논문 작성을 위한 체계적인 워크
 
 ## 버전
 
-**v1.7.10** (2026-09-30)
+**v1.8.0** (2026-09-30)
 
 [![tests](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml/badge.svg)](https://github.com/grotyx/Academic_writing_c_claudecode/actions/workflows/tests.yml)
 
@@ -140,6 +140,17 @@ project/
 ```
 
 ---
+
+## 설치: 두 가지 방식
+
+| | A. 템플릿 (설치 없음) | B. 설치형 엔진 |
+|---|---|---|
+| 받기 | `git clone` / "Use this template" | `uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z` |
+| 논문 시작 | 복사한 폴더 안에서 작업 | `paperflow init my-paper` |
+| 에이전트 | Claude Code 는 `.claude/`, Codex/Gemini 는 `AGENTS.md`/`GEMINI.md` | `paperflow agents install` (Claude Code, Codex, Antigravity, opencode, Muse) |
+| 업데이트 | `git pull`(clone) 또는 공개 엔진 파일 교체 | `paperflow update`; 선택형 `paperflow config set auto-update on`(patch 만, 유효한 리뷰를 stale 로 만들지 않음) |
+
+두 방식 모두 같은 엔진과 규칙을 씀. 자세한 내용: [docs/harness_guide.md](docs/harness_guide.md), 이전: [docs/migration_guide.md](docs/migration_guide.md), 설계: [docs/distribution_plan.md](docs/distribution_plan.md).
 
 ## 빠른 시작
 
@@ -364,6 +375,14 @@ Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원
 ---
 
 ## 변경 이력
+
+### v1.8.0 (260930)
+
+마일스톤: **두 방식 배포**. 같은 엔진을 clone 해서 쓰는 템플릿(A, 기존과 동일)으로도, Claude Code·Codex·Antigravity·opencode·Muse 어댑터가 딸린 설치형 `paperflow` CLI(B)로도 쓸 수 있음. v1.7.6~v1.7.10 을 묶고 다음을 추가:
+
+- README "설치: 두 가지 방식" 절, `docs/migration_guide.md`(복사한 폴더의 선택형·비파괴 이전, A 방식 업데이트 파일 목록).
+- `docs/distribution_plan.md` 를 구현 완료로 표시.
+- `paperflow update` 는 릴리스 태그 `vX.Y.Z` 를 업데이트 채널로 씀.
 
 ### v1.7.10 (260930)
 
