@@ -1,5 +1,9 @@
 # 变更记录
 
+### Unreleased
+
+- 期刊参考文献格式：`project.json` 中的 `"journal"`（或 `format-references --journal`）支持 14 个预设 — ICMJE/Vancouver、AMA（JAMA）、NEJM、Lancet、Spine、The Spine Journal、BJJ、JBJS、Neurospine、J Neurosurg Spine、Global Spine J、CORR、Asian Spine J、Eur Spine J。作者截断、页码/期号/月份/DOI 格式、CORR 按字母排序、相邻引用合并（`[1–3]`、Word 上标）。`--fetch` 缓存 PubMed 完整书目。
+
 ### v1.8.9 (260930)
 
 合并发布：

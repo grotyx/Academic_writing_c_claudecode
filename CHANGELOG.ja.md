@@ -1,5 +1,9 @@
 # 変更履歴
 
+### Unreleased
+
+- ジャーナル別参考文献形式：`project.json` の `"journal"`（または `format-references --journal`）で 14 プリセット — ICMJE/Vancouver、AMA（JAMA）、NEJM、Lancet、Spine、The Spine Journal、BJJ、JBJS、Neurospine、J Neurosurg Spine、Global Spine J、CORR、Asian Spine J、Eur Spine J。著者数の打ち切り、ページ・号・月・DOI 形式、CORR のアルファベット順、隣接引用のまとめ（`[1–3]`、Word 上付き）。`--fetch` が PubMed の完全な書誌をキャッシュ。
+
 ### v1.8.9 (260930)
 
 一括リリース：

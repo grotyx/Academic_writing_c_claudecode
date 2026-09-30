@@ -1,5 +1,9 @@
 # 변경 이력
 
+### Unreleased
+
+- 저널 참고문헌 형식: `project.json` 의 `"journal"`(또는 `format-references --journal`)로 14개 프리셋 지원 — ICMJE/Vancouver, AMA(JAMA), NEJM, Lancet, Spine, The Spine Journal, BJJ, JBJS, Neurospine, J Neurosurg Spine, Global Spine J, CORR, Asian Spine J, Eur Spine J. 저자 수 컷오프, 페이지·권호·월·DOI 형식, CORR 알파벳순, 인접 인용 묶음(`[1–3]`, Word 위첨자). `--fetch` 가 PubMed 전체 서지를 캐시해 전 저자 나열 저널도 처리.
+
 ### v1.8.9 (260930)
 
 묶음 릴리스:

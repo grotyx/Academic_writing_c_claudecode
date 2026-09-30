@@ -333,3 +333,20 @@ def test_docx_style_user_default_then_project_override(project,isolated_home):
     for bad in ({'colour':'red'},{'size':'big'},{'line_numbers':'sometimes'}):
         with pytest.raises(ValueError,match='docx'):
             docx_style({'docx':bad})
+
+
+def test_build_uses_journal_preset(project):
+    from docx import Document
+    put(project.parent/'knowledge/evidence.md','# Evidence\n\n### [1] Zed 2020\n- **Evidence ID:** zed_2020\n'
+        '- **Citation:** Zed A, Young B. Later trial. Spine. 2020;45(1):1-9.\n- **Source Status:** verified\n')
+    put(project.parent/'drafts/03_introduction.md','# Introduction\n\nAn important clinical question remains unresolved [EVID:zed_2020].\n')
+    config=json.loads(project.read_text());config['journal']='ama';put(project,config)
+    sign(project)
+    out=build(project)
+    doc=Document(next(out.glob('manuscript_*.docx')))
+    assert any(run.font.superscript and run.text=='1' for p in doc.paragraphs for run in p.runs)
+    assert any('Zed A, Young B. Later trial. *Spine*' in p.text or 'Zed A, Young B. Later trial. Spine' in p.text for p in doc.paragraphs)
+    assert json.loads((out/'build.json').read_text())['citation_style']=='ama preset'
+    config['journal']='no-such-journal';put(project,config)
+    with pytest.raises(ValueError,match='unknown journal preset'):
+        load_project(project)

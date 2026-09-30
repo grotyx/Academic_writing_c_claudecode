@@ -1,4 +1,4 @@
-# Workflow Reference (v1.0.0)
+# Workflow Reference (v1.0.1)
 
 Reference catalogs moved out of `WORKFLOW.md` (v1.7.5) so the always-loaded rules stay short. `WORKFLOW.md` remains authoritative for rules; this file is a lookup index. Commands use `python`; on Windows substitute `py` if needed.
 
@@ -164,7 +164,8 @@ project/
 | `scripts/check_revision_claims.py` | `response_letter_REV*.md`의 `[CHANGE]` claims를 revised manuscript 파일과 대조 | Phase 8 ghost-revision gate |
 | `scripts/check_citations.py` | `[EVID:id]` citations를 `knowledge/evidence.md`와 대조 | Phase 3·4·6 citation gate |
 | `scripts/check_coverage.py` | 인용 coverage audit — **과잉인용**(한 문장 과다 인용)·**미등록인용** 주신호, 섹션별 인용밀도; uncited ref/미실현 claim은 중립 정보(낭비 아님) | Phase 6 QC (`Check coverage`) |
-| `scripts/format_references.py` | `[EVID:id]` → 저널형 서지목록(numbered/author-year) + 본문 태그 변환(`*_formatted.md`); **MCP 독립**, evidence.md 정본 | Phase 7 (`Format references`) |
+| `scripts/format_references.py` | `[EVID:id]` → 저널형 서지목록(numbered/author-year, 또는 `--journal` 프리셋: NEJM·JAMA·Lancet·Spine·BJJ·JBJS 등 14종) + 본문 태그 변환(`*_formatted.md`, 인접 인용 묶음); `--fetch` 로 PubMed 전체 서지 캐시; **MCP 독립**, evidence.md 정본 | Phase 7 (`Format references`) |
+| `scripts/journal_styles.py` | 저널 프리셋 정의(저자 수 컷오프·위첨자/대괄호·페이지·권호·DOI·정렬) | Phase 7 |
 | `scripts/check_abstract.py` | abstract↔본문 수치 일관성 — abstract에만 있고 본문에 없는 수치 차단 (Rule 3; p값 기본 제외) | Phase 6 QC Round 1 (`Check abstract`) |
 | `scripts/check_crossrefs.py` | 본문 "Table/Figure N" 언급 ↔ `table_*.md`·figure legends 대조 — **broken ref**(없는 것 참조, 주신호)·미인용 항목·첫 언급 순서; advisory 기본, `--fail-on-broken` 등으로 게이트화 | Phase 6 QC (`Check crossrefs`) |
 | `scripts/check_abbreviations.py` | 약어 첫 사용 정의 검사 — abstract↔본문 별도 scope (UNDEFINED/DEFINED_AFTER_USE/REDEFINED/SINGLE_USE); 오탐 전제 advisory, `--allow`·`--strict` | Phase 6 QC (`Check abbreviations`) |
@@ -289,7 +290,7 @@ project/
 | Command | Action |
 |---------|--------|
 | `Compile manuscript` | Read `docs/docx_guide.md` → DOCX 변환 (규칙대로) |
-| `Format references for [journal]` | `python scripts/format_references.py drafts/03_introduction.md drafts/06_discussion.md --evidence knowledge/evidence.md --style numbered --convert` 실행 → 서지목록 + `*_formatted.md` (저널 스타일은 profile/journals.md 참조; MCP 독립). medical-kag 연결 시 `KAG references`로 KG 기반 포맷도 가능 |
+| `Format references for [journal]` | `python scripts/format_references.py drafts/03_introduction.md drafts/06_discussion.md --evidence knowledge/evidence.md --journal <preset> --fetch --convert` 실행 → 해당 저널 형식 서지목록 + `*_formatted.md` (프리셋 목록: `docs/harness_guide.md`; `project.json` 에 `"journal"` 을 넣으면 build 도 같은 형식; MCP 독립). medical-kag 연결 시 `KAG references`로 KG 기반 포맷도 가능 |
 | `Generate submission checklist` | Pre-submission verification |
 
 

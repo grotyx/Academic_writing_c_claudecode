@@ -1,4 +1,4 @@
-# Shared manuscript engine (v1.1.0)
+# Shared manuscript engine (v1.1.1)
 
 Project release: v1.8.9. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
@@ -135,6 +135,27 @@ The vault stays a discovery library: cite only `[EVID:id]` entries in `knowledge
 `manuwright setup` (terminal only) asks for the main model, default reviewers, OpenRouter models when `openrouter` is a reviewer, a model per chosen local reviewer, the Word style (optional), and auto-update; it saves them to `~/.manuwright/config.json` and then offers the Obsidian library (install or connect, always asking). Enter keeps a value; `-` clears it. Invalid values are asked again. `manuwright config set|unset` changes one key.
 
 DOCX style (`build`): defaults are Times New Roman 10 pt, headings 12/11 pt, double spacing, 1-inch margins, continuous line numbers and centred page numbers on the manuscript (title page and tables carry no line or page numbers). Save your own default with `manuwright config set docx.<key> <value>`; override it for one paper (its target journal) with a `"docx"` object in `project.json`, e.g. `"docx": {"font": "Arial", "size": 12, "line_spacing": 1.5, "line_numbers": "page", "page_numbers": "right"}`. Keys: `font`, `size`, `heading_size`, `subheading_size`, `line_spacing`, `margin_inches`, `line_numbers` (`continuous`/`page`/`off`), `page_numbers` (`center`/`right`/`off`). Unknown keys or bad values stop the build. The resolved style is written to `build.json`; the user default is not part of the review snapshot, so check `build.json` when rebuilding on another machine.
+
+Journal reference style: set `"journal": "<preset>"` in `project.json` and `build` renders the bibliography in that journal's format (author cutoff, page range, issue, month, DOI form, italics, list order) and replaces adjacent `[EVID:…]` tags with one grouped marker (`[1,2]`, `[1–3]` or superscript `^1,2^`, written to Word as superscript). `verify` checks the same preset (`bibliography`). Run `manuwright format-references <sections> --journal <preset> --fetch` once first: it caches full PubMed metadata (every author, issue, month, NLM abbreviation) for cited entries with a PMID in `knowledge/reference_metadata.json`, which enters the review snapshot. Without the cache the entry's Citation string is parsed; an entry whose stored author list ends in "et al." but whose journal lists more authors (JBJS, Eur Spine J) stops the build until it is fetched or completed. Titles are kept as registered. Presets (`scripts/journal_styles.py`):
+
+| Preset | Journal | In text | Authors listed |
+|---|---|---|---|
+| `vancouver` | ICMJE / NLM | [1] | ≤6 all; >6 first 6, et al. |
+| `ama` | JAMA Network (AMA 11th) | superscript | ≤6 all; >6 first 3, et al. |
+| `nejm` | N Engl J Med | superscript | ≤6 all; >6 first 3, et al. |
+| `lancet` | Lancet | superscript | ≤6 all; >6 first 3, et al. |
+| `spine` | Spine (Phila Pa 1976) | superscript | >3 first 3, et al. |
+| `spine-j` | The Spine Journal | [1] | >6 first 6, et al. |
+| `bjj` | Bone Joint J | superscript | ≤6 all; >6 first 3, et al. |
+| `jbjs` | J Bone Joint Surg Am | superscript | all authors |
+| `neurospine` | Neurospine | superscript | >3 first 3, et al. |
+| `jns-spine` | J Neurosurg Spine | superscript | ≤6 all; >6 first 3, et al. |
+| `gsj` | Global Spine J | superscript | ≤6 all; >6 first 3, et al. |
+| `corr` | Clin Orthop Relat Res | [1], alphabetical list | ≤6 all; >6 first 3, et al. |
+| `asj` | Asian Spine J | superscript | ≤6 all; >6 first 3, et al. |
+| `esj` | Eur Spine J | [1] | all authors |
+
+Spine and orthopaedic presets were checked against each journal's author instructions and published papers; the general-medicine presets follow those journals' published reference instructions. Check the current instructions for authors before submission. Without `"journal"`, the build keeps the registered Citation strings and bracket numbers as before.
 
 Reviewer choice for `scripts/critical_review.py` and `manuwright config` keys (`main-model`, `review.reviewers`, `review.openrouter-models`, `review.<agent>-model`) are described in `docs/critical_review_protocol.md`.
 

@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.1.0)
+# manuwright 사용자 매뉴얼 (v2.2.0)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -293,6 +293,20 @@ manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1�
 ```json
 "docx": {"font": "Arial", "size": 12, "line_spacing": 1.5, "line_numbers": "page", "page_numbers": "right"}
 ```
+
+### 저널 참고문헌 형식
+
+`project.json` 에 목표 저널을 적으면 빌드가 그 저널의 참고문헌 형식과 본문 인용 표시(위첨자를 쓰는 저널은 위첨자)로 만든다.
+
+```sh
+manuwright format-references drafts/*.md --journal nejm --fetch   # PubMed 전체 서지를 한 번 캐시하고 목록 미리보기
+```
+
+```json
+"journal": "nejm"
+```
+
+프리셋: `vancouver`, `ama`(JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`, `jbjs`, `neurospine`, `jns-spine`, `gsj`, `corr`, `asj`, `esj`. 저널별 규칙은 [harness_guide.md](harness_guide.md) 표 참고. 제출 전에 저널의 최신 투고 규정을 한 번 확인할 것.
 
 ## 11. 문제 해결
 

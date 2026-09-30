@@ -53,6 +53,8 @@ def load_project(path):
     for key in ('terminology', 'style_spec'):
         if config.get(key) and not inside(path.parent, config[key]).is_file():
             raise ValueError(f'missing {key}')
+    if config.get('journal') and config['journal'] not in checker('journal_styles').STYLES:
+        raise ValueError('unknown journal preset: ' + str(config['journal']) + ' (see scripts/journal_styles.py)')
     return path, config
 
 
@@ -70,6 +72,9 @@ def snapshot(path, config):
             if key in ('ai_usage', 'checklist') and not record.exists():
                 continue
             files.add(record)
+    metadata = inside(root, config['evidence']).with_name('reference_metadata.json') if config.get('evidence') else None
+    if metadata and metadata.exists():  # cached PubMed metadata shapes the journal-formatted bibliography
+        files.add(metadata)
     for key in ('draft_plan', 'analysis_plan'):
         if config.get(key):
             receipt = inside(root, config[key]).with_suffix('.approval.json')
@@ -331,8 +336,10 @@ def verify(path, profile='draft'):
     run('crossrefs', crossrefs)
     refs = checker('format_references')
     def bibliography():
-        result = refs.build(artifacts, evidence_path=inside(root, config['evidence']), style='numbered')
-        return not result.unknown and not result.missing_citation
+        result = refs.build(artifacts, evidence_path=inside(root, config['evidence']), style='numbered',
+                            journal=config.get('journal'))
+        problems = result.unknown + result.missing_citation + result.incomplete_authors + result.unparsed
+        return True if not problems else 'bibliography incomplete for ' + ', '.join(problems)
     run('bibliography', bibliography)
     if profile == 'revision' or config.get('response'):
         run('revision_scope', lambda: revision_scope(root, config, artifacts))

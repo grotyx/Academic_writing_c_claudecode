@@ -1,4 +1,4 @@
-# manuwright user manual (v2.1.0)
+# manuwright user manual (v2.2.0)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -286,6 +286,20 @@ A journal with other layout rules gets its own `"docx"` block in that paper's `p
 ```json
 "docx": {"font": "Arial", "size": 12, "line_spacing": 1.5, "line_numbers": "page", "page_numbers": "right"}
 ```
+
+### Journal reference style
+
+Name the target journal in `project.json` and the build writes its reference format and in-text markers (superscript where the journal uses them):
+
+```sh
+manuwright format-references drafts/*.md --journal nejm --fetch   # cache full PubMed metadata once, preview the list
+```
+
+```json
+"journal": "nejm"
+```
+
+Presets: `vancouver`, `ama` (JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`, `jbjs`, `neurospine`, `jns-spine`, `gsj`, `corr`, `asj`, `esj`. The rules of each are listed in [harness_guide.md](harness_guide.md). Check the journal's current instructions before submitting.
 
 ## 11. Troubleshooting
 

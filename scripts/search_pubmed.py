@@ -117,13 +117,16 @@ def _parse_article(elem):
     # Authors
     authors = []
     last_names = []
+    parts = []  # [last, initials, fore name] per author, for journal-specific name formats
     for au in elem.findall(".//Author"):
         ln = au.findtext("LastName", "")
         ini = au.findtext("Initials", "")
         if ln:
             authors.append(f"{ln} {ini}".strip())
             last_names.append(ln.strip())
+            parts.append([ln.strip(), ini.strip(), au.findtext("ForeName", "").strip()])
     a["authors"] = authors
+    a["author_parts"] = parts
     # Full LastName, not the first whitespace-token ("van der Berg", not "van").
     a["first_author"] = last_names[0] if last_names else "Unknown"
 
@@ -131,6 +134,7 @@ def _parse_article(elem):
     ji = elem.find(".//Journal/JournalIssue")
     a["journal"] = _findtext(elem, ".//Journal/Title")
     a["journal_abbr"] = _findtext(elem, ".//Journal/ISOAbbreviation")
+    a["medline_ta"] = _findtext(elem, ".//MedlineJournalInfo/MedlineTA")
     a["volume"] = _findtext(ji, "Volume") if ji is not None else ""
     a["issue"] = _findtext(ji, "Issue") if ji is not None else ""
 
@@ -143,8 +147,10 @@ def _parse_article(elem):
             m = re.search(r"(\d{4})", md) if md else None
             year = m.group(1) if m else ""
         a["year"] = year
+        a["month"] = pub_date.findtext("Month", "")
     else:
         a["year"] = ""
+        a["month"] = ""
 
     # Pages
     a["pages"] = _findtext(elem, ".//MedlinePgn")

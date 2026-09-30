@@ -11,6 +11,11 @@ Two styles:
   - **author-year** -- `[EVID:id]` -> `(Author, Year)`; the reference list is
     alphabetical by author.
 
+`--journal NAME` renders the list in a target journal's format instead (author cutoff,
+superscript or bracket markers, page range, issue, DOI, order; presets in journal_styles.py)
+and groups adjacent tags ("[EVID:a] [EVID:b]" -> "[1,2]" or "^1,2^"). `--fetch` first caches
+full PubMed metadata for cited entries with a PMID (knowledge/reference_metadata.json).
+
 By default it prints the id->label mapping and the reference list. With
 `--convert` it also writes each manuscript file with tags replaced to a sibling
 `*_formatted.md` -- **never in place** (the source draft is left untouched).
@@ -25,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import re
 from pathlib import Path
 from typing import NamedTuple
@@ -47,6 +53,9 @@ def _load_sibling(name: str):
 
 
 _cc = _load_sibling("check_citations")
+_js = _load_sibling("journal_styles")
+STYLES = _js.STYLES
+METADATA_NAME = "reference_metadata.json"
 parse_evidence_entries = _cc.parse_evidence_entries
 iter_evid_tokens = _cc.iter_evid_tokens
 EVID_RE = _cc.EVID_RE
@@ -60,6 +69,9 @@ class FormatResult(NamedTuple):
     references: list[str]  # formatted reference list lines, already ordered
     unknown: list[str]  # cited ids absent from evidence.md (left unconverted)
     missing_citation: list[str]  # known ids whose evidence.md Citation field is empty
+    in_text: str = "bracket"  # "bracket" | "superscript" (journal presets)
+    incomplete_authors: list[str] = []  # journal mode: author list could not be expanded past "et al."
+    unparsed: list[str] = []  # journal mode: Citation string not parseable, used as registered
 
 
 def author_year(evidence_id: str) -> tuple[str, str] | None:
@@ -94,7 +106,52 @@ def reference_string(evidence_id: str, entry) -> str:
     return heading or f"[EVID:{evidence_id}] (citation missing in evidence.md)"
 
 
-def build(artifacts: list[Path], *, evidence_path: Path, style: str) -> FormatResult:
+def metadata_path(evidence_path: Path) -> Path:
+    return evidence_path.with_name(METADATA_NAME)
+
+
+def journal_build(entries, known, unknown, missing, evidence_path: Path, journal: str) -> FormatResult:
+    style = STYLES[journal]
+    cache = _js.load_cache(metadata_path(evidence_path))
+    metas, incomplete, unparsed = {}, [], []
+    for eid in known:
+        fields = entries[eid].fields
+        pmid = (fields.get("pmid") or "").strip()
+        meta = cache.get(pmid) or _js.from_citation(fields.get("citation") or "", (fields.get("doi") or "").strip())
+        metas[eid] = meta
+        if meta is None:
+            unparsed.append(eid)
+        elif not meta["complete"] and (style["cutoff"] is None or len(meta["authors"]) < style["cutoff"][1]):
+            incomplete.append(eid)  # the journal wants more authors than the stored string holds
+    order = list(known)
+    if style.get("order") == "alphabetical":
+        def key(eid):
+            meta = metas[eid]
+            return ((meta["authors"][0][0].lower() if meta and meta["authors"] else eid), meta["year"] if meta else "")
+        order = sorted(order, key=key)
+    labels, references = {}, []
+    for index, eid in enumerate(order, start=1):
+        labels[eid] = str(index)
+        text = _js.render(metas[eid], style) if metas[eid] else reference_string(eid, entries[eid])
+        references.append(f"{index}. {text}")
+    return FormatResult(journal, order, labels, references, unknown, missing, style["in_text"], incomplete, unparsed)
+
+
+def fetch_metadata(artifacts: list[Path], evidence_path: Path) -> int:
+    """Cache full PubMed metadata for cited entries that carry a PMID. Returns the count fetched."""
+    entries = parse_evidence_entries(evidence_path.read_text(encoding="utf-8"))
+    pmids = sorted({(entries[e].fields.get("pmid") or "").strip() for e in collect_order(artifacts) if e in entries} - {""})
+    if not pmids:
+        return 0
+    pubmed = _load_sibling("search_pubmed")
+    cache = _js.load_cache(metadata_path(evidence_path))
+    for article in pubmed.fetch_articles(pmids):
+        cache[article["pmid"]] = _js.from_pubmed(article)
+    metadata_path(evidence_path).write_text(json.dumps(cache, ensure_ascii=False, indent=1, sort_keys=True), encoding="utf-8")
+    return len(pmids)
+
+
+def build(artifacts: list[Path], *, evidence_path: Path, style: str, journal: str | None = None) -> FormatResult:
     entries = parse_evidence_entries(evidence_path.read_text(encoding="utf-8"))
     order = collect_order(artifacts)
 
@@ -103,6 +160,9 @@ def build(artifacts: list[Path], *, evidence_path: Path, style: str) -> FormatRe
     missing_citation = [
         eid for eid in known if not (entries[eid].fields.get("citation") or "").strip()
     ]
+
+    if journal:
+        return journal_build(entries, known, unknown, missing_citation, evidence_path, journal)
 
     labels: dict[str, str] = {}
     references: list[str] = []
@@ -128,8 +188,22 @@ def build(artifacts: list[Path], *, evidence_path: Path, style: str) -> FormatRe
     return FormatResult(style, known, labels, references, unknown, missing_citation)
 
 
-def convert_text(text: str, labels: dict[str, str]) -> str:
-    """Replace each [EVID:id] with its label; unknown ids are left untouched."""
+GROUP_RE = re.compile(r"\[EVID:[^\]]+\](?:[\s,;]*\[EVID:[^\]]+\])*")
+
+
+def convert_text(text: str, labels: dict[str, str], in_text: str | None = None) -> str:
+    """Replace each [EVID:id] with its label; unknown ids are left untouched.
+
+    With `in_text` (journal mode) labels are plain numbers and adjacent tags are grouped
+    into one marker: "[1,2]", "[1–3]" or "^1,2^".
+    """
+    if in_text:
+        def group(match: re.Match) -> str:
+            ids = EVID_RE.findall(match.group(0))
+            if not all(i in labels for i in ids):
+                return match.group(0)
+            return _js.group_label([int(labels[i]) for i in ids], in_text)
+        return GROUP_RE.sub(group, text)
 
     def repl(match: re.Match) -> str:
         evidence_id = match.group(1)
@@ -155,6 +229,15 @@ def format_report(result: FormatResult) -> str:
         lines.append("")
         lines.append("WARNING -- no Citation field in evidence.md (used fallback text):")
         lines.extend(f"  EVID:{eid}" for eid in result.missing_citation)
+    if result.incomplete_authors:
+        lines.append("")
+        lines.append("WARNING -- stored author list ends in 'et al.' but this journal lists more authors; "
+                     "run with --fetch (needs a PMID) or complete the Citation field:")
+        lines.extend(f"  EVID:{eid}" for eid in result.incomplete_authors)
+    if result.unparsed:
+        lines.append("")
+        lines.append("WARNING -- Citation not in Vancouver form; used as registered (check format by hand):")
+        lines.extend(f"  EVID:{eid}" for eid in result.unparsed)
     return "\n".join(lines)
 
 
@@ -177,6 +260,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Citation style (default numbered/Vancouver).",
     )
     parser.add_argument(
+        "--journal",
+        choices=sorted(STYLES),
+        help="Render the reference list in this journal's format (overrides --style); "
+             "see journal_styles.py for each preset's rules.",
+    )
+    parser.add_argument(
+        "--fetch",
+        action="store_true",
+        help="First cache full PubMed metadata (all authors, issue, month) for cited entries with a PMID.",
+    )
+    parser.add_argument(
         "--convert",
         action="store_true",
         help="Also write each file with tags replaced to a sibling *_formatted.md (never in place).",
@@ -191,7 +285,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_arg_parser().parse_args()
-    result = build(args.artifacts, evidence_path=args.evidence, style=args.style)
+    if args.fetch:
+        print(f"fetched PubMed metadata for {fetch_metadata(args.artifacts, args.evidence)} PMID(s) -> "
+              f"{metadata_path(args.evidence)}")
+    result = build(args.artifacts, evidence_path=args.evidence, style=args.style, journal=args.journal)
     print(format_report(result))
     if args.strict:
         citation_check = _cc.check_citations(args.artifacts, evidence_path=args.evidence)
@@ -207,7 +304,7 @@ def main() -> int:
         print("converted files:")
         for artifact in args.artifacts:
             text = artifact.read_text(encoding="utf-8")
-            converted = convert_text(text, result.labels)
+            converted = convert_text(text, result.labels, result.in_text if args.journal else None)
             out_path = artifact.with_name(f"{artifact.stem}{args.out_suffix}{artifact.suffix}")
             out_path.write_text(converted, encoding="utf-8")
             print(f"  {out_path}")

@@ -77,10 +77,12 @@ def document(style=DOCX_DEFAULTS, numbered=True):
 def inline(paragraph, text):
     # Intentionally bounded Markdown subset; do not silently turn complex
     # math/images/code into inaccurate Word output.
-    for part in re.split(r'(\*\*[^*]+\*\*|\*[^*]+\*)', text):
+    for part in re.split(r'(\*\*[^*]+\*\*|\*[^*]+\*|\^[^^\s]+\^)', text):
         if not part:
             continue
-        if part.startswith('**') and part.endswith('**'):
+        if part.startswith('^') and part.endswith('^') and len(part) > 2:  # journal superscript citation
+            paragraph.add_run(part[1:-1]).font.superscript = True
+        elif part.startswith('**') and part.endswith('**'):
             paragraph.add_run(part[2:-2]).bold = True
         elif part.startswith('*') and part.endswith('*'):
             paragraph.add_run(part[1:-1]).italic = True
@@ -144,9 +146,11 @@ def build(path):
     receipts = {key:digest(inside(root,config[key])) for key in ('semantic_review','human_signoff')}
     formatter=checker('format_references')
     paths=[inside(root,item) for item in config['artifacts']+config.get('tables',[])]
-    references=formatter.build(paths,evidence_path=inside(root,config['evidence']),style='numbered')
-    if references.unknown or references.missing_citation:
-        raise ValueError('incomplete bibliography')
+    journal=config.get('journal')  # a journal_styles preset: reference format + in-text markers
+    references=formatter.build(paths,evidence_path=inside(root,config['evidence']),style='numbered',journal=journal)
+    if references.unknown or references.missing_citation or (journal and (references.incomplete_authors or references.unparsed)):
+        raise ValueError('incomplete bibliography'+(': '+', '.join(references.incomplete_authors+references.unparsed) if journal else ''))
+    marker=references.in_text if journal else None
     date=datetime.now().strftime('%y%m%d')
     # Rule 5: revision packages carry _REVn before the date (manuscript_REV1_YYMMDD.docx).
     stamp='_'+date
@@ -162,7 +166,7 @@ def build(path):
         stage=Path(tmp);manuscript=document(style);merged=[];section_count=0
         for value in config['artifacts']:
             source=inside(root,value)
-            text=formatter.convert_text(source.read_text(encoding='utf-8'),references.labels)
+            text=formatter.convert_text(source.read_text(encoding='utf-8'),references.labels,marker)
             if source.name.startswith('08_references'):
                 continue  # bibliography is generated below from actual first appearances
             if source.name.startswith('01_title'):
@@ -180,7 +184,7 @@ def build(path):
         manuscript.save(stage/f'manuscript{stamp}.docx')
         (stage/f'manuscript{stamp}.md').write_text('\n\n'.join(merged),encoding='utf-8')
         for index,value in enumerate(config.get('tables',[]),1):
-            text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels)
+            text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels,marker)
             table=document(style,False);append_markdown(table,text,style);table.save(stage/f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}{stamp}.docx')
         for index,value in enumerate(config.get('figures',[]),1):
             source=inside(root,value);shutil.copyfile(source,stage/f'figure_{checker("check_crossrefs").FIGURE_FILE_RE.search(source.stem).group(1)}{source.suffix}')
@@ -201,6 +205,6 @@ def build(path):
         (stage/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
         outputs={item.name:digest(item) for item in sorted(stage.iterdir()) if item.is_file()}
         (stage/'build.json').write_text(json.dumps({'schema_version':1,'paper_id':config['paper_id'],
-            'outputs':outputs,'visual_qa':'required before submission','citation_style':'numbered; source Citation strings preserved','docx_style':style},indent=2),encoding='utf-8')
+            'outputs':outputs,'visual_qa':'required before submission','citation_style':(journal+' preset' if journal else 'numbered; source Citation strings preserved'),'docx_style':style},indent=2),encoding='utf-8')
         stage.rename(final)
     return final
