@@ -1,5 +1,15 @@
 # 变更记录
 
+### v1.8.8 (260930)
+
+一次合并发布（按作者要求，修复合并后再升版本，而非每次修复都升）：
+
+- **任意评审者、任意模型。** `critical_review.py --reviewers agent[:model]` 接受 `openrouter:<id>`、`claude`、`codex`、`opencode`、`muse`、`agy`，均可指定模型。本地 CLI 在空的临时目录中以只读/plan 模式运行，并被要求仅以文字作答（否则 Antigravity 会尝试调用 shell 工具，在 headless 模式下被自动拒绝并返回空输出）。在示例稿件上测试：Codex、opencode（kimi-k3）、Muse、Antigravity 与 4 个 OpenRouter 模型均返回完整评审。
+- **设置。** `manuwright config set main-model|review.reviewers|review.openrouter-models|review.<agent>-model ...`（及 `unset`）。评审默认使用这些设置；与 main 写作模型相同的评审者被标记为 `not_independent`。
+- **Obsidian 集成。** `manuwright obsidian status|connect` 为 Claude Code、Codex、opencode、Antigravity、Muse 注册「Academic Paper Citation Manager」的 MCP 服务器（`rag-obsidian`）（先询问，跳过已连接者，修改 JSON 前备份）。检测到插件时 `manuwright agents install` 会提示连接。`manuwright evidence import-obsidian <citekey>` 将 vault 笔记（CSL 字段与 AI 摘要）转为 `abstract-only` 证据条目。本机已验证：Codex、Muse、opencode 通过 MCP 调用了文献库；Claude Code 已连接；Antigravity 需在交互会话中允许首次 MCP 调用。
+- 手册：新增投稿阶段（绑定、检查清单、评审轮次、stale、构建）以及 Obsidian 与评审者章节。
+- 414 个测试通过。
+
 ### v1.8.7 (260930)
 
 - **PubMed 导入的参考文献字符串**：`search_pubmed.py` 会写出 "et al.."，且标题与期刊名之间缺少句点（"...: A meta-analysis J Back Musculoskelet Rehabil"），导致所有构建出的参考文献列表都带有该问题。已修复并添加测试（旧测试曾以双句点为前提）。在目视检查合成示例论文首个 DOCX 包时发现。

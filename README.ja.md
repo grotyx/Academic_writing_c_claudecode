@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright init my-paper
 ```
@@ -123,7 +123,8 @@ manuwright init my-paper
 | `manuwright gate` / `verify-all` | フェーズゲートの記録を実際の検査結果と照合 |
 | `manuwright search "<query>"` | PubMed を検索し根拠エントリを表示 |
 | `manuwright packet` / `build` | ローカルのレビュー packet / ゲート通過が必要な DOCX ビルド |
-| `manuwright update`、`agents install\|update`、`config` | リリース、エージェントアダプター、自動更新 |
+| `manuwright update`、`agents install\|update`、`config` | リリース、エージェントアダプター、自動更新、main モデルとレビュアーのモデル |
+| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | Obsidian「Academic Paper Citation Manager」ライブラリを全エージェントに接続；vault の文献を `evidence.md` へ取り込み |
 
 テンプレートには Claude Code 用の slash command も含まれる：`/verify`、`/search-evidence`、`/import-doi`、`/style-pass`、`/verify-claims`、`/suggest-citation`、`/cite-stance`、`/evidence-table`、`/paper-debate`、`/critical-review`、`/editor-review`。
 

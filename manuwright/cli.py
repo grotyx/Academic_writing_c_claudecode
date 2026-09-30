@@ -50,10 +50,14 @@ Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
   rules [keyword|--path]     print the workflow rules (or one section)
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
-  config [set auto-update on|off]      opt-in patch-only auto-update
+  config [set|unset <key> ...]         settings: auto-update, main-model, review.reviewers,
+                                       review.openrouter-models, review.<agent>-model
   agents install|update [--only claude,codex,agy,opencode,muse] [--dry-run]
                              install/refresh plugins and skills for each agent
   hook session|gate|lint|style         entry point for agent plugin hooks
+Obsidian (Academic Paper Citation Manager plugin):
+  obsidian status | obsidian connect [--vault PATH] [--only a,b] [--dry-run] [--yes]
+  evidence import-obsidian <citekey>... [--vault PATH]   vault note -> knowledge/evidence.md
   --version
 """
 
@@ -137,6 +141,17 @@ def main(argv=None):
         return 0
     if command == 'hook':
         return hook(rest)
+    if command in {'obsidian', 'evidence'}:
+        if not __package__:
+            sys.path.insert(0, str(HERE.parent))
+        from manuwright import obsidian
+        if command == 'obsidian' and rest[:1] in (['status'], ['connect']):
+            return getattr(obsidian, rest[0])(rest[1:])
+        if command == 'evidence' and rest[:1] == ['import-obsidian']:
+            return obsidian.import_evidence(rest[1:])
+        print('usage: manuwright obsidian status|connect [--vault PATH] [--only a,b] [--dry-run] [--yes]\n'
+              '       manuwright evidence import-obsidian <citekey>... [--vault PATH]', file=sys.stderr)
+        return 2
     if command in {'init', 'rules', 'update', 'config', 'agents'}:
         lifecycle = load_lifecycle()
         if command == 'config':

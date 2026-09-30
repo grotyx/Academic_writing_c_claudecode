@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright init my-paper
 ```
@@ -123,7 +123,8 @@ manuwright init my-paper
 | `manuwright gate` / `verify-all` | 단계 게이트 기록을 실제 검사 결과와 대조 |
 | `manuwright search "<query>"` | PubMed 검색 후 근거 항목 출력 |
 | `manuwright packet` / `build` | 로컬 리뷰 packet / 게이트를 통과해야 되는 DOCX 빌드 |
-| `manuwright update`, `agents install\|update`, `config` | 릴리스, 에이전트 어댑터, 자동 업데이트 |
+| `manuwright update`, `agents install\|update`, `config` | 릴리스, 에이전트 어댑터, 자동 업데이트, main 모델과 검토자 모델 |
+| `manuwright obsidian status\|connect`, `evidence import-obsidian <citekey>` | Obsidian "Academic Paper Citation Manager" 라이브러리를 모든 에이전트에 연결; vault 참고문헌을 `evidence.md` 로 가져오기 |
 
 템플릿에는 Claude Code 용 slash command 도 들어 있다: `/verify`, `/search-evidence`, `/import-doi`, `/style-pass`, `/verify-claims`, `/suggest-citation`, `/cite-stance`, `/evidence-table`, `/paper-debate`, `/critical-review`, `/editor-review`.
 

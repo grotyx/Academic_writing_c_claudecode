@@ -1,5 +1,15 @@
 # Changelog
 
+### v1.8.8 (260930)
+
+One batch release (per the author's request, fixes are grouped instead of bumping per fix):
+
+- **Any reviewer, any model.** `critical_review.py --reviewers agent[:model]` accepts `openrouter:<id>`, `claude`, `codex`, `opencode`, `muse` and `agy`, each with an optional model. Local CLIs run in an empty temporary folder in read-only/plan modes and are asked for a text-only answer (Antigravity otherwise tried a shell tool, was auto-denied in headless mode and returned nothing). Tested on the demo manuscript: Codex, opencode (kimi-k3), Muse, Antigravity and four OpenRouter models all returned full reviews.
+- **Settings.** `manuwright config set main-model|review.reviewers|review.openrouter-models|review.<agent>-model ...` (and `unset`). Reviews default to these settings; a reviewer that uses the main writing model is flagged `not_independent`.
+- **Obsidian integration.** `manuwright obsidian status|connect` registers the "Academic Paper Citation Manager" MCP server (`rag-obsidian`) for Claude Code, Codex, opencode, Antigravity and Muse (asks first, skips connected agents, backs up edited JSON). `manuwright agents install` offers it when the plugin is found. `manuwright evidence import-obsidian <citekey>` turns a vault note (CSL fields and AI summary) into an `abstract-only` evidence entry. Verified on this machine: Codex, Muse and opencode called the library over MCP; Claude Code was already connected; Antigravity needs its first MCP call interactively.
+- Manual: submission stage (bindings, checklist, review rounds, stale reviews, build), Obsidian and reviewer sections.
+- 414 tests pass.
+
 ### v1.8.7 (260930)
 
 - **Reference strings from PubMed imports**: `search_pubmed.py` wrote "et al.." and no period between title and journal ("...: A meta-analysis J Back Musculoskelet Rehabil"), which then appeared in every built reference list. Fixed, with a test; the old test had encoded the double period. Found while visually checking the first fully built DOCX package of the synthetic demo paper.

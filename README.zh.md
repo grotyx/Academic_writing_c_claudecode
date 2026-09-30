@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright init my-paper
 ```
@@ -123,7 +123,8 @@ manuwright init my-paper
 | `manuwright gate` / `verify-all` | 将阶段门禁记录与实时检查结果对照 |
 | `manuwright search "<query>"` | 检索 PubMed 并输出证据条目 |
 | `manuwright packet` / `build` | 本地评审 packet / 需通过门禁的 DOCX 构建 |
-| `manuwright update`、`agents install\|update`、`config` | 版本、智能体适配器、自动更新 |
+| `manuwright update`、`agents install\|update`、`config` | 版本、智能体适配器、自动更新、main 模型与评审模型 |
+| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | 将 Obsidian「Academic Paper Citation Manager」文献库连接到所有智能体；把 vault 文献导入 `evidence.md` |
 
 模板还附带 Claude Code 的 slash command：`/verify`、`/search-evidence`、`/import-doi`、`/style-pass`、`/verify-claims`、`/suggest-citation`、`/cite-stance`、`/evidence-table`、`/paper-debate`、`/critical-review`、`/editor-review`。
 

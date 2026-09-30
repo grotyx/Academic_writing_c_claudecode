@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.11)
+# Shared manuscript engine (v1.0.12)
 
-Project release: v1.8.7. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.8. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -114,3 +114,20 @@ The engine is a foundation, not autonomous scientific validation: statistical re
 `revision_scope` requires each resolved CHANGE target to be included in artifacts/tables, and rejects listed sections when a newer version exists through the current REVn. A revision label alone cannot validate an older manuscript. Update the manifest before obtaining fresh review receipts.
 
 `numeric_scope` checks every manuscript/table artifact for numeric tokens. Any omitted numeric file fails, including in the draft profile. Title-page and reference-list metadata are excluded. For non-result sections only, `numeric_exemptions` may map a project-relative path to a nonempty reason (for example literature-derived sample sizes reviewed against evidence). Results, abstract and table numeric tokens must remain covered by numeric_artifacts. Exemptions are part of the hashed manifest and require semantic review; they do not verify excluded numbers. Simple pipe-table p columns are recognized from their separator row even when a header contains numbers; header numbers are still checked.
+
+## v1.8.8 Obsidian reference library and reviewer settings
+
+The Obsidian plugin "Academic Paper Citation Manager" (MCP server `rag-obsidian`) can serve as the discovery library for every agent:
+
+```sh
+manuwright obsidian status                         # vaults with the plugin; which agents are connected
+manuwright obsidian connect [--vault PATH] [--only claude,codex,opencode,agy,muse] [--dry-run] [--yes]
+manuwright evidence import-obsidian <citekey>...   # vault note -> knowledge/evidence.md entry
+```
+
+`connect` asks before changing anything, skips agents that are already connected, uses each agent's own `mcp add` (Claude Code, Codex, Antigravity) or edits its JSON settings with a `*.manuwright.bak` backup (opencode `~/.config/opencode/opencode.json`, Muse `~/.config/muse/settings.json`). `manuwright agents install` offers the connection when it finds the plugin; it never connects silently. Obsidian must be open with MCP enabled. Antigravity asks permission for MCP tools; in headless `-p` mode that request is denied, so use it interactively (the server also exposes note editing tools, so no allow-rule is added automatically).
+
+The vault stays a discovery library: cite only `[EVID:id]` entries in `knowledge/evidence.md`. `import-obsidian` copies the CSL fields and the plugin's AI summary into an entry whose ID is the citekey and whose status is `abstract-only`; verify the summary against the paper before relying on it.
+
+Reviewer choice for `scripts/critical_review.py` and `manuwright config` keys (`main-model`, `review.reviewers`, `review.openrouter-models`, `review.<agent>-model`) are described in `docs/critical_review_protocol.md`.
+

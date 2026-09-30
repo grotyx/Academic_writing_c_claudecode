@@ -22,3 +22,5 @@ args: target
 4. 메인 Claude가 종합(§3): 중복 통합 + 심각도 분류.
 5. `review/critical/`에 통합 리포트 + 모델별 원본 저장(§1, 템플릿 `_TEMPLATE.critical.md`).
 6. 에러·폴백은 §4를 따른다(외부 실패해도 Claude 단독으로 진행).
+
+Any reviewer mix: `python scripts/critical_review.py --target <file> --reviewers codex,opencode:<provider/model>,muse,agy,openrouter:<id> --out review/critical/`. Without `--reviewers`, the user's defaults from `manuwright config` apply (see `docs/critical_review_protocol.md`, v1.8.8 section). Report reviewers flagged `not_independent`.

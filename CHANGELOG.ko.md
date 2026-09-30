@@ -1,5 +1,15 @@
 # 변경 이력
 
+### v1.8.8 (260930)
+
+하나의 묶음 릴리스(저자 요청에 따라 수정마다 버전을 올리지 않고 모아서 올림):
+
+- **어떤 검토자, 어떤 모델이든.** `critical_review.py --reviewers agent[:model]` 이 `openrouter:<id>`, `claude`, `codex`, `opencode`, `muse`, `agy` 를 받고, 각각 모델을 지정할 수 있음. 로컬 CLI 는 빈 임시 폴더에서 읽기 전용/plan 모드로 돌고, 글로만 답하도록 지시함(그렇지 않으면 Antigravity 가 셸 도구를 쓰려다 headless 에서 자동 거부되어 빈 출력을 냈음). 데모 원고로 시험: Codex, opencode(kimi-k3), Muse, Antigravity, OpenRouter 모델 4개가 모두 전체 검토를 돌려줌.
+- **설정.** `manuwright config set main-model|review.reviewers|review.openrouter-models|review.<agent>-model ...` (및 `unset`). 검토는 기본으로 이 설정을 씀. main 모델과 같은 모델을 쓰는 검토자는 `not_independent` 로 표시.
+- **Obsidian 연동.** `manuwright obsidian status|connect` 가 "Academic Paper Citation Manager" MCP 서버(`rag-obsidian`)를 Claude Code, Codex, opencode, Antigravity, Muse 에 등록함(먼저 물어보고, 이미 연결된 곳은 건너뛰고, 수정하는 JSON 은 백업). 플러그인이 있으면 `manuwright agents install` 이 연결을 제안함. `manuwright evidence import-obsidian <citekey>` 는 vault 노트(CSL 필드와 AI 요약)를 `abstract-only` 근거 항목으로 만듦. 이 Mac 에서 확인: Codex, Muse, opencode 가 MCP 로 라이브러리를 호출함. Claude Code 는 이미 연결돼 있었고, Antigravity 는 첫 MCP 호출을 대화형으로 허가해야 함.
+- 매뉴얼: 제출 단계(바인딩, 체크리스트, 검토 라운드, stale, 빌드), Obsidian·검토자 절 추가.
+- 414 tests 통과.
+
 ### v1.8.7 (260930)
 
 - **PubMed 가져오기의 참고문헌 문자열**: `search_pubmed.py` 가 "et al.." 로 쓰고 제목과 저널명 사이 마침표를 빠뜨려("...: A meta-analysis J Back Musculoskelet Rehabil"), 빌드된 모든 참고문헌 목록에 그대로 나왔음. 수정하고 테스트 추가(기존 테스트가 마침표 두 개를 전제로 작성돼 있었음). 합성 데모 논문의 첫 DOCX 패키지를 육안 검토하다 발견.

@@ -1,5 +1,5 @@
 {
   "name": "manuwright",
-  "version": "1.8.7",
+  "version": "1.8.8",
   "description": "Evidence-bound medical manuscript workflow (Antigravity adapter: skills). Requires the manuwright CLI of the same version."
 }

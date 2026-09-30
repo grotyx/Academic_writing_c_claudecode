@@ -7,7 +7,7 @@ Screenshots are renders of the agents' terminal text captured during that run (t
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -176,6 +176,30 @@ Any later edit makes the review and the signoff stale, as intended. In the demo,
 Then `manuwright build --project project.json` writes the DOCX package (manuscript, title page, one file per table, `verification.json`, output hashes). It re-checks everything first and refuses stale inputs. Open the files and check them by eye before submitting.
 
 ![Submission PASS and build](images/manual/23_submission_pass_build.png)
+
+## 9a. Obsidian library and multi-model review
+
+**Obsidian.** If you use the Obsidian plugin "Academic Paper Citation Manager", connect it once and every agent can search your reference library over MCP:
+
+```sh
+manuwright obsidian status
+manuwright obsidian connect            # asks first; --dry-run shows the commands
+manuwright evidence import-obsidian kirtley1985influence
+```
+
+In the demo, Codex, Muse and opencode called the library through MCP (22,622 indexed chunks); Claude Code was already connected; Antigravity needs its first MCP call in an interactive session. Imported entries keep the citekey as `[EVID:id]` and start as `abstract-only`.
+
+**Reviewers.** Choose any mix of reviewers and models; the writing model is set once so a reviewer using the same model is flagged as not independent:
+
+```sh
+manuwright config set main-model claude-opus-5-5
+manuwright config set review.reviewers codex,opencode,muse,agy,openrouter
+manuwright config set review.opencode-model opencode-go/kimi-k3
+manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwen3.7-max
+manuwright critical-review --target drafts/05_results.md --out review/critical
+```
+
+In the demo, eight reviewers (Codex, opencode with kimi-k3, Muse, Antigravity and four OpenRouter models) each returned a full review. Sending text to OpenRouter models leaves your machine: get the author's consent first.
 
 ## 10. Updates
 

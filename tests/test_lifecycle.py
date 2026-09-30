@@ -151,3 +151,51 @@ def test_plugin_hook_gates_paper_folder_and_skips_template_checkout(tmp_path):
 def test_plugin_session_hook_prints_contract(tmp_path):
     out = hook_run(['session'], tmp_path).stdout
     assert 'WORKFLOW CONTRACT' in out and 'manuwright verify' in out
+
+
+# --- reviewer settings -------------------------------------------------------
+
+def test_config_sets_models_and_reviewers(capsys):
+    assert lifecycle.config(['set', 'main-model', 'claude-opus-5-5']) == 0
+    assert lifecycle.config(['set', 'review.reviewers', 'codex, opencode,openrouter']) == 0
+    assert lifecycle.config(['set', 'review.opencode-model', 'openai/gpt-x']) == 0
+    assert lifecycle.config(['set', 'review.openrouter-models', 'deepseek/a,qwen/b']) == 0
+    data = lifecycle.load('config.json', {})
+    assert data['main_model'] == 'claude-opus-5-5'
+    assert data['review'] == {'reviewers': ['codex', 'opencode', 'openrouter'], 'opencode_model': 'openai/gpt-x',
+                              'openrouter_models': ['deepseek/a', 'qwen/b']}
+    assert lifecycle.config(['unset', 'review.opencode-model']) == 0
+    assert 'opencode_model' not in lifecycle.load('config.json', {})['review']
+    assert lifecycle.config(['set', 'colour', 'blue']) == 2
+
+
+def test_reviewers_come_from_settings_with_models(monkeypatch):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('cr', ENGINE / 'scripts' / 'critical_review.py')
+    cr = importlib.util.module_from_spec(spec); spec.loader.exec_module(cr)
+    lifecycle.config(['set', 'main-model', 'deepseek/a'])
+    lifecycle.config(['set', 'review.opencode-model', 'openai/gpt-x'])
+    lifecycle.config(['set', 'review.openrouter-models', 'deepseek/a,qwen/b'])
+    cfg = cr.settings()
+    got = cr.expand_reviewers(['codex', 'opencode', 'muse:m1', 'openrouter', 'openrouter:z/c', 'claude-cli'], cfg)
+    assert got == [('codex', None), ('opencode', 'openai/gpt-x'), ('muse', 'm1'), ('openrouter', 'deepseek/a'),
+                   ('openrouter', 'qwen/b'), ('openrouter', 'z/c'), ('claude', None)]
+    assert cr.not_independent(got, cfg['main_model']) == ['deepseek/a']
+    workdir, prompt = Path('/tmp/w'), Path('/tmp/p.md')
+    assert cr.local_argv('opencode', 'openai/gpt-x', prompt, workdir)[0][:6] == ['opencode', 'run', '--agent', 'plan', '--dir', '/tmp/w']
+    assert '--disable-web-tools' in cr.local_argv('muse', None, prompt, workdir)[0]
+
+
+def test_local_reviewer_runs_outside_the_paper(monkeypatch, tmp_path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('cr', ENGINE / 'scripts' / 'critical_review.py')
+    cr = importlib.util.module_from_spec(spec); spec.loader.exec_module(cr)
+    seen = {}
+    def fake_run(argv, cwd=None, **kw):
+        seen['argv'], seen['cwd'] = argv, cwd
+        return type('P', (), {'returncode': 0, 'stdout': 'review text', 'stderr': ''})()
+    monkeypatch.setattr(cr.subprocess, 'run', fake_run)
+    monkeypatch.setattr(cr.Path, 'read_text', lambda self, **kw: 'PROMPT')
+    out = cr.run_critical_review('manuscript', ['agy:gemini-x', 'opencode:openai/gpt-x'], 'manuscript', None)
+    assert out == {'agy:gemini-x': 'review text', 'opencode:openai/gpt-x': 'review text'}
+    assert 'review-' in str(seen['cwd'])

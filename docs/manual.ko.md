@@ -7,7 +7,7 @@
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -183,6 +183,30 @@ manuwright verify --project project.json --profile submission
 그다음 `manuwright build --project project.json` 이 DOCX 패키지를 만든다(원고, 표지, 표별 파일, `verification.json`, 출력 해시). 먼저 모든 것을 다시 검사하고, stale 입력은 거부한다. 제출 전에 파일을 열어 눈으로 확인한다.
 
 ![submission PASS 와 빌드](images/manual/23_submission_pass_build.png)
+
+## 9a. Obsidian 라이브러리와 다중 모델 검토
+
+**Obsidian.** Obsidian 플러그인 "Academic Paper Citation Manager" 를 쓴다면 한 번 연결해 두면 모든 에이전트가 MCP 로 참고문헌 라이브러리를 검색할 수 있다:
+
+```sh
+manuwright obsidian status
+manuwright obsidian connect            # 먼저 물어봄. --dry-run 으로 명령만 볼 수 있음
+manuwright evidence import-obsidian kirtley1985influence
+```
+
+시험에서 Codex, Muse, opencode 가 MCP 로 라이브러리를 호출했다(색인 22,622 청크). Claude Code 는 이미 연결돼 있었고, Antigravity 는 첫 MCP 호출을 대화형 세션에서 허가해야 한다. 가져온 항목은 citekey 를 `[EVID:id]` 로 쓰고 `abstract-only` 로 시작한다.
+
+**검토자.** 검토자와 모델을 원하는 대로 고른다. 글을 쓰는 모델(main)을 한 번 정해 두면, 같은 모델을 쓰는 검토자는 독립 검토가 아니라고 표시된다:
+
+```sh
+manuwright config set main-model claude-opus-5-5
+manuwright config set review.reviewers codex,opencode,muse,agy,openrouter
+manuwright config set review.opencode-model opencode-go/kimi-k3
+manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwen3.7-max
+manuwright critical-review --target drafts/05_results.md --out review/critical
+```
+
+시험에서 검토자 8명(Codex, kimi-k3 를 쓴 opencode, Muse, Antigravity, OpenRouter 모델 4개)이 모두 전체 검토를 돌려줬다. OpenRouter 모델로 보내는 글은 내 컴퓨터 밖으로 나가므로 저자의 동의를 먼저 받는다.
 
 ## 10. 업데이트
 

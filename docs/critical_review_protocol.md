@@ -1,4 +1,4 @@
-# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.0.0)
+# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.1.0)
 
 > 완성된 원고/response를 여러 리뷰어가 적대적으로 공격해 허점을 발굴하는 절차의 단일 기준. `/critical-review` command와 `qc_guide.md`는 이 문서를 참조한다. QC Round 6 Critical Review의 외부 멀티모델 강화판.
 > 공개 운영 기준은 이 문서가 원본입니다. 내부 설계 노트 경로는 런타임 의존성으로 두지 않습니다.
@@ -67,3 +67,38 @@
 ## v1.7.0 provider execution
 
 See `harness_guide.md`. Missing OpenRouter credentials do not cancel CLI reviewers. `--include-codex` and repeatable `--context` are available. `--out` now creates unique run subdirectories with `run.json` (requested/completed/failures/source hashes). Partial results are advisory, never an automatic gate PASS. Authorize each external destination and input scope before calling it.
+
+## v1.8.8 reviewer choice and settings
+
+Reviewers are `agent[:model]` specs, so any model the user can reach may review:
+
+```sh
+python scripts/critical_review.py --target drafts/manuscript.md --role manuscript --out review/critical \
+  --reviewers codex,opencode:opencode-go/kimi-k3,muse,agy,openrouter:deepseek/deepseek-v4-pro
+```
+
+| Spec | Runs | Safety |
+|---|---|---|
+| `openrouter:<id>` (or a bare OpenRouter id) | OpenRouter API, any model | needs `OPENROUTER_API_KEY`; text leaves the machine |
+| `claude[:model]` | `claude -p --tools ""` | no tools |
+| `codex[:model]` | `codex exec --sandbox read-only` | read-only sandbox |
+| `opencode[:provider/model]` | `opencode run --agent plan` | read-only plan agent |
+| `muse[:model]` | `muse exec` | no read-only mode: empty workspace, web tools and personal context off |
+| `agy[:model]` | `agy --mode plan --sandbox -p` | plan mode, sandbox |
+
+Every local CLI runs in an empty temporary folder, so it never sees the paper folder; the prompt asks for a text-only answer (headless CLIs cannot ask for tool permission).
+
+Defaults come from the user's settings, so a plain `--target ... --out ...` uses them:
+
+```sh
+manuwright config set main-model claude-opus-5-5                   # the model that writes
+manuwright config set review.reviewers codex,opencode,muse,agy,openrouter
+manuwright config set review.opencode-model opencode-go/kimi-k3    # any opencode provider/model
+manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwen3.7-max
+manuwright config set review.codex-model gpt-6-astra                # optional per agent
+```
+
+A bare `openrouter` expands to `review.openrouter-models` (default `scripts/critical_models.txt`). A reviewer whose model equals `main-model` is reported in `run.json` as `not_independent` with a warning: the writing model reviewing itself is not an independent review. `--models`, `--models-file`, `--include-claude` and `--include-codex` keep working.
+
+Tested 2026-09-30 on the synthetic demo manuscript: Codex, opencode (kimi-k3), Muse, Antigravity and four OpenRouter models all returned full reviews (1,000-2,700 words each).
+

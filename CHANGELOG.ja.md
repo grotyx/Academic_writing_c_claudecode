@@ -1,5 +1,15 @@
 # 変更履歴
 
+### v1.8.8 (260930)
+
+1 つのまとめリリース（著者の要望により、修正ごとではなくまとめてバージョンを上げる）：
+
+- **任意のレビュアー、任意のモデル。** `critical_review.py --reviewers agent[:model]` が `openrouter:<id>`、`claude`、`codex`、`opencode`、`muse`、`agy` を受け付け、それぞれモデルを指定可能。ローカル CLI は空の一時フォルダで読み取り専用/plan モードで動作し、テキストのみで回答するよう指示（そうしないと Antigravity がシェルツールを使おうとして headless で自動拒否され、出力が空になった）。デモ原稿で試験：Codex、opencode（kimi-k3）、Muse、Antigravity、OpenRouter の 4 モデルがすべて完全なレビューを返した。
+- **設定。** `manuwright config set main-model|review.reviewers|review.openrouter-models|review.<agent>-model ...`（および `unset`）。レビューは既定でこの設定を使う。main モデルと同じモデルのレビュアーは `not_independent` と表示。
+- **Obsidian 連携。** `manuwright obsidian status|connect` が「Academic Paper Citation Manager」の MCP サーバー（`rag-obsidian`）を Claude Code、Codex、opencode、Antigravity、Muse に登録（先に確認し、接続済みはスキップ、編集する JSON はバックアップ）。プラグインがあれば `manuwright agents install` が接続を提案。`manuwright evidence import-obsidian <citekey>` は vault ノート（CSL 項目と AI 要約）を `abstract-only` の根拠項目にする。この Mac で確認：Codex、Muse、opencode が MCP でライブラリを呼び出した。Claude Code は接続済み、Antigravity は初回の MCP 呼び出しを対話的に許可する必要がある。
+- マニュアル：投稿段階（バインディング、チェックリスト、レビュー回数、stale、ビルド）、Obsidian・レビュアーの節を追加。
+- 414 tests 通過。
+
 ### v1.8.7 (260930)
 
 - **PubMed 取り込みの参考文献文字列**：`search_pubmed.py` が "et al.." と書き、タイトルと誌名の間のピリオドが抜けていた（"...: A meta-analysis J Back Musculoskelet Rehabil"）ため、ビルドされたすべての参考文献リストに現れていた。修正しテストを追加（旧テストは二重ピリオドを前提にしていた）。合成デモ論文の最初の DOCX パッケージを目視確認中に発見。

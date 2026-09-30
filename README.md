@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright init my-paper
 ```
@@ -123,7 +123,8 @@ manuwright init my-paper
 | `manuwright gate` / `verify-all` | Check a phase-gate ledger against live checkers |
 | `manuwright search "<query>"` | Search PubMed and print evidence entries |
 | `manuwright packet` / `build` | Local review packet / gated DOCX build |
-| `manuwright update`, `agents install\|update`, `config` | Releases, agent adapters, auto-update |
+| `manuwright update`, `agents install\|update`, `config` | Releases, agent adapters, auto-update, main model and reviewer models |
+| `manuwright obsidian status\|connect`, `evidence import-obsidian <citekey>` | Connect the Obsidian "Academic Paper Citation Manager" library to every agent; bring a vault reference into `evidence.md` |
 
 In Claude Code the template also ships slash commands: `/verify`, `/search-evidence`, `/import-doi`, `/style-pass`, `/verify-claims`, `/suggest-citation`, `/cite-stance`, `/evidence-table`, `/paper-debate`, `/critical-review`, `/editor-review`.
 

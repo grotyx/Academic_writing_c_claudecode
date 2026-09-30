@@ -173,18 +173,43 @@ def update(engine, args):
     return code
 
 
+REVIEW_AGENTS = ('claude', 'codex', 'opencode', 'muse', 'agy')
+CONFIG_KEYS = {  # key -> (path in config.json, kind)
+    'auto-update': (('auto_update',), 'onoff'),
+    'main-model': (('main_model',), 'text'),
+    'review.reviewers': (('review', 'reviewers'), 'list'),
+    'review.openrouter-models': (('review', 'openrouter_models'), 'list'),
+    **{f'review.{a}-model': (('review', f'{a}_model'), 'text') for a in REVIEW_AGENTS},
+}
+CONFIG_USAGE = ('usage: manuwright config [set <key> <value> | unset <key>]\n  keys: '
+                + ', '.join(CONFIG_KEYS) + '\n  lists are comma-separated; reviewers are agent[:model] '
+                '(openrouter:<id>, claude, codex, opencode, muse, agy)')
+
+
 def config(args):
-    """manuwright config [set auto-update on|off]"""
+    """manuwright config [set <key> <value> | unset <key>]"""
     data = load('config.json', {})
-    if args[:2] == ['set', 'auto-update'] and len(args) == 3 and args[2] in {'on', 'off'}:
-        data['auto_update'] = args[2] == 'on'
+    if args[:1] in (['set'], ['unset']) and len(args) >= 2 and args[1] in CONFIG_KEYS:
+        path, kind = CONFIG_KEYS[args[1]]
+        parent = data
+        for part in path[:-1]:
+            parent = parent.setdefault(part, {})
+        if args[0] == 'unset':
+            parent.pop(path[-1], None)
+        elif len(args) != 3 or (kind == 'onoff' and args[2] not in {'on', 'off'}):
+            print(CONFIG_USAGE, file=sys.stderr)
+            return 2
+        else:
+            value = args[2]
+            parent[path[-1]] = (value == 'on' if kind == 'onoff' else
+                                [v.strip() for v in value.split(',') if v.strip()] if kind == 'list' else value)
         save('config.json', data)
     elif args:
-        print('usage: manuwright config [set auto-update on|off]', file=sys.stderr)
+        print(CONFIG_USAGE, file=sys.stderr)
         return 2
-    print(json.dumps({'home': str(home()), **data, 'projects': [str(p) for p in known_projects()]}, indent=2))
+    print(json.dumps({'home': str(home()), **data, 'projects': [str(p) for p in known_projects()]},
+                     indent=2, ensure_ascii=False))
     return 0
-
 
 # --- init / rules -----------------------------------------------------------
 
@@ -320,4 +345,11 @@ def agents(engine, args):
                     print(f'[{agent}] exit {code}; continuing with the next agent')
                     break
     print('Mandatory rules come from each paper folder (CLAUDE.md / AGENTS.md / GEMINI.md, see manuwright init).')
+    if mode == 'install' and not dry:
+        try:
+            from manuwright import obsidian
+        except ImportError:
+            sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+            from manuwright import obsidian
+        obsidian.offer_connect()
     return 1 if failed else 0
