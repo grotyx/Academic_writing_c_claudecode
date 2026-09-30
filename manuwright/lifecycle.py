@@ -269,11 +269,20 @@ def setup(args, ask=input):
                 return
             print('  not valid here; try again.')
 
+    try:
+        return _setup_steps(data, prompt, ask)
+    except (EOFError, KeyboardInterrupt):
+        print('\nSetup stopped; nothing saved.')
+        return 1
+
+
+def _setup_steps(data, prompt, ask):
     print('1. Models and reviewers')
     for key in ('main-model', 'review.reviewers'):
         prompt(key)
-    chosen = [r.split(':')[0].strip() for r in data.get('review', {}).get('reviewers', [])]
-    if 'openrouter' in chosen:
+    reviewers = [r.strip() for r in data.get('review', {}).get('reviewers', [])]
+    chosen = [r.split(':')[0] for r in reviewers]
+    if 'openrouter' in reviewers:  # only a bare "openrouter" uses review.openrouter-models
         prompt('review.openrouter-models')
     for agent in REVIEW_AGENTS:
         if agent in chosen:

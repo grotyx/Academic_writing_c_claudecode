@@ -229,3 +229,10 @@ def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
                             'line_numbers': 'page', 'page_numbers': 'right'}
     assert data['auto_update'] is True and offered == [1]
     assert 'not valid' in capsys.readouterr().out
+
+
+def test_setup_interrupt_saves_nothing(capsys):
+    def stop(_):
+        raise KeyboardInterrupt
+    assert lifecycle.setup([], ask=stop) == 1
+    assert lifecycle.load('config.json', {}) == {} and 'nothing saved' in capsys.readouterr().out
