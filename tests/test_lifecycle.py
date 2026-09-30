@@ -199,3 +199,12 @@ def test_local_reviewer_runs_outside_the_paper(monkeypatch, tmp_path):
     out = cr.run_critical_review('manuscript', ['agy:gemini-x', 'opencode:openai/gpt-x'], 'manuscript', None)
     assert out == {'agy:gemini-x': 'review text', 'opencode:openai/gpt-x': 'review text'}
     assert 'review-' in str(seen['cwd'])
+
+
+def test_config_saves_default_docx_style(capsys):
+    assert lifecycle.config(['set', 'docx.font', 'Arial']) == 0
+    assert lifecycle.config(['set', 'docx.line-spacing', '1.5']) == 0
+    assert lifecycle.config(['set', 'docx.line-numbers', 'page']) == 0
+    assert lifecycle.config(['set', 'docx.size', 'big']) == 2
+    assert lifecycle.config(['set', 'docx.page-numbers', 'left']) == 2
+    assert lifecycle.load('config.json', {})['docx'] == {'font': 'Arial', 'line_spacing': 1.5, 'line_numbers': 'page'}

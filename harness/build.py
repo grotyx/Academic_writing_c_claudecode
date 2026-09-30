@@ -1,6 +1,7 @@
 """Manifest-ordered DOCX and Markdown package, gated before publication."""
 from __future__ import annotations
 import json
+import os
 import re
 import shutil
 import tempfile
@@ -11,24 +12,63 @@ from .project import load_project, verify, snapshot, checker
 from .results import inside, digest
 
 
-def document(numbered=True):
+# Manuscript DOCX style. Precedence: these defaults < the user's saved default
+# (`manuwright config set docx.<key> <value>`, ~/.manuwright/config.json) < project.json "docx"
+# (per paper, i.e. per target journal).
+DOCX_DEFAULTS = {'font': 'Times New Roman', 'size': 10, 'heading_size': 12, 'subheading_size': 11,
+                 'line_spacing': 2.0, 'margin_inches': 1.0,
+                 'line_numbers': 'continuous', 'page_numbers': 'center'}
+DOCX_CHOICES = {'line_numbers': ('continuous', 'page', 'off'), 'page_numbers': ('center', 'right', 'off')}
+
+
+def user_docx():
+    try:
+        home = Path(os.environ.get('MANUWRIGHT_HOME') or Path.home() / '.manuwright')
+        return json.loads((home / 'config.json').read_text(encoding='utf-8')).get('docx', {})
+    except (OSError, ValueError, RuntimeError):  # no saved config, or no home directory
+        return {}
+
+
+def docx_style(config):
+    style = dict(DOCX_DEFAULTS)
+    for source, values in (('user config', user_docx()), ('project.json', config.get('docx', {}))):
+        if not isinstance(values, dict):
+            raise ValueError(f'{source} docx must be an object')
+        for key, value in values.items():
+            if key not in DOCX_DEFAULTS:
+                raise ValueError(f'{source} docx: unknown key {key!r} (known: {", ".join(DOCX_DEFAULTS)})')
+            if key in DOCX_CHOICES and value not in DOCX_CHOICES[key]:
+                raise ValueError(f'{source} docx.{key} must be one of {", ".join(DOCX_CHOICES[key])}')
+            if key == 'font' and not (isinstance(value, str) and value.strip()):
+                raise ValueError(f'{source} docx.font must be a font name')
+            if key not in DOCX_CHOICES and key != 'font' and not (
+                    isinstance(value, (int, float)) and not isinstance(value, bool) and 0 < value <= 72):
+                raise ValueError(f'{source} docx.{key} must be a positive number')
+            style[key] = value
+    return style
+
+
+def document(style=DOCX_DEFAULTS, numbered=True):
     from docx import Document
     from docx.shared import Inches, Pt, RGBColor
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
     doc = Document()
-    style = doc.styles['Normal']
-    style.font.name = 'Times New Roman'; style.font.size = Pt(10)
-    style.font.color.rgb = RGBColor(0, 0, 0)
-    style.paragraph_format.line_spacing = 2
+    normal = doc.styles['Normal']
+    normal.font.name = style['font']; normal.font.size = Pt(style['size'])
+    normal.font.color.rgb = RGBColor(0, 0, 0)
+    normal.paragraph_format.line_spacing = style['line_spacing']
     for section in doc.sections:
-        section.top_margin = section.bottom_margin = Inches(1)
-        section.left_margin = section.right_margin = Inches(1)
-        if numbered:
+        section.top_margin = section.bottom_margin = Inches(style['margin_inches'])
+        section.left_margin = section.right_margin = Inches(style['margin_inches'])
+        if numbered and style['line_numbers'] != 'off':
             lines = OxmlElement('w:lnNumType')
-            lines.set(qn('w:countBy'), '1'); lines.set(qn('w:restart'), 'continuous')
+            lines.set(qn('w:countBy'), '1')
+            lines.set(qn('w:restart'), 'newPage' if style['line_numbers'] == 'page' else 'continuous')
             section._sectPr.append(lines)
-            paragraph = section.footer.paragraphs[0]; paragraph.alignment = 1
+        if numbered and style['page_numbers'] != 'off':
+            paragraph = section.footer.paragraphs[0]
+            paragraph.alignment = 2 if style['page_numbers'] == 'right' else 1
             field = OxmlElement('w:fldSimple'); field.set(qn('w:instr'), 'PAGE')
             paragraph._p.append(field)
     return doc
@@ -48,7 +88,7 @@ def inline(paragraph, text):
             paragraph.add_run(part)
 
 
-def append_markdown(doc, text):
+def append_markdown(doc, text, style=DOCX_DEFAULTS):
     from docx.shared import Pt
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
@@ -86,7 +126,7 @@ def append_markdown(doc, text):
         match = re.match(r'^(#{1,6})\s+(.+)',line)
         if match:
             run=doc.add_paragraph().add_run(match.group(2));run.bold=True
-            run.italic=len(match.group(1))>1;run.font.size=Pt(12 if len(match.group(1))==1 else 11)
+            run.italic=len(match.group(1))>1;run.font.size=Pt(style['heading_size'] if len(match.group(1))==1 else style['subheading_size'])
         else:
             prose=[line]
             while i<len(lines) and lines[i].strip() and not lines[i].lstrip().startswith(('#','|','- ')):
@@ -96,6 +136,7 @@ def append_markdown(doc, text):
 
 def build(path):
     path, config = load_project(path);root=path.parent
+    style=docx_style(config)  # fail on a bad style before the (slower) verification
     report=verify(path,'submission')
     if report['status']!='PASS':
         raise ValueError('submission verification '+report['status']+': '+', '.join(x['check'] for x in report['checks'] if x['status'] in {'FAIL','BLOCKED'}))
@@ -118,29 +159,29 @@ def build(path):
     destination.mkdir(parents=True,exist_ok=True)
     final=destination/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'_'+uuid4().hex[:8])
     with tempfile.TemporaryDirectory(prefix='.building-',dir=destination) as tmp:
-        stage=Path(tmp);manuscript=document();merged=[];section_count=0
+        stage=Path(tmp);manuscript=document(style);merged=[];section_count=0
         for value in config['artifacts']:
             source=inside(root,value)
             text=formatter.convert_text(source.read_text(encoding='utf-8'),references.labels)
             if source.name.startswith('08_references'):
                 continue  # bibliography is generated below from actual first appearances
             if source.name.startswith('01_title'):
-                title=document(False);append_markdown(title,text);title.save(stage/f'title_page{stamp}.docx');continue
+                title=document(style,False);append_markdown(title,text,style);title.save(stage/f'title_page{stamp}.docx');continue
             if section_count: manuscript.add_page_break()
-            append_markdown(manuscript,text);merged.append(text);section_count+=1
+            append_markdown(manuscript,text,style);merged.append(text);section_count+=1
         if references.references:
             bibliography='# References\n\n'+'\n\n'.join(references.references)
-            manuscript.add_page_break();append_markdown(manuscript,bibliography);merged.append(bibliography)
+            manuscript.add_page_break();append_markdown(manuscript,bibliography,style);merged.append(bibliography)
         if config.get('ai_usage'):
             ai=json.loads(inside(root,config['ai_usage']).read_text(encoding='utf-8'))
             if ai.get('used'):
                 disclosure='# AI assistance disclosure\n\n'+ai['disclosure']
-                manuscript.add_page_break();append_markdown(manuscript,disclosure);merged.append(disclosure)
+                manuscript.add_page_break();append_markdown(manuscript,disclosure,style);merged.append(disclosure)
         manuscript.save(stage/f'manuscript{stamp}.docx')
         (stage/f'manuscript{stamp}.md').write_text('\n\n'.join(merged),encoding='utf-8')
         for index,value in enumerate(config.get('tables',[]),1):
             text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels)
-            table=document(False);append_markdown(table,text);table.save(stage/f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}{stamp}.docx')
+            table=document(style,False);append_markdown(table,text,style);table.save(stage/f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}{stamp}.docx')
         for index,value in enumerate(config.get('figures',[]),1):
             source=inside(root,value);shutil.copyfile(source,stage/f'figure_{checker("check_crossrefs").FIGURE_FILE_RE.search(source.stem).group(1)}{source.suffix}')
         if config.get('response'):
@@ -160,6 +201,6 @@ def build(path):
         (stage/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
         outputs={item.name:digest(item) for item in sorted(stage.iterdir()) if item.is_file()}
         (stage/'build.json').write_text(json.dumps({'schema_version':1,'paper_id':config['paper_id'],
-            'outputs':outputs,'visual_qa':'required before submission','citation_style':'numbered; source Citation strings preserved'},indent=2),encoding='utf-8')
+            'outputs':outputs,'visual_qa':'required before submission','citation_style':'numbered; source Citation strings preserved','docx_style':style},indent=2),encoding='utf-8')
         stage.rename(final)
     return final

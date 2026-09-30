@@ -16,6 +16,13 @@ def put(path,value):
     return path
 
 
+@pytest.fixture(autouse=True)
+def isolated_home(tmp_path_factory,monkeypatch):
+    # The saved DOCX default lives in the user's config; never read the real one.
+    home=tmp_path_factory.mktemp('mwhome');monkeypatch.setenv('MANUWRIGHT_HOME',str(home))
+    return home
+
+
 @pytest.fixture
 def project(tmp_path):
     put(tmp_path/'drafts/03_introduction.md','# Introduction\n\nAn important clinical question remains unresolved.\n')
@@ -147,8 +154,8 @@ def test_changed_during_build_does_not_publish(project):
     sign(project)
     from harness import build as module
     original=module.append_markdown
-    def mutate(doc,text):
-        original(doc,text)
+    def mutate(doc,text,*style):
+        original(doc,text,*style)
         put(project.parent/'knowledge/evidence.md','# Changed during build')
     with patch.object(module,'append_markdown',side_effect=mutate):
         with pytest.raises(ValueError,match='changed during build'):
@@ -304,3 +311,25 @@ def test_draft_runs_before_submission_records_exist(project):
     report=verify(project,'submission')
     assert report['status']=='BLOCKED'
     assert {c['check'] for c in report['checks'] if c['status']=='BLOCKED'} >= {'ai_disclosure','reporting_checklist'}
+
+
+def test_docx_style_user_default_then_project_override(project,isolated_home):
+    from harness.build import docx_style
+    from docx import Document
+    (isolated_home/'config.json').write_text(json.dumps({'docx':{'font':'Arial','size':11,'line_numbers':'page'}}))
+    config=json.loads(project.read_text());config['docx']={'size':12,'line_spacing':1.5,'page_numbers':'right'}
+    project.write_text(json.dumps(config))
+    style=docx_style(config)
+    assert (style['font'],style['size'],style['line_spacing'],style['line_numbers'])==('Arial',12,1.5,'page')
+    sign(project)
+    out=build(project)
+    doc=Document(next(out.glob('manuscript_*.docx')))
+    normal=doc.styles['Normal']
+    assert normal.font.name=='Arial' and normal.font.size.pt==12 and normal.paragraph_format.line_spacing==1.5
+    assert doc.sections[0]._sectPr.xpath('./w:lnNumType')[0].get(
+        '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}restart')=='newPage'
+    assert doc.sections[0].footer.paragraphs[0].alignment==2
+    assert json.loads((out/'build.json').read_text())['docx_style']['font']=='Arial'
+    for bad in ({'colour':'red'},{'size':'big'},{'line_numbers':'sometimes'}):
+        with pytest.raises(ValueError,match='docx'):
+            docx_style({'docx':bad})

@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.0.0)
+# manuwright 사용자 매뉴얼 (v2.0.1)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -281,8 +281,16 @@ manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1�
 | `review.openrouter-models` | `openrouter` 만 적었을 때 쓸 모델들 |
 | `review.<agent>-model` | `claude`, `codex`, `opencode`, `muse`, `agy` 각각의 모델 |
 | `auto-update` | `on`/`off`: 자동 patch 업데이트 |
+| `docx.font`, `docx.size`, `docx.line-spacing`, `docx.margin-inches`, `docx.heading-size`, `docx.subheading-size` | 내 기본 Word 스타일(기본값 Times New Roman 10pt, 줄 간격 2배, 여백 1인치) |
+| `docx.line-numbers`, `docx.page-numbers` | `continuous`/`page`/`off`, `center`/`right`/`off` |
 
 `manuwright config` 로 설정을 보고, `manuwright config unset <키>` 로 지운다.
+
+저널마다 서식 규정이 다르면 그 논문의 `project.json` 에 `"docx"` 블록을 넣는다. 그 논문에서만 기본 스타일을 덮어쓴다.
+
+```json
+"docx": {"font": "Arial", "size": 12, "line_spacing": 1.5, "line_numbers": "page", "page_numbers": "right"}
+```
 
 ## 11. 문제 해결
 

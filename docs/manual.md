@@ -1,4 +1,4 @@
-# manuwright user manual (v2.0.0)
+# manuwright user manual (v2.0.1)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -274,8 +274,16 @@ Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.
 | `review.openrouter-models` | Models used for a bare `openrouter` reviewer |
 | `review.<agent>-model` | Model for `claude`, `codex`, `opencode`, `muse` or `agy` |
 | `auto-update` | `on`/`off`: automatic patch updates |
+| `docx.font`, `docx.size`, `docx.line-spacing`, `docx.margin-inches`, `docx.heading-size`, `docx.subheading-size` | Your default Word style (default Times New Roman 10 pt, double spacing, 1-inch margins) |
+| `docx.line-numbers`, `docx.page-numbers` | `continuous`/`page`/`off` and `center`/`right`/`off` |
 
 `manuwright config` prints the settings; `manuwright config unset <key>` removes one.
+
+A journal with other layout rules gets its own `"docx"` block in that paper's `project.json`, which overrides your default for that paper only:
+
+```json
+"docx": {"font": "Arial", "size": 12, "line_spacing": 1.5, "line_numbers": "page", "page_numbers": "right"}
+```
 
 ## 11. Troubleshooting
 

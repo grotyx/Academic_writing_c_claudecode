@@ -180,10 +180,17 @@ CONFIG_KEYS = {  # key -> (path in config.json, kind)
     'review.reviewers': (('review', 'reviewers'), 'list'),
     'review.openrouter-models': (('review', 'openrouter_models'), 'list'),
     **{f'review.{a}-model': (('review', f'{a}_model'), 'text') for a in REVIEW_AGENTS},
+    # Saved default DOCX style; a project.json "docx" block overrides it per paper/journal.
+    'docx.font': (('docx', 'font'), 'text'),
+    **{f'docx.{k.replace("_", "-")}': (('docx', k), 'number')
+       for k in ('size', 'heading_size', 'subheading_size', 'line_spacing', 'margin_inches')},
+    'docx.line-numbers': (('docx', 'line_numbers'), ('continuous', 'page', 'off')),
+    'docx.page-numbers': (('docx', 'page_numbers'), ('center', 'right', 'off')),
 }
 CONFIG_USAGE = ('usage: manuwright config [set <key> <value> | unset <key>]\n  keys: '
                 + ', '.join(CONFIG_KEYS) + '\n  lists are comma-separated; reviewers are agent[:model] '
-                '(openrouter:<id>, claude, codex, opencode, muse, agy)')
+                '(openrouter:<id>, claude, codex, opencode, muse, agy)\n  docx.* is your default Word style; '
+                'a project.json "docx" block overrides it for one paper')
 
 
 def config(args):
@@ -196,13 +203,16 @@ def config(args):
             parent = parent.setdefault(part, {})
         if args[0] == 'unset':
             parent.pop(path[-1], None)
-        elif len(args) != 3 or (kind == 'onoff' and args[2] not in {'on', 'off'}):
+        elif (len(args) != 3 or (kind == 'onoff' and args[2] not in {'on', 'off'})
+              or (isinstance(kind, tuple) and args[2] not in kind)
+              or (kind == 'number' and not re.fullmatch(r'\d+(\.\d+)?', args[2]))):
             print(CONFIG_USAGE, file=sys.stderr)
             return 2
         else:
             value = args[2]
             parent[path[-1]] = (value == 'on' if kind == 'onoff' else
-                                [v.strip() for v in value.split(',') if v.strip()] if kind == 'list' else value)
+                                [v.strip() for v in value.split(',') if v.strip()] if kind == 'list' else
+                                float(value) if kind == 'number' else value)
         save('config.json', data)
     elif args:
         print(CONFIG_USAGE, file=sys.stderr)
