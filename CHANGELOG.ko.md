@@ -1,5 +1,14 @@
 # 변경 이력
 
+### v1.8.5 (260930)
+
+합성 임상시험 데이터로 끝까지 돌려 본 시험(init, 분석 계획, 승인, 분석, 표, 검사)에서 발견:
+
+- **템플릿 hook 이 `cd` 후 조용히 꺼지던 문제**: `.claude/settings.json` 이 `sh scripts/hooks/run.sh ...` 를 상대 경로로 불렀음. 에이전트가 셸에서 폴더를 옮기면 모든 hook 이 exit 127 로 실패했고, Claude Code 는 이를 차단이 아닌 오류로 처리해서 plan-first 쓰기가 허용됐음. hook 명령을 `$CLAUDE_PROJECT_DIR` 기준으로 고정. 관계없는 폴더에서 gate 를 돌리는 회귀 테스트 추가.
+- `verify` 가 "one or more declared artifacts are missing" 대신 없는 파일 이름을 알려 줌.
+- 같은 시험에서 확인: 계획 승인 전에는 분석 스크립트 차단, `record-approval` 후 허용. draft plan 미승인 상태에서 Results 섹션 차단. 표 수치 50개가 결과 CSV 와 일치. 틀린 평균(61.2)을 가장 가까운 실제 값(60.4)과 함께 잡아냄.
+- 403 tests 통과.
+
 ### v1.8.4 (260930)
 
 - **새 README**: 인기 에이전트 도구 저장소 형식으로 개편. 로고, 한 줄 소개, 배지, 쓰기 전/후, 동작 방식, 에이전트별 설치, 명령, 워크플로, FAQ (영·한·일·중). 예전 README 내용은 그대로 `docs/guide/overview*.md` 로, 변경 이력은 `CHANGELOG*.md` 로 옮김.

@@ -1,5 +1,14 @@
 # 变更记录
 
+### v1.8.5 (260930)
+
+在合成临床试验数据上的端到端测试（init、分析计划、批准、分析、表格、检查）中发现：
+
+- **模板 hook 在 `cd` 后静默失效**：`.claude/settings.json` 用相对路径调用 `sh scripts/hooks/run.sh ...`。智能体在 shell 中切换目录后，所有 hook 以 exit 127 失败，而 Claude Code 将其视为非阻断错误，于是 plan-first 写入被放行。hook 命令现以 `$CLAUDE_PROJECT_DIR` 为基准。新增从无关目录运行 gate 的回归测试。
+- `verify` 现在列出缺失的文件名，而不是 "one or more declared artifacts are missing"。
+- 同一测试中确认：计划批准前分析脚本被阻止，`record-approval` 后放行；draft plan 未批准时 Results 章节被阻止；表中 50 个数字与结果 CSV 一致；错误均值（61.2）被检出，并给出最接近的真实值（60.4）。
+- 403 个测试通过。
+
 ### v1.8.4 (260930)
 
 - **全新 README**：采用热门智能体工具仓库的风格：Logo、一句话介绍、徽章、使用前/后、工作方式、按智能体安装、命令、工作流、FAQ（英/韩/日/中）。旧 README 内容原样移至 `docs/guide/overview*.md`，变更记录移至 `CHANGELOG*.md`。

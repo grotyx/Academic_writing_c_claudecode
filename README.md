@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.4
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.5
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright init my-paper
 ```

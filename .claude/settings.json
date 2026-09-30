@@ -1,10 +1,10 @@
 {
-  "$comment": "Process-enforcement hooks for the academic paper workflow. Commands go through scripts/hooks/run.sh (POSIX sh), which execs the Windows 'py' launcher when present and falls back to 'python3' on macOS/Linux -- one settings file for every platform (Claude Code on Windows ships with Git Bash, so 'sh' is available there). Hooks run from the project root and fail open (a hook error never blocks work).",
+  "$comment": "Process-enforcement hooks for the academic paper workflow. Commands go through scripts/hooks/run.sh (POSIX sh), which execs the Windows 'py' launcher when present and falls back to 'python3' on macOS/Linux -- one settings file for every platform (Claude Code on Windows ships with Git Bash, so 'sh' is available there). Hook paths are anchored to $CLAUDE_PROJECT_DIR so they keep working after the agent cd's elsewhere (a relative path silently disabled every gate, exit 127). Hooks fail open (a hook error never blocks work).",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "sh scripts/hooks/run.sh scripts/hooks/session_contract.py" }
+          { "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/scripts/hooks/run.sh\" \"$CLAUDE_PROJECT_DIR/scripts/hooks/session_contract.py\"" }
         ]
       }
     ],
@@ -12,7 +12,7 @@
       {
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          { "type": "command", "command": "sh scripts/hooks/run.sh scripts/hooks/enforce_gates.py" }
+          { "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/scripts/hooks/run.sh\" \"$CLAUDE_PROJECT_DIR/scripts/hooks/enforce_gates.py\"" }
         ]
       }
     ],
@@ -20,14 +20,14 @@
       {
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          { "type": "command", "command": "sh scripts/hooks/run.sh scripts/hooks/lint_on_edit.py" }
+          { "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/scripts/hooks/run.sh\" \"$CLAUDE_PROJECT_DIR/scripts/hooks/lint_on_edit.py\"" }
         ]
       }
     ],
     "UserPromptSubmit": [
       {
         "hooks": [
-          { "type": "command", "command": "sh scripts/hooks/run.sh scripts/hooks/style_intent.py" }
+          { "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/scripts/hooks/run.sh\" \"$CLAUDE_PROJECT_DIR/scripts/hooks/style_intent.py\"" }
         ]
       }
     ]

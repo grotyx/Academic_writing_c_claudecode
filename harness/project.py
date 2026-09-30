@@ -32,8 +32,9 @@ def load_project(path):
     resolved = [inside(path.parent, item) for item in paths]
     if len(resolved) != len(set(resolved)):
         raise ValueError('duplicate artifact paths')
-    if any(not item.is_file() for item in resolved):
-        raise ValueError('one or more declared artifacts are missing')
+    missing = [str(item.relative_to(path.parent)) for item in resolved if not item.is_file()]
+    if missing:
+        raise ValueError('one or more declared artifacts are missing: ' + ', '.join(missing))
     for key in ('evidence', 'draft_plan'):
         if not inside(path.parent, config[key]).is_file():
             raise ValueError(f'missing {key}')

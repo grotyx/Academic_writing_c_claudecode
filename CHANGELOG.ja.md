@@ -1,5 +1,14 @@
 # 変更履歴
 
+### v1.8.5 (260930)
+
+合成臨床試験データでのエンドツーエンド試験（init、解析計画、承認、解析、表、検査）で発見：
+
+- **テンプレートの hook が `cd` 後に黙って無効になる問題**：`.claude/settings.json` が `sh scripts/hooks/run.sh ...` を相対パスで呼んでいた。エージェントがシェルで移動するとすべての hook が exit 127 で失敗し、Claude Code はこれを非ブロッキングのエラーとして扱うため、plan-first の書き込みが許可されていた。hook コマンドを `$CLAUDE_PROJECT_DIR` 基準に固定。無関係なフォルダから gate を実行する回帰テストを追加。
+- `verify` が "one or more declared artifacts are missing" の代わりに欠けているファイル名を表示。
+- 同じ試験で確認：計画承認前は解析スクリプトをブロック、`record-approval` 後は許可。draft plan 未承認で Results セクションをブロック。表の数値 50 個が結果 CSV と一致。誤った平均（61.2）を最も近い実際の値（60.4）とともに検出。
+- 403 tests 通過。
+
 ### v1.8.4 (260930)
 
 - **新しい README**：人気のエージェントツールのリポジトリ形式に刷新。ロゴ、一行紹介、バッジ、導入前/導入後、仕組み、エージェント別インストール、コマンド、ワークフロー、FAQ（英・韓・日・中）。旧 README の内容はそのまま `docs/guide/overview*.md` へ、変更履歴は `CHANGELOG*.md` へ移動。

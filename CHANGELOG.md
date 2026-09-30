@@ -1,5 +1,14 @@
 # Changelog
 
+### v1.8.5 (260930)
+
+Found in an end-to-end run on synthetic trial data (init, analysis plan, approval, analysis, tables, checks):
+
+- **Template hooks silently turned off after a `cd`**: `.claude/settings.json` called `sh scripts/hooks/run.sh ...` with relative paths. Once the agent changed directory in its shell, every hook failed with exit 127, which Claude Code treats as a non-blocking error, so plan-first writes were allowed. Hook commands are now anchored to `$CLAUDE_PROJECT_DIR`. Regression test runs the gate from an unrelated folder.
+- `verify` names the missing artifacts instead of "one or more declared artifacts are missing".
+- Confirmed in the same run: analysis scripts blocked before the plan was approved, allowed after `record-approval`; a Results section blocked without an approved draft plan; 50 table numbers matched the results CSVs; a wrong mean (61.2) was caught with the closest true value (60.4).
+- 403 tests pass.
+
 ### v1.8.4 (260930)
 
 - **New README** in the style of popular agent-tool repositories: logo, one-line pitch, badges, before/after, how it works, install per agent, commands, workflow, FAQ (en/ko/ja/zh). Everything the old README held moved verbatim to `docs/guide/overview*.md`; changelogs moved to `CHANGELOG*.md`.

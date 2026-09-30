@@ -126,3 +126,25 @@ def test_source_cli_fills_project_paths_from_cwd(project):
     assert f'evidence: {root / "knowledge" / "evidence.md"}' in out, out
     out = run([ENGINE / 'manuwright/cli.py', 'citations', 'drafts/05_results.md', '--evidence', ENGINE / 'knowledge/evidence.md'], root).stdout
     assert f'evidence: {ENGINE / "knowledge" / "evidence.md"}' in out, out
+
+
+def test_template_hooks_survive_a_cd(elsewhere):
+    """Relative hook paths broke (exit 127, gate silently off) once the agent cd'd away."""
+    settings = json.loads((ENGINE / '.claude/settings.json').read_text(encoding='utf-8'))
+    commands = [h['command'] for event in settings['hooks'].values() for group in event for h in group['hooks']]
+    assert commands and all(c.count('$CLAUDE_PROJECT_DIR/scripts/hooks/') == 2 for c in commands), commands
+    if shutil.which('sh'):
+        gate = next(c for c in commands if 'enforce_gates' in c)
+        event = {'tool_name': 'Write', 'cwd': str(elsewhere), 'tool_input': {'file_path': 'drafts/04_methods.md'}}
+        done = subprocess.run(['sh', '-c', gate], cwd=elsewhere, input=json.dumps(event), capture_output=True,
+                              text=True, encoding='utf-8', env={**os.environ, 'CLAUDE_PROJECT_DIR': str(ENGINE)})
+        assert done.returncode == 2 and 'BLOCKED' in done.stderr, done.stderr
+
+
+def test_missing_artifacts_are_named(project):
+    data = json.loads(project.read_text(encoding='utf-8'))
+    data['artifacts'].append('drafts/06_discussion.md')
+    put(project, data)
+    with pytest.raises(ValueError, match='06_discussion.md'):
+        from harness.project import load_project
+        load_project(project)
