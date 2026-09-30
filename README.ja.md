@@ -124,7 +124,7 @@ manuwright init my-paper
 | `manuwright search "<query>"` | PubMed を検索し根拠エントリを表示 |
 | `manuwright packet` / `build` | ローカルのレビュー packet / ゲート通過が必要な DOCX ビルド |
 | `manuwright update`、`agents install\|update`、`config` | リリース、エージェントアダプター、自動更新、main モデルとレビュアーのモデル |
-| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | Obsidian「Academic Paper Citation Manager」ライブラリを全エージェントに接続；vault の文献を `evidence.md` へ取り込み |
+| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | 任意（推奨）：Obsidian「Academic Paper Citation Manager」ライブラリを全エージェントに接続；vault の文献を `evidence.md` へ取り込み |
 
 テンプレートには Claude Code 用の slash command も含まれる：`/verify`、`/search-evidence`、`/import-doi`、`/style-pass`、`/verify-claims`、`/suggest-citation`、`/cite-stance`、`/evidence-table`、`/paper-debate`、`/critical-review`、`/editor-review`。
 

@@ -124,7 +124,7 @@ manuwright init my-paper
 | `manuwright search "<query>"` | Search PubMed and print evidence entries |
 | `manuwright packet` / `build` | Local review packet / gated DOCX build |
 | `manuwright update`, `agents install\|update`, `config` | Releases, agent adapters, auto-update, main model and reviewer models |
-| `manuwright obsidian status\|connect`, `evidence import-obsidian <citekey>` | Connect the Obsidian "Academic Paper Citation Manager" library to every agent; bring a vault reference into `evidence.md` |
+| `manuwright obsidian status\|connect`, `evidence import-obsidian <citekey>` | Optional, recommended: connect the Obsidian "Academic Paper Citation Manager" library to every agent; bring a vault reference into `evidence.md` |
 
 In Claude Code the template also ships slash commands: `/verify`, `/search-evidence`, `/import-doi`, `/style-pass`, `/verify-claims`, `/suggest-citation`, `/cite-stance`, `/evidence-table`, `/paper-debate`, `/critical-review`, `/editor-review`.
 

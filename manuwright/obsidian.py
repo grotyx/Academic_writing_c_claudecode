@@ -1,4 +1,6 @@
-"""Connect the Obsidian "Academic Paper Citation Manager" plugin (MCP server `rag-obsidian`).
+"""Optional, recommended: connect the Obsidian "Academic Paper Citation Manager" plugin (MCP `rag-obsidian`).
+
+manuwright never requires it; without the plugin every command here is a no-op or a hint.
 
 manuwright obsidian status                    vaults with the plugin, and which agents are connected
 manuwright obsidian connect [--vault PATH] [--only a,b] [--dry-run] [--yes]
@@ -174,6 +176,9 @@ def offer_connect():
     """Called after `manuwright agents install`: ask, never connect silently."""
     vaults = find_vaults()
     if not vaults:
+        print(f'\nOptional (recommended): the Obsidian plugin "Academic Paper Citation Manager" gives every agent a '
+              'searchable reference library (PubMed import, AI summaries, citekeys). Not required; '
+              'manuwright works without it. https://github.com/grotyx/rag-obsidian')
         return
     missing = [a for a in AGENTS if connected(a) is False]
     if not missing:

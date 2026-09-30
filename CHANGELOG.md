@@ -1,5 +1,10 @@
 # Changelog
 
+### Unreleased
+
+- Obsidian integration marked optional (recommended); without the plugin, `agents install` prints a one-line suggestion.
+- CI fixes after v1.8.8: reviewer settings tolerate an environment without a home directory; a test compared a POSIX path string on Windows.
+
 ### v1.8.8 (260930)
 
 One batch release (per the author's request, fixes are grouped instead of bumping per fix):

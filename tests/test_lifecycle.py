@@ -182,7 +182,7 @@ def test_reviewers_come_from_settings_with_models(monkeypatch):
                    ('openrouter', 'qwen/b'), ('openrouter', 'z/c'), ('claude', None)]
     assert cr.not_independent(got, cfg['main_model']) == ['deepseek/a']
     workdir, prompt = Path('/tmp/w'), Path('/tmp/p.md')
-    assert cr.local_argv('opencode', 'openai/gpt-x', prompt, workdir)[0][:6] == ['opencode', 'run', '--agent', 'plan', '--dir', '/tmp/w']
+    assert cr.local_argv('opencode', 'openai/gpt-x', prompt, workdir)[0][:6] == ['opencode', 'run', '--agent', 'plan', '--dir', str(workdir)]
     assert '--disable-web-tools' in cr.local_argv('muse', None, prompt, workdir)[0]
 
 

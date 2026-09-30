@@ -186,7 +186,7 @@ manuwright verify --project project.json --profile submission
 
 ## 9a. Obsidian 라이브러리와 다중 모델 검토
 
-**Obsidian.** Obsidian 플러그인 "Academic Paper Citation Manager" 를 쓴다면 한 번 연결해 두면 모든 에이전트가 MCP 로 참고문헌 라이브러리를 검색할 수 있다:
+**Obsidian (선택, 권장).** Obsidian 플러그인 "Academic Paper Citation Manager" 를 쓴다면 한 번 연결해 두면 모든 에이전트가 MCP 로 참고문헌 라이브러리를 검색할 수 있다:
 
 ```sh
 manuwright obsidian status

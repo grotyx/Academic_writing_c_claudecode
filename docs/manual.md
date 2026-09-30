@@ -179,7 +179,7 @@ Then `manuwright build --project project.json` writes the DOCX package (manuscri
 
 ## 9a. Obsidian library and multi-model review
 
-**Obsidian.** If you use the Obsidian plugin "Academic Paper Citation Manager", connect it once and every agent can search your reference library over MCP:
+**Obsidian (optional, recommended).** If you use the Obsidian plugin "Academic Paper Citation Manager", connect it once and every agent can search your reference library over MCP:
 
 ```sh
 manuwright obsidian status

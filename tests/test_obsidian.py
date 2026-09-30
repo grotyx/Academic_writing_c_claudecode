@@ -103,3 +103,12 @@ def test_imported_entry_passes_citation_check(vault, tmp_path):
     draft = tmp_path / 'intro.md'
     draft.write_text('# Introduction\n\nPooled trials favoured MI-TLIF [EVID:miller2020minimally].\n', encoding='utf-8')
     assert cc.check_citations([draft], evidence_path=evidence).passed
+
+
+def test_no_plugin_only_suggests(tmp_path, monkeypatch, capsys):
+    config = tmp_path / 'obsidian.json'
+    config.write_text('{"vaults": {}}')
+    monkeypatch.setattr(obsidian, 'obsidian_config', lambda: config)
+    obsidian.offer_connect()
+    out = capsys.readouterr().out
+    assert 'Optional (recommended)' in out and 'Not required' in out

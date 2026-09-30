@@ -124,7 +124,7 @@ manuwright init my-paper
 | `manuwright search "<query>"` | 检索 PubMed 并输出证据条目 |
 | `manuwright packet` / `build` | 本地评审 packet / 需通过门禁的 DOCX 构建 |
 | `manuwright update`、`agents install\|update`、`config` | 版本、智能体适配器、自动更新、main 模型与评审模型 |
-| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | 将 Obsidian「Academic Paper Citation Manager」文献库连接到所有智能体；把 vault 文献导入 `evidence.md` |
+| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | 可选（推荐）：将 Obsidian「Academic Paper Citation Manager」文献库连接到所有智能体；把 vault 文献导入 `evidence.md` |
 
 模板还附带 Claude Code 的 slash command：`/verify`、`/search-evidence`、`/import-doi`、`/style-pass`、`/verify-claims`、`/suggest-citation`、`/cite-stance`、`/evidence-table`、`/paper-debate`、`/critical-review`、`/editor-review`。
 

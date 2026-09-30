@@ -50,10 +50,10 @@ LEGACY_IDS = {CLAUDE_MODEL_ID: "claude", CODEX_MODEL_ID: "codex"}
 
 
 def settings() -> dict:
-    home = Path(os.environ.get("MANUWRIGHT_HOME") or Path.home() / ".manuwright")
     try:
+        home = Path(os.environ.get("MANUWRIGHT_HOME") or Path.home() / ".manuwright")
         return json.loads((home / "config.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except (OSError, ValueError, RuntimeError):  # RuntimeError: no home directory (bare CI env)
         return {}
 
 

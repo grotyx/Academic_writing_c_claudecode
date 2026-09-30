@@ -117,7 +117,7 @@ The engine is a foundation, not autonomous scientific validation: statistical re
 
 ## v1.8.8 Obsidian reference library and reviewer settings
 
-The Obsidian plugin "Academic Paper Citation Manager" (MCP server `rag-obsidian`) can serve as the discovery library for every agent:
+Optional, recommended: the Obsidian plugin "Academic Paper Citation Manager" (MCP server `rag-obsidian`) can serve as the discovery library for every agent. manuwright never requires it.
 
 ```sh
 manuwright obsidian status                         # vaults with the plugin; which agents are connected
