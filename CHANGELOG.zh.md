@@ -1,7 +1,10 @@
 # 变更记录
 
-### Unreleased
+### v1.8.9 (260930)
 
+合并发布：
+
+- `manuwright setup`：一次交互式设置主模型、审稿者及其模型、Word 样式、自动更新和 Obsidian 库。
 - DOCX 样式可配置：用 `manuwright config set docx.<键> <值>` 保存默认样式（字体、字号、标题/小标题字号、行距、页边距、行号 continuous/page/off、页码 center/right/off）；`project.json` 中的 `"docx"` 块按论文（目标期刊）覆盖。实际样式记录在 `build.json`。两者都没有时输出不变。
 - `manuwright obsidian install`：从 GitHub 最新版本将 Obsidian 插件安装到所选 vault（先询问、启用插件、MCP 访问可选、不覆盖）。缺少插件时 `agents install` 会提示安装。
 - Obsidian 集成标注为可选（推荐）；无插件时 `agents install` 仅打印一行建议。

@@ -1,7 +1,10 @@
 # 変更履歴
 
-### Unreleased
+### v1.8.9 (260930)
 
+一括リリース：
+
+- `manuwright setup`：メインモデル、レビュアーとそのモデル、Word スタイル、自動更新、Obsidian ライブラリを一度に設定する対話型コマンド。
 - DOCX スタイルを設定可能に：`manuwright config set docx.<キー> <値>` で既定スタイルを保存（フォント、サイズ、見出し・小見出しサイズ、行間、余白、行番号 continuous/page/off、ページ番号 center/right/off）。`project.json` の `"docx"` ブロックが論文（投稿先ジャーナル）ごとに上書き。適用スタイルは `build.json` に記録。どちらもなければ出力は従来どおり。
 - `manuwright obsidian install`：Obsidian プラグインを GitHub の最新リリースから選択した vault にインストール（先に確認、有効化、MCP アクセスは任意、上書きしない）。プラグインがなければ `agents install` が提案。
 - Obsidian 連携を任意（推奨）と明記。プラグインがない場合、`agents install` は 1 行の推奨案内のみ表示。

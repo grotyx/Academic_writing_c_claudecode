@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.0.1)
+# manuwright 사용자 매뉴얼 (v2.1.0)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -20,7 +20,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.9
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright search "연구 주제" --max 10           # 또는: manuwright evidence import-obsidian <citekey>
@@ -37,7 +37,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.9
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -273,6 +273,8 @@ manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1�
 등록된 논문이 엔진을 고정했거나(`project.json` 의 `"engine": ">=1.8,<1.9"`), 엔진이 바뀌면 무효가 될 유효한 검토가 있으면 자동 업데이트는 기다린다. 되돌리기: `manuwright update --to <버전>`.
 
 ### 설정
+
+`manuwright setup` 하나로 아래 설정을 차례로 묻고(Enter 는 그대로, `-` 는 지움), 마지막에 Obsidian 라이브러리를 제안한다. 하나만 바꿀 때는 `manuwright config set <키> <값>`.
 
 | 키 | 뜻 |
 |---|---|

@@ -1,4 +1,4 @@
-# manuwright user manual (v2.0.1)
+# manuwright user manual (v2.1.0)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -20,7 +20,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.9
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright search "your topic" --max 10         # or: manuwright evidence import-obsidian <citekey>
@@ -37,7 +37,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.9
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -266,6 +266,8 @@ manuwright config set auto-update on      # patch releases only, at most daily
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
 
 ### Settings
+
+`manuwright setup` walks through everything below in one pass (Enter keeps a value, `-` clears it), then offers the Obsidian library. Use `manuwright config set <key> <value>` for a single change.
 
 | Key | Meaning |
 |---|---|

@@ -50,8 +50,9 @@ Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
   rules [keyword|--path]     print the workflow rules (or one section)
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
+  setup                      one interactive pass: models, reviewers, Word style, updates, Obsidian
   config [set|unset <key> ...]         settings: auto-update, main-model, review.reviewers,
-                                       review.openrouter-models, review.<agent>-model
+                                       review.openrouter-models, review.<agent>-model, docx.*
   agents install|update [--only claude,codex,agy,opencode,muse] [--dry-run]
                              install/refresh plugins and skills for each agent
   hook session|gate|lint|style         entry point for agent plugin hooks
@@ -153,10 +154,10 @@ def main(argv=None):
         print('usage: manuwright obsidian status|install|connect [--vault PATH] [--only a,b] [--dry-run] [--yes]\n'
               '       manuwright evidence import-obsidian <citekey>... [--vault PATH]', file=sys.stderr)
         return 2
-    if command in {'init', 'rules', 'update', 'config', 'agents'}:
+    if command in {'init', 'rules', 'update', 'config', 'setup', 'agents'}:
         lifecycle = load_lifecycle()
-        if command == 'config':
-            return lifecycle.config(rest)
+        if command in {'config', 'setup'}:
+            return getattr(lifecycle, command)(rest)
         return getattr(lifecycle, command)(ENGINE, rest)
     if command in HARNESS_COMMANDS:
         if '--project' in rest and rest.index('--project') + 1 < len(rest):

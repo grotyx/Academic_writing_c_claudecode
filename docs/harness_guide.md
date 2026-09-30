@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.13)
+# Shared manuscript engine (v1.1.0)
 
-Project release: v1.8.8. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.9. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -129,6 +129,10 @@ manuwright evidence import-obsidian <citekey>...   # vault note -> knowledge/evi
 `connect` asks before changing anything, skips agents that are already connected, uses each agent's own `mcp add` (Claude Code, Codex, Antigravity) or edits its JSON settings with a `*.manuwright.bak` backup (opencode `~/.config/opencode/opencode.json`, Muse `~/.config/muse/settings.json`). `manuwright agents install` offers to install the plugin when it is missing and to connect it when it is present; it never installs or connects silently. `obsidian install` downloads `main.js`, `manifest.json` and `styles.css` from the latest release into `<vault>/.obsidian/plugins/academic-paper-citation-manager/`, adds it to `community-plugins.json` (backup kept) and, with consent, turns on MCP access; it never overwrites an installed copy. Obsidian itself is not installed automatically (macOS: offered via Homebrew with consent). A vault opened for the first time asks you to trust its plugins (restricted mode); allow it in Obsidian, then run `manuwright obsidian connect`. Obsidian must be open with MCP enabled. Antigravity asks permission for MCP tools; in headless `-p` mode that request is denied, so use it interactively (the server also exposes note editing tools, so no allow-rule is added automatically).
 
 The vault stays a discovery library: cite only `[EVID:id]` entries in `knowledge/evidence.md`. `import-obsidian` copies the CSL fields and the plugin's AI summary into an entry whose ID is the citekey and whose status is `abstract-only`; verify the summary against the paper before relying on it.
+
+## v1.8.9 one-step setup and Word style
+
+`manuwright setup` (terminal only) asks for the main model, default reviewers, OpenRouter models when `openrouter` is a reviewer, a model per chosen local reviewer, the Word style (optional), and auto-update; it saves them to `~/.manuwright/config.json` and then offers the Obsidian library (install or connect, always asking). Enter keeps a value; `-` clears it. Invalid values are asked again. `manuwright config set|unset` changes one key.
 
 DOCX style (`build`): defaults are Times New Roman 10 pt, headings 12/11 pt, double spacing, 1-inch margins, continuous line numbers and centred page numbers on the manuscript (title page and tables carry no line or page numbers). Save your own default with `manuwright config set docx.<key> <value>`; override it for one paper (its target journal) with a `"docx"` object in `project.json`, e.g. `"docx": {"font": "Arial", "size": 12, "line_spacing": 1.5, "line_numbers": "page", "page_numbers": "right"}`. Keys: `font`, `size`, `heading_size`, `subheading_size`, `line_spacing`, `margin_inches`, `line_numbers` (`continuous`/`page`/`off`), `page_numbers` (`center`/`right`/`off`). Unknown keys or bad values stop the build. The resolved style is written to `build.json`; the user default is not part of the review snapshot, so check `build.json` when rebuilding on another machine.
 

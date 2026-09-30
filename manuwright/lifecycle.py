@@ -193,32 +193,107 @@ CONFIG_USAGE = ('usage: manuwright config [set <key> <value> | unset <key>]\n  k
                 'a project.json "docx" block overrides it for one paper')
 
 
+def apply_setting(data, key, value):
+    """Set (value) or clear (None) one CONFIG_KEYS entry in data. False if the value is invalid."""
+    path, kind = CONFIG_KEYS[key]
+    parent = data
+    for part in path[:-1]:
+        parent = parent.setdefault(part, {})
+    if value is None:
+        parent.pop(path[-1], None)
+        return True
+    if ((kind == 'onoff' and value not in {'on', 'off'}) or (isinstance(kind, tuple) and value not in kind)
+            or (kind == 'number' and not (re.fullmatch(r'\d+(\.\d+)?', value) and float(value) > 0))):
+        return False
+    parent[path[-1]] = (value == 'on' if kind == 'onoff' else
+                        [v.strip() for v in value.split(',') if v.strip()] if kind == 'list' else
+                        float(value) if kind == 'number' else value)
+    return True
+
+
+def show_setting(data, key):
+    value = data
+    for part in CONFIG_KEYS[key][0]:
+        value = value.get(part) if isinstance(value, dict) else None
+    if value is None:
+        return ''
+    if isinstance(value, bool):
+        return 'on' if value else 'off'
+    if isinstance(value, list):
+        return ','.join(value)
+    return f'{value:g}' if isinstance(value, float) else str(value)
+
+
 def config(args):
     """manuwright config [set <key> <value> | unset <key>]"""
     data = load('config.json', {})
     if args[:1] in (['set'], ['unset']) and len(args) >= 2 and args[1] in CONFIG_KEYS:
-        path, kind = CONFIG_KEYS[args[1]]
-        parent = data
-        for part in path[:-1]:
-            parent = parent.setdefault(part, {})
-        if args[0] == 'unset':
-            parent.pop(path[-1], None)
-        elif (len(args) != 3 or (kind == 'onoff' and args[2] not in {'on', 'off'})
-              or (isinstance(kind, tuple) and args[2] not in kind)
-              or (kind == 'number' and not re.fullmatch(r'\d+(\.\d+)?', args[2]))):
+        if (len(args) != (2 if args[0] == 'unset' else 3)
+                or not apply_setting(data, args[1], None if args[0] == 'unset' else args[2])):
             print(CONFIG_USAGE, file=sys.stderr)
             return 2
-        else:
-            value = args[2]
-            parent[path[-1]] = (value == 'on' if kind == 'onoff' else
-                                [v.strip() for v in value.split(',') if v.strip()] if kind == 'list' else
-                                float(value) if kind == 'number' else value)
         save('config.json', data)
     elif args:
         print(CONFIG_USAGE, file=sys.stderr)
         return 2
     print(json.dumps({'home': str(home()), **data, 'projects': [str(p) for p in known_projects()]},
                      indent=2, ensure_ascii=False))
+    return 0
+
+
+SETUP_HELP = {
+    'main-model': 'model that writes your manuscripts (reviewers using it are flagged)',
+    'review.reviewers': 'default reviewers, comma-separated: claude, codex, opencode, muse, agy, openrouter[:model]',
+    'review.openrouter-models': 'OpenRouter models for a bare "openrouter" reviewer, comma-separated',
+    'docx.font': 'Word font', 'docx.size': 'body text size (pt)', 'docx.heading-size': 'section heading size (pt)',
+    'docx.subheading-size': 'subheading size (pt)', 'docx.line-spacing': 'line spacing (2 = double)',
+    'docx.margin-inches': 'page margins (inches)', 'docx.line-numbers': 'line numbers: continuous, page, off',
+    'docx.page-numbers': 'page numbers: center, right, off',
+    'auto-update': 'install patch updates automatically: on/off',
+}
+
+
+def setup(args, ask=input):
+    """manuwright setup: one interactive pass over models, reviewers, Word style, updates and Obsidian."""
+    if not sys.stdin.isatty() and ask is input:
+        print('manuwright setup is interactive; run it in a terminal, or use: manuwright config set <key> <value>',
+              file=sys.stderr)
+        return 2
+    data = load('config.json', {})
+    print('manuwright setup. Enter keeps the value in [brackets]; "-" clears it (engine default).\n')
+
+    def prompt(key):
+        while True:
+            answer = ask(f'{SETUP_HELP.get(key, key)}\n  {key} [{show_setting(data, key)}]: ').strip()
+            if not answer or apply_setting(data, key, None if answer == '-' else answer):
+                return
+            print('  not valid here; try again.')
+
+    print('1. Models and reviewers')
+    for key in ('main-model', 'review.reviewers'):
+        prompt(key)
+    chosen = [r.split(':')[0].strip() for r in data.get('review', {}).get('reviewers', [])]
+    if 'openrouter' in chosen:
+        prompt('review.openrouter-models')
+    for agent in REVIEW_AGENTS:
+        if agent in chosen:
+            SETUP_HELP[f'review.{agent}-model'] = f'model for the {agent} reviewer (empty = its own default)'
+            prompt(f'review.{agent}-model')
+    print('\n2. Word (DOCX) style: your default; a project.json "docx" block overrides it per journal')
+    if ask('  Change the Word style? [y/N]: ').strip().lower() in {'y', 'yes'}:
+        for key in [k for k in CONFIG_KEYS if k.startswith('docx.')]:
+            prompt(key)
+    print('\n3. Updates')
+    prompt('auto-update')
+    save('config.json', data)
+    print(f'\nSaved to {home() / "config.json"}.')
+    print('\n4. Obsidian reference library (optional, recommended)')
+    try:
+        from manuwright import obsidian
+    except ImportError:  # lifecycle loaded from an engine folder (see agents())
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from manuwright import obsidian
+    obsidian.offer_connect()
     return 0
 
 # --- init / rules -----------------------------------------------------------

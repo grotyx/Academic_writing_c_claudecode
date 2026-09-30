@@ -298,6 +298,7 @@ def offer_connect():
         return
     missing = [a for a in AGENTS if connected(a) is False]
     if not missing:
+        print(f'Obsidian library connected ({vaults[0]}).')
         return
     print(f'\nObsidian "{PLUGIN_ID}" found ({vaults[0]}{" and others" if len(vaults) > 1 else ""}). '
           f'Not yet connected: {", ".join(missing)}.')

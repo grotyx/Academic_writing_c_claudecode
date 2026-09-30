@@ -1,7 +1,10 @@
 # Changelog
 
-### Unreleased
+### v1.8.9 (260930)
 
+One batch release:
+
+- `manuwright setup`: one interactive pass over the main model, reviewers and their models, the Word style, auto-update and the Obsidian library.
 - DOCX style is configurable: save your default with `manuwright config set docx.<key> <value>` (font, size, heading/subheading size, line spacing, margins, line numbers continuous/page/off, page numbers center/right/off); a `"docx"` block in `project.json` overrides it for one paper (its target journal). The resolved style is recorded in `build.json`. Without either, the output is unchanged.
 - `manuwright obsidian install`: installs the Obsidian plugin from its latest GitHub release into a chosen vault (asks first; enables it; optional MCP access; never overwrites). `agents install` offers it when the plugin is missing.
 - Obsidian integration marked optional (recommended); without the plugin, `agents install` prints a one-line suggestion.

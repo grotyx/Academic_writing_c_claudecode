@@ -208,3 +208,24 @@ def test_config_saves_default_docx_style(capsys):
     assert lifecycle.config(['set', 'docx.size', 'big']) == 2
     assert lifecycle.config(['set', 'docx.page-numbers', 'left']) == 2
     assert lifecycle.load('config.json', {})['docx'] == {'font': 'Arial', 'line_spacing': 1.5, 'line_numbers': 'page'}
+
+
+def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
+    from manuwright import obsidian
+    offered = []
+    monkeypatch.setattr(obsidian, 'offer_connect', lambda: offered.append(1))
+    answers = iter(['claude-opus-5-5', 'codex, opencode:openai/gpt-x, openrouter',
+                    'deepseek/a',            # openrouter models
+                    '', 'gpt-5',             # codex model kept empty, opencode model (muse/agy/claude not asked)
+                    'y', 'Arial', 'huge', '12', '', '', '', '1.5', 'page', 'left', 'right',  # docx, with 2 retries
+                    'maybe', 'on'])          # auto-update, with 1 retry
+    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    data = lifecycle.load('config.json', {})
+    assert data['main_model'] == 'claude-opus-5-5'
+    assert data['review']['reviewers'] == ['codex', 'opencode:openai/gpt-x', 'openrouter']
+    assert data['review']['openrouter_models'] == ['deepseek/a']
+    assert data['review']['opencode_model'] == 'gpt-5' and 'codex_model' not in data['review']
+    assert data['docx'] == {'font': 'Arial', 'size': 12.0, 'margin_inches': 1.5,
+                            'line_numbers': 'page', 'page_numbers': 'right'}
+    assert data['auto_update'] is True and offered == [1]
+    assert 'not valid' in capsys.readouterr().out

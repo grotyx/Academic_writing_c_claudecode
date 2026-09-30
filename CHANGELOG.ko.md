@@ -1,7 +1,10 @@
 # 변경 이력
 
-### Unreleased
+### v1.8.9 (260930)
 
+묶음 릴리스:
+
+- `manuwright setup`: 메인 모델, 검토자와 그 모델, Word 스타일, 자동 업데이트, Obsidian 라이브러리를 한 번에 설정하는 대화형 명령.
 - DOCX 스타일 설정: `manuwright config set docx.<키> <값>` 으로 기본 스타일 저장(글꼴, 크기, 제목·소제목 크기, 줄 간격, 여백, 줄 번호 continuous/page/off, 쪽 번호 center/right/off). `project.json` 의 `"docx"` 블록이 논문(목표 저널)별로 덮어씀. 적용된 스타일은 `build.json` 에 기록. 둘 다 없으면 출력은 이전과 같음.
 - `manuwright obsidian install`: Obsidian 플러그인을 GitHub 최신 릴리스에서 선택한 vault 에 설치(먼저 물어봄, 플러그인 활성화, MCP 접근은 선택, 덮어쓰지 않음). 플러그인이 없으면 `agents install` 이 설치를 제안.
 - Obsidian 연동을 선택(권장)으로 명시. 플러그인이 없으면 `agents install` 이 한 줄 권장 안내만 출력.
