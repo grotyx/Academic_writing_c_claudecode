@@ -161,7 +161,21 @@ Submission additionally needs:
 - `ai_usage`: which AI tools did what, reviewed by a person.
 - `checklist`: the reporting checklist (CONSORT, STROBE, PRISMA, CARE) with item locations.
 
-Then `manuwright build --project project.json` writes the DOCX package. It re-checks everything first and refuses stale inputs.
+In the demo these took most of the effort:
+
+- **Bindings.** 155 numbers were bound. Most matched exactly one CSV cell; the rest (for example several `120`s, `60`s and `p < 0.001`s) were assigned by reading each sentence. Keep an explicit override table keyed by file, line, number and occurrence (not by token index, which shifts when a sentence changes), and audit the automatic matches too: a unique value can still carry the wrong label. Add summary rows (for example an "All" row with n = 120) to the results instead of binding a total to an unrelated cell.
+- **Checklist.** Download the current official checklist (CONSORT 2025 from the CONSORT-SPIRIT website in the demo), map every item to a location or a reason, and let the independent reviewer check it. The reviewer rejected item 26 twice until group summaries, a risk difference and a risk ratio with CIs were reported. Each new analysis needed an approved analysis-plan amendment and was labelled post hoc.
+- **Review rounds.** Seven rounds in total; the last two were clean. Beyond the two automatic rounds of Rule 9, continue only with the author's decision.
+
+![Round 6 review: all six dimensions PASS](images/manual/32_codex_semantic_review_round6_pass.png)
+
+Any later edit makes the review and the signoff stale, as intended. In the demo, fixing reference punctuation after signoff did exactly that; the review and signoff were redone.
+
+![Reviews go stale after a change](images/manual/22_stale_after_edit.png)
+
+Then `manuwright build --project project.json` writes the DOCX package (manuscript, title page, one file per table, `verification.json`, output hashes). It re-checks everything first and refuses stale inputs. Open the files and check them by eye before submitting.
+
+![Submission PASS and build](images/manual/23_submission_pass_build.png)
 
 ## 10. Updates
 

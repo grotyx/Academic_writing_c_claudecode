@@ -168,7 +168,21 @@ manuwright verify --project project.json --profile submission
 - `ai_usage`: 어떤 AI 가 무엇을 했는지, 사람이 확인한 기록
 - `checklist`: 보고 체크리스트(CONSORT, STROBE, PRISMA, CARE)와 항목별 위치
 
-그다음 `manuwright build --project project.json` 이 DOCX 패키지를 만든다. 먼저 모든 것을 다시 검사하고, stale 입력은 거부한다.
+시험에서 가장 손이 많이 간 부분:
+
+- **바인딩.** 숫자 155개를 연결했다. 대부분은 CSV 칸 하나와만 일치했고, 나머지(여러 개의 `120`, `60`, `p < 0.001` 등)는 문장을 읽고 직접 정했다. 수동 지정은 토큰 순서 번호가 아니라 "파일:줄:숫자:몇 번째" 로 적는다. 순서 번호는 문장이 바뀌면 밀린다. 자동으로 연결된 것도 점검한다: 값이 하나뿐이어도 이름표가 틀릴 수 있다. 합계(예: 전체 120명)는 엉뚱한 칸에 연결하지 말고 결과에 합계 행("All")을 추가한다.
+- **체크리스트.** 현재 공식 체크리스트를 받아(시험에서는 CONSORT-SPIRIT 사이트의 CONSORT 2025) 항목마다 위치나 사유를 적고, 독립 검토자가 확인하게 한다. 검토자는 26번을 두 번 반려했고, 군별 요약과 위험차·위험비의 CI 를 보고한 뒤에 통과했다. 새 분석은 매번 분석 계획 수정안 승인을 받았고 post hoc 로 표시했다.
+- **검토 라운드.** 총 7회였고 마지막 두 번은 지적이 없었다. Rule 9 의 자동 2회를 넘으면 저자의 결정으로만 계속한다.
+
+![6차 검토: 6개 차원 모두 PASS](images/manual/32_codex_semantic_review_round6_pass.png)
+
+그 뒤에 무엇이든 고치면 검토와 서명은 의도대로 stale 이 된다. 시험에서는 서명 뒤 참고문헌 문장부호를 고치자 정확히 그렇게 됐고, 검토와 서명을 다시 받았다.
+
+![수정 후 stale 이 된 검토](images/manual/22_stale_after_edit.png)
+
+그다음 `manuwright build --project project.json` 이 DOCX 패키지를 만든다(원고, 표지, 표별 파일, `verification.json`, 출력 해시). 먼저 모든 것을 다시 검사하고, stale 입력은 거부한다. 제출 전에 파일을 열어 눈으로 확인한다.
+
+![submission PASS 와 빌드](images/manual/23_submission_pass_build.png)
 
 ## 10. 업데이트
 
