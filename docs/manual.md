@@ -1,4 +1,4 @@
-# manuwright user manual (v2.2.0)
+# manuwright user manual (v2.2.1)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -269,6 +269,8 @@ Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.
 
 `manuwright setup` walks through everything below in one pass (Enter keeps a value, `-` clears it), then offers the Obsidian library. Use `manuwright config set <key> <value>` for a single change.
 
+![manuwright setup](images/manual/50_setup.png)
+
 | Key | Meaning |
 |---|---|
 | `main-model` | Model that writes the manuscript; reviewers using it are flagged |
@@ -298,6 +300,10 @@ manuwright format-references drafts/*.md --journal nejm --fetch   # cache full P
 ```json
 "journal": "nejm"
 ```
+
+![Journal reference formats](images/manual/51_journal_references.png)
+
+With `--fetch`, JBJS (every author listed) gets all 11 authors of Nakarai 2022, where the registered citation stopped at six. NEJM cuts to three, drops the issue and abbreviates pages; adjacent tags become one superscript marker.
 
 Presets: `vancouver`, `ama` (JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`, `jbjs`, `neurospine`, `jns-spine`, `gsj`, `corr`, `asj`, `esj`. The rules of each are listed in [harness_guide.md](harness_guide.md). Check the journal's current instructions before submitting.
 

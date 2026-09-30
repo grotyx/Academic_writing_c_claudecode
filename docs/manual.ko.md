@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.2.0)
+# manuwright 사용자 매뉴얼 (v2.2.1)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -276,6 +276,8 @@ manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1�
 
 `manuwright setup` 하나로 아래 설정을 차례로 묻고(Enter 는 그대로, `-` 는 지움), 마지막에 Obsidian 라이브러리를 제안한다. 하나만 바꿀 때는 `manuwright config set <키> <값>`.
 
+![manuwright setup](images/manual/50_setup.png)
+
 | 키 | 뜻 |
 |---|---|
 | `main-model` | 원고를 쓰는 모델. 이 모델을 쓰는 검토자는 표시됨 |
@@ -305,6 +307,10 @@ manuwright format-references drafts/*.md --journal nejm --fetch   # PubMed 전�
 ```json
 "journal": "nejm"
 ```
+
+![저널 참고문헌 형식](images/manual/51_journal_references.png)
+
+`--fetch` 를 쓰면 저자를 모두 적는 JBJS 에서 Nakarai 2022 의 저자 11명이 모두 들어간다(등록된 인용문은 6명에서 끊겨 있었음). NEJM 은 3명으로 줄이고 권호를 빼고 페이지를 줄여 쓰며, 붙어 있는 인용 태그는 위첨자 하나로 묶인다.
 
 프리셋: `vancouver`, `ama`(JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`, `jbjs`, `neurospine`, `jns-spine`, `gsj`, `corr`, `asj`, `esj`. 저널별 규칙은 [harness_guide.md](harness_guide.md) 표 참고. 제출 전에 저널의 최신 투고 규정을 한 번 확인할 것.
 
