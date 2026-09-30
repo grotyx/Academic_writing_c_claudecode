@@ -121,11 +121,12 @@ Optional, recommended: the Obsidian plugin "Academic Paper Citation Manager" (MC
 
 ```sh
 manuwright obsidian status                         # vaults with the plugin; which agents are connected
+manuwright obsidian install [--vault PATH] [--enable-mcp]   # plugin from its latest GitHub release (asks first)
 manuwright obsidian connect [--vault PATH] [--only claude,codex,opencode,agy,muse] [--dry-run] [--yes]
 manuwright evidence import-obsidian <citekey>...   # vault note -> knowledge/evidence.md entry
 ```
 
-`connect` asks before changing anything, skips agents that are already connected, uses each agent's own `mcp add` (Claude Code, Codex, Antigravity) or edits its JSON settings with a `*.manuwright.bak` backup (opencode `~/.config/opencode/opencode.json`, Muse `~/.config/muse/settings.json`). `manuwright agents install` offers the connection when it finds the plugin; it never connects silently. Obsidian must be open with MCP enabled. Antigravity asks permission for MCP tools; in headless `-p` mode that request is denied, so use it interactively (the server also exposes note editing tools, so no allow-rule is added automatically).
+`connect` asks before changing anything, skips agents that are already connected, uses each agent's own `mcp add` (Claude Code, Codex, Antigravity) or edits its JSON settings with a `*.manuwright.bak` backup (opencode `~/.config/opencode/opencode.json`, Muse `~/.config/muse/settings.json`). `manuwright agents install` offers to install the plugin when it is missing and to connect it when it is present; it never installs or connects silently. `obsidian install` downloads `main.js`, `manifest.json` and `styles.css` from the latest release into `<vault>/.obsidian/plugins/academic-paper-citation-manager/`, adds it to `community-plugins.json` (backup kept) and, with consent, turns on MCP access; it never overwrites an installed copy. Obsidian itself is not installed automatically (macOS: offered via Homebrew with consent). A vault opened for the first time asks you to trust its plugins (restricted mode); allow it in Obsidian, then run `manuwright obsidian connect`. Obsidian must be open with MCP enabled. Antigravity asks permission for MCP tools; in headless `-p` mode that request is denied, so use it interactively (the server also exposes note editing tools, so no allow-rule is added automatically).
 
 The vault stays a discovery library: cite only `[EVID:id]` entries in `knowledge/evidence.md`. `import-obsidian` copies the CSL fields and the plugin's AI summary into an entry whose ID is the citekey and whose status is `abstract-only`; verify the summary against the paper before relying on it.
 

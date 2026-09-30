@@ -3,6 +3,7 @@
 manuwright never requires it; without the plugin every command here is a no-op or a hint.
 
 manuwright obsidian status                    vaults with the plugin, and which agents are connected
+manuwright obsidian install [--vault PATH] [--enable-mcp] [--yes]   plugin from its GitHub release
 manuwright obsidian connect [--vault PATH] [--only a,b] [--dry-run] [--yes]
 manuwright evidence import-obsidian <citekey>... [--vault PATH] [--evidence knowledge/evidence.md]
 
@@ -172,13 +173,128 @@ def connect(args):
     return 1 if failed else 0
 
 
+RELEASE_API = 'https://api.github.com/repos/grotyx/rag-obsidian/releases/latest'
+ASSETS = ('main.js', 'manifest.json', 'styles.css')
+
+
+def all_vaults():
+    try:
+        data = json.loads(obsidian_config().read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return []
+    return [Path(v['path']) for v in data.get('vaults', {}).values() if Path(v['path']).is_dir()]
+
+
+def obsidian_app_installed():
+    if sys.platform == 'darwin':
+        return Path('/Applications/Obsidian.app').exists() or (Path.home() / 'Applications' / 'Obsidian.app').exists()
+    return obsidian_config().exists() or bool(shutil.which('obsidian'))
+
+
+def download_release(target):
+    """Latest plugin release assets -> target folder. Returns the version."""
+    import urllib.request
+    with urllib.request.urlopen(RELEASE_API, timeout=30) as response:
+        release = json.loads(response.read().decode('utf-8'))
+    urls = {a['name']: a['browser_download_url'] for a in release.get('assets', [])}
+    missing = [name for name in ASSETS if name not in urls]
+    if missing:
+        raise ValueError(f'release {release.get("tag_name")} lacks {", ".join(missing)}')
+    target.mkdir(parents=True, exist_ok=True)
+    for name in ASSETS:
+        with urllib.request.urlopen(urls[name], timeout=60) as response:
+            (target / name).write_bytes(response.read())
+    return release.get('tag_name', '?')
+
+
+def enable_plugin(vault, enable_mcp):
+    listing = Path(vault) / '.obsidian' / 'community-plugins.json'
+    enabled = read_json(listing)
+    if enabled is None and listing.exists():
+        raise ValueError(f'{listing} is not valid JSON; not touching it')
+    enabled = enabled or []
+    if PLUGIN_ID not in enabled:
+        if listing.exists():
+            shutil.copy2(listing, listing.with_suffix('.json.manuwright.bak'))
+        listing.parent.mkdir(parents=True, exist_ok=True)
+        listing.write_text(json.dumps(enabled + [PLUGIN_ID], indent=2) + '\n', encoding='utf-8')
+    settings_file = Path(vault) / '.obsidian' / 'plugins' / PLUGIN_ID / 'data.json'
+    if enable_mcp:
+        data = read_json(settings_file) or {}
+        data['mcpEnabled'] = True
+        settings_file.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+
+
+def ask(question, args):
+    if '--yes' in args:
+        return True
+    if not sys.stdin.isatty():
+        return False
+    return input(question + ' [y/N] ').strip().lower() in {'y', 'yes'}
+
+
+def install(args):
+    """Install the plugin into a vault from its latest GitHub release (asks first)."""
+    if not obsidian_app_installed():
+        print('Obsidian is not installed. Get it from https://obsidian.md' +
+              (' or run: brew install --cask obsidian' if sys.platform == 'darwin' and shutil.which('brew') else '') +
+              '. Open it once, create or open a vault, then run: manuwright obsidian install')
+        if sys.platform == 'darwin' and shutil.which('brew') and ask('Install Obsidian with Homebrew now?', [a for a in args if a != '--yes']):
+            if subprocess.call(['brew', 'install', '--cask', 'obsidian']):
+                return 1
+            print('Obsidian installed. Open it, create or open a vault, then run: manuwright obsidian install')
+        return 1
+    vaults = [Path(args[args.index('--vault') + 1]).expanduser().resolve()] if '--vault' in args else all_vaults()
+    if not vaults:
+        print('No Obsidian vault found. Open Obsidian, create or open a vault, then run: manuwright obsidian install')
+        return 1
+    if len(vaults) > 1 and '--vault' not in args:
+        for i, v in enumerate(vaults, 1):
+            print(f'  {i}. {v}' + ('  (plugin installed)' if bridge(v).is_file() or (v / '.obsidian' / 'plugins' / PLUGIN_ID / 'manifest.json').exists() else ''))
+        if not sys.stdin.isatty():
+            print('Several vaults found; choose one with --vault.', file=sys.stderr)
+            return 1
+        choice = input('Install into vault number: ').strip()
+        if not (choice.isdigit() and 0 < int(choice) <= len(vaults)):
+            print('Nothing changed.')
+            return 0
+        vaults = [vaults[int(choice) - 1]]
+    vault = vaults[0]
+    target = vault / '.obsidian' / 'plugins' / PLUGIN_ID
+    if (target / 'manifest.json').exists():
+        print(f'Plugin already installed in {vault}. Update it inside Obsidian (Community plugins).')
+        return 0
+    enable_mcp = '--enable-mcp' in args
+    if not ask(f'Install "Academic Paper Citation Manager" (latest release, github.com/grotyx/rag-obsidian) into {vault}?', args):
+        print('Nothing changed.')
+        return 0
+    if not enable_mcp and sys.stdin.isatty() and '--yes' not in args:
+        enable_mcp = ask('Also turn on its MCP access so agents can use the library? '
+                         '(local server; Obsidian must be open)', args)
+    try:
+        version = download_release(target)
+        enable_plugin(vault, enable_mcp)
+    except (OSError, ValueError) as exc:
+        print(f'Install failed: {exc}', file=sys.stderr)
+        return 1
+    print(f'Installed plugin {version} into {vault}' + (' with MCP access on.' if enable_mcp else '.'))
+    print('Next: restart Obsidian (if it asks about community plugins or restricted mode, allow them), '
+          + ('' if enable_mcp else 'turn on Settings > Academic Paper Citation Manager > External AI (MCP), ')
+          + 'then run: manuwright obsidian connect')
+    return 0
+
+
 def offer_connect():
-    """Called after `manuwright agents install`: ask, never connect silently."""
+    """Called after `manuwright agents install`: ask, never install or connect silently."""
     vaults = find_vaults()
     if not vaults:
         print(f'\nOptional (recommended): the Obsidian plugin "Academic Paper Citation Manager" gives every agent a '
               'searchable reference library (PubMed import, AI summaries, citekeys). Not required; '
               'manuwright works without it. https://github.com/grotyx/rag-obsidian')
+        if sys.stdin.isatty() and ask('Install it now?', []):
+            install([])
+        else:
+            print('Install later with: manuwright obsidian install')
         return
     missing = [a for a in AGENTS if connected(a) is False]
     if not missing:

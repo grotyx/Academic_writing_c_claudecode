@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- `manuwright obsidian install`: installs the Obsidian plugin from its latest GitHub release into a chosen vault (asks first; enables it; optional MCP access; never overwrites). `agents install` offers it when the plugin is missing.
 - Obsidian integration marked optional (recommended); without the plugin, `agents install` prints a one-line suggestion.
 - CI fixes after v1.8.8: reviewer settings tolerate an environment without a home directory; a test compared a POSIX path string on Windows.
 

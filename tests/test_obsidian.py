@@ -112,3 +112,26 @@ def test_no_plugin_only_suggests(tmp_path, monkeypatch, capsys):
     obsidian.offer_connect()
     out = capsys.readouterr().out
     assert 'Optional (recommended)' in out and 'Not required' in out
+
+
+def test_install_into_vault_asks_and_never_overwrites(tmp_path, monkeypatch, capsys):
+    vault = tmp_path / 'New Vault'
+    (vault / '.obsidian').mkdir(parents=True)
+    (vault / '.obsidian' / 'community-plugins.json').write_text('["dataview"]')
+    monkeypatch.setattr(obsidian, 'obsidian_app_installed', lambda: True)
+    def fake_download(target):
+        target.mkdir(parents=True, exist_ok=True)
+        for name in obsidian.ASSETS:
+            (target / name).write_text('{"version": "0.7.9"}' if name == 'manifest.json' else 'x')
+        return '0.7.9'
+    monkeypatch.setattr(obsidian, 'download_release', fake_download)
+    assert obsidian.install(['--vault', str(vault)]) == 0  # no tty, no --yes: nothing changes
+    assert not (vault / '.obsidian' / 'plugins').exists()
+    assert obsidian.install(['--vault', str(vault), '--yes', '--enable-mcp']) == 0
+    plugin = vault / '.obsidian' / 'plugins' / obsidian.PLUGIN_ID
+    assert json.loads((vault / '.obsidian' / 'community-plugins.json').read_text()) == ['dataview', obsidian.PLUGIN_ID]
+    assert json.loads((plugin / 'data.json').read_text()) == {'mcpEnabled': True}
+    (plugin / 'main.js').write_text('user copy')
+    assert obsidian.install(['--vault', str(vault), '--yes']) == 0
+    assert (plugin / 'main.js').read_text() == 'user copy'
+    assert 'already installed' in capsys.readouterr().out

@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- `manuwright obsidian install`：Obsidian プラグインを GitHub の最新リリースから選択した vault にインストール（先に確認、有効化、MCP アクセスは任意、上書きしない）。プラグインがなければ `agents install` が提案。
 - Obsidian 連携を任意（推奨）と明記。プラグインがない場合、`agents install` は 1 行の推奨案内のみ表示。
 - v1.8.8 後の CI 修正：ホームディレクトリのない環境でもレビュアー設定を読めるように。Windows で POSIX パス文字列を比較していたテストを修正。
 

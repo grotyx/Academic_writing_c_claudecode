@@ -56,7 +56,8 @@ Setup and updates:
                              install/refresh plugins and skills for each agent
   hook session|gate|lint|style         entry point for agent plugin hooks
 Obsidian (Academic Paper Citation Manager plugin):
-  obsidian status | obsidian connect [--vault PATH] [--only a,b] [--dry-run] [--yes]
+  obsidian status | obsidian install [--vault PATH] [--enable-mcp] [--yes]
+  obsidian connect [--vault PATH] [--only a,b] [--dry-run] [--yes]
   evidence import-obsidian <citekey>... [--vault PATH]   vault note -> knowledge/evidence.md
   --version
 """
@@ -145,11 +146,11 @@ def main(argv=None):
         if not __package__:
             sys.path.insert(0, str(HERE.parent))
         from manuwright import obsidian
-        if command == 'obsidian' and rest[:1] in (['status'], ['connect']):
+        if command == 'obsidian' and rest[:1] in (['status'], ['connect'], ['install']):
             return getattr(obsidian, rest[0])(rest[1:])
         if command == 'evidence' and rest[:1] == ['import-obsidian']:
             return obsidian.import_evidence(rest[1:])
-        print('usage: manuwright obsidian status|connect [--vault PATH] [--only a,b] [--dry-run] [--yes]\n'
+        print('usage: manuwright obsidian status|install|connect [--vault PATH] [--only a,b] [--dry-run] [--yes]\n'
               '       manuwright evidence import-obsidian <citekey>... [--vault PATH]', file=sys.stderr)
         return 2
     if command in {'init', 'rules', 'update', 'config', 'agents'}:

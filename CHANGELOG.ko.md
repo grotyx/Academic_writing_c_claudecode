@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- `manuwright obsidian install`: Obsidian 플러그인을 GitHub 최신 릴리스에서 선택한 vault 에 설치(먼저 물어봄, 플러그인 활성화, MCP 접근은 선택, 덮어쓰지 않음). 플러그인이 없으면 `agents install` 이 설치를 제안.
 - Obsidian 연동을 선택(권장)으로 명시. 플러그인이 없으면 `agents install` 이 한 줄 권장 안내만 출력.
 - v1.8.8 이후 CI 수정: 홈 폴더가 없는 환경에서도 검토자 설정을 읽도록 함. Windows 에서 POSIX 경로 문자열을 비교하던 테스트 수정.
 
