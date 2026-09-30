@@ -1,6 +1,6 @@
 # Changelog
 
-### Unreleased
+### v1.8.10 (260930)
 
 - Journal reference styles: `"journal"` in `project.json` (or `format-references --journal`) renders the bibliography and in-text markers for 14 presets — ICMJE/Vancouver, AMA (JAMA), NEJM, Lancet, Spine, The Spine Journal, BJJ, JBJS, Neurospine, J Neurosurg Spine, Global Spine J, CORR, Asian Spine J, Eur Spine J — with author cutoffs, page/issue/month/DOI forms, alphabetical order for CORR, grouped markers (`[1–3]`, superscript in Word). `--fetch` caches full PubMed metadata so journals that list every author get them.
 - `manuwright setup` exits cleanly on Ctrl-C/Ctrl-D (nothing saved) and asks for OpenRouter models only when a bare `openrouter` reviewer is chosen.

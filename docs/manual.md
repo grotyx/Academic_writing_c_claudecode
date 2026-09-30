@@ -20,7 +20,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.9
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.10
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright search "your topic" --max 10         # or: manuwright evidence import-obsidian <citekey>
@@ -37,7 +37,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.9
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.10
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
