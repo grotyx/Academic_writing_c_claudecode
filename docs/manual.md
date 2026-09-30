@@ -1,8 +1,38 @@
-# manuwright user manual (v1.0.0)
+# manuwright user manual (v2.0.0)
 
-This manual walks through one paper from an empty folder to a verified draft, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
+This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
-Screenshots are renders of the agents' terminal text captured during that run (the session had no macOS screen-recording permission), so they show exactly what the tools printed.
+Screenshots are renders of the terminals' text captured during that run (the session had no macOS screen-recording permission), so they show what the tools printed; a few long outputs are abridged and say so.
+
+![manuwright pipeline](images/manual/01_pipeline_overview.png)
+
+## At a glance
+
+| You get | How it is enforced |
+|---|---|
+| No writing before an approved plan | Agent hooks (Claude Code, Codex) and `manuwright verify` |
+| Every citation from a registered, verified source | `knowledge/evidence.md` + `manuwright citations`; sources from PubMed or your Obsidian library |
+| Every number from your data | `results/*.csv` + `manuwright numbers` + result bindings (155 in the demo) |
+| A reporting checklist that is really complete | Official CONSORT/STROBE/PRISMA/CARE checklist, checked by an independent reviewer |
+| Review by other models, never only by the writer | Any mix of Codex, Antigravity, opencode, Muse, Claude and OpenRouter models |
+| A package that matches what was reviewed and signed | sha256 snapshots; any change makes reviews and sign-off stale |
+
+## Quickstart
+
+```sh
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
+manuwright agents install                       # plugins/skills for your agents; offers Obsidian
+manuwright init my-paper && cd my-paper
+manuwright search "your topic" --max 10         # or: manuwright evidence import-obsidian <citekey>
+#  write data/analysis_plan.md -> author approves -> manuwright record-approval ...
+#  analysis scripts -> results/*.csv -> tables;  drafts/draft_plan.md -> approval
+#  draft sections with any agent
+manuwright verify --project project.json --profile draft
+manuwright packet --project project.json        # independent semantic review
+manuwright critical-review --target drafts/05_results.md --out review/critical
+manuwright verify --project project.json --profile submission
+manuwright build --project project.json
+```
 
 ## 1. Install and check
 
@@ -13,7 +43,7 @@ manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
 ```
 
-Restart Claude Code after installing or updating the plugin. The first Codex session in a folder asks you to trust the plugin hooks: choose "Trust all" for the four manuwright hooks. Template users (no install) run the same engine as `python -m harness ...` and `python scripts/<tool>.py ...` inside the cloned repository.
+`agents install` also offers the optional Obsidian library (section 3b). Restart Claude Code after installing or updating the plugin. The first Codex session in a folder asks you to trust the plugin hooks: choose "Trust all" for the four manuwright hooks. Template users (no install) run the same engine as `python -m harness ...` and `python scripts/<tool>.py ...` inside the cloned repository.
 
 ## 2. Start a paper
 
@@ -34,6 +64,37 @@ manuwright search fetch 31476471 34602458 --format evidence
 ```
 
 Copy the entries into `knowledge/evidence.md` and fill the summary fields from what you actually read. Mark `Source Status: abstract-only` until you have read the full text. Only IDs registered here can be cited, as `[EVID:miller_2020_pmid31476471]`.
+
+### 3b. Your Obsidian library (optional, recommended)
+
+If you keep references in Obsidian with the plugin "Academic Paper Citation Manager" (PubMed import, AI summaries, citekeys), every agent can search that library while it writes. manuwright never requires it.
+
+**Install the plugin** (skip if you already have it). `manuwright agents install` offers this when the plugin is missing; or run it yourself. It downloads the latest release into the vault you pick, enables it and, if you agree, turns on MCP access. Obsidian itself must be installed and the vault created once in Obsidian. The first time Obsidian opens that vault it asks whether to trust its plugins; allow it.
+
+![Installing the Obsidian plugin](images/manual/42_obsidian_install.png)
+
+**Connect it to your agents.** `connect` asks first, skips agents that are already connected, uses each agent's own `mcp add`, and backs up any JSON settings file it edits (opencode, Muse).
+
+```sh
+manuwright obsidian status
+manuwright obsidian connect            # --dry-run shows the commands, --only picks agents
+```
+
+![Connection status](images/manual/40_obsidian_status.png)
+
+![Connecting agents (dry run)](images/manual/41_obsidian_connect.png)
+
+In the demo run, Codex, Muse and opencode read the library over MCP (22,622 indexed chunks); Claude Code was already connected. Antigravity asks permission for MCP tools, which headless mode cannot grant; allow the first call in an interactive session. Obsidian must be open with MCP enabled while agents use it.
+
+![Agents reading the library over MCP (abridged)](images/manual/44_obsidian_mcp_agents.png)
+
+**Bring a reference into the paper.** The library is for discovery; only `knowledge/evidence.md` entries can be cited. Import by citekey: the CSL fields become the citation, the plugin's AI summary fills the summary fields, the citekey becomes the `[EVID:id]`, and the status starts as `abstract-only`. Check the summary against the paper before you rely on it.
+
+```sh
+manuwright evidence import-obsidian kirtley1985influence
+```
+
+![Importing an Obsidian reference](images/manual/43_obsidian_import_evidence.png)
 
 ## 4. Analysis plan, approval, analysis
 
@@ -145,6 +206,23 @@ Fix, rebuild the packet, review again. Rule 9 allows two automatic rounds; after
 
 Any change to a manuscript file, plan, CSV or the engine makes an existing review stale; rebuild the packet and review again.
 
+### 8b. Multi-model critical review
+
+The semantic review above is the gate. A critical review is extra pressure from several reviewers at once. Choose any agents and any models; set your usual mix once:
+
+```sh
+manuwright config set main-model claude-opus-5-5          # the model that writes
+manuwright config set review.reviewers codex,opencode,muse,agy,openrouter
+manuwright config set review.opencode-model opencode-go/kimi-k3
+manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwen3.7-max
+manuwright critical-review --target drafts/05_results.md --out review/critical
+# one-off mix:  --reviewers codex,agy:<model>,openrouter:<model id>
+```
+
+Local reviewers run in an empty temporary folder in read-only or plan modes, so they never touch the paper. A reviewer that uses the main writing model is marked `not_independent`. Text sent to OpenRouter models leaves your machine: get the author's consent first. In the demo, eight reviewers returned full reviews; all rejected the paper, correctly, because it is a software test with synthetic data.
+
+![Eight reviewers](images/manual/45_multi_reviewer_run.png)
+
 ## 9. Submission
 
 ```sh
@@ -177,30 +255,6 @@ Then `manuwright build --project project.json` writes the DOCX package (manuscri
 
 ![Submission PASS and build](images/manual/23_submission_pass_build.png)
 
-## 9a. Obsidian library and multi-model review
-
-**Obsidian (optional, recommended).** If you use the Obsidian plugin "Academic Paper Citation Manager", connect it once and every agent can search your reference library over MCP:
-
-```sh
-manuwright obsidian status
-manuwright obsidian connect            # asks first; --dry-run shows the commands
-manuwright evidence import-obsidian kirtley1985influence
-```
-
-In the demo, Codex, Muse and opencode called the library through MCP (22,622 indexed chunks); Claude Code was already connected; Antigravity needs its first MCP call in an interactive session. Imported entries keep the citekey as `[EVID:id]` and start as `abstract-only`.
-
-**Reviewers.** Choose any mix of reviewers and models; the writing model is set once so a reviewer using the same model is flagged as not independent:
-
-```sh
-manuwright config set main-model claude-opus-5-5
-manuwright config set review.reviewers codex,opencode,muse,agy,openrouter
-manuwright config set review.opencode-model opencode-go/kimi-k3
-manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwen3.7-max
-manuwright critical-review --target drafts/05_results.md --out review/critical
-```
-
-In the demo, eight reviewers (Codex, opencode with kimi-k3, Muse, Antigravity and four OpenRouter models) each returned a full review. Sending text to OpenRouter models leaves your machine: get the author's consent first.
-
 ## 10. Updates
 
 ```sh
@@ -210,6 +264,18 @@ manuwright config set auto-update on      # patch releases only, at most daily
 ```
 
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
+
+### Settings
+
+| Key | Meaning |
+|---|---|
+| `main-model` | Model that writes the manuscript; reviewers using it are flagged |
+| `review.reviewers` | Default reviewers, e.g. `codex,opencode,muse,agy,openrouter` |
+| `review.openrouter-models` | Models used for a bare `openrouter` reviewer |
+| `review.<agent>-model` | Model for `claude`, `codex`, `opencode`, `muse` or `agy` |
+| `auto-update` | `on`/`off`: automatic patch updates |
+
+`manuwright config` prints the settings; `manuwright config unset <key>` removes one.
 
 ## 11. Troubleshooting
 
@@ -222,3 +288,7 @@ Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.
 | Numbers in Discussion fail | Literature values: add a `numeric_exemptions` reason and have the semantic review check them. |
 | Review became stale | Something in its dependencies changed. Rebuild the packet and review again. |
 | Plugin/CLI version warning | Run `manuwright agents update`, then restart the agent. |
+| `Obsidian MCP is unavailable` | Open the vault in Obsidian and turn on Settings > Academic Paper Citation Manager > External AI (MCP); restart the agent's MCP connection. |
+| New vault does not load the plugin | Obsidian's restricted mode: allow community plugins for that vault. |
+| agy returns nothing for MCP or review | Headless mode cannot grant tool permission; use agy interactively, or rely on the text-only review prompt (built in). |
+| A reviewer is `not_independent` | It uses the same model as `main-model`; pick another model for that reviewer. |

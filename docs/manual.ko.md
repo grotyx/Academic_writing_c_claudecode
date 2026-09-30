@@ -1,8 +1,38 @@
-# manuwright 사용자 매뉴얼 (v1.0.0)
+# manuwright 사용자 매뉴얼 (v2.0.0)
 
-빈 폴더에서 검증된 초고까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
+빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
-스크린샷은 시험 중 각 에이전트 터미널의 텍스트를 이미지로 렌더링한 것이다(세션에 macOS 화면 기록 권한이 없었음). 도구가 실제로 출력한 내용과 같다.
+스크린샷은 시험 중 터미널의 텍스트를 이미지로 렌더링한 것이다(세션에 macOS 화면 기록 권한이 없었음). 도구가 출력한 내용과 같고, 긴 출력은 줄였다고 표시했다.
+
+![manuwright 파이프라인](images/manual/01_pipeline_overview.png)
+
+## 한눈에 보기
+
+| 얻는 것 | 강제하는 방법 |
+|---|---|
+| 승인된 계획 없이는 쓰지 않음 | 에이전트 hook(Claude Code, Codex)과 `manuwright verify` |
+| 모든 인용은 등록·검증된 출처에서 | `knowledge/evidence.md` + `manuwright citations`. 출처는 PubMed 또는 내 Obsidian 라이브러리 |
+| 모든 숫자는 내 데이터에서 | `results/*.csv` + `manuwright numbers` + 수치 바인딩(데모에서 155개) |
+| 실제로 완결된 보고 체크리스트 | 공식 CONSORT/STROBE/PRISMA/CARE 체크리스트를 독립 검토자가 확인 |
+| 글쓴 모델이 아닌 다른 모델의 검토 | Codex, Antigravity, opencode, Muse, Claude, OpenRouter 모델을 원하는 대로 조합 |
+| 검토·서명한 것과 똑같은 패키지 | sha256 스냅샷. 무엇이든 바뀌면 검토와 서명이 stale 이 됨 |
+
+## 빠른 시작
+
+```sh
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.8
+manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
+manuwright init my-paper && cd my-paper
+manuwright search "연구 주제" --max 10           # 또는: manuwright evidence import-obsidian <citekey>
+#  data/analysis_plan.md 작성 -> 저자 승인 -> manuwright record-approval ...
+#  분석 스크립트 -> results/*.csv -> 표;  drafts/draft_plan.md -> 승인
+#  원하는 에이전트로 섹션 작성
+manuwright verify --project project.json --profile draft
+manuwright packet --project project.json        # 독립 semantic review
+manuwright critical-review --target drafts/05_results.md --out review/critical
+manuwright verify --project project.json --profile submission
+manuwright build --project project.json
+```
 
 ## 1. 설치와 점검
 
@@ -13,7 +43,7 @@ manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
 ```
 
-plugin 을 설치·업데이트한 뒤에는 Claude Code 를 재시작한다. Codex 는 폴더에서 처음 실행할 때 plugin hook 을 신뢰할지 묻는다. manuwright hook 4개에 "Trust all" 을 고른다. 설치하지 않는 템플릿 사용자는 clone 한 저장소 안에서 같은 엔진을 `python -m harness ...`, `python scripts/<tool>.py ...` 로 쓴다.
+`agents install` 은 선택 기능인 Obsidian 라이브러리도 제안한다(3b 절). plugin 을 설치·업데이트한 뒤에는 Claude Code 를 재시작한다. Codex 는 폴더에서 처음 실행할 때 plugin hook 을 신뢰할지 묻는다. manuwright hook 4개에 "Trust all" 을 고른다. 설치하지 않는 템플릿 사용자는 clone 한 저장소 안에서 같은 엔진을 `python -m harness ...`, `python scripts/<tool>.py ...` 로 쓴다.
 
 ## 2. 논문 시작
 
@@ -39,6 +69,37 @@ manuwright search fetch 31476471 34602458 --format evidence
 ```
 
 나온 항목을 `knowledge/evidence.md` 에 붙이고, 요약 칸은 실제로 읽은 내용으로 채운다. 전문을 읽기 전까지는 `Source Status: abstract-only` 로 둔다. 여기에 등록된 ID 만 `[EVID:miller_2020_pmid31476471]` 형식으로 인용할 수 있다.
+
+### 3b. 내 Obsidian 라이브러리 (선택, 권장)
+
+Obsidian 에서 "Academic Paper Citation Manager" 플러그인(PubMed 가져오기, AI 요약, citekey)으로 참고문헌을 관리한다면, 모든 에이전트가 글을 쓰는 동안 그 라이브러리를 검색할 수 있다. manuwright 는 이것을 요구하지 않는다.
+
+**플러그인 설치** (이미 있으면 건너뜀). 플러그인이 없으면 `manuwright agents install` 이 설치를 제안하고, 직접 실행해도 된다. 고른 vault 에 최신 릴리스를 받아 켜고, 동의하면 MCP 접근도 켠다. Obsidian 앱은 설치돼 있어야 하고 vault 는 Obsidian 에서 한 번 만들어 둬야 한다. Obsidian 이 그 vault 를 처음 열 때 플러그인을 신뢰할지 묻는데, 허용한다.
+
+![Obsidian 플러그인 설치](images/manual/42_obsidian_install.png)
+
+**에이전트에 연결.** `connect` 는 먼저 물어보고, 이미 연결된 에이전트는 건너뛰고, 각 에이전트의 `mcp add` 를 쓰며, 수정하는 JSON 설정 파일(opencode, Muse)은 백업한다.
+
+```sh
+manuwright obsidian status
+manuwright obsidian connect            # --dry-run 은 명령만 보여 줌, --only 로 에이전트 선택
+```
+
+![연결 상태](images/manual/40_obsidian_status.png)
+
+![에이전트 연결 (dry run)](images/manual/41_obsidian_connect.png)
+
+시험에서 Codex, Muse, opencode 가 MCP 로 라이브러리를 읽었다(색인 22,622 청크). Claude Code 는 이미 연결돼 있었다. Antigravity 는 MCP 도구 사용 허가를 물어보는데 headless 모드에서는 허가할 수 없으므로, 대화형 세션에서 첫 호출을 허가한다. 에이전트가 쓰는 동안 Obsidian 이 MCP 를 켠 채로 열려 있어야 한다.
+
+![에이전트가 MCP 로 라이브러리 조회 (요약)](images/manual/44_obsidian_mcp_agents.png)
+
+**참고문헌을 논문으로 가져오기.** 라이브러리는 찾는 용도이고, 인용할 수 있는 것은 `knowledge/evidence.md` 항목뿐이다. citekey 로 가져오면 CSL 필드가 인용 문자열이 되고, 플러그인의 AI 요약이 요약 칸을 채우고, citekey 가 `[EVID:id]` 가 되며, 상태는 `abstract-only` 로 시작한다. 의존하기 전에 요약을 논문과 대조한다.
+
+```sh
+manuwright evidence import-obsidian kirtley1985influence
+```
+
+![Obsidian 참고문헌 가져오기](images/manual/43_obsidian_import_evidence.png)
 
 ## 4. 분석 계획, 승인, 분석
 
@@ -153,6 +214,23 @@ manuwright packet --project project.json
 
 원고, 계획, CSV, 엔진 중 무엇이든 바뀌면 기존 검토는 stale 이 된다. packet 을 다시 만들어 다시 검토받는다.
 
+### 8b. 다중 모델 critical review
+
+위의 semantic review 가 게이트다. critical review 는 여러 검토자가 한꺼번에 가하는 추가 압박이다. 에이전트와 모델을 원하는 대로 고르고, 평소 조합은 한 번 저장해 둔다:
+
+```sh
+manuwright config set main-model claude-opus-5-5          # 글을 쓰는 모델
+manuwright config set review.reviewers codex,opencode,muse,agy,openrouter
+manuwright config set review.opencode-model opencode-go/kimi-k3
+manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwen3.7-max
+manuwright critical-review --target drafts/05_results.md --out review/critical
+# 이번만 다른 조합:  --reviewers codex,agy:<모델>,openrouter:<모델 id>
+```
+
+로컬 검토자는 빈 임시 폴더에서 읽기 전용이나 plan 모드로 돌아 논문을 건드리지 않는다. main 모델과 같은 모델을 쓰는 검토자는 `not_independent` 로 표시된다. OpenRouter 모델로 보내는 글은 내 컴퓨터 밖으로 나가므로 저자의 동의를 먼저 받는다. 시험에서 검토자 8명이 모두 전체 검토를 돌려줬고, 모두 reject 였다. 합성 데이터로 만든 소프트웨어 시험 원고이니 올바른 판단이다.
+
+![검토자 8명](images/manual/45_multi_reviewer_run.png)
+
 ## 9. 제출
 
 ```sh
@@ -184,30 +262,6 @@ manuwright verify --project project.json --profile submission
 
 ![submission PASS 와 빌드](images/manual/23_submission_pass_build.png)
 
-## 9a. Obsidian 라이브러리와 다중 모델 검토
-
-**Obsidian (선택, 권장).** Obsidian 플러그인 "Academic Paper Citation Manager" 를 쓴다면 한 번 연결해 두면 모든 에이전트가 MCP 로 참고문헌 라이브러리를 검색할 수 있다:
-
-```sh
-manuwright obsidian status
-manuwright obsidian connect            # 먼저 물어봄. --dry-run 으로 명령만 볼 수 있음
-manuwright evidence import-obsidian kirtley1985influence
-```
-
-시험에서 Codex, Muse, opencode 가 MCP 로 라이브러리를 호출했다(색인 22,622 청크). Claude Code 는 이미 연결돼 있었고, Antigravity 는 첫 MCP 호출을 대화형 세션에서 허가해야 한다. 가져온 항목은 citekey 를 `[EVID:id]` 로 쓰고 `abstract-only` 로 시작한다.
-
-**검토자.** 검토자와 모델을 원하는 대로 고른다. 글을 쓰는 모델(main)을 한 번 정해 두면, 같은 모델을 쓰는 검토자는 독립 검토가 아니라고 표시된다:
-
-```sh
-manuwright config set main-model claude-opus-5-5
-manuwright config set review.reviewers codex,opencode,muse,agy,openrouter
-manuwright config set review.opencode-model opencode-go/kimi-k3
-manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwen3.7-max
-manuwright critical-review --target drafts/05_results.md --out review/critical
-```
-
-시험에서 검토자 8명(Codex, kimi-k3 를 쓴 opencode, Muse, Antigravity, OpenRouter 모델 4개)이 모두 전체 검토를 돌려줬다. OpenRouter 모델로 보내는 글은 내 컴퓨터 밖으로 나가므로 저자의 동의를 먼저 받는다.
-
 ## 10. 업데이트
 
 ```sh
@@ -217,6 +271,18 @@ manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1�
 ```
 
 등록된 논문이 엔진을 고정했거나(`project.json` 의 `"engine": ">=1.8,<1.9"`), 엔진이 바뀌면 무효가 될 유효한 검토가 있으면 자동 업데이트는 기다린다. 되돌리기: `manuwright update --to <버전>`.
+
+### 설정
+
+| 키 | 뜻 |
+|---|---|
+| `main-model` | 원고를 쓰는 모델. 이 모델을 쓰는 검토자는 표시됨 |
+| `review.reviewers` | 기본 검토자, 예: `codex,opencode,muse,agy,openrouter` |
+| `review.openrouter-models` | `openrouter` 만 적었을 때 쓸 모델들 |
+| `review.<agent>-model` | `claude`, `codex`, `opencode`, `muse`, `agy` 각각의 모델 |
+| `auto-update` | `on`/`off`: 자동 patch 업데이트 |
+
+`manuwright config` 로 설정을 보고, `manuwright config unset <키>` 로 지운다.
 
 ## 11. 문제 해결
 
@@ -229,3 +295,7 @@ manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1�
 | Discussion 의 수치가 실패 | 문헌 수치임. `numeric_exemptions` 에 사유를 적고 semantic review 에서 확인 |
 | 검토가 stale 이 됨 | 검토 대상 파일 중 무엇인가 바뀜. packet 을 다시 만들어 재검토 |
 | plugin 과 CLI 버전 경고 | `manuwright agents update` 후 에이전트 재시작 |
+| `Obsidian MCP is unavailable` | Obsidian 에서 vault 를 열고 Settings > Academic Paper Citation Manager > External AI (MCP) 를 켠 뒤 에이전트의 MCP 연결을 다시 시작 |
+| 새 vault 에서 플러그인이 안 뜸 | Obsidian 제한 모드: 그 vault 에서 커뮤니티 플러그인을 허용 |
+| agy 가 MCP 나 검토에서 빈 출력 | headless 모드는 도구 허가를 줄 수 없음. 대화형으로 쓰거나, 글로만 답하게 하는 내장 검토 프롬프트에 맡김 |
+| 검토자가 `not_independent` | `main-model` 과 같은 모델을 씀. 그 검토자의 모델을 바꿈 |
