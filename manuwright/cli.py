@@ -155,6 +155,8 @@ def main(argv=None):
         print(f'manuwright: unknown command {command!r}\n\n{USAGE}', file=sys.stderr)
         return 2
     script, defaults = TOOLS[command]
+    if command == 'search' and (not rest or rest[0] not in {'search', 'fetch', 'doi', 'related', '-h', '--help'}):
+        rest = ['search', *rest]  # `manuwright search "<query>"` as documented
     if '-h' not in rest and '--help' not in rest:
         rest += project_defaults(rest, defaults, Path.cwd())
     return subprocess.call([sys.executable, str(ENGINE / 'scripts' / script), *rest])

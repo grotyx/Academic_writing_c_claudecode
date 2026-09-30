@@ -68,6 +68,24 @@ def _is_manuscript_md(spath: str) -> bool:
     )
 
 
+def project_terminology(target: Path) -> Path | None:
+    """The paper's own registry: `terminology` in the nearest project.json above the edited file.
+
+    Mirrors `python -m harness verify`, so the edit-time hook and the manifest profile apply the
+    same terms (e.g. an abbreviation the approved draft plan chose deliberately).
+    """
+    for folder in target.resolve().parents:
+        manifest = folder / "project.json"
+        if manifest.is_file():
+            try:
+                name = json.loads(manifest.read_text(encoding="utf-8")).get("terminology")
+            except (OSError, ValueError):
+                return None
+            registry = (folder / name).resolve() if name else None
+            return registry if registry and registry.is_file() and folder in registry.parents else None
+    return None
+
+
 def evaluate(event: dict) -> tuple[int, str]:
     """Return (exit_code, stderr_message). Pure function for testing."""
     if event.get("tool_name") not in WRITE_TOOLS:
@@ -86,7 +104,7 @@ def evaluate(event: dict) -> tuple[int, str]:
         return 0, ""
 
     lint = _load_lint()
-    forbidden = lint.load_forbidden_terms(lint.TERMINOLOGY_FILE)
+    forbidden = lint.load_forbidden_terms(project_terminology(target) or lint.TERMINOLOGY_FILE)
     issues = lint.lint_file(target, forbidden)
 
     term_lines = [

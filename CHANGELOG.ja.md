@@ -1,5 +1,15 @@
 # 変更履歴
 
+### v1.8.6 (260930)
+
+2 回目のエンドツーエンド試験：4 つのエージェントがセクションを分担（Codex が Methods、Antigravity が Results、Muse が Introduction、opencode が Discussion）。Claude が Title/Abstract/Conclusion を書き、draft profile は PASS。Codex が独立した semantic reviewer を担当（1 回目 13 件、2 回目に 12 件解決、1 件は Rule 9 に従いユーザーへ）。途中で見つけて直したエンジンの問題：
+
+- 編集時の lint hook が論文独自の用語集を無視し、承認済み計画が選んだ用語（"MIS"）を禁止語として指摘し続けた。最も近い `project.json` の `terminology` を `verify` と同様に読むよう修正。
+- `init` で作る manifest には `ai_usage.json`/`checklist.json` が含まれ、これら投稿用の記録ができる前は `verify --profile draft` と `packet` が "No such file" で停止していた。存在するまでスキップするよう修正。submission profile は引き続きブロック。
+- `manuwright search "<query>"` がドキュメントどおり動作（`search` サブコマンドを省略可）。
+- スクリーンショット付きユーザーマニュアルを新設：`docs/manual.md`、`docs/manual.ko.md`。
+- 406 tests 通過。
+
 ### v1.8.5 (260930)
 
 合成臨床試験データでのエンドツーエンド試験（init、解析計画、承認、解析、表、検査）で発見：

@@ -1,5 +1,15 @@
 # Changelog
 
+### v1.8.6 (260930)
+
+Second end-to-end run: four agents drafted sections (Codex Methods, Antigravity Results, Muse Introduction, opencode Discussion), Claude wrote Title/Abstract/Conclusion, the draft profile reached PASS, and Codex acted as the independent semantic reviewer (round 1: 13 findings; round 2: 12 resolved, 1 escalated per Rule 9). Engine fixes found on the way:
+
+- The edit-time lint hook ignored the paper's own terminology registry and kept flagging a term the approved plan chose ("MIS"). It now reads `terminology` from the nearest `project.json`, like `verify`.
+- A freshly initialised manifest names `ai_usage.json`/`checklist.json`; before those submission records existed, `verify --profile draft` and `packet` stopped with "No such file". They are now skipped until they exist; the submission profile still blocks on them.
+- `manuwright search "<query>"` works as documented (the `search` subcommand is implied).
+- New user manual with screenshots: `docs/manual.md`, `docs/manual.ko.md`.
+- 406 tests pass.
+
 ### v1.8.5 (260930)
 
 Found in an end-to-end run on synthetic trial data (init, analysis plan, approval, analysis, tables, checks):

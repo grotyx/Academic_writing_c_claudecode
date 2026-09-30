@@ -1,5 +1,15 @@
 # 변경 이력
 
+### v1.8.6 (260930)
+
+두 번째 end-to-end 시험: 에이전트 넷이 섹션을 나눠 씀(Codex Methods, Antigravity Results, Muse Introduction, opencode Discussion). Claude 가 Title/Abstract/Conclusion 을 쓰고, draft profile PASS 까지 도달. Codex 가 독립 semantic reviewer 를 맡음(1차 지적 13건, 2차에 12건 해결, 1건은 Rule 9 에 따라 사용자에게 넘김). 도중에 찾아 고친 엔진 문제:
+
+- 편집할 때 도는 lint hook 이 논문 자체 용어집을 무시하고, 승인된 계획이 고른 용어("MIS")를 계속 금지어로 잡았음. 이제 가장 가까운 `project.json` 의 `terminology` 를 `verify` 와 똑같이 읽음.
+- `init` 으로 만든 manifest 에는 `ai_usage.json`/`checklist.json` 이 들어 있는데, 이 제출용 기록이 생기기 전에는 `verify --profile draft` 와 `packet` 이 "No such file" 로 멈췄음. 이제 파일이 생길 때까지 건너뜀. submission profile 은 여전히 이 기록이 없으면 막음.
+- `manuwright search "<검색어>"` 가 문서대로 동작함(`search` 하위 명령 생략 가능).
+- 스크린샷이 들어간 사용자 매뉴얼 신설: `docs/manual.md`, `docs/manual.ko.md`.
+- 406 tests 통과.
+
 ### v1.8.5 (260930)
 
 합성 임상시험 데이터로 끝까지 돌려 본 시험(init, 분석 계획, 승인, 분석, 표, 검사)에서 발견:

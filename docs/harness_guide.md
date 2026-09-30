@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.0.10)
+# Shared manuscript engine (v1.0.11)
 
-Project release: v1.8.5. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.6. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -65,7 +65,7 @@ Manifest `engine` (optional) pins the engine for one paper, for example `">=1.8,
 
 Copy `docs/project.example.json` to the private project root as `project.json` and fill it. Paths resolve relative to that manifest and cannot escape its root. `artifacts` is publication order, not drafting order. For revisions, explicitly list the latest submitted overlay: changed REVn files plus unchanged sections from earlier revisions or the initial draft. Do not list both old and new versions of the same section.
 
-Optional `terminology` and `style_spec` point to the project's own term registry and Style Spec. When declared, lint uses that registry instead of the engine's `Style/terminology.md`, `style_metrics` runs `check_style.py` against the Spec's Target Metrics, and both files enter the review snapshot, so editing them invalidates reviews. Bind exemplars through `dependencies`. `abstract` must name a file listed in `artifacts`, and a published artifact whose name contains `abstract` must be declared as `abstract`. Failed checks report the first issues (artifact, line, value) in `detail`.
+Optional `terminology` and `style_spec` point to the project's own term registry and Style Spec. When declared, lint (including the edit-time lint hook, which finds the nearest `project.json` above the edited file) uses that registry instead of the engine's `Style/terminology.md`, `style_metrics` runs `check_style.py` against the Spec's Target Metrics, and both files enter the review snapshot, so editing them invalidates reviews. Bind exemplars through `dependencies`. `abstract` must name a file listed in `artifacts`, and a published artifact whose name contains `abstract` must be declared as `abstract`. Failed checks report the first issues (artifact, line, value) in `detail`.
 
 Supported study types: original_research, systematic_review, narrative_review, case_report. Non-original studies may provide an explicit `analysis_not_applicable` or `numbers_not_applicable` reason where appropriate. Original research requires analysis and numerical checks. The engine does not decide scientific appropriateness of exemptions.
 
@@ -75,7 +75,7 @@ Supported study types: original_research, systematic_review, narrative_review, c
 
 - Draft: citations, lint, plan completeness, numbers, optional contextual bindings, abstract if declared, cross-references and bibliography. Missing legacy approval receipt/bindings can be allowed only here; this is not submission clearance.
 - Revision: draft checks plus source-bound plan approvals, structured numerical bindings, independent/human semantic review, strict change claims and original-comment coverage. Requires `response` and `comments`.
-- Submission: also requires human signoff, AI disclosure record and a completed reporting checklist. Missing/invalid input is BLOCKED; detected violations are FAIL; justified omitted checks are NOT_APPLICABLE. PASS covers the selected profile only.
+- Submission: also requires human signoff, AI disclosure record and a completed reporting checklist. `ai_usage` and `checklist` records may be absent until the submission stage: draft and revision profiles and `packet` skip them, and the submission profile reports them BLOCKED. Missing/invalid input is BLOCKED; detected violations are FAIL; justified omitted checks are NOT_APPLICABLE. PASS covers the selected profile only.
 
 After an actual human approval, retain the checked approval line and record the exact approved content:
 

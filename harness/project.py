@@ -64,7 +64,12 @@ def snapshot(path, config):
     for key in ('evidence', 'draft_plan', 'analysis_plan', 'result_bindings', 'abstract',
                 'response', 'comments', 'ai_usage', 'checklist', 'terminology', 'style_spec'):
         if config.get(key):
-            files.add(inside(root, config[key]))
+            record = inside(root, config[key])
+            # Submission records are written late; before they exist a draft profile must still
+            # run. The submission profile blocks on their absence separately.
+            if key in ('ai_usage', 'checklist') and not record.exists():
+                continue
+            files.add(record)
     for key in ('draft_plan', 'analysis_plan'):
         if config.get(key):
             receipt = inside(root, config[key]).with_suffix('.approval.json')

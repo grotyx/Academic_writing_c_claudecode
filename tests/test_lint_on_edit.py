@@ -86,3 +86,25 @@ class LintOnEditTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ProjectTerminologyTests(unittest.TestCase):
+    """The hook uses the paper's registry declared in project.json, like harness verify."""
+
+    def test_project_registry_overrides_engine_terms(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "drafts").mkdir()
+            section = root / "drafts" / "03_introduction.md"
+            section.write_text("# Introduction\n\nMIS fusion was compared with open fusion.\n", encoding="utf-8")
+            event = {"tool_name": "Write", "cwd": tmp, "tool_input": {"file_path": str(section)}}
+            code, msg = module.evaluate(event)
+            self.assertEqual(code, 2); self.assertIn('"MIS"', msg)  # engine registry forbids MIS
+            (root / "Style").mkdir()
+            (root / "Style" / "terminology.md").write_text(
+                "| Preferred Term | Forbidden Terms |\n|---|---|\n| MIS fusion | minimally invasive spine surgery (MISS) |\n",
+                encoding="utf-8")
+            (root / "project.json").write_text('{"terminology": "Style/terminology.md"}', encoding="utf-8")
+            code, msg = module.evaluate(event)
+            self.assertNotIn('"MIS"', msg)

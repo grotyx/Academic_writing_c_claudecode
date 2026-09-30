@@ -148,3 +148,13 @@ def test_missing_artifacts_are_named(project):
     with pytest.raises(ValueError, match='06_discussion.md'):
         from harness.project import load_project
         load_project(project)
+
+
+def test_search_accepts_a_bare_query(monkeypatch):
+    import manuwright.cli as cli
+    calls = []
+    monkeypatch.setattr(cli.subprocess, 'call', lambda cmd: calls.append(cmd) or 0)
+    assert cli.main(['search', 'lumbar fusion', '--max', '3']) == 0
+    assert calls[0][-4:] == ['search', 'lumbar fusion', '--max', '3']
+    cli.main(['search', 'fetch', '12345'])
+    assert calls[1][-2:] == ['fetch', '12345']

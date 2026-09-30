@@ -293,3 +293,14 @@ def test_project_style_spec_is_checked(project):
     put(project,data)
     check=next(c for c in verify(project)['checks'] if c['check']=='style_metrics')
     assert check['status']=='FAIL' and '05_results.md' in check['detail'], check
+
+
+def test_draft_runs_before_submission_records_exist(project):
+    (project.parent/'review/ai.json').unlink(); (project.parent/'review/checklist.json').unlink()
+    assert verify(project)['status']=='PASS'
+    with patch('sys.argv',['harness','packet','--project',str(project)]):
+        assert main()==0  # packet must not require records that do not exist yet
+    sign(project)
+    report=verify(project,'submission')
+    assert report['status']=='BLOCKED'
+    assert {c['check'] for c in report['checks'] if c['status']=='BLOCKED'} >= {'ai_disclosure','reporting_checklist'}

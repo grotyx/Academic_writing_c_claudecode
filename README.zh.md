@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.5
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.6
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright init my-paper
 ```
@@ -154,7 +154,7 @@ manuwright init my-paper
 
 ## 文档
 
-[Harness 指南](docs/harness_guide.md) &middot; [Workflow reference](docs/workflow_reference.md) &middot; [验证协议](docs/verification_protocol.md) &middot; [写作指南](docs/writing_guide.md) &middot; [QC 指南](docs/qc_guide.md) &middot; [分发设计](docs/distribution_plan.md) &middot; [变更记录](CHANGELOG.zh.md)
+[用户手册（英文）](docs/manual.md) &middot; [Harness 指南](docs/harness_guide.md) &middot; [Workflow reference](docs/workflow_reference.md) &middot; [验证协议](docs/verification_protocol.md) &middot; [写作指南](docs/writing_guide.md) &middot; [QC 指南](docs/qc_guide.md) &middot; [分发设计](docs/distribution_plan.md) &middot; [变更记录](CHANGELOG.zh.md)
 
 ## 作者
 

@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.5
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.6
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright init my-paper
 ```
@@ -154,7 +154,7 @@ manuwright init my-paper
 
 ## ドキュメント
 
-[Harness ガイド](docs/harness_guide.md) &middot; [Workflow reference](docs/workflow_reference.md) &middot; [検証プロトコル](docs/verification_protocol.md) &middot; [執筆ガイド](docs/writing_guide.md) &middot; [QC ガイド](docs/qc_guide.md) &middot; [配布設計](docs/distribution_plan.md) &middot; [変更履歴](CHANGELOG.ja.md)
+[ユーザーマニュアル（英語）](docs/manual.md) &middot; [Harness ガイド](docs/harness_guide.md) &middot; [Workflow reference](docs/workflow_reference.md) &middot; [検証プロトコル](docs/verification_protocol.md) &middot; [執筆ガイド](docs/writing_guide.md) &middot; [QC ガイド](docs/qc_guide.md) &middot; [配布設計](docs/distribution_plan.md) &middot; [変更履歴](CHANGELOG.ja.md)
 
 ## 著者
 

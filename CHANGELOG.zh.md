@@ -1,5 +1,15 @@
 # 变更记录
 
+### v1.8.6 (260930)
+
+第二次端到端测试：四个智能体分写章节（Codex 写 Methods、Antigravity 写 Results、Muse 写 Introduction、opencode 写 Discussion），Claude 写 Title/Abstract/Conclusion，draft profile 达到 PASS，Codex 担任独立 semantic reviewer（第一轮 13 条意见，第二轮解决 12 条，1 条按 Rule 9 交给用户）。过程中发现并修复的引擎问题：
+
+- 编辑时的 lint hook 忽略论文自己的术语表，持续把获批计划选定的术语（"MIS"）判为禁用词。现与 `verify` 一样读取最近的 `project.json` 中的 `terminology`。
+- `init` 生成的 manifest 包含 `ai_usage.json`/`checklist.json`；在这些投稿记录生成之前，`verify --profile draft` 与 `packet` 会以 "No such file" 中止。现在在文件出现前跳过它们；submission profile 仍会阻止。
+- `manuwright search "<query>"` 按文档工作（可省略 `search` 子命令）。
+- 新增带截图的用户手册：`docs/manual.md`、`docs/manual.ko.md`。
+- 406 个测试通过。
+
 ### v1.8.5 (260930)
 
 在合成临床试验数据上的端到端测试（init、分析计划、批准、分析、表格、检查）中发现：

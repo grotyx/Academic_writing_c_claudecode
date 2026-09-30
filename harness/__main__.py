@@ -100,7 +100,8 @@ def main():
                 # Only explicitly declared, UTF-8 project files; no raw-data/PDF scan.
                 names=config['artifacts']+config.get('tables',[])+[config['evidence'],config['draft_plan']]
                 names += [config[key] for key in ('analysis_plan','result_bindings','response','comments',
-                          'ai_usage','checklist','terminology','style_spec') if config.get(key)]
+                          'ai_usage','checklist','terminology','style_spec')
+                          if config.get(key) and inside(root,config[key]).exists()]
                 names += config.get('review_sources',[])
                 texts=[];size=0
                 for name in dict.fromkeys(names):

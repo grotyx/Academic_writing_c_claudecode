@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.5
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.6
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright init my-paper
 ```
@@ -154,7 +154,7 @@ Full rules: [WORKFLOW.md](WORKFLOW.md). Everything that used to live in this REA
 
 ## Documentation
 
-[Harness guide](docs/harness_guide.md) &middot; [Workflow reference](docs/workflow_reference.md) &middot; [Verification protocol](docs/verification_protocol.md) &middot; [Writing guide](docs/writing_guide.md) &middot; [QC guide](docs/qc_guide.md) &middot; [Distribution design](docs/distribution_plan.md) &middot; [Changelog](CHANGELOG.md)
+[User manual](docs/manual.md) &middot; [Harness guide](docs/harness_guide.md) &middot; [Workflow reference](docs/workflow_reference.md) &middot; [Verification protocol](docs/verification_protocol.md) &middot; [Writing guide](docs/writing_guide.md) &middot; [QC guide](docs/qc_guide.md) &middot; [Distribution design](docs/distribution_plan.md) &middot; [Changelog](CHANGELOG.md)
 
 ## Author
 
