@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.7 (260930)
+
+- **PubMed 导入的参考文献字符串**：`search_pubmed.py` 会写出 "et al.."，且标题与期刊名之间缺少句点（"...: A meta-analysis J Back Musculoskelet Rehabil"），导致所有构建出的参考文献列表都带有该问题。已修复并添加测试（旧测试曾以双句点为前提）。在目视检查合成示例论文首个 DOCX 包时发现。
+
 ### v1.8.6 (260930)
 
 第二次端到端测试：四个智能体分写章节（Codex 写 Methods、Antigravity 写 Results、Muse 写 Introduction、opencode 写 Discussion），Claude 写 Title/Abstract/Conclusion，draft profile 达到 PASS，Codex 担任独立 semantic reviewer（第一轮 13 条意见，第二轮解决 12 条，1 条按 Rule 9 交给用户）。过程中发现并修复的引擎问题：

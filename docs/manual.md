@@ -7,7 +7,7 @@ Screenshots are renders of the agents' terminal text captured during that run (t
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.6
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.7
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse

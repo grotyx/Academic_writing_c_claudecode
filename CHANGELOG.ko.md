@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.7 (260930)
+
+- **PubMed 가져오기의 참고문헌 문자열**: `search_pubmed.py` 가 "et al.." 로 쓰고 제목과 저널명 사이 마침표를 빠뜨려("...: A meta-analysis J Back Musculoskelet Rehabil"), 빌드된 모든 참고문헌 목록에 그대로 나왔음. 수정하고 테스트 추가(기존 테스트가 마침표 두 개를 전제로 작성돼 있었음). 합성 데모 논문의 첫 DOCX 패키지를 육안 검토하다 발견.
+
 ### v1.8.6 (260930)
 
 두 번째 end-to-end 시험: 에이전트 넷이 섹션을 나눠 씀(Codex Methods, Antigravity Results, Muse Introduction, opencode Discussion). Claude 가 Title/Abstract/Conclusion 을 쓰고, draft profile PASS 까지 도달. Codex 가 독립 semantic reviewer 를 맡음(1차 지적 13건, 2차에 12건 해결, 1건은 Rule 9 에 따라 사용자에게 넘김). 도중에 찾아 고친 엔진 문제:

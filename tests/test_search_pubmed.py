@@ -86,8 +86,9 @@ class FormatCitationAuthorBranchesTests(unittest.TestCase):
         author_str = citation.split(". An example study")[0]
         self.assertEqual(
             author_str,
-            "Author0 X, Author1 X, Author2 X, Author3 X, Author4 X, Author5 X, et al.",
+            "Author0 X, Author1 X, Author2 X, Author3 X, Author4 X, Author5 X, et al",
         )
+        self.assertIn("et al. An example study.", citation)  # one period, not "et al.."
 
     def test_exactly_six_authors_listed_without_et_al(self) -> None:
         # 6 authors is NOT >6, so the 2-6 branch joins all of them, last with ", ".
@@ -211,3 +212,16 @@ class EvidenceIdSlugTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_citation_punctuation_between_parts():
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location("sp", Path(__file__).resolve().parents[1] / "scripts" / "search_pubmed.py")
+    sp = importlib.util.module_from_spec(spec); spec.loader.exec_module(sp)
+    art = {"authors": [f"A{i} B" for i in range(8)], "title": "A trial", "journal_abbr": "Spine J",
+           "year": "2022", "volume": "22", "issue": "4", "pages": "549-560"}
+    cite = sp.format_citation(art)
+    assert "et al.." not in cite and "et al. A trial. Spine J. 2022;22(4):549-560." in cite
+    art["authors"] = ["Solo A"]
+    assert sp.format_citation(art).startswith("Solo A. A trial. Spine J.")

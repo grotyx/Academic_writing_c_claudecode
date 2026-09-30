@@ -202,7 +202,8 @@ def format_citation(a):
     else:
         author_str = authors[0] if authors else "Unknown"
 
-    parts = [f"{author_str}. {a['title'].rstrip('.')}"]
+    # One period after the author list (never "et al.."), one after the title.
+    parts = [f"{author_str.rstrip('.')}. {a['title'].rstrip('.')}."]
     journal = a.get("journal_abbr") or a.get("journal", "")
     if journal:
         parts.append(f" {journal}. {a['year']}")

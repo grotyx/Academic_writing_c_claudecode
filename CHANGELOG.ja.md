@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.7 (260930)
+
+- **PubMed 取り込みの参考文献文字列**：`search_pubmed.py` が "et al.." と書き、タイトルと誌名の間のピリオドが抜けていた（"...: A meta-analysis J Back Musculoskelet Rehabil"）ため、ビルドされたすべての参考文献リストに現れていた。修正しテストを追加（旧テストは二重ピリオドを前提にしていた）。合成デモ論文の最初の DOCX パッケージを目視確認中に発見。
+
 ### v1.8.6 (260930)
 
 2 回目のエンドツーエンド試験：4 つのエージェントがセクションを分担（Codex が Methods、Antigravity が Results、Muse が Introduction、opencode が Discussion）。Claude が Title/Abstract/Conclusion を書き、draft profile は PASS。Codex が独立した semantic reviewer を担当（1 回目 13 件、2 回目に 12 件解決、1 件は Rule 9 に従いユーザーへ）。途中で見つけて直したエンジンの問題：

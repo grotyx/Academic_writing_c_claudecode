@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.7 (260930)
+
+- **Reference strings from PubMed imports**: `search_pubmed.py` wrote "et al.." and no period between title and journal ("...: A meta-analysis J Back Musculoskelet Rehabil"), which then appeared in every built reference list. Fixed, with a test; the old test had encoded the double period. Found while visually checking the first fully built DOCX package of the synthetic demo paper.
+
 ### v1.8.6 (260930)
 
 Second end-to-end run: four agents drafted sections (Codex Methods, Antigravity Results, Muse Introduction, opencode Discussion), Claude wrote Title/Abstract/Conclusion, the draft profile reached PASS, and Codex acted as the independent semantic reviewer (round 1: 13 findings; round 2: 12 resolved, 1 escalated per Rule 9). Engine fixes found on the way:
