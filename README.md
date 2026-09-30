@@ -125,9 +125,23 @@ manuwright init my-paper
 | `manuwright search "<query>"` | Search PubMed and print evidence entries |
 | `manuwright packet` / `build` | Local review packet / gated DOCX build |
 | `manuwright update`, `agents install\|update`, `config` | Releases, agent adapters, auto-update, main model and reviewer models |
-| `manuwright obsidian status\|connect`, `evidence import-obsidian <citekey>` | Optional, recommended: connect the Obsidian "Academic Paper Citation Manager" library to every agent; bring a vault reference into `evidence.md` |
+| `manuwright obsidian status\|connect`, `evidence import-obsidian <citekey>` | Optional, recommended: connect the Obsidian "[Academic Paper Citation Manager](https://github.com/grotyx/rag-obsidian)" library to every agent; bring a vault reference into `evidence.md` |
 
 In Claude Code the template also ships slash commands: `/verify`, `/search-evidence`, `/import-doi`, `/style-pass`, `/verify-claims`, `/suggest-citation`, `/cite-stance`, `/evidence-table`, `/paper-debate`, `/critical-review`, `/editor-review`.
+
+## Your Obsidian library (optional, recommended)
+
+Keep your references in Obsidian with **[Academic Paper Citation Manager](https://github.com/grotyx/rag-obsidian)**, a plugin by the same author ([Obsidian Community plugins](https://community.obsidian.md/plugins/academic-paper-citation-manager)): PubMed import, AI summaries, MeSH tags and `[@citekey]` citations, with your notes as the database. Its MCP server lets every agent search that library while it writes.
+
+```sh
+manuwright obsidian install          # plugin into a vault, offers MCP access (skip if installed)
+manuwright obsidian connect          # register its MCP server (rag-obsidian) with each agent
+manuwright evidence import-obsidian <citekey>
+```
+
+The vault is for discovery; only `knowledge/evidence.md` is citable. An imported note brings its CSL fields as the citation and the plugin's AI summary as the summary fields, is cited as `[EVID:<citekey>]`, and stays `abstract-only` until someone reads the full text. Keep Obsidian open with MCP access on while agents use it. Walkthrough: [manual, section 3b](docs/manual.md#3b-your-obsidian-library-optional-recommended).
+
+<p align="center"><img src="docs/images/manual/43_obsidian_import_evidence.png" width="720" alt="Importing a reference from the Obsidian library into evidence.md"></p>
 
 ## The workflow
 

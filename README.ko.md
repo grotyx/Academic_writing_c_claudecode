@@ -125,9 +125,23 @@ manuwright init my-paper
 | `manuwright search "<query>"` | PubMed 검색 후 근거 항목 출력 |
 | `manuwright packet` / `build` | 로컬 리뷰 packet / 게이트를 통과해야 되는 DOCX 빌드 |
 | `manuwright update`, `agents install\|update`, `config` | 릴리스, 에이전트 어댑터, 자동 업데이트, main 모델과 검토자 모델 |
-| `manuwright obsidian status\|connect`, `evidence import-obsidian <citekey>` | 선택(권장): Obsidian "Academic Paper Citation Manager" 라이브러리를 모든 에이전트에 연결; vault 참고문헌을 `evidence.md` 로 가져오기 |
+| `manuwright obsidian status\|connect`, `evidence import-obsidian <citekey>` | 선택(권장): Obsidian "[Academic Paper Citation Manager](https://github.com/grotyx/rag-obsidian)" 라이브러리를 모든 에이전트에 연결; vault 참고문헌을 `evidence.md` 로 가져오기 |
 
 템플릿에는 Claude Code 용 slash command 도 들어 있다: `/verify`, `/search-evidence`, `/import-doi`, `/style-pass`, `/verify-claims`, `/suggest-citation`, `/cite-stance`, `/evidence-table`, `/paper-debate`, `/critical-review`, `/editor-review`.
+
+## 내 Obsidian 라이브러리 (선택, 권장)
+
+참고문헌을 Obsidian에서 관리한다면 같은 저자가 만든 플러그인 **[Academic Paper Citation Manager](https://github.com/grotyx/rag-obsidian)**([Obsidian 커뮤니티 플러그인](https://community.obsidian.md/plugins/academic-paper-citation-manager))를 함께 쓰세요. PubMed 가져오기, AI 요약, MeSH 태그, `[@citekey]` 인용을 제공하고, 노트 자체가 데이터베이스입니다. 이 플러그인의 MCP 서버로 모든 에이전트가 원고를 쓰면서 라이브러리를 검색합니다.
+
+```sh
+manuwright obsidian install          # plugin into a vault, offers MCP access (skip if installed)
+manuwright obsidian connect          # register its MCP server (rag-obsidian) with each agent
+manuwright evidence import-obsidian <citekey>
+```
+
+볼트는 문헌을 찾는 곳이고, 인용할 수 있는 것은 `knowledge/evidence.md`에 등록된 항목뿐입니다. 가져온 노트는 CSL 필드가 인용 정보가, 플러그인의 AI 요약이 요약 칸이 되며, `[EVID:<citekey>]`로 인용하고, 전문을 읽기 전까지 `abstract-only`로 남습니다. 에이전트가 라이브러리를 쓰는 동안 Obsidian을 열어 두고 MCP 접근을 켜 두세요. 따라 하기: [설명서 3b절](docs/manual.ko.md#3b-내-obsidian-라이브러리-선택-권장).
+
+<p align="center"><img src="docs/images/manual/43_obsidian_import_evidence.png" width="720" alt="Obsidian 라이브러리의 참고문헌을 evidence.md로 가져오기"></p>
 
 ## 워크플로
 

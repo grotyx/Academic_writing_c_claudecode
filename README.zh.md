@@ -125,9 +125,23 @@ manuwright init my-paper
 | `manuwright search "<query>"` | 检索 PubMed 并输出证据条目 |
 | `manuwright packet` / `build` | 本地评审 packet / 需通过门禁的 DOCX 构建 |
 | `manuwright update`、`agents install\|update`、`config` | 版本、智能体适配器、自动更新、main 模型与评审模型 |
-| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | 可选（推荐）：将 Obsidian「Academic Paper Citation Manager」文献库连接到所有智能体；把 vault 文献导入 `evidence.md` |
+| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | 可选（推荐）：将 Obsidian「[Academic Paper Citation Manager](https://github.com/grotyx/rag-obsidian)」文献库连接到所有智能体；把 vault 文献导入 `evidence.md` |
 
 模板还附带 Claude Code 的 slash command：`/verify`、`/search-evidence`、`/import-doi`、`/style-pass`、`/verify-claims`、`/suggest-citation`、`/cite-stance`、`/evidence-table`、`/paper-debate`、`/critical-review`、`/editor-review`。
+
+## Obsidian 文献库（可选，推荐）
+
+如果你用 Obsidian 管理文献，可以搭配同一作者开发的插件 **[Academic Paper Citation Manager](https://github.com/grotyx/rag-obsidian)**（[Obsidian 社区插件](https://community.obsidian.md/plugins/academic-paper-citation-manager)）。它提供 PubMed 导入、AI 摘要、MeSH 标签和 `[@citekey]` 引用，笔记本身就是数据库。借助该插件的 MCP 服务器，所有智能体在写作时都能检索这个文献库。
+
+```sh
+manuwright obsidian install          # plugin into a vault, offers MCP access (skip if installed)
+manuwright obsidian connect          # register its MCP server (rag-obsidian) with each agent
+manuwright evidence import-obsidian <citekey>
+```
+
+vault 用于查找文献，只有登记在 `knowledge/evidence.md` 中的条目才能引用。导入的笔记以 CSL 字段作为引用信息、以插件的 AI 摘要填写摘要字段，引用形式为 `[EVID:<citekey>]`，在读完全文之前保持 `abstract-only`。智能体使用文献库时，请保持 Obsidian 打开并开启 MCP 访问。操作步骤：[手册第 3b 节](docs/manual.md#3b-your-obsidian-library-optional-recommended)（英文）。
+
+<p align="center"><img src="docs/images/manual/43_obsidian_import_evidence.png" width="720" alt="将 Obsidian 文献库中的文献导入 evidence.md"></p>
 
 ## 工作流
 

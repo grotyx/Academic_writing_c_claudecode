@@ -125,9 +125,23 @@ manuwright init my-paper
 | `manuwright search "<query>"` | PubMed を検索し根拠エントリを表示 |
 | `manuwright packet` / `build` | ローカルのレビュー packet / ゲート通過が必要な DOCX ビルド |
 | `manuwright update`、`agents install\|update`、`config` | リリース、エージェントアダプター、自動更新、main モデルとレビュアーのモデル |
-| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | 任意（推奨）：Obsidian「Academic Paper Citation Manager」ライブラリを全エージェントに接続；vault の文献を `evidence.md` へ取り込み |
+| `manuwright obsidian status\|connect`、`evidence import-obsidian <citekey>` | 任意（推奨）：Obsidian「[Academic Paper Citation Manager](https://github.com/grotyx/rag-obsidian)」ライブラリを全エージェントに接続；vault の文献を `evidence.md` へ取り込み |
 
 テンプレートには Claude Code 用の slash command も含まれる：`/verify`、`/search-evidence`、`/import-doi`、`/style-pass`、`/verify-claims`、`/suggest-citation`、`/cite-stance`、`/evidence-table`、`/paper-debate`、`/critical-review`、`/editor-review`。
+
+## Obsidian ライブラリ（任意・推奨）
+
+文献を Obsidian で管理しているなら、同じ作者のプラグイン **[Academic Paper Citation Manager](https://github.com/grotyx/rag-obsidian)**（[Obsidian コミュニティプラグイン](https://community.obsidian.md/plugins/academic-paper-citation-manager)）を併用してください。PubMed 取り込み、AI 要約、MeSH タグ、`[@citekey]` 引用を備え、ノートそのものがデータベースです。このプラグインの MCP サーバーにより、すべてのエージェントが執筆中にライブラリを検索できます。
+
+```sh
+manuwright obsidian install          # plugin into a vault, offers MCP access (skip if installed)
+manuwright obsidian connect          # register its MCP server (rag-obsidian) with each agent
+manuwright evidence import-obsidian <citekey>
+```
+
+vault は文献を探す場所で、引用できるのは `knowledge/evidence.md` に登録した項目だけです。取り込んだノートは CSL フィールドが引用情報に、プラグインの AI 要約が要約欄になり、`[EVID:<citekey>]` として引用し、全文を読むまで `abstract-only` のままです。エージェントが使う間は Obsidian を開き、MCP アクセスをオンにしておいてください。手順：[マニュアル 3b 節](docs/manual.md#3b-your-obsidian-library-optional-recommended)（英語）。
+
+<p align="center"><img src="docs/images/manual/43_obsidian_import_evidence.png" width="720" alt="Obsidian ライブラリの文献を evidence.md に取り込む"></p>
 
 ## ワークフロー
 
