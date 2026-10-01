@@ -52,7 +52,7 @@ Setup and updates:
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
   setup                      one interactive pass: models, reviewers, updates, Obsidian
   target [--project PATH]    this paper's target journal (reference format) and Word style
-  library [docx|profile|style ...]   your reusable Word styles/templates, team profile, writing style
+  library [docx|profile|writing ...]   your Word styles/templates, team profile, writing style
   models                     recommended reviewer model sets (OpenRouter, opencode) with live price check
   config [set|unset <key> ...]         settings: auto-update, main-model, review.reviewers,
                                        review.openrouter-models, review.<agent>-model, docx.*
