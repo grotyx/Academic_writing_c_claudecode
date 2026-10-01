@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.14 (261001)
+
+- `manuwright setup` にレビュアーごとの課金方式を表示：エージェントは "Claude Code (subscription)" など、OpenRouter は "pay per use"、opencode は "opencode Go subscription"。レビュアーの役割とメインモデルが執筆モデルであることを 1 行で案内。
+
 ### v1.8.13 (261001)
 
 - `manuwright setup` でモデルを入力せずメニューで選択：メインモデルは一覧、エージェント・OpenRouter・opencode のモデルは矢印キーのチェックリスト（Space で選択、数字キーで推奨セット、Esc で現状維持）。POSIX 端末がない場合は番号選択。「独立でない」判定が `claude-opus-5-5` と `anthropic/claude-opus-5.5` を同一モデルとして扱う。

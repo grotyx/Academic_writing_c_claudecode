@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.14 (261001)
+
+- `manuwright setup` says how each reviewer is paid: agent reviewers are labelled "Claude Code (subscription)", "Codex (subscription)", "Muse Code (subscription)", "Antigravity / Gemini (subscription)"; OpenRouter menus say "pay per use", opencode menus "opencode Go subscription". A one-line note explains what reviewers do and that the main model is the writer.
+
 ### v1.8.13 (261001)
 
 - `manuwright setup` picks models from menus instead of typed ids: the main model from a list, and agent reviewers, OpenRouter and opencode models from arrow-key checklists (Space ticks, a number key fills a recommended set, Esc keeps the current choice). Numbered fallback without a POSIX terminal. The "not independent" check now matches `claude-opus-5-5` and `anthropic/claude-opus-5.5` as the same model.

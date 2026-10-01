@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.14 (261001)
+
+- `manuwright setup` 标明各审稿者的计费方式：代理审稿者标为 "Claude Code (subscription)" 等，OpenRouter 为 "pay per use"，opencode 为 "opencode Go subscription"；并用一行说明审稿者的作用及主模型即写作模型。
+
 ### v1.8.13 (261001)
 
 - `manuwright setup` 改为菜单选择模型而非手动输入：主模型从列表选，代理审稿者、OpenRouter 与 opencode 模型用方向键勾选清单（空格勾选，数字键套用推荐组合，Esc 保持当前）。无 POSIX 终端时按编号选择。"非独立"判定将 `claude-opus-5-5` 与 `anthropic/claude-opus-5.5` 视为同一模型。

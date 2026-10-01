@@ -39,6 +39,10 @@ OPENCODE_SETS = {
 WRITERS = ['anthropic/claude-opus-5.5', 'anthropic/claude-sonnet-5.5', 'anthropic/claude-fable-5.1',
            'openai/gpt-6-astra', 'openai/gpt-6.1-sol', 'google/gemini-3.8-flash']
 AGENTS = ['claude', 'codex', 'muse', 'agy']
+# Agent CLIs run on the plan you are signed in with; OpenRouter is billed per call.
+AGENT_LABELS = {'claude': 'Claude Code (subscription)', 'codex': 'Codex (subscription)',
+                'muse': 'Muse Code (subscription)', 'agy': 'Antigravity / Gemini (subscription)'}
+BILLING = {'OpenRouter': 'pay per use with your OpenRouter key', 'opencode': 'opencode Go subscription'}
 # One manuscript review: about 25k tokens in, 4k out.
 REVIEW_TOKENS = (25_000, 4_000)
 
@@ -193,10 +197,11 @@ def choose(kind, sets, current, known, prices, ask):
     """Pick models: an arrow-key checklist on a terminal, a numbered list otherwise. None = keep."""
     if can_menu() and ask is input:
         presets = {str(i): (name, models) for i, (name, (_, models)) in enumerate(sets.items(), 1)}
-        return pick(f'{kind} reviewer models (updated {UPDATED}; presets fill the checklist)',
+        return pick(f'{kind} reviewer models ({BILLING.get(kind, kind)}; sets updated {UPDATED}; '
+                    f'number keys fill a recommended set)',
                     model_options(sets, current, known, prices), set(current), presets)
     names = list(sets)
-    print(f'  Recommended {kind} sets (updated {UPDATED}):')
+    print(f'  Recommended {kind} sets ({BILLING.get(kind, kind)}; updated {UPDATED}):')
     for i, name in enumerate(names, 1):
         print(f'   {i}. {name}: {sets[name][0]}')
         print('\n'.join(describe(sets[name][1], known, prices)))
@@ -223,7 +228,7 @@ def choose(kind, sets, current, known, prices, ask):
 def main(args):
     """manuwright models: recommended sets with live availability and cost."""
     prices = openrouter_prices()
-    print(f'OpenRouter sets (updated {UPDATED}; ~cost of one review: 25k tokens in, 4k out)')
+    print(f'OpenRouter sets (pay per use; updated {UPDATED}; ~cost of one review: 25k tokens in, 4k out)')
     for name, (about, models) in OPENROUTER_SETS.items():
         print(f'  {name}: {about}')
         print('\n'.join(describe(models, set(prices), prices)))

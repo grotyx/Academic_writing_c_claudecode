@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.3.1)
+# manuwright 사용자 매뉴얼 (v2.3.2)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -20,7 +20,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.13
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.14
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright search "연구 주제" --max 10           # 또는: manuwright evidence import-obsidian <citekey>
@@ -37,7 +37,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.13
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.14
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -274,7 +274,7 @@ manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1�
 
 ### 설정
 
-`manuwright setup` 하나로 아래 설정을 차례로 묻는다. 모델은 입력하지 않고 메뉴에서 고른다. 메인 모델은 목록에서 하나(또는 "other"), 에이전트 검토자·OpenRouter 모델·opencode 모델은 체크리스트다. ↑/↓ 이동, Space 선택, Enter 완료, Esc 는 지금 설정 유지, 숫자 키는 추천 세트로 체크리스트를 채운다(OpenRouter: 1 balanced, 2 budget, 3 strong / opencode: 1 Go, 2 Go budget). 목록은 GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo, Meituan LongCat 최신 모델이고, 실시간 목록으로 제공 여부와 검토 1회 예상 비용(대부분 약 $0.002–0.05)을 함께 보여 준다. 대화형 터미널이 아니거나 Windows 에서는 같은 세트를 번호로 고른다. 같은 세트는 `manuwright models` 로 언제든 볼 수 있다. 무료·contributor 등급은 입력을 학습에 쓸 수 있어 뺐다(검토는 미발표 원고를 보낸다). 그리고(Enter 는 그대로, `-` 는 지움), 마지막에 Obsidian 라이브러리를 제안한다. 하나만 바꿀 때는 `manuwright config set <키> <값>`.
+`manuwright setup` 하나로 아래 설정을 차례로 묻는다. 모델은 입력하지 않고 메뉴에서 고른다. 메인 모델은 목록에서 하나(또는 "other"), 에이전트 검토자(Claude Code, Codex, Muse, Antigravity/Gemini: 로그인한 구독으로 실행, API 비용 없음)·OpenRouter 모델(사용량 과금)·opencode 모델(opencode Go 구독)은 체크리스트다. ↑/↓ 이동, Space 선택, Enter 완료, Esc 는 지금 설정 유지, 숫자 키는 추천 세트로 체크리스트를 채운다(OpenRouter: 1 balanced, 2 budget, 3 strong / opencode: 1 Go, 2 Go budget). 목록은 GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo, Meituan LongCat 최신 모델이고, 실시간 목록으로 제공 여부와 검토 1회 예상 비용(대부분 약 $0.002–0.05)을 함께 보여 준다. 대화형 터미널이 아니거나 Windows 에서는 같은 세트를 번호로 고른다. 같은 세트는 `manuwright models` 로 언제든 볼 수 있다. 무료·contributor 등급은 입력을 학습에 쓸 수 있어 뺐다(검토는 미발표 원고를 보낸다). 그리고(Enter 는 그대로, `-` 는 지움), 마지막에 Obsidian 라이브러리를 제안한다. 하나만 바꿀 때는 `manuwright config set <키> <값>`.
 
 ![manuwright setup](images/manual/50_setup.png)
 

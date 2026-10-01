@@ -290,20 +290,24 @@ def _setup_steps(data, prompt, ask):
     if menu:
         main = data.get('main_model')
         writers = list(dict.fromkeys(models.WRITERS + ([main] if main else [])))
-        picked = models.pick('Main model (the one that writes; reviewers on it are flagged)',
+        print('Reviewers read the finished draft in the independent review step (critical review). '
+              'Pick 3-5 that differ from the model you write with.')
+        picked = models.pick('Main model: the model you WRITE with (not a reviewer; a reviewer on it is flagged)',
                              [(w, w) for w in writers] + [('', 'other: type a model id')], {main}, single=True)
         if picked == ['']:
             prompt('main-model')
         elif picked:
             data['main_model'] = picked[0]
-        picked = models.pick('Agent CLIs that also review',
-                             [(a, a + ('' if shutil.which(a) else '   (not installed)')) for a in models.AGENTS],
+        picked = models.pick('Agent reviewers: run on your signed-in plan, no API cost',
+                             [(a, models.AGENT_LABELS[a] + ('' if shutil.which(a) else '   - not installed'))
+                              for a in models.AGENTS],
                              set(local))
         if picked is not None:
             local = picked
     else:
         prompt('main-model')
-        SETUP_HELP['review.local'] = 'agent CLIs that review too, comma-separated: claude, codex, muse, agy (empty = none)'
+        SETUP_HELP['review.local'] = ('agent reviewers on your signed-in plan (subscription), comma-separated: '
+                                      'claude, codex, muse, agy (empty = none)')
         answer = ask(f"{SETUP_HELP['review.local']}\n  agents [{','.join(local) or 'none'}]: ").strip()
         if answer:
             local = [] if answer == '-' else [a.strip() for a in answer.split(',') if a.strip()]

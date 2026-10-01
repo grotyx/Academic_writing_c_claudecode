@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.14 (261001)
+
+- `manuwright setup` 에 검토자별 과금 방식 표시: 에이전트 검토자는 "Claude Code (subscription)", "Codex (subscription)", "Muse Code (subscription)", "Antigravity / Gemini (subscription)", OpenRouter 메뉴는 "pay per use", opencode 메뉴는 "opencode Go subscription". 검토자의 역할과 메인 모델이 작성 모델임을 한 줄로 안내.
+
 ### v1.8.13 (261001)
 
 - `manuwright setup` 에서 모델을 입력하지 않고 메뉴로 선택: 메인 모델은 목록, 에이전트 검토자·OpenRouter·opencode 모델은 방향키 체크리스트(Space 선택, 숫자 키로 추천 세트, Esc 는 유지). POSIX 터미널이 없으면 번호 선택. "독립 아님" 판정이 `claude-opus-5-5` 와 `anthropic/claude-opus-5.5` 를 같은 모델로 인식.
