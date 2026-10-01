@@ -28,7 +28,9 @@ def load_project(path):
     artifacts = config.get('artifacts')
     if not isinstance(artifacts, list) or not artifacts:
         raise ValueError('artifacts must list manuscript sections in publication order')
-    paths = artifacts + config.get('tables', []) + config.get('figures', [])
+    # supplements: supplementary tables/figures (e.g. drafts/supp_table_1.md) -- checked like tables,
+    # built as separate supplementary files, never numbered as main Table N.
+    paths = artifacts + config.get('tables', []) + config.get('supplements', []) + config.get('figures', [])
     resolved = [inside(path.parent, item) for item in paths]
     if len(resolved) != len(set(resolved)):
         raise ValueError('duplicate artifact paths')
@@ -44,7 +46,18 @@ def load_project(path):
         raise ValueError('original research requires an analysis plan')
     for item in config.get('numeric_artifacts', []):
         if inside(path.parent, item) not in resolved:
-            raise ValueError('numeric_artifacts must be in artifacts or tables')
+            raise ValueError('numeric_artifacts must be in artifacts, tables or supplements')
+    number_of = re.compile(r'table[_\- ]?(\d+)', re.I)
+    seen = {}
+    for item in config.get('tables', []):
+        if re.search(r'supp', Path(item).stem, re.I):
+            raise ValueError(f'{item} looks supplementary: list it under "supplements", not "tables" '
+                             '(a main table number must not be reused)')
+        match = number_of.search(Path(item).stem)
+        if match and match.group(1) in seen:
+            raise ValueError(f'{item} and {seen[match.group(1)]} would both be Table {match.group(1)}')
+        if match:
+            seen[match.group(1)] = item
     listed = set(resolved[:len(artifacts)])
     if config.get('abstract') and inside(path.parent, config['abstract']) not in listed:
         raise ValueError('abstract must be one of the published artifacts')
@@ -61,7 +74,7 @@ def load_project(path):
 def snapshot(path, config):
     root = path.parent
     files = {path}
-    for key in ('artifacts', 'tables', 'figures', 'dependencies'):
+    for key in ('artifacts', 'tables', 'supplements', 'figures', 'dependencies'):
         files.update(inside(root, item) for item in config.get(key, []))
     for key in ('evidence', 'draft_plan', 'analysis_plan', 'result_bindings', 'abstract',
                 'response', 'comments', 'ai_usage', 'checklist', 'terminology', 'style_spec'):
@@ -228,7 +241,7 @@ def numeric_scope(root, config, artifacts, number_checker):
     if any(p not in artifacts or p in included or not isinstance(reason, str) or not reason.strip()
            for p, reason in excluded.items()):
         return 'invalid numeric exemption: use an omitted artifact and a nonempty reason'
-    tables = {inside(root, name) for name in config.get('tables', [])}
+    tables = {inside(root, name) for name in config.get('tables', []) + config.get('supplements', [])}
     for artifact in artifacts:
         if artifact in included or artifact.name.startswith(('01_title', '08_references')):
             continue
@@ -256,7 +269,7 @@ def verify(path, profile='draft'):
         from . import __version__
         problem = engine_problem(config['engine'], __version__)
         record('engine_pin', 'BLOCKED' if problem else 'PASS', problem or '')
-    artifacts = [inside(root, item) for item in config['artifacts'] + config.get('tables', [])]
+    artifacts = [inside(root, item) for item in config['artifacts'] + config.get('tables', []) + config.get('supplements', [])]
     initial = snapshot(path, config)
     cc = checker('check_citations')
     run('citations', lambda: explain(cc.check_citations(artifacts, evidence_path=inside(root, config['evidence']))))

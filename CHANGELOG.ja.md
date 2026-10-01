@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.18 (261001)
+
+- 補足資料：`project.json` に `supplements` リストを追加（例：`drafts/supp_table_1.md`）。表と同様に検査し、`supplementary_<名前>` として別ファイルで出力。`tables` に `supp…` ファイルを入れる、または同じ表番号が 2 回出る場合は拒否（本文の Table N を上書きするため）。
+
 ### v1.8.17 (261001)
 
 - `manuwright verify`（status、packet、build も）が現在の論文フォルダの project.json を自動で使用。別の場所でのみ `--project` が必要。

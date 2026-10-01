@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.18 (261001)
+
+- 补充材料：`project.json` 新增 `supplements` 列表（如 `drafts/supp_table_1.md`），像表格一样检查，并单独生成 `supplementary_<名称>` 文件。若在 `tables` 中放入 `supp…` 文件或同一表号出现两次则拒绝（否则会覆盖正文 Table N）。
+
 ### v1.8.17 (261001)
 
 - `manuwright verify`（以及 status、packet、build）自动使用当前论文文件夹的 project.json；仅在其他位置需要 `--project`。

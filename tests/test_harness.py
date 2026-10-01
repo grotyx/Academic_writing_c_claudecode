@@ -367,3 +367,34 @@ def test_chat_approval_ticks_box_and_writes_receipt(tmp_path):
         approve_in_chat(put(tmp_path/'p2.md','# Analysis Plan\n'),'analysis','Dr. Author','승인')
     with pytest.raises(ValueError,match='blank'):
         approve_in_chat(put(tmp_path/'p3.md',ANALYSIS_CONTENT),'analysis','Dr. Author',' ')
+
+
+def test_supplementary_tables_are_checked_but_never_become_main_tables(project):
+    put(project.parent/'drafts/table_1.md','| Variable | Value |\n|---|---|\n| Age | 54 |\n')
+    put(project.parent/'drafts/supp_table_1.md','| Lost to follow-up | Value |\n|---|---|\n| Age | 54 |\n')
+    config=json.loads(project.read_text())
+    config['tables']=['drafts/table_1.md','drafts/supp_table_1.md']
+    put(project,config)
+    with pytest.raises(ValueError,match='supplements'):
+        load_project(project)
+    config['tables']=['drafts/table_1.md'];config['supplements']=['drafts/supp_table_1.md']
+    config['numeric_artifacts']=['drafts/05_results.md','drafts/table_1.md']
+    put(project,config)
+    assert any(c['check']=='numeric_scope' and 'supp_table_1' in c['detail'] for c in verify(project,'draft')['checks'])
+    config['numeric_artifacts'].append('drafts/supp_table_1.md');put(project,config)
+    assert any(k.endswith('supp_table_1.md') for k in snapshot(*load_project(project)))
+    put(project.parent/'drafts/supp_table_1.md','| Lost to follow-up | Value |\n|---|---|\n| Age | 99 |\n')
+    assert any(c['check']=='number_tokens' and c['status']=='FAIL' for c in verify(project,'draft')['checks'])
+    # build: main table and supplement as separate files (text-only tables keep the fixture's bindings valid)
+    put(project.parent/'drafts/table_1.md','| Variable | Definition |\n|---|---|\n| Age | years at surgery |\n')
+    put(project.parent/'drafts/supp_table_1.md','| Variable | Definition |\n|---|---|\n| Loss | no follow-up visit |\n')
+    results=project.parent/'drafts/05_results.md'
+    put(results,'# Results\n\nMean age was 54 years (Table 1).\n')
+    bindings=json.loads((project.parent/'review/bindings.json').read_text())
+    bindings['bindings'][0]['artifact_sha256']=digest(results);put(project.parent/'review/bindings.json',bindings)
+    config['numeric_artifacts']=['drafts/05_results.md'];put(project,config)
+    sign(project)
+    out=build(project)
+    names=sorted(p.name for p in out.glob('*.docx'))
+    assert sum(n.startswith('table_1_') for n in names)==1
+    assert any(n.startswith('supplementary_table_1_') for n in names)

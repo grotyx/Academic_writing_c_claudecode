@@ -1,6 +1,6 @@
 # Shared manuscript engine (v1.1.2)
 
-Project release: v1.8.17. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.18. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -63,7 +63,7 @@ Manifest `engine` (optional) pins the engine for one paper, for example `">=1.8,
 
 ## Project manifest
 
-Copy `docs/project.example.json` to the private project root as `project.json` and fill it. Paths resolve relative to that manifest and cannot escape its root. `artifacts` is publication order, not drafting order. For revisions, explicitly list the latest submitted overlay: changed REVn files plus unchanged sections from earlier revisions or the initial draft. Do not list both old and new versions of the same section.
+Copy `docs/project.example.json` to the private project root as `project.json` and fill it. Paths resolve relative to that manifest and cannot escape its root. `artifacts` is publication order, not drafting order. `tables` lists the main tables (`drafts/table_N.md`, built as `table_N_<date>.docx`); a main table number may appear once. `supplements` lists supplementary tables or material (`drafts/supp_table_1.md`): checked like tables (citations, numbers when listed in `numeric_artifacts`, review snapshot) and built as separate `supplementary_<name>_<date>.docx`; a file named `supp…` under `tables` is refused because it would be numbered as a main table. `figures` lists the figure image files (`drafts/figures/figure_1.png`), copied into the package as `figure_N.<ext>`; figure legends are text in `drafts/09_figure_legends.md`, which belongs in `artifacts`. For revisions, explicitly list the latest submitted overlay: changed REVn files plus unchanged sections from earlier revisions or the initial draft. Do not list both old and new versions of the same section.
 
 Optional `terminology` and `style_spec` point to the project's own term registry and Style Spec. When declared, lint (including the edit-time lint hook, which finds the nearest `project.json` above the edited file) uses that registry instead of the engine's `Style/terminology.md`, `style_metrics` runs `check_style.py` against the Spec's Target Metrics, and both files enter the review snapshot, so editing them invalidates reviews. Bind exemplars through `dependencies`. `abstract` must name a file listed in `artifacts`, and a published artifact whose name contains `abstract` must be declared as `abstract`. Failed checks report the first issues (artifact, line, value) in `detail`.
 

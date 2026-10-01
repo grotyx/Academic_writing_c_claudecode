@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.18 (261001)
+
+- Supplementary material: a new `supplements` list in `project.json` (e.g. `drafts/supp_table_1.md`) is checked like tables and built as separate `supplementary_<name>` files. A `supp…` file listed under `tables` is refused, and two files with the same main table number are refused, because either would overwrite main Table N in the package.
+
 ### v1.8.17 (261001)
 
 - `manuwright verify` (and status, packet, build) uses the project.json of the paper folder you are in; `--project` is only needed elsewhere.

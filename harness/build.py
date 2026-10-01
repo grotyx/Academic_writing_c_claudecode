@@ -206,7 +206,7 @@ def build(path):
     # Also freeze review receipts, which are not part of their own dependency map.
     receipts = {key:digest(inside(root,config[key])) for key in ('semantic_review','human_signoff')}
     formatter=checker('format_references')
-    paths=[inside(root,item) for item in config['artifacts']+config.get('tables',[])]
+    paths=[inside(root,item) for item in config['artifacts']+config.get('tables',[])+config.get('supplements',[])]
     journal=config.get('journal')  # a journal_styles preset: reference format + in-text markers
     references=formatter.build(paths,evidence_path=inside(root,config['evidence']),style='numbered',journal=journal)
     if references.unknown or references.missing_citation or (journal and (references.incomplete_authors or references.unparsed)):
@@ -247,6 +247,10 @@ def build(path):
         for index,value in enumerate(config.get('tables',[]),1):
             text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels,marker)
             table=document(style,False);append_markdown(table,text,style);table.save(stage/f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}{stamp}.docx')
+        for value in config.get('supplements',[]):  # separate files, never numbered as main tables
+            text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels,marker)
+            supplement=document(style,False);append_markdown(supplement,text,style)
+            supplement.save(stage/f'supplementary_{re.sub(r"^supp(?:lementary)?[_-]?","",Path(value).stem,flags=re.I)}{stamp}.docx')
         for index,value in enumerate(config.get('figures',[]),1):
             source=inside(root,value);shutil.copyfile(source,stage/f'figure_{checker("check_crossrefs").FIGURE_FILE_RE.search(source.stem).group(1)}{source.suffix}')
         if config.get('response'):

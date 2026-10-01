@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.18 (261001)
+
+- 보충 자료: `project.json` 에 `supplements` 목록 추가(예: `drafts/supp_table_1.md`). 표처럼 검사하고 `supplementary_<이름>` 파일로 따로 만든다. `tables` 에 `supp…` 파일을 넣거나 같은 표 번호가 두 번 나오면 거부(패키지에서 본문 Table N 을 덮어쓰기 때문).
+
 ### v1.8.17 (261001)
 
 - `manuwright verify`(status, packet, build 포함)가 지금 있는 논문 폴더의 project.json 을 자동으로 사용. 다른 곳에서만 `--project` 필요.
