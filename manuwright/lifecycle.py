@@ -257,6 +257,11 @@ SETUP_HELP = {
 KEY_SAVED = []  # set when this run of setup stored a key
 
 
+def models_masked_input(prompt):
+    from manuwright import models
+    return models.masked_input(prompt)
+
+
 def openrouter_key_step(secret):
     """Make sure OpenRouter reviewers have a key: environment, saved key, or ask (hidden input)."""
     from manuwright import models
@@ -272,6 +277,7 @@ def openrouter_key_step(secret):
         if not saved:
             print('  No key: OpenRouter reviewers will be skipped until you set one (run setup again).')
         return
+    print(f'  Received key {models.mask(key)}. Checking it with OpenRouter...')
     works = models.key_works(key)
     if works is False:
         print('  OpenRouter rejected this key; it was not saved.')
@@ -307,8 +313,7 @@ def setup(args, ask=input, secret=None):
 
     KEY_SAVED.clear()
     if secret is None:
-        import getpass
-        secret = getpass.getpass if ask is input else ask
+        secret = models_masked_input if ask is input else ask
     try:
         return _setup_steps(data, prompt, ask, secret)
     except (EOFError, KeyboardInterrupt):

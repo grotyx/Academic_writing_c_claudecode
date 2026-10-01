@@ -1,5 +1,9 @@
 # 変更履歴
 
+### Unreleased
+
+- `manuwright setup` の OpenRouter キー入力で、入力・貼り付けた文字ごとに `*` を表示（Backspace 可）、入力後 `sk-or-v1...abcd (N characters)` の形で受け取ったキーを示してから確認。
+
 ### v1.8.15 (261001)
 
 - 個人ライブラリ（`manuwright library`、`~/.manuwright/library/`）：投稿先ジャーナル用・チーム用・個人用に保存する Word スタイルと Word テンプレート（`manuwright target` でそのジャーナル用を推奨）（`docx.reference` でビルド原稿の土台になる）、新しい論文ごとにコピーされるチーム情報、新しい論文の `Style/` にコピーされる文体（自分・landmark・投稿先のアンカー、用語集、style spec）。文体抽出とチーム情報の入力は manuwright skill のエージェント作業。

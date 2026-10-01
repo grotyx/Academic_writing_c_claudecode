@@ -310,3 +310,14 @@ def test_target_needs_a_paper_folder(tmp_path, monkeypatch, capsys):
 
 def test_project_is_an_alias_of_target():
     assert lifecycle.project is lifecycle.target
+
+
+def test_masked_key_input_shows_stars_and_handles_backspace():
+    import io
+    from manuwright import models
+    out = io.StringIO()
+    typed = iter(list('sk-or-v1-abc') + ['\x7f'] + list('d') + ['\r'])
+    assert models.masked_input('key: ', typed, out) == 'sk-or-v1-abd'
+    shown = out.getvalue()
+    assert 'sk-or' not in shown and shown.count('*') == 13 and '\b \b' in shown
+    assert models.mask('sk-or-v1-0123456789abcdef') == 'sk-or-v1...cdef (25 characters)'

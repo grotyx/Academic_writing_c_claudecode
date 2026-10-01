@@ -1,5 +1,9 @@
 # 变更记录
 
+### Unreleased
+
+- `manuwright setup` 输入 OpenRouter 密钥时每输入或粘贴一个字符显示一个 `*`（可退格），输入后以 `sk-or-v1...abcd (N characters)` 形式显示收到的密钥再进行校验。
+
 ### v1.8.15 (261001)
 
 - 个人库（`manuwright library`，`~/.manuwright/library/`）：按目标期刊、团队或个人保存的 Word 样式与 Word 模板（`manuwright target` 推荐该期刊的样式）（通过 `docx.reference` 作为生成稿件的基础）、复制到每篇新论文的团队信息、复制到新论文 `Style/` 的写作风格（本人/经典/目标期刊锚点、术语表、style spec）。风格提取和团队信息填写由 manuwright skill 中的代理完成。

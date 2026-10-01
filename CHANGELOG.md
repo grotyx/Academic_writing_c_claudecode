@@ -1,5 +1,9 @@
 # Changelog
 
+### Unreleased
+
+- OpenRouter key entry in `manuwright setup` shows one `*` per typed or pasted character (Backspace works) and then confirms the key as `sk-or-v1...abcd (N characters)` before checking it.
+
 ### v1.8.15 (261001)
 
 - Personal library (`manuwright library`, `~/.manuwright/library/`): named Word styles and Word templates saved for a target journal, the team or yourself (the journal's style is suggested in `manuwright target`) (a .docx designed in Word becomes the base of the built manuscript via `docx.reference`), a team profile copied to each new paper, and a writing style (own/landmark/target-journal anchors, terminology, style spec) copied into each new paper's `Style/`. Style extraction and profile filling are agent tasks in the manuwright skill.

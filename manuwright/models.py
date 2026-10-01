@@ -127,6 +127,58 @@ def read_keys():
             yield ch
 
 
+def masked_input(prompt, chars=None, out=None):
+    """Read a secret showing one * per character (Backspace works, pasting works). Returns the text.
+
+    chars: an iterator of single characters (tests); default reads the terminal (POSIX) or the console
+    (Windows), falling back to getpass when neither is interactive."""
+    out = out or sys.stdout
+    restore = None
+    if chars is None:
+        if os.name == 'nt' and sys.stdin.isatty():
+            import msvcrt
+            chars = iter(msvcrt.getwch, None)
+        elif os.name == 'posix' and sys.stdin.isatty():
+            import termios
+            import tty
+            fd = sys.stdin.fileno()
+            saved = termios.tcgetattr(fd)
+            tty.setcbreak(fd)  # no echo, one key at a time; Ctrl-C still interrupts
+            restore = lambda: termios.tcsetattr(fd, termios.TCSADRAIN, saved)
+            chars = iter(lambda: os.read(fd, 1).decode(errors='ignore'), None)
+        else:
+            import getpass
+            return getpass.getpass(prompt)
+    out.write(prompt)
+    out.flush()
+    text = []
+    try:
+        for ch in chars:
+            if ch in ('\r', '\n', ''):
+                break
+            if ch == '\x03':
+                raise KeyboardInterrupt
+            if ch in ('\x7f', '\b'):
+                if text:
+                    text.pop()
+                    out.write('\b \b')
+            elif ch.isprintable():
+                text.append(ch)
+                out.write('*')
+            out.flush()
+    finally:
+        if restore:
+            restore()
+        out.write('\n')
+        out.flush()
+    return ''.join(text)
+
+
+def mask(key):
+    """What the author sees after typing a key: start, end and length, never the middle."""
+    return f'{key[:8]}...{key[-4:]} ({len(key)} characters)' if len(key) > 14 else f'{len(key)} characters'
+
+
 def can_menu():
     return os.name == 'posix' and sys.stdin.isatty() and sys.stdout.isatty()
 
