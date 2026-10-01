@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.11 (261001)
+
+- Obsidian 接続時の端末フリーズを修正：エージェントの状態確認（`codex`/`claude`/`agy mcp …`）を端末から切り離して実行。エージェント CLI が端末を raw モードのまま残し Enter が効かなくなる問題を解消。質問前に端末を復元し、Ctrl-C/Ctrl-D は「いいえ」として扱う。
+
 ### v1.8.10 (260930)
 
 - ジャーナル別参考文献形式：`project.json` の `"journal"`（または `format-references --journal`）で 14 プリセット — ICMJE/Vancouver、AMA（JAMA）、NEJM、Lancet、Spine、The Spine Journal、BJJ、JBJS、Neurospine、J Neurosurg Spine、Global Spine J、CORR、Asian Spine J、Eur Spine J。著者数の打ち切り、ページ・号・月・DOI 形式、CORR のアルファベット順、隣接引用のまとめ（`[1–3]`、Word 上付き）。`--fetch` が PubMed の完全な書誌をキャッシュ。

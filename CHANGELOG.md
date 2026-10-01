@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.11 (261001)
+
+- Obsidian connect no longer freezes the terminal: the agent status checks (`codex`/`claude`/`agy mcp …`) run detached from the terminal, so an agent CLI can no longer leave it in raw mode where Enter does nothing; prompts restore the terminal first and treat Ctrl-C/Ctrl-D as "no".
+
 ### v1.8.10 (260930)
 
 - Journal reference styles: `"journal"` in `project.json` (or `format-references --journal`) renders the bibliography and in-text markers for 14 presets — ICMJE/Vancouver, AMA (JAMA), NEJM, Lancet, Spine, The Spine Journal, BJJ, JBJS, Neurospine, J Neurosurg Spine, Global Spine J, CORR, Asian Spine J, Eur Spine J — with author cutoffs, page/issue/month/DOI forms, alphabetical order for CORR, grouped markers (`[1–3]`, superscript in Word). `--fetch` caches full PubMed metadata so journals that list every author get them.

@@ -135,3 +135,25 @@ def test_install_into_vault_asks_and_never_overwrites(tmp_path, monkeypatch, cap
     assert obsidian.install(['--vault', str(vault), '--yes']) == 0
     assert (plugin / 'main.js').read_text() == 'user copy'
     assert 'already installed' in capsys.readouterr().out
+
+
+def test_agent_probes_never_touch_the_terminal(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(obsidian.shutil, 'which', lambda exe: '/bin/' + exe)
+    def fake_run(argv, **kw):
+        seen.update(kw)
+        class Done:
+            returncode, stdout = 0, ''
+        return Done()
+    monkeypatch.setattr(obsidian.subprocess, 'run', fake_run)
+    assert obsidian.connected('codex') is True
+    assert seen['stdin'] is obsidian.subprocess.DEVNULL and seen['start_new_session'] is True
+
+
+def test_ask_survives_closed_input(monkeypatch):
+    monkeypatch.setattr(obsidian.sys.stdin, 'isatty', lambda: True, raising=False)
+    monkeypatch.setattr(obsidian, 'restore_terminal', lambda: None)
+    def eof(_):
+        raise EOFError
+    monkeypatch.setattr('builtins.input', eof)
+    assert obsidian.ask('Connect?', []) is False

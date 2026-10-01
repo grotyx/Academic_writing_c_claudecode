@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.11 (261001)
+
+- Obsidian 연결 시 터미널 멈춤 수정: 에이전트 상태 확인(`codex`/`claude`/`agy mcp …`)을 터미널과 분리해 실행. 에이전트 CLI가 터미널을 raw 모드로 남겨 Enter가 안 먹던 문제 해결. 질문 전에 터미널을 복구하고 Ctrl-C/Ctrl-D는 "아니오"로 처리.
+
 ### v1.8.10 (260930)
 
 - 저널 참고문헌 형식: `project.json` 의 `"journal"`(또는 `format-references --journal`)로 14개 프리셋 지원 — ICMJE/Vancouver, AMA(JAMA), NEJM, Lancet, Spine, The Spine Journal, BJJ, JBJS, Neurospine, J Neurosurg Spine, Global Spine J, CORR, Asian Spine J, Eur Spine J. 저자 수 컷오프, 페이지·권호·월·DOI 형식, CORR 알파벳순, 인접 인용 묶음(`[1–3]`, Word 위첨자). `--fetch` 가 PubMed 전체 서지를 캐시해 전 저자 나열 저널도 처리.

@@ -60,6 +60,17 @@ def read_json(path):
         return None
 
 
+# Agent CLIs run detached from the terminal: an agent TUI that grabs the tty and is then killed
+# leaves it in raw mode, where Enter never completes a line and the next prompt looks frozen.
+DETACHED = dict(stdin=subprocess.DEVNULL, start_new_session=True)
+
+
+def restore_terminal():
+    """Put the terminal back in normal (cooked, echoing) mode if a child left it raw."""
+    if os.name == 'posix' and sys.stdin.isatty():
+        subprocess.call(['stty', 'sane'], stdin=sys.stdin)
+
+
 def connected(agent):
     """True/False when known, None when the agent is not installed."""
     exe = agent
@@ -71,7 +82,7 @@ def connected(agent):
     argv = {'claude': ['claude', 'mcp', 'get', SERVER], 'codex': ['codex', 'mcp', 'get', SERVER],
             'agy': ['agy', 'mcp', 'list']}[agent]
     try:
-        done = subprocess.run(argv, capture_output=True, text=True, timeout=60)
+        done = subprocess.run(argv, capture_output=True, text=True, timeout=20, **DETACHED)
     except (OSError, subprocess.TimeoutExpired):
         return False
     return SERVER in done.stdout if agent == 'agy' else done.returncode == 0
@@ -165,7 +176,7 @@ def connect(args):
                         failed += 1
                 continue
             print(f'[{agent}] ' + ' '.join(step), flush=True)
-            if not dry and subprocess.call(step):
+            if not dry and subprocess.call(step, **DETACHED):
                 failed += 1
     print('Obsidian must be open with Settings > Academic Paper Citation Manager > External AI (MCP) enabled. '
           'Restart the agents to load the server. Cite only [EVID:id] entries from knowledge/evidence.md; '
@@ -230,7 +241,12 @@ def ask(question, args):
         return True
     if not sys.stdin.isatty():
         return False
-    return input(question + ' [y/N] ').strip().lower() in {'y', 'yes'}
+    restore_terminal()
+    try:
+        return input(question + ' [y/N] ').strip().lower() in {'y', 'yes'}
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return False
 
 
 def install(args):
@@ -305,7 +321,7 @@ def offer_connect():
     if not sys.stdin.isatty():
         print('Connect later with: manuwright obsidian connect')
         return
-    if input('Connect the Obsidian reference library to these agents now? [y/N] ').strip().lower() in {'y', 'yes'}:
+    if ask('Connect the Obsidian reference library to these agents now?', []):
         connect(['--only', ','.join(missing), '--yes'] + (['--vault', str(vaults[0])] if len(vaults) == 1 else []))
 
 
