@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.17 (261001)
+
+- `manuwright verify`（以及 status、packet、build）自动使用当前论文文件夹的 project.json；仅在其他位置需要 `--project`。
+
 ### v1.8.16 (261001)
 
 - 聊天批准：作者在聊天中批准计划（"승인"）时，代理用 `manuwright approve <plan> --kind analysis|draft --approved-by 姓名 --quote "..."` 记录；勾选框写明谁、何时、以何话批准并生成哈希回执，plan-first 钩子随即放行。代理仍不得自行批准。

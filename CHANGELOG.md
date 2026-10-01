@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.17 (261001)
+
+- `manuwright verify` (and status, packet, build) uses the project.json of the paper folder you are in; `--project` is only needed elsewhere.
+
 ### v1.8.16 (261001)
 
 - Chat approval: when the author approves a plan in chat ("승인"), the agent records it with `manuwright approve <plan> --kind analysis|draft --approved-by NAME --quote "..."`; the box is ticked with who/when/what and a hashed receipt is written, so the plan-first hook lets the work continue. Agents still never approve on their own.

@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.17 (261001)
+
+- `manuwright verify`(status, packet, build 포함)가 지금 있는 논문 폴더의 project.json 을 자동으로 사용. 다른 곳에서만 `--project` 필요.
+
 ### v1.8.16 (261001)
 
 - 채팅 승인: 저자가 채팅에서 계획을 승인("승인")하면 에이전트가 `manuwright approve <plan> --kind analysis|draft --approved-by 이름 --quote "..."` 로 기록. 체크박스에 누가·언제·무슨 말로 승인했는지 적고 해시 영수증을 남겨 plan-first 훅이 진행을 허용. 에이전트 스스로의 승인은 여전히 금지.

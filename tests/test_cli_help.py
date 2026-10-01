@@ -25,3 +25,15 @@ def test_library_help_names_its_subcommands():
     for sub in ('docx', 'profile', 'writing', '--journal', '--team', '--personal', '--replace'):
         assert sub in library.USAGE
     assert 'library [docx|profile|writing' in cli.USAGE
+
+
+def test_verify_finds_project_json_from_the_paper_folder(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    assert cli.main(['verify']) == 2 and 'no project.json' in capsys.readouterr().err
+    (tmp_path / 'project.json').write_text('{}')
+    (tmp_path / 'drafts').mkdir()
+    monkeypatch.chdir(tmp_path / 'drafts')
+    seen = []
+    monkeypatch.setattr(cli.subprocess, 'call', lambda argv, **kw: seen.append(argv) or 0)
+    assert cli.main(['verify', '--profile', 'draft']) == 0
+    assert seen[0][-4:] == ['--project', str(tmp_path / 'project.json'), '--profile', 'draft']

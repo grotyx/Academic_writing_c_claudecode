@@ -43,6 +43,7 @@ USAGE = f"""usage: manuwright <command> [args]
 
 Manifest profiles (same as python -m harness):
   {' | '.join(sorted(HARNESS_COMMANDS))}
+  status, verify, packet and build use the project.json of the paper folder you are in (or --project PATH)
 Standalone tools (same flags as scripts/*.py; project paths default to the current folder):
   {' | '.join(TOOLS)}
   manuwright <tool> --help    shows that tool's own options
@@ -182,6 +183,13 @@ def main(argv=None):
             return getattr(lifecycle, command)(rest)
         return getattr(lifecycle, command)(ENGINE, rest)
     if command in HARNESS_COMMANDS:
+        if command in {'status', 'verify', 'packet', 'build'} and '--project' not in rest:
+            manifest = load_lifecycle().find_manifest([])  # inside a paper folder: its project.json
+            if manifest is None:
+                print(f'manuwright {command}: no project.json in this folder or above. Run it inside a paper '
+                      'folder (manuwright init creates one) or pass --project PATH.', file=sys.stderr)
+                return 2
+            rest = ['--project', str(manifest), *rest]
         if '--project' in rest and rest.index('--project') + 1 < len(rest):
             lifecycle = load_lifecycle()
             try:

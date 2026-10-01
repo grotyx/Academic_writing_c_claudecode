@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.17 (261001)
+
+- `manuwright verify`（status、packet、build も）が現在の論文フォルダの project.json を自動で使用。別の場所でのみ `--project` が必要。
+
 ### v1.8.16 (261001)
 
 - チャット承認：著者がチャットで計画を承認（「승인」）すると、エージェントが `manuwright approve <plan> --kind analysis|draft --approved-by 名前 --quote "..."` で記録。チェックボックスに誰が・いつ・どの言葉で承認したかを書き、ハッシュ付き記録を残すので plan-first フックが進行を許可。エージェント自身の判断での承認は引き続き禁止。
