@@ -533,6 +533,7 @@ def init(engine, args):
     if (root / 'project.json').exists():
         print(f'manuwright: {root / "project.json"} already exists; nothing changed.', file=sys.stderr)
         return 1
+    from manuwright import analysis_env
     manifest = json.loads((engine / 'docs' / 'project.example.json').read_text(encoding='utf-8'))
     bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
     manifest['paper_id'] = re.sub(r'[^a-z0-9]+', '_', root.name.lower()).strip('_') or 'paper'
@@ -540,6 +541,7 @@ def init(engine, args):
         'project.json': json.dumps(manifest, indent=2, ensure_ascii=False) + '\n',
         'drafts/draft_plan.md': (engine / 'docs' / 'draft_plan_template.md').read_text(encoding='utf-8'),
         'data/analysis_plan.md': ANALYSIS_PLAN,
+        'data/requirements.txt': analysis_env.DEFAULT_REQUIREMENTS,
         'knowledge/evidence.md': '# Evidence\n',
         'AGENTS.md': bootstrap,
         'CLAUDE.md': bootstrap,

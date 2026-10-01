@@ -61,7 +61,38 @@ def parser():
     approve=sub.add_parser('record-approval',help='Record an already granted human approval; does not grant approval')
     approve.add_argument('plan',type=Path);approve.add_argument('--kind',choices=['draft','analysis'],required=True)
     approve.add_argument('--approved-by',required=True);approve.add_argument('--decision-reference',required=True)
+    chat=sub.add_parser('approve',help="Record the author's explicit chat approval of a plan: ticks the box and writes the receipt")
+    chat.add_argument('plan',type=Path);chat.add_argument('--kind',choices=['draft','analysis'],required=True)
+    chat.add_argument('--approved-by',required=True)
+    chat.add_argument('--quote',required=True,help="the author's own words approving this plan, verbatim")
     return p
+
+
+APPROVAL_LINE=r'-\s*\[[ xX]\]\s*(?:\*\*)?사용자 승인 완료(?:\*\*)?'
+
+
+def approve_in_chat(plan,kind,by,quote):
+    """The author approved in chat ("승인"): tick the box, note who/when/what, write the hashed receipt.
+    Only for an explicit approval of this plan by the author; an agent never approves on its own judgement."""
+    import re
+    m=checker('plan_validation');text=plan.read_text(encoding='utf-8')
+    missing=m.validate_plan_content(text,kind)
+    if missing:
+        raise ValueError('plan incomplete; fill it before approval: '+', '.join(missing))
+    if not by.strip() or not quote.strip():
+        raise ValueError('approved-by and quote cannot be blank')
+    when=datetime.now(timezone.utc)
+    note=f'- [x] 사용자 승인 완료 — {by}, {when.strftime("%Y-%m-%d %H:%M UTC")}, 채팅 승인: "{quote.strip()}"'
+    if re.search(APPROVAL_LINE,text):
+        text=re.sub(APPROVAL_LINE+r'[^\n]*',lambda _:note,text,count=1)
+    else:
+        text=text.rstrip('\n')+'\n\n'+note+'\n'
+    plan.write_text(text,encoding='utf-8')
+    data={'status':'approved','approved_by':by,'decision_reference':f'chat approval: "{quote.strip()}"',
+          'method':'chat (recorded by the agent at the author\'s request)','sha256':digest(plan),
+          'recorded_at':when.isoformat()}
+    write_json(plan.with_suffix('.approval.json'),data)
+    return data
 
 
 def main():
@@ -79,6 +110,8 @@ def main():
                 (data['python_supported'],'Python 3.10+ is required; run commands with a newer interpreter.'),
                 (data['dependencies']['pytest'] or not (Path(__file__).resolve().parents[1]/'.git').exists(),'pytest missing: pip install -r requirements-dev.txt'),
                 (data['hooks']['ok'],'Claude hooks cannot run: '+data['hooks']['detail']+' (plan-first gates are OFF).')] if not ok]
+        elif args.command=='approve':
+            data=approve_in_chat(args.plan.resolve(),args.kind,args.approved_by,args.quote)
         elif args.command=='record-approval':
             m=checker('plan_validation');plan=args.plan.resolve()
             text=plan.read_text(encoding='utf-8')

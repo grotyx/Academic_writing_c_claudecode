@@ -100,8 +100,9 @@ manuwright evidence import-obsidian kirtley1985influence
 ## 4. Analysis plan, approval, analysis
 
 1. Write `data/analysis_plan.md`: research question, population, variables, statistical methods, significance and multiplicity, missing data.
-2. The author reads it and ticks `- [x] 사용자 승인 완료`. An agent must never tick it.
-3. Record the decision:
+2. The author reads it and approves it, either by ticking `- [x] 사용자 승인 완료`, or by saying so in chat ("승인"). For a chat approval the agent runs `manuwright approve data/analysis_plan.md --kind analysis --approved-by "Author name" --quote "승인"`, which ticks the box, writes who/when/what next to it and records the hashed receipt. An agent never approves on its own.
+3. Build the paper's analysis environment once (needs `uv`): `manuwright env`. It creates a uv-managed Python 3.12 with `data/requirements.txt` (pandas, numpy, scipy, statsmodels, matplotlib, openpyxl by default) in `~/.manuwright/envs/<paper>`, outside cloud-synced folders, and writes exact versions to `data/environment.lock.txt` for the Methods section. Run scripts with `manuwright run data/py/01_descriptive.py`. A broken system, Homebrew or pyenv Python does not matter.
+4. For a box you ticked yourself, record the decision:
 
 ```sh
 manuwright record-approval data/analysis_plan.md --kind analysis \
@@ -112,7 +113,7 @@ Until then, agents cannot create analysis scripts:
 
 ![Plan-first gate](images/manual/04_plan_first_gate.png)
 
-4. Write the scripts in `data/py/`, write every number to `results/*.csv`, and render tables from the CSVs (never type numbers into tables). Then check:
+5. Write the scripts in `data/py/`, write every number to `results/*.csv`, and render tables from the CSVs (never type numbers into tables). Then check:
 
 ```sh
 manuwright numbers drafts/table_1.md drafts/table_2.md     # 50 tokens, 0 failures in the demo

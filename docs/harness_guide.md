@@ -55,7 +55,7 @@ manuwright config set auto-update on
 manuwright update --auto            # for SessionStart hooks or shell startup: at most one check a day
 ```
 
-`init` never overwrites an existing file and never ticks an approval box. A fresh folder is expected to be BLOCKED by `verify` until artifacts exist. `verify`/`status` with `--project` register the manifest in `~/.manuwright/projects.json` (`MANUWRIGHT_HOME` overrides the folder).
+`init` never overwrites an existing file and never ticks an approval box. `manuwright env` builds the paper's analysis environment (uv-managed Python 3.12, `data/requirements.txt`, env in `~/.manuwright/envs/<paper_id>`, versions in `data/environment.lock.txt`); `manuwright run <script>` runs a script with it from the paper folder. `manuwright approve <plan> --kind analysis|draft --approved-by NAME --quote "..."` records an approval the author gave in chat: it ticks the box with who/when/what and writes the hashed receipt (the plan must be complete). A fresh folder is expected to be BLOCKED by `verify` until artifacts exist. `verify`/`status` with `--project` register the manifest in `~/.manuwright/projects.json` (`MANUWRIGHT_HOME` overrides the folder).
 
 Auto-update is opt-in and applies patch releases only. It does not run when any registered project pins the engine away from the new version, or holds a semantic review or human signoff that is fresh right now (an engine change would invalidate it). Then it prints why and leaves `manuwright update` to the user. `MANUWRIGHT_NO_UPDATE_CHECK=1` disables the check. Roll back with `manuwright update --to <previous>`.
 

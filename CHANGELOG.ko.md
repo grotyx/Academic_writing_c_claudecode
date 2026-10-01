@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+- 채팅 승인: 저자가 채팅에서 계획을 승인("승인")하면 에이전트가 `manuwright approve <plan> --kind analysis|draft --approved-by 이름 --quote "..."` 로 기록. 체크박스에 누가·언제·무슨 말로 승인했는지 적고 해시 영수증을 남겨 plan-first 훅이 진행을 허용. 에이전트 스스로의 승인은 여전히 금지.
+- 논문별 분석 환경: `manuwright env` 가 `data/requirements.txt`(pandas, numpy, scipy, statsmodels, matplotlib, openpyxl)로 uv 관리 Python 3.12 를 논문 폴더 밖에 만들고 `data/environment.lock.txt` 기록. `manuwright run <script>` 로 분석 스크립트 실행. 시스템·Homebrew·pyenv Python 이 깨져도 분석 가능.
 - `manuwright setup` 의 OpenRouter 키 입력 시 입력·붙여넣은 글자마다 `*` 표시(Backspace 가능), 입력 후 `sk-or-v1...abcd (N characters)` 형태로 받은 키를 보여 주고 확인.
 
 ### v1.8.15 (261001)

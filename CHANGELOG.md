@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+- Chat approval: when the author approves a plan in chat ("승인"), the agent records it with `manuwright approve <plan> --kind analysis|draft --approved-by NAME --quote "..."`; the box is ticked with who/when/what and a hashed receipt is written, so the plan-first hook lets the work continue. Agents still never approve on their own.
+- Per-paper analysis environment: `manuwright env` builds a uv-managed Python 3.12 with `data/requirements.txt` (pandas, numpy, scipy, statsmodels, matplotlib, openpyxl) outside the paper folder and writes `data/environment.lock.txt`; `manuwright run <script>` runs analysis scripts with it. A broken system, Homebrew or pyenv Python no longer blocks analysis.
 - OpenRouter key entry in `manuwright setup` shows one `*` per typed or pasted character (Backspace works) and then confirms the key as `sk-or-v1...abcd (N characters)` before checking it.
 
 ### v1.8.15 (261001)

@@ -15,7 +15,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 # Installed wheel: engine files sit inside the package. Source checkout: one level up.
 ENGINE = HERE if (HERE / 'scripts').is_dir() else HERE.parent
-HARNESS_COMMANDS = {'doctor', 'status', 'verify', 'packet', 'build', 'record-approval'}
+HARNESS_COMMANDS = {'doctor', 'status', 'verify', 'packet', 'build', 'record-approval', 'approve'}
 
 # name -> (script, {flag: project-relative default injected when the flag is absent})
 TOOLS = {
@@ -52,6 +52,8 @@ Setup and updates:
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
   setup                      one interactive pass: models, reviewers, updates, Obsidian
   target [--project PATH]    this paper's target journal (reference format) and Word style
+  env [--project PATH]       this paper's own analysis Python (pandas, scipy, statsmodels) via uv
+  run <script.py> [args]     run an analysis script with that environment, from the paper folder
   library [docx|profile|writing ...]   your Word styles/templates, team profile, writing style
   models                     recommended reviewer model sets (OpenRouter, opencode) with live price check
   config [set|unset <key> ...]         settings: auto-update, main-model, review.reviewers,
@@ -157,6 +159,11 @@ def main(argv=None):
         print('usage: manuwright obsidian status|install|connect [--vault PATH] [--only a,b] [--dry-run] [--yes]\n'
               '       manuwright evidence import-obsidian <citekey>... [--vault PATH]', file=sys.stderr)
         return 2
+    if command in {'env', 'run'}:
+        if not __package__:
+            sys.path.insert(0, str(HERE.parent))
+        from manuwright import analysis_env
+        return analysis_env.main(rest) if command == 'env' else analysis_env.run_script(rest)
     if command == 'library':
         if not __package__:
             sys.path.insert(0, str(HERE.parent))

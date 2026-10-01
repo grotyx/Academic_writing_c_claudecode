@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+- 聊天批准：作者在聊天中批准计划（"승인"）时，代理用 `manuwright approve <plan> --kind analysis|draft --approved-by 姓名 --quote "..."` 记录；勾选框写明谁、何时、以何话批准并生成哈希回执，plan-first 钩子随即放行。代理仍不得自行批准。
+- 每篇论文的分析环境：`manuwright env` 用 `data/requirements.txt`（pandas、numpy、scipy、statsmodels、matplotlib、openpyxl）在论文文件夹外建立 uv 管理的 Python 3.12，并写入 `data/environment.lock.txt`；`manuwright run <script>` 用它运行分析脚本。系统、Homebrew 或 pyenv 的 Python 损坏也不影响分析。
 - `manuwright setup` 输入 OpenRouter 密钥时每输入或粘贴一个字符显示一个 `*`（可退格），输入后以 `sk-or-v1...abcd (N characters)` 形式显示收到的密钥再进行校验。
 
 ### v1.8.15 (261001)

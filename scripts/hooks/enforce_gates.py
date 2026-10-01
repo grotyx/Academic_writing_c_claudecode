@@ -130,7 +130,8 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
                 "BLOCKED by workflow gate (CLAUDE.md Rule 8): "
                 f"{detail}\n"
                 "Create the draft plan first: copy docs/draft_plan_template.md into "
-                "the drafts folder, complete the 10 items, get user approval, then draft sections."
+                "the drafts folder, complete the 10 items, get the author's approval (they tick the box, or approve in chat and you run "
+                "`manuwright approve <plan> --kind draft --approved-by <author> --quote <their words>`), then draft sections."
             )
 
     # Rule 7 — generating an analysis script requires an approved analysis plan.
@@ -145,7 +146,8 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
             return (
                 "BLOCKED by workflow gate (CLAUDE.md Rule 7): "
                 f"{detail}\n"
-                "Create and get approval on analysis_plan.md before generating analysis scripts."
+                "Create analysis_plan.md and get the author's approval first (they tick the box, or approve in chat and you "
+                "run `manuwright approve <plan> --kind analysis --approved-by <author> --quote <their words>`)."
             )
 
     return None

@@ -162,7 +162,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 3. 변수 정의 (primary/secondary/exploratory endpoints)
 4. 통계 검정법 선택 및 근거
 5. 유의수준 및 다중비교 보정 계획
-6. 문서 말미 승인 체크박스 `- [ ] 사용자 승인 완료` — 사용자가 `[x]`로 체크해야 훅이 분석 스크립트 생성을 허용(체크박스 부재·미체크 = 미승인)
+6. 문서 말미 승인 체크박스 `- [ ] 사용자 승인 완료` — 체크되어야 훅이 분석 스크립트 생성을 허용(체크박스 부재·미체크 = 미승인). 저자가 직접 `[x]`로 체크하거나, 채팅에서 이 계획을 명시적으로 승인("승인", "approve")하면 에이전트가 `manuwright approve <plan> --kind analysis|draft --approved-by "<저자>" --quote "<저자의 말 그대로>"`로 기록한다(체크 + 누가·언제·무슨 말로 승인했는지 + 해시 영수증). 에이전트가 스스로 판단해 승인하는 것은 금지.
 
 ### 8. Draft Plan Mandatory (원고 구성 계획 필수)
 
@@ -173,7 +173,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - **NEVER start drafting sections without first creating `draft_plan.md`**
 - 분석 결과(results/)를 확인한 후, 원고 작성 전에 전체 구성을 먼저 계획
 - **Step 0 (Socratic 브레인스토밍):** 항목을 채우기 전, 사용자에게 **한 번에 하나씩** 질문해 의도를 정제한다 (`docs/draft_plan_template.md` 상단). 이 답변은 `/paper-debate`의 R0 준비자료로 쓰되 토론 자체와는 별개다.
-- 사용자가 draft_plan.md를 확인한 후에만 섹션 작성 진행
+- 사용자가 draft_plan.md를 확인한 후에만 섹션 작성 진행 (승인 기록 방법은 Rule 7 의 6번과 같음: 직접 체크 또는 채팅 승인을 `manuwright approve` 로 기록)
 - draft_plan.md가 존재하지 않으면 섹션 작성을 거부
 
 **저장 위치:**

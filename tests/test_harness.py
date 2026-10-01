@@ -350,3 +350,20 @@ def test_build_uses_journal_preset(project):
     config['journal']='no-such-journal';put(project,config)
     with pytest.raises(ValueError,match='unknown journal preset'):
         load_project(project)
+
+
+def test_chat_approval_ticks_box_and_writes_receipt(tmp_path):
+    from harness.__main__ import approve_in_chat
+    from harness.project import checker
+    plan=put(tmp_path/'data/analysis_plan.md',ANALYSIS_CONTENT+'\n- [ ] 사용자 승인 완료\n')
+    data=approve_in_chat(plan,'analysis','Dr. Author','승인')
+    text=plan.read_text(encoding='utf-8')
+    assert '- [x] 사용자 승인 완료 — Dr. Author' in text and '채팅 승인: "승인"' in text and '- [ ]' not in text
+    assert checker('plan_validation').approval_problem(plan,required=True) is None
+    assert data['decision_reference']=='chat approval: "승인"'
+    put(plan,plan.read_text(encoding='utf-8')+'\nchanged after approval\n')
+    assert 'stale' in checker('plan_validation').approval_problem(plan,required=True)
+    with pytest.raises(ValueError,match='incomplete'):
+        approve_in_chat(put(tmp_path/'p2.md','# Analysis Plan\n'),'analysis','Dr. Author','승인')
+    with pytest.raises(ValueError,match='blank'):
+        approve_in_chat(put(tmp_path/'p3.md',ANALYSIS_CONTENT),'analysis','Dr. Author',' ')

@@ -105,8 +105,9 @@ manuwright evidence import-obsidian kirtley1985influence
 ## 4. 분석 계획, 승인, 분석
 
 1. `data/analysis_plan.md` 를 쓴다: 연구 질문, 대상, 변수, 통계 방법, 유의수준과 다중비교, 결측 처리.
-2. 저자가 읽고 `- [x] 사용자 승인 완료` 에 체크한다. 에이전트는 절대 체크하지 않는다.
-3. 그 결정을 기록한다:
+2. 저자가 읽고 승인한다. `- [x] 사용자 승인 완료` 에 직접 체크하거나, 채팅에서 "승인" 이라고 말하면 된다. 채팅 승인은 에이전트가 `manuwright approve data/analysis_plan.md --kind analysis --approved-by "저자 이름" --quote "승인"` 으로 기록한다(체크 + 누가·언제·무슨 말로 승인했는지 + 해시 영수증). 에이전트가 스스로 승인하지는 않는다.
+3. 논문의 분석 환경을 한 번 만든다(`uv` 필요): `manuwright env`. `data/requirements.txt`(기본: pandas, numpy, scipy, statsmodels, matplotlib, openpyxl)로 uv 가 관리하는 Python 3.12 를 `~/.manuwright/envs/<논문>` 에 만들고(클라우드 동기화 폴더 밖), 정확한 버전을 Methods 용으로 `data/environment.lock.txt` 에 남긴다. 스크립트는 `manuwright run data/py/01_descriptive.py` 로 실행한다. 시스템·Homebrew·pyenv Python 이 깨져 있어도 상관없다.
+4. 직접 체크한 경우 그 결정을 기록한다:
 
 ```sh
 manuwright record-approval data/analysis_plan.md --kind analysis \
@@ -117,7 +118,7 @@ manuwright record-approval data/analysis_plan.md --kind analysis \
 
 ![Plan-first 게이트](images/manual/04_plan_first_gate.png)
 
-4. 스크립트는 `data/py/` 에 두고, 모든 수치는 `results/*.csv` 로 내보내며, 표는 CSV 에서 생성한다(표에 숫자를 손으로 치지 않는다). 그다음 검사한다:
+5. 스크립트는 `data/py/` 에 두고, 모든 수치는 `results/*.csv` 로 내보내며, 표는 CSV 에서 생성한다(표에 숫자를 손으로 치지 않는다). 그다음 검사한다:
 
 ```sh
 manuwright numbers drafts/table_1.md drafts/table_2.md     # 시험에서는 50개, 실패 0

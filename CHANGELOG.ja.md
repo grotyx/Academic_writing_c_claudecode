@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+- チャット承認：著者がチャットで計画を承認（「승인」）すると、エージェントが `manuwright approve <plan> --kind analysis|draft --approved-by 名前 --quote "..."` で記録。チェックボックスに誰が・いつ・どの言葉で承認したかを書き、ハッシュ付き記録を残すので plan-first フックが進行を許可。エージェント自身の判断での承認は引き続き禁止。
+- 論文ごとの解析環境：`manuwright env` が `data/requirements.txt`（pandas、numpy、scipy、statsmodels、matplotlib、openpyxl）で uv 管理の Python 3.12 を論文フォルダ外に作り `data/environment.lock.txt` を記録。`manuwright run <script>` で解析スクリプトを実行。システム・Homebrew・pyenv の Python が壊れていても解析可能。
 - `manuwright setup` の OpenRouter キー入力で、入力・貼り付けた文字ごとに `*` を表示（Backspace 可）、入力後 `sk-or-v1...abcd (N characters)` の形で受け取ったキーを示してから確認。
 
 ### v1.8.15 (261001)
