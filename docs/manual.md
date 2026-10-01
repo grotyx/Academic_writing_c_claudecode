@@ -296,7 +296,7 @@ It asks two things from menus and saves them in that paper's `project.json`: the
 
 ### Personal library: Word styles, team profile, writing style
 
-Things you reuse across papers live in `~/.manuwright/library/`; `manuwright library` shows what is there.
+Things you reuse across papers live in one place, `~/.manuwright/library/`, whichever folder you run the command from; `manuwright library` shows what is there. Files you add are copied in, so the originals can move. A name that already exists is never overwritten unless you add `--replace`. Each paper keeps its own copy (a Word template goes to `templates/` in the paper), so changing the library later does not change existing papers.
 
 ```sh
 manuwright library docx add our-template.docx --name team   # a .docx you designed in Word

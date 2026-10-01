@@ -78,3 +78,21 @@ def test_style_add_files_sources_by_kind(tmp_path, capsys):
     assert (library.writing() / 'PDF' / 'landmark' / 'smith_2024.pdf').is_file()
     assert 'register my writing style' in capsys.readouterr().out
     assert library.main(ENGINE, ['style', 'add', str(pdf), '--kind', 'nope']) == 2
+
+
+def test_library_never_overwrites_without_replace(tmp_path, capsys):
+    one, two = make_template(tmp_path / 'one.docx'), make_template(tmp_path / 'two.docx')
+    assert library.main(ENGINE, ['docx', 'add', str(one), '--name', 'team']) == 0
+    assert library.main(ENGINE, ['docx', 'add', str(two), '--name', 'team']) == 1
+    assert 'already exists' in capsys.readouterr().err
+    assert library.main(ENGINE, ['docx', 'add', str(two), '--name', 'team', '--replace']) == 0
+    md = tmp_path / 'a.md'
+    md.write_text('first', encoding='utf-8')
+    library.main(ENGINE, ['style', 'add', str(md)])
+    md.write_text('second', encoding='utf-8')
+    library.main(ENGINE, ['style', 'add', str(md)])
+    assert (library.writing() / 'own' / 'a.md').read_text() == 'first'
+    library.main(ENGINE, ['style', 'add', str(md), '--replace'])
+    assert (library.writing() / 'own' / 'a.md').read_text() == 'second'
+    library.main(ENGINE, ['profile'])
+    assert library.main(ENGINE, ['profile', '--import', str(md)]) == 1

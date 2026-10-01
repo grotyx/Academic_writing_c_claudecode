@@ -452,7 +452,10 @@ def target(engine, args, ask=input):
                     docx[key] = value
             name = ask("  Save this style to your library for other papers? Name it, or Enter to skip: ").strip()
             if name:
-                print(f'  saved as "{library.save_docx_style(name, docx)}"')
+                try:
+                    print(f'  saved as "{library.save_docx_style(name, docx)}"')
+                except ValueError as exc:
+                    print(f'  not saved: {exc}')
         if docx:
             config['docx'] = docx
         else:

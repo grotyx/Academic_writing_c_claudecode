@@ -303,7 +303,7 @@ manuwright target
 
 ### 개인 라이브러리: Word 스타일, 팀 정보, 글쓰기 스타일
 
-여러 논문에 다시 쓰는 것은 `~/.manuwright/library/` 에 둔다. `manuwright library` 로 무엇이 있는지 본다.
+여러 논문에 다시 쓰는 것은 어느 폴더에서 명령하든 한 곳, `~/.manuwright/library/` 에 모인다. `manuwright library` 로 무엇이 있는지 본다. 넣는 파일은 복사되므로 원본은 옮겨도 된다. 같은 이름이 있으면 `--replace` 를 붙이지 않는 한 덮어쓰지 않는다. 각 논문은 자기 사본을 갖는다(Word 서식 파일은 논문의 `templates/` 로 복사). 그래서 나중에 라이브러리를 바꿔도 기존 논문은 그대로다.
 
 ```sh
 manuwright library docx add our-template.docx --name team   # Word 에서 직접 만든 서식 파일
