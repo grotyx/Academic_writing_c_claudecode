@@ -15,6 +15,7 @@ import os
 import sys
 import shutil
 import subprocess
+import urllib.error
 import urllib.request
 
 UPDATED = '2026-10-01'
@@ -67,6 +68,18 @@ def opencode_models():
     except (OSError, subprocess.TimeoutExpired):
         return set()
     return {line.strip() for line in done.stdout.splitlines() if '/' in line}
+
+
+def key_works(key):
+    """True/False from OpenRouter's key endpoint; None when it cannot be reached."""
+    request = urllib.request.Request('https://openrouter.ai/api/v1/key', headers={'Authorization': f'Bearer {key}'})
+    try:
+        with urllib.request.urlopen(request, timeout=10):
+            return True
+    except urllib.error.HTTPError as error:
+        return False if error.code in (401, 403) else None
+    except OSError:
+        return None
 
 
 def review_cost(price):

@@ -57,6 +57,15 @@ def settings() -> dict:
         return {}
 
 
+def saved_openrouter_key() -> str | None:
+    """The key `manuwright setup` saved (owner-only file); the environment variable wins."""
+    try:
+        home = Path(os.environ.get("MANUWRIGHT_HOME") or Path.home() / ".manuwright")
+        return json.loads((home / "secrets.json").read_text(encoding="utf-8")).get("openrouter_api_key")
+    except (OSError, ValueError, RuntimeError):
+        return None
+
+
 def parse_reviewer(spec: str) -> tuple[str, str | None]:
     """'codex' -> ('codex', None); 'opencode:openai/gpt-x' -> ('opencode', 'openai/gpt-x');
     'openrouter:deepseek/x' or a bare OpenRouter id 'deepseek/x' -> ('openrouter', 'deepseek/x')."""
@@ -280,7 +289,7 @@ def main() -> int:
         print(f"warning: reviewer {rid} uses the main writing model ({config.get('main_model')}); "
               "its review is not independent", file=sys.stderr)
 
-    api_key = os.environ.get("OPENROUTER_API_KEY")
+    api_key = os.environ.get("OPENROUTER_API_KEY") or saved_openrouter_key()
 
     target_bytes = args.target.read_bytes()
     target_text = target_bytes.decode("utf-8")

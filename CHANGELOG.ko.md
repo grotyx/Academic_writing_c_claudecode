@@ -1,5 +1,9 @@
 # 변경 이력
 
+### Unreleased
+
+- `manuwright setup` 에서 OpenRouter 검토자를 고르면 OpenRouter API 키를 물음(입력 숨김, OpenRouter 로 확인, `~/.manuwright/secrets.json` 에 본인만 읽게 저장, config.json 에는 저장 안 함). `OPENROUTER_API_KEY` 가 없으면 `critical_review.py` 가 이 키를 사용.
+
 ### v1.8.14 (261001)
 
 - `manuwright setup` 에 검토자별 과금 방식 표시: 에이전트 검토자는 "Claude Code (subscription)", "Codex (subscription)", "Muse Code (subscription)", "Antigravity / Gemini (subscription)", OpenRouter 메뉴는 "pay per use", opencode 메뉴는 "opencode Go subscription". 검토자의 역할과 메인 모델이 작성 모델임을 한 줄로 안내.

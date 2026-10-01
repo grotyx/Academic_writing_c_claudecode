@@ -1,5 +1,9 @@
 # 变更记录
 
+### Unreleased
+
+- `manuwright setup` 选择 OpenRouter 审稿者时询问 API 密钥（隐藏输入，经 OpenRouter 校验，以仅本人可读方式保存在 `~/.manuwright/secrets.json`，不写入 config.json）；未设置 `OPENROUTER_API_KEY` 时 `critical_review.py` 使用该密钥。
+
 ### v1.8.14 (261001)
 
 - `manuwright setup` 标明各审稿者的计费方式：代理审稿者标为 "Claude Code (subscription)" 等，OpenRouter 为 "pay per use"，opencode 为 "opencode Go subscription"；并用一行说明审稿者的作用及主模型即写作模型。

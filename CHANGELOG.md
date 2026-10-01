@@ -1,5 +1,9 @@
 # Changelog
 
+### Unreleased
+
+- `manuwright setup` asks for the OpenRouter API key when OpenRouter reviewers are chosen (hidden input, checked with OpenRouter, saved owner-only in `~/.manuwright/secrets.json`, never in config.json); `critical_review.py` uses it when `OPENROUTER_API_KEY` is not set.
+
 ### v1.8.14 (261001)
 
 - `manuwright setup` says how each reviewer is paid: agent reviewers are labelled "Claude Code (subscription)", "Codex (subscription)", "Muse Code (subscription)", "Antigravity / Gemini (subscription)"; OpenRouter menus say "pay per use", opencode menus "opencode Go subscription". A one-line note explains what reviewers do and that the main model is the writer.

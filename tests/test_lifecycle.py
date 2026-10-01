@@ -1,5 +1,6 @@
 """manuwright init / update / auto-update safety rules (distribution phase 3)."""
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -216,8 +217,11 @@ def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
     monkeypatch.setattr(obsidian, 'offer_connect', lambda: offered.append(1))
     monkeypatch.setattr(models, 'openrouter_prices', lambda: {'z-ai/glm-5.3': (3e-7, 6e-6), 'deepseek/a': (1e-7, 1e-7)})
     monkeypatch.setattr(models, 'opencode_models', lambda: {'opencode-go/kimi-k3', 'opencode-go/glm-5.3'})
+    monkeypatch.delenv('OPENROUTER_API_KEY', raising=False)
+    monkeypatch.setattr(models, 'key_works', lambda key: key == 'sk-or-good')
     answers = iter(['claude-opus-5-5', 'codex',
                     'deepseek/b', 'n', 'deepseek/a',  # OpenRouter: unknown id refused, then a known one
+                    'sk-or-good',                     # OpenRouter key, hidden input
                     '9', 'opencode-go/kimi-k3,opencode-go/glm-5.3',  # opencode: out-of-range number, then own ids
                     'y', 'Arial', 'huge', '12', '', '', '', '1.5', 'page', 'left', 'right',  # docx, with 2 retries
                     'maybe', 'on'])          # auto-update, with 1 retry
@@ -229,6 +233,11 @@ def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
     assert data['docx'] == {'font': 'Arial', 'size': 12.0, 'margin_inches': 1.5,
                             'line_numbers': 'page', 'page_numbers': 'right'}
     assert data['auto_update'] is True and offered == [1]
+    secrets = lifecycle.home() / 'secrets.json'
+    assert json.loads(secrets.read_text())['openrouter_api_key'] == 'sk-or-good'
+    assert 'sk-or-good' not in (lifecycle.home() / 'config.json').read_text()
+    if os.name == 'posix':
+        assert secrets.stat().st_mode & 0o777 == 0o600
     out = capsys.readouterr().out
     assert 'not valid' in out and 'did you mean "deepseek/a"' in out and '~$0.032/review' in out
 
@@ -238,11 +247,14 @@ def test_setup_picks_a_recommended_set(monkeypatch):
     monkeypatch.setattr(obsidian, 'offer_connect', lambda: None)
     monkeypatch.setattr(models, 'openrouter_prices', lambda: {})
     monkeypatch.setattr(models, 'opencode_models', set)
-    answers = iter(['', '-', '1', '0', 'n', ''])
+    monkeypatch.delenv('OPENROUTER_API_KEY', raising=False)
+    monkeypatch.setattr(models, 'key_works', lambda key: False)
+    answers = iter(['', '-', '1', 'sk-bad', '0', 'n', ''])  # a rejected key is not saved
     assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
     review = lifecycle.load('config.json', {})['review']
     assert review['reviewers'] == ['openrouter']
     assert review['openrouter_models'] == models.OPENROUTER_SETS['balanced'][1]
+    assert not (lifecycle.home() / 'secrets.json').exists()
 
 
 def test_setup_interrupt_saves_nothing(capsys):

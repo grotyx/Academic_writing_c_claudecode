@@ -1,5 +1,9 @@
 # 変更履歴
 
+### Unreleased
+
+- `manuwright setup` で OpenRouter レビュアーを選ぶと API キーを入力（非表示、OpenRouter で確認、`~/.manuwright/secrets.json` に本人のみ読める形で保存、config.json には保存しない）。`OPENROUTER_API_KEY` がなければ `critical_review.py` がこのキーを使用。
+
 ### v1.8.14 (261001)
 
 - `manuwright setup` にレビュアーごとの課金方式を表示：エージェントは "Claude Code (subscription)" など、OpenRouter は "pay per use"、opencode は "opencode Go subscription"。レビュアーの役割とメインモデルが執筆モデルであることを 1 行で案内。

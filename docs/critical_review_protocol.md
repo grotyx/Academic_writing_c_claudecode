@@ -98,7 +98,7 @@ manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwe
 manuwright config set review.codex-model gpt-6-astra                # optional per agent
 ```
 
-A bare `openrouter` expands to `review.openrouter-models` (default `scripts/critical_models.txt`, the "balanced" set). Recommended sets for OpenRouter and opencode, with live availability and cost per review: `manuwright models`; pick one by number in `manuwright setup`. A reviewer whose model equals `main-model` is reported in `run.json` as `not_independent` with a warning: the writing model reviewing itself is not an independent review. `--models`, `--models-file`, `--include-claude` and `--include-codex` keep working.
+A bare `openrouter` expands to `review.openrouter-models` (default `scripts/critical_models.txt`, the "balanced" set). The OpenRouter key comes from `OPENROUTER_API_KEY` or, if unset, the key `manuwright setup` saved in `~/.manuwright/secrets.json` (owner-only). Recommended sets for OpenRouter and opencode, with live availability and cost per review: `manuwright models`; pick one by number in `manuwright setup`. A reviewer whose model equals `main-model` is reported in `run.json` as `not_independent` with a warning: the writing model reviewing itself is not an independent review. `--models`, `--models-file`, `--include-claude` and `--include-codex` keep working.
 
 Tested 2026-09-30 on the synthetic demo manuscript: Codex, opencode (kimi-k3), Muse, Antigravity and four OpenRouter models all returned full reviews (1,000-2,700 words each).
 

@@ -253,7 +253,36 @@ SETUP_HELP = {
 }
 
 
-def setup(args, ask=input):
+def openrouter_key_step(secret):
+    """Make sure OpenRouter reviewers have a key: environment, saved key, or ask (hidden input)."""
+    from manuwright import models
+    if os.environ.get('OPENROUTER_API_KEY'):
+        print('  OpenRouter key: using the OPENROUTER_API_KEY environment variable.')
+        return
+    saved = load('secrets.json', {}).get('openrouter_api_key')
+    hint = f' (saved: ...{saved[-4:]}; Enter keeps it)' if saved else ' (Enter to skip)'
+    key = secret(f'  OpenRouter API key, from https://openrouter.ai/keys{hint}: ').strip()
+    if not key:
+        if not saved:
+            print('  No key: OpenRouter reviewers will be skipped until you set one (run setup again).')
+        return
+    works = models.key_works(key)
+    if works is False:
+        print('  OpenRouter rejected this key; it was not saved.')
+        return
+    secrets = load('secrets.json', {})
+    secrets['openrouter_api_key'] = key
+    home().mkdir(parents=True, exist_ok=True)
+    path = home() / 'secrets.json'
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)  # owner-only from the first byte
+    with os.fdopen(fd, 'w', encoding='utf-8') as handle:
+        json.dump(secrets, handle)
+    os.chmod(path, 0o600)  # also tighten a file that existed before
+    print('  Key saved to ' + str(home() / 'secrets.json') + (' (checked with OpenRouter).' if works else
+          ' (could not reach OpenRouter to check it).'))
+
+
+def setup(args, ask=input, secret=None):
     """manuwright setup: one interactive pass over models, reviewers, Word style, updates and Obsidian."""
     if not sys.stdin.isatty() and ask is input:
         print('manuwright setup is interactive; run it in a terminal, or use: manuwright config set <key> <value>',
@@ -269,14 +298,17 @@ def setup(args, ask=input):
                 return
             print('  not valid here; try again.')
 
+    if secret is None:
+        import getpass
+        secret = getpass.getpass if ask is input else ask
     try:
-        return _setup_steps(data, prompt, ask)
+        return _setup_steps(data, prompt, ask, secret)
     except (EOFError, KeyboardInterrupt):
         print('\nSetup stopped; nothing saved.')
         return 1
 
 
-def _setup_steps(data, prompt, ask):
+def _setup_steps(data, prompt, ask, secret):
     try:
         from manuwright import models
     except ImportError:  # lifecycle loaded from an engine folder (see agents())
@@ -317,6 +349,8 @@ def _setup_steps(data, prompt, ask):
                                if 'openrouter' in current else [], set(prices), prices, ask)
     if openrouter is None:
         openrouter = review.get('openrouter_models', []) if 'openrouter' in current else []
+    if openrouter:
+        openrouter_key_step(secret)
     opencode_now = [r.split(':', 1)[1] for r in current if r.startswith('opencode:')]
     opencode = models.choose('opencode', models.OPENCODE_SETS, opencode_now, models.opencode_models(), None, ask)
     if opencode is None:
