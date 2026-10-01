@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.12 (261001)
+
+- 审稿推荐模型：`manuwright setup` 以编号提供 OpenRouter（balanced、budget、strong）和 opencode（Go、Go budget）推荐组合，包含 GLM、Kimi、MiniMax、DeepSeek、Qwen、小米 MiMo、美团 LongCat 最新模型，按实时列表核对并显示单次审稿估算费用；手动输入的 ID 会提示相近名称。`manuwright models` 列出组合。默认 OpenRouter 模型改为 balanced 组合。免费与 contributor 版本因可能保留提示词而排除。
+
 ### v1.8.11 (261001)
 
 - 修复连接 Obsidian 时终端卡住：代理状态检查（`codex`/`claude`/`agy mcp …`）与终端分离运行，代理 CLI 不再让终端停留在 raw 模式导致回车无效；提问前恢复终端，Ctrl-C/Ctrl-D 视为"否"。

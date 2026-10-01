@@ -211,24 +211,38 @@ def test_config_saves_default_docx_style(capsys):
 
 
 def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
-    from manuwright import obsidian
+    from manuwright import obsidian, models
     offered = []
     monkeypatch.setattr(obsidian, 'offer_connect', lambda: offered.append(1))
-    answers = iter(['claude-opus-5-5', 'codex, opencode:openai/gpt-x, openrouter',
-                    'deepseek/a',            # openrouter models
-                    '', 'gpt-5',             # codex model kept empty, opencode model (muse/agy/claude not asked)
+    monkeypatch.setattr(models, 'openrouter_prices', lambda: {'z-ai/glm-5.3': (3e-7, 6e-6), 'deepseek/a': (1e-7, 1e-7)})
+    monkeypatch.setattr(models, 'opencode_models', lambda: {'opencode-go/kimi-k3', 'opencode-go/glm-5.3'})
+    answers = iter(['claude-opus-5-5', 'codex',
+                    'deepseek/b', 'n', 'deepseek/a',  # OpenRouter: unknown id refused, then a known one
+                    '9', 'opencode-go/kimi-k3,opencode-go/glm-5.3',  # opencode: out-of-range number, then own ids
                     'y', 'Arial', 'huge', '12', '', '', '', '1.5', 'page', 'left', 'right',  # docx, with 2 retries
                     'maybe', 'on'])          # auto-update, with 1 retry
     assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
     data = lifecycle.load('config.json', {})
     assert data['main_model'] == 'claude-opus-5-5'
-    assert data['review']['reviewers'] == ['codex', 'opencode:openai/gpt-x', 'openrouter']
+    assert data['review']['reviewers'] == ['codex', 'openrouter', 'opencode:opencode-go/kimi-k3', 'opencode:opencode-go/glm-5.3']
     assert data['review']['openrouter_models'] == ['deepseek/a']
-    assert data['review']['opencode_model'] == 'gpt-5' and 'codex_model' not in data['review']
     assert data['docx'] == {'font': 'Arial', 'size': 12.0, 'margin_inches': 1.5,
                             'line_numbers': 'page', 'page_numbers': 'right'}
     assert data['auto_update'] is True and offered == [1]
-    assert 'not valid' in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert 'not valid' in out and 'did you mean "deepseek/a"' in out and '~$0.032/review' in out
+
+
+def test_setup_picks_a_recommended_set(monkeypatch):
+    from manuwright import obsidian, models
+    monkeypatch.setattr(obsidian, 'offer_connect', lambda: None)
+    monkeypatch.setattr(models, 'openrouter_prices', lambda: {})
+    monkeypatch.setattr(models, 'opencode_models', set)
+    answers = iter(['', '-', '1', '0', 'n', ''])
+    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    review = lifecycle.load('config.json', {})['review']
+    assert review['reviewers'] == ['openrouter']
+    assert review['openrouter_models'] == models.OPENROUTER_SETS['balanced'][1]
 
 
 def test_setup_interrupt_saves_nothing(capsys):

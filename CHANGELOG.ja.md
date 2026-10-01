@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.12 (261001)
+
+- レビュアー推奨モデル：`manuwright setup` が OpenRouter（balanced、budget、strong）と opencode（Go、Go budget）の推奨セットを番号で提示。GLM、Kimi、MiniMax、DeepSeek、Qwen、Xiaomi MiMo、Meituan LongCat の最新モデルを実際の一覧で確認し、レビュー 1 回の概算費用を表示。入力した ID には近い候補を提案。`manuwright models` でセットを表示。既定の OpenRouter モデルは balanced セットに変更。無料・contributor 版はプロンプト保存の可能性があるため除外。
+
 ### v1.8.11 (261001)
 
 - Obsidian 接続時の端末フリーズを修正：エージェントの状態確認（`codex`/`claude`/`agy mcp …`）を端末から切り離して実行。エージェント CLI が端末を raw モードのまま残し Enter が効かなくなる問題を解消。質問前に端末を復元し、Ctrl-C/Ctrl-D は「いいえ」として扱う。

@@ -1,4 +1,4 @@
-# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.1.0)
+# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.1.1)
 
 > 완성된 원고/response를 여러 리뷰어가 적대적으로 공격해 허점을 발굴하는 절차의 단일 기준. `/critical-review` command와 `qc_guide.md`는 이 문서를 참조한다. QC Round 6 Critical Review의 외부 멀티모델 강화판.
 > 공개 운영 기준은 이 문서가 원본입니다. 내부 설계 노트 경로는 런타임 의존성으로 두지 않습니다.
@@ -98,7 +98,7 @@ manuwright config set review.openrouter-models deepseek/deepseek-v4-pro,qwen/qwe
 manuwright config set review.codex-model gpt-6-astra                # optional per agent
 ```
 
-A bare `openrouter` expands to `review.openrouter-models` (default `scripts/critical_models.txt`). A reviewer whose model equals `main-model` is reported in `run.json` as `not_independent` with a warning: the writing model reviewing itself is not an independent review. `--models`, `--models-file`, `--include-claude` and `--include-codex` keep working.
+A bare `openrouter` expands to `review.openrouter-models` (default `scripts/critical_models.txt`, the "balanced" set). Recommended sets for OpenRouter and opencode, with live availability and cost per review: `manuwright models`; pick one by number in `manuwright setup`. A reviewer whose model equals `main-model` is reported in `run.json` as `not_independent` with a warning: the writing model reviewing itself is not an independent review. `--models`, `--models-file`, `--include-claude` and `--include-codex` keep working.
 
 Tested 2026-09-30 on the synthetic demo manuscript: Codex, opencode (kimi-k3), Muse, Antigravity and four OpenRouter models all returned full reviews (1,000-2,700 words each).
 

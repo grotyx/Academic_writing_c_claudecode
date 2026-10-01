@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.12 (261001)
+
+- Recommended reviewer models: `manuwright setup` offers numbered sets for OpenRouter (balanced, budget, strong) and opencode (Go, Go budget) with the newest GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo and Meituan LongCat models, checked against the live lists with an estimated cost per review; typed ids get a "did you mean" suggestion. `manuwright models` prints the sets. The default OpenRouter pool is now the balanced set. Free and contributor tiers are excluded (they may keep prompts).
+
 ### v1.8.11 (261001)
 
 - Obsidian connect no longer freezes the terminal: the agent status checks (`codex`/`claude`/`agy mcp …`) run detached from the terminal, so an agent CLI can no longer leave it in raw mode where Enter does nothing; prompts restore the terminal first and treat Ctrl-C/Ctrl-D as "no".

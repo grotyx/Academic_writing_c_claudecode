@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.12 (261001)
+
+- 검토자 추천 모델: `manuwright setup` 이 OpenRouter(balanced, budget, strong)와 opencode(Go, Go budget) 추천 세트를 번호로 제시. GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo, Meituan LongCat 최신 모델이고, 실시간 목록으로 제공 여부와 검토 1회 예상 비용을 표시. 직접 입력한 ID 는 비슷한 이름을 제안. `manuwright models` 로 세트 확인. 기본 OpenRouter 모델은 balanced 세트로 변경. 무료·contributor 등급은 입력 보관 가능성 때문에 제외.
+
 ### v1.8.11 (261001)
 
 - Obsidian 연결 시 터미널 멈춤 수정: 에이전트 상태 확인(`codex`/`claude`/`agy mcp …`)을 터미널과 분리해 실행. 에이전트 CLI가 터미널을 raw 모드로 남겨 Enter가 안 먹던 문제 해결. 질문 전에 터미널을 복구하고 Ctrl-C/Ctrl-D는 "아니오"로 처리.

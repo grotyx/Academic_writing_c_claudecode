@@ -277,17 +277,34 @@ def setup(args, ask=input):
 
 
 def _setup_steps(data, prompt, ask):
+    try:
+        from manuwright import models
+    except ImportError:  # lifecycle loaded from an engine folder (see agents())
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from manuwright import models
     print('1. Models and reviewers')
-    for key in ('main-model', 'review.reviewers'):
-        prompt(key)
-    reviewers = [r.strip() for r in data.get('review', {}).get('reviewers', [])]
-    chosen = [r.split(':')[0] for r in reviewers]
-    if 'openrouter' in reviewers:  # only a bare "openrouter" uses review.openrouter-models
-        prompt('review.openrouter-models')
-    for agent in REVIEW_AGENTS:
-        if agent in chosen:
-            SETUP_HELP[f'review.{agent}-model'] = f'model for the {agent} reviewer (empty = its own default)'
-            prompt(f'review.{agent}-model')
+    prompt('main-model')
+    review = data.setdefault('review', {})
+    current = [r.strip() for r in review.get('reviewers', [])]
+    local = [r for r in current if r.split(':')[0] in ('claude', 'codex', 'muse', 'agy')]
+    SETUP_HELP['review.local'] = 'agent CLIs that review too, comma-separated: claude, codex, muse, agy (empty = none)'
+    answer = ask(f"{SETUP_HELP['review.local']}\n  agents [{','.join(local) or 'none'}]: ").strip()
+    if answer:
+        local = [] if answer == '-' else [a.strip() for a in answer.split(',') if a.strip()]
+    print('Checking the current OpenRouter and opencode model lists...')
+    prices = models.openrouter_prices()
+    openrouter = models.choose('OpenRouter', models.OPENROUTER_SETS, review.get('openrouter_models', [])
+                               if 'openrouter' in current else [], set(prices), prices, ask)
+    if openrouter is None:
+        openrouter = review.get('openrouter_models', []) if 'openrouter' in current else []
+    opencode_now = [r.split(':', 1)[1] for r in current if r.startswith('opencode:')]
+    opencode = models.choose('opencode', models.OPENCODE_SETS, opencode_now, models.opencode_models(), None, ask)
+    if opencode is None:
+        opencode = opencode_now
+    if openrouter:
+        review['openrouter_models'] = openrouter
+    review['reviewers'] = local + (['openrouter'] if openrouter else []) + [f'opencode:{m}' for m in opencode]
+    print(f"  reviewers: {', '.join(review['reviewers']) or 'none'}")
     print('\n2. Word (DOCX) style: your default; a project.json "docx" block overrides it per journal')
     if ask('  Change the Word style? [y/N]: ').strip().lower() in {'y', 'yes'}:
         for key in [k for k in CONFIG_KEYS if k.startswith('docx.')]:
