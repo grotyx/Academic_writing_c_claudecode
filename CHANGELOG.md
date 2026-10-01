@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.13 (261001)
+
+- `manuwright setup` picks models from menus instead of typed ids: the main model from a list, and agent reviewers, OpenRouter and opencode models from arrow-key checklists (Space ticks, a number key fills a recommended set, Esc keeps the current choice). Numbered fallback without a POSIX terminal. The "not independent" check now matches `claude-opus-5-5` and `anthropic/claude-opus-5.5` as the same model.
+
 ### v1.8.12 (261001)
 
 - Recommended reviewer models: `manuwright setup` offers numbered sets for OpenRouter (balanced, budget, strong) and opencode (Go, Go budget) with the newest GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo and Meituan LongCat models, checked against the live lists with an estimated cost per review; typed ids get a "did you mean" suggestion. `manuwright models` prints the sets. The default OpenRouter pool is now the balanced set. Free and contributor tiers are excluded (they may keep prompts).

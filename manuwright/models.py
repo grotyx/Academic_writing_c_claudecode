@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import difflib
 import json
+import os
+import sys
 import shutil
 import subprocess
 import urllib.request
@@ -34,6 +36,9 @@ OPENCODE_SETS = {
         'opencode-go/glm-5.3-flash', 'opencode-go/deepseek-v4.1-flash', 'opencode-go/qwen3.8-flash',
         'opencode-go/mimo-v2.6-flash', 'opencode-go/longcat-2.0']),
 }
+WRITERS = ['anthropic/claude-opus-5.5', 'anthropic/claude-sonnet-5.5', 'anthropic/claude-fable-5.1',
+           'openai/gpt-6-astra', 'openai/gpt-6.1-sol', 'google/gemini-3.8-flash']
+AGENTS = ['claude', 'codex', 'muse', 'agy']
 # One manuscript review: about 25k tokens in, 4k out.
 REVIEW_TOKENS = (25_000, 4_000)
 
@@ -84,8 +89,112 @@ def check(models, known):
     return out
 
 
+# --- selection menu ---------------------------------------------------------
+UP, DOWN, SPACE, ENTER, ESC = 'up', 'down', ' ', 'enter', 'esc'
+
+
+def read_keys():
+    """Yield key names from a raw terminal (POSIX). The caller restores the terminal."""
+    import select
+    fd = sys.stdin.fileno()
+    while True:
+        ch = os.read(fd, 1).decode(errors='ignore')
+        if ch == '\x1b':
+            seq = os.read(fd, 2).decode(errors='ignore') if select.select([fd], [], [], 0.05)[0] else ''
+            yield {'[A': UP, '[B': DOWN}.get(seq, ESC)
+        elif ch in ('\r', '\n'):
+            yield ENTER
+        elif ch == '\x03':
+            raise KeyboardInterrupt
+        else:
+            yield ch
+
+
+def can_menu():
+    return os.name == 'posix' and sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def pick(title, options, selected, presets=None, single=False, keys=None):
+    """Arrow-key menu. options: [(value, label)]. Space toggles (single: Enter picks), letters apply
+    presets {key: (name, values)}, a/n select all/none, Esc keeps the current choice (returns None)."""
+    presets = presets or {}
+    chosen = {v for v, _ in options if v in selected}
+    row = next((i for i, (v, _) in enumerate(options) if v in chosen), 0)
+    help_line = ('↑/↓ move · Enter choose · Esc keep current' if single else
+                 '↑/↓ move · Space select · Enter done · a all · n none · Esc keep current'
+                 + ''.join(f' · {k} {name}' for k, (name, _) in presets.items()))
+    drawn = 0
+
+    def draw():
+        nonlocal drawn
+        if drawn:
+            sys.stdout.write(f'\x1b[{drawn}F\x1b[J')
+        lines = [f'  {title}', f'  {help_line}']
+        for i, (value, label) in enumerate(options):
+            box = '' if single else ('[x] ' if value in chosen else '[ ] ')
+            lines.append(f"  {'>' if i == row else ' '} {box}{label}")
+        sys.stdout.write('\n'.join(lines) + '\n')
+        sys.stdout.flush()
+        drawn = len(lines)
+
+    source = keys
+    saved = None
+    if source is None:
+        import termios
+        import tty
+        saved = termios.tcgetattr(sys.stdin.fileno())
+        tty.setcbreak(sys.stdin.fileno())
+        source = read_keys()
+    try:
+        draw()
+        for key in source:
+            if key in (UP, 'k'):
+                row = (row - 1) % len(options)
+            elif key in (DOWN, 'j'):
+                row = (row + 1) % len(options)
+            elif key == ESC or key == 'q':
+                return None
+            elif key == ENTER:
+                return [options[row][0]] if single else [v for v, _ in options if v in chosen]
+            elif single:
+                continue
+            elif key == SPACE:
+                chosen ^= {options[row][0]}
+            elif key == 'a':
+                chosen = {v for v, _ in options}
+            elif key == 'n':
+                chosen = set()
+            elif key in presets:
+                chosen = set(presets[key][1])
+            draw()
+        return None
+    finally:
+        if saved is not None:
+            import termios
+            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, saved)
+
+
+def model_options(sets, current, known, prices):
+    """Every model in the sets (plus any current custom id), labelled with availability and cost."""
+    values = list(dict.fromkeys([m for _, models in sets.values() for m in models] + list(current)))
+    options = []
+    for model in values:
+        if known and model not in known:
+            note = 'not offered now'
+        elif prices and model in prices:
+            note = f'~${review_cost(prices[model]):.3f}/review'
+        else:
+            note = ''
+        options.append((model, f'{model:<36} {note}'.rstrip()))
+    return options
+
+
 def choose(kind, sets, current, known, prices, ask):
-    """Numbered menu: a set, none, keep, or own ids. Returns the chosen list (None = keep)."""
+    """Pick models: an arrow-key checklist on a terminal, a numbered list otherwise. None = keep."""
+    if can_menu() and ask is input:
+        presets = {str(i): (name, models) for i, (name, (_, models)) in enumerate(sets.items(), 1)}
+        return pick(f'{kind} reviewer models (updated {UPDATED}; presets fill the checklist)',
+                    model_options(sets, current, known, prices), set(current), presets)
     names = list(sets)
     print(f'  Recommended {kind} sets (updated {UPDATED}):')
     for i, name in enumerate(names, 1):

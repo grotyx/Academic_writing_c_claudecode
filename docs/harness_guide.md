@@ -1,6 +1,6 @@
 # Shared manuscript engine (v1.1.2)
 
-Project release: v1.8.12. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.13. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -132,7 +132,7 @@ The vault stays a discovery library: cite only `[EVID:id]` entries in `knowledge
 
 ## v1.8.9 one-step setup and Word style
 
-`manuwright setup` (terminal only) asks for the main model, agent reviewers (claude, codex, muse, agy), an OpenRouter model set and an opencode model set (numbered recommended sets from `manuwright/models.py`, checked against the live OpenRouter and `opencode models` lists, or typed ids with a closest-match suggestion; `manuwright models` lists them), the Word style (optional), and auto-update; it saves them to `~/.manuwright/config.json` and then offers the Obsidian library (install or connect, always asking). Enter keeps a value; `-` clears it. Invalid values are asked again. `manuwright config set|unset` changes one key.
+`manuwright setup` (terminal only) asks for the main model, agent reviewers (claude, codex, muse, agy), an OpenRouter model set and an opencode model set (arrow-key checklists with number-key recommended sets from `manuwright/models.py`, numbered lists without a POSIX terminal; checked against the live OpenRouter and `opencode models` lists, or typed ids with a closest-match suggestion; `manuwright models` lists them), the Word style (optional), and auto-update; it saves them to `~/.manuwright/config.json` and then offers the Obsidian library (install or connect, always asking). Enter keeps a value; `-` clears it. Invalid values are asked again. `manuwright config set|unset` changes one key.
 
 DOCX style (`build`): defaults are Times New Roman 10 pt, headings 12/11 pt, double spacing, 1-inch margins, continuous line numbers and centred page numbers on the manuscript (title page and tables carry no line or page numbers). Save your own default with `manuwright config set docx.<key> <value>`; override it for one paper (its target journal) with a `"docx"` object in `project.json`, e.g. `"docx": {"font": "Arial", "size": 12, "line_spacing": 1.5, "line_numbers": "page", "page_numbers": "right"}`. Keys: `font`, `size`, `heading_size`, `subheading_size`, `line_spacing`, `margin_inches`, `line_numbers` (`continuous`/`page`/`off`), `page_numbers` (`center`/`right`/`off`). Unknown keys or bad values stop the build. The resolved style is written to `build.json`; the user default is not part of the review snapshot, so check `build.json` when rebuilding on another machine.
 

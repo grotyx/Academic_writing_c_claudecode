@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.13 (261001)
+
+- `manuwright setup` でモデルを入力せずメニューで選択：メインモデルは一覧、エージェント・OpenRouter・opencode のモデルは矢印キーのチェックリスト（Space で選択、数字キーで推奨セット、Esc で現状維持）。POSIX 端末がない場合は番号選択。「独立でない」判定が `claude-opus-5-5` と `anthropic/claude-opus-5.5` を同一モデルとして扱う。
+
 ### v1.8.12 (261001)
 
 - レビュアー推奨モデル：`manuwright setup` が OpenRouter（balanced、budget、strong）と opencode（Go、Go budget）の推奨セットを番号で提示。GLM、Kimi、MiniMax、DeepSeek、Qwen、Xiaomi MiMo、Meituan LongCat の最新モデルを実際の一覧で確認し、レビュー 1 回の概算費用を表示。入力した ID には近い候補を提案。`manuwright models` でセットを表示。既定の OpenRouter モデルは balanced セットに変更。無料・contributor 版はプロンプト保存の可能性があるため除外。

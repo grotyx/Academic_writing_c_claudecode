@@ -95,8 +95,9 @@ def not_independent(reviewers: list[tuple[str, str | None]], main_model: str | N
     """Reviewers whose model is the main writing model: their review is not independent."""
     if not main_model:
         return []
-    key = main_model.lower().rsplit("/", 1)[-1]
-    return [reviewer_id(a, m) for a, m in reviewers if m and m.lower().rsplit("/", 1)[-1] == key]
+    def key(model: str) -> str:  # "anthropic/claude-opus-5.5" and "claude-opus-5-5" are the same model
+        return model.lower().rsplit("/", 1)[-1].split(":")[0].replace(".", "-")
+    return [reviewer_id(a, m) for a, m in reviewers if m and key(m) == key(main_model)]
 
 
 def build_prompt(role: str, target_text: str) -> str:

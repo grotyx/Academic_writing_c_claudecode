@@ -250,3 +250,23 @@ def test_setup_interrupt_saves_nothing(capsys):
         raise KeyboardInterrupt
     assert lifecycle.setup([], ask=stop) == 1
     assert lifecycle.load('config.json', {}) == {} and 'nothing saved' in capsys.readouterr().out
+
+
+def test_checklist_menu_keys(capsys):
+    from manuwright import models
+    options = [('a/x', 'a/x'), ('b/y', 'b/y'), ('c/z', 'c/z')]
+    keys = iter([models.DOWN, models.SPACE, models.DOWN, models.SPACE, models.ENTER])
+    assert models.pick('t', options, {'a/x'}, keys=keys) == ['a/x', 'b/y', 'c/z']
+    assert models.pick('t', options, set(), {'1': ('set', ['c/z'])}, keys=iter(['1', models.ENTER])) == ['c/z']
+    assert models.pick('t', options, {'a/x'}, keys=iter(['n', models.ENTER])) == []
+    assert models.pick('t', options, {'a/x'}, keys=iter([models.ESC])) is None
+    assert models.pick('t', options, {'a/x'}, single=True, keys=iter([models.UP, models.ENTER])) == ['c/z']
+    assert '[x] a/x' in capsys.readouterr().out
+
+
+def test_writer_and_reviewer_names_match_across_spellings():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('cr', ENGINE / 'scripts' / 'critical_review.py')
+    cr = importlib.util.module_from_spec(spec); spec.loader.exec_module(cr)
+    flagged = cr.not_independent([('openrouter', 'anthropic/claude-opus-5.5'), ('openrouter', 'z-ai/glm-5.3')], 'claude-opus-5-5')
+    assert flagged == ['anthropic/claude-opus-5.5']

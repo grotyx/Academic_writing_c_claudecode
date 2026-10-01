@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.13 (261001)
+
+- `manuwright setup` 에서 모델을 입력하지 않고 메뉴로 선택: 메인 모델은 목록, 에이전트 검토자·OpenRouter·opencode 모델은 방향키 체크리스트(Space 선택, 숫자 키로 추천 세트, Esc 는 유지). POSIX 터미널이 없으면 번호 선택. "독립 아님" 판정이 `claude-opus-5-5` 와 `anthropic/claude-opus-5.5` 를 같은 모델로 인식.
+
 ### v1.8.12 (261001)
 
 - 검토자 추천 모델: `manuwright setup` 이 OpenRouter(balanced, budget, strong)와 opencode(Go, Go budget) 추천 세트를 번호로 제시. GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo, Meituan LongCat 최신 모델이고, 실시간 목록으로 제공 여부와 검토 1회 예상 비용을 표시. 직접 입력한 ID 는 비슷한 이름을 제안. `manuwright models` 로 세트 확인. 기본 OpenRouter 모델은 balanced 세트로 변경. 무료·contributor 등급은 입력 보관 가능성 때문에 제외.
