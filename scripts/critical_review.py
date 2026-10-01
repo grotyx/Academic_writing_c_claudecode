@@ -61,7 +61,8 @@ def saved_openrouter_key() -> str | None:
     """The key `manuwright setup` saved (owner-only file); the environment variable wins."""
     try:
         home = Path(os.environ.get("MANUWRIGHT_HOME") or Path.home() / ".manuwright")
-        return json.loads((home / "secrets.json").read_text(encoding="utf-8")).get("openrouter_api_key")
+        data = json.loads((home / "secrets.json").read_text(encoding="utf-8"))
+        return data.get("openrouter_api_key") if isinstance(data, dict) else None
     except (OSError, ValueError, RuntimeError):
         return None
 

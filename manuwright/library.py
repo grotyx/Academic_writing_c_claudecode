@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -65,13 +66,36 @@ def save_docx_style(name, settings, template=None, replace=False, scope='persona
     name = slug(name)
     if (folder / f'{name}.json').exists() and not replace:
         raise ValueError(f'a style named "{name}" already exists; pick another name or add --replace')
-    (folder / f'{name}.docx').unlink(missing_ok=True)  # a replaced style must not keep an old template
+    staged = None
+    if template:  # check and stage the new template before touching what is stored
+        check_word_file(template)
+        staged = folder / f'.{name}.docx.new'
+        shutil.copyfile(template, staged)
     clean = {k: v for k, v in settings.items() if k not in ('reference', 'template')}
     data = {'for': 'journal' if journal else scope, 'journal': journal, 'settings': clean}
-    (folder / f'{name}.json').write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
-    if template:
-        shutil.copyfile(template, folder / f'{name}.docx')
+    (folder / f'{name}.json.new').write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+    if staged:
+        os.replace(staged, folder / f'{name}.docx')
+    else:
+        (folder / f'{name}.docx').unlink(missing_ok=True)  # a replaced style must not keep an old template
+    os.replace(folder / f'{name}.json.new', folder / f'{name}.json')
     return name
+
+
+def check_word_file(path):
+    """A real Word document (.docx), not a renamed .dotx template or another file."""
+    path = Path(path)
+    if path.suffix.lower() != '.docx' or not path.is_file():
+        raise ValueError(f'not a .docx file: {path}')
+    try:
+        from docx import Document
+    except ImportError:  # python-docx missing: the build reports it
+        return
+    try:
+        Document(str(path))
+    except Exception as exc:  # python-docx raises several types for non-documents
+        raise ValueError(f'{path} is not a Word document (.docx) python-docx can open '
+                         f'(a .dotx template must be saved as .docx): {exc}') from exc
 
 
 def describe_style(name, style, journal_label=lambda j: j):
@@ -110,9 +134,6 @@ def docx_command(args):
         return 0
     if action == 'add' and len(args) >= 2 and '--name' in args:
         source = Path(args[1]).expanduser()
-        if source.suffix.lower() != '.docx' or not source.is_file():
-            print(f'not a .docx file: {source}', file=sys.stderr)
-            return 2
         scope, journal = scope_args(args)
         name = save_docx_style(args[args.index('--name') + 1], {}, source, '--replace' in args, scope, journal)
         print(f'Saved Word template "{name}" ({describe_style(name, docx_styles()[name])}). '
@@ -128,7 +149,11 @@ def docx_command(args):
         if not block:
             print('this paper uses the default style; set one first with: manuwright target', file=sys.stderr)
             return 2
-        template = manifest.parent / block['reference'] if block.get('reference') else None
+        template = None
+        if block.get('reference'):
+            template = (manifest.parent / block['reference']).resolve()
+            if not template.is_relative_to(manifest.parent.resolve()):
+                raise ValueError('docx.reference must point inside the paper folder')
         config = json.loads(manifest.read_text(encoding='utf-8'))
         scope, journal = scope_args(args)
         if scope == 'personal' and '--personal' not in args and config.get('journal'):
@@ -168,7 +193,8 @@ def profile_command(engine, args):
         print(f'Created {path} from the template.')
     if '--edit' in args:
         editor = os.environ.get('EDITOR')
-        command = [editor, str(path)] if editor else (['open', '-t', str(path)] if sys.platform == 'darwin' else
+        parts = [p.strip('"') for p in shlex.split(editor, posix=os.name != 'nt')] if editor else []
+        command = [*parts, str(path)] if editor else (['open', '-t', str(path)] if sys.platform == 'darwin' else
                                                       ['notepad', str(path)] if os.name == 'nt' else ['xdg-open', str(path)])
         return subprocess.call(command)
     print(f'Team profile: {path}\n'
@@ -210,7 +236,9 @@ def writing_command(args):
         source = Path(files[0]).expanduser()
         count = kept = 0
         for path in source.rglob('*'):
-            if path.is_file() and path.suffix.lower() in ('.md', '.pdf'):
+            # the engine's own guide and example placeholders are not the author's style
+            if (path.is_file() and path.suffix.lower() in ('.md', '.pdf') and path.name != 'style_guide.md'
+                    and not path.name.startswith('example_')):
                 target = writing() / path.relative_to(source)
                 if target.exists() and '--replace' not in args:
                     kept += 1

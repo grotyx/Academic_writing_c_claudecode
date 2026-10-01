@@ -1,10 +1,11 @@
 # Changelog
 
-### Unreleased
+### v1.8.15 (261001)
 
 - Personal library (`manuwright library`, `~/.manuwright/library/`): named Word styles and Word templates saved for a target journal, the team or yourself (the journal's style is suggested in `manuwright target`) (a .docx designed in Word becomes the base of the built manuscript via `docx.reference`), a team profile copied to each new paper, and a writing style (own/landmark/target-journal anchors, terminology, style spec) copied into each new paper's `Style/`. Style extraction and profile filling are agent tasks in the manuwright skill.
 - Word style and reference format are per paper: new `manuwright target` (inside a paper folder) picks the target journal and that paper's Word style from menus and saves them in its `project.json`; `manuwright setup` no longer asks about Word style. `manuwright init` points to it.
 - `manuwright setup` asks for the OpenRouter API key when OpenRouter reviewers are chosen (hidden input, checked with OpenRouter, saved owner-only in `~/.manuwright/secrets.json`, never in config.json); `critical_review.py` uses it when `OPENROUTER_API_KEY` is not set.
+- Hardening after review: `--replace` stages a new Word template before touching the stored one; templates are checked to be real .docx files; a template's own line/page numbering is never duplicated; `docx.reference` must stay inside the paper and `build.json` stores it relative; Enter in `target` never switches the Word style by itself; the OpenRouter key is written owner-only via an atomic replace; `doctor` reports a saved key; `writing import` skips the engine's guide and example files.
 
 ### v1.8.14 (261001)
 

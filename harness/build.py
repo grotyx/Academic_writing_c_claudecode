@@ -55,11 +55,20 @@ def docx_style(config, root=None):
     project = config.get('docx', {})
     check_docx_values('project.json', project, allow_reference=True)
     if isinstance(project, dict) and project.get('reference'):
-        path = Path(project['reference'])
-        path = path if path.is_absolute() or root is None else inside(root, project['reference'])
+        if root is None:
+            raise ValueError('docx.reference needs the paper folder')
+        path = inside(root, project['reference'])  # refuses paths that leave the paper folder
         if not path.is_file():
             raise ValueError(f'docx.reference not found: {project["reference"]}')
-        return {**{k: v for k, v in project.items() if k != 'reference'}, 'reference': str(path)}
+        try:
+            from docx import Document
+            Document(str(path))
+        except ImportError:
+            pass
+        except Exception as exc:  # renamed .dotx, corrupt file: fail before verification, not after
+            raise ValueError(f'docx.reference is not a Word document python-docx can open: {exc}') from exc
+        return {**{k: v for k, v in project.items() if k != 'reference'}, 'reference': str(path),
+                'reference_path': project['reference']}
     style = dict(DOCX_DEFAULTS)
     check_docx_values('user config', user_docx())
     style.update(user_docx())
@@ -89,20 +98,34 @@ def document(style=DOCX_DEFAULTS, numbered=True):
         normal.font.color.rgb = RGBColor(0, 0, 0)
     if 'line_spacing' in style:
         normal.paragraph_format.line_spacing = style['line_spacing']
+    def has_page_field(footer):  # anywhere in the footer, including Word's content controls (w:sdt)
+        root = footer._element
+        return any('PAGE' in (node.get(qn('w:instr')) or '') for node in root.iter(qn('w:fldSimple'))) or \
+            any('PAGE' in (node.text or '') for node in root.iter(qn('w:instrText')))
+
     for section in doc.sections:
         if 'margin_inches' in style:
             section.top_margin = section.bottom_margin = Inches(style['margin_inches'])
             section.left_margin = section.right_margin = Inches(style['margin_inches'])
-        if numbered and style.get('line_numbers', 'off') != 'off':
-            lines = OxmlElement('w:lnNumType')
-            lines.set(qn('w:countBy'), '1')
-            lines.set(qn('w:restart'), 'newPage' if style['line_numbers'] == 'page' else 'continuous')
-            section._sectPr.append(lines)
+        sect = section._sectPr
+        if numbered and 'line_numbers' in style:
+            for old in sect.findall(qn('w:lnNumType')):  # a template may already number lines
+                sect.remove(old)
+            if style['line_numbers'] != 'off':
+                lines = OxmlElement('w:lnNumType')
+                lines.set(qn('w:countBy'), '1')
+                lines.set(qn('w:restart'), 'newPage' if style['line_numbers'] == 'page' else 'continuous')
+                # schema order: lnNumType comes before pgNumType, cols, ... docGrid
+                after = [sect.find(qn('w:' + tag)) for tag in ('pgNumType', 'cols', 'formProt', 'vAlign', 'noEndnote',
+                                                              'titlePg', 'textDirection', 'bidi', 'rtlGutter', 'docGrid')]
+                after = [node for node in after if node is not None]
+                after[0].addprevious(lines) if after else sect.append(lines)
         if numbered and style.get('page_numbers', 'off') != 'off':
             paragraph = section.footer.paragraphs[0]
-            paragraph.alignment = 2 if style['page_numbers'] == 'right' else 1
-            field = OxmlElement('w:fldSimple'); field.set(qn('w:instr'), 'PAGE')
-            paragraph._p.append(field)
+            if not has_page_field(section.footer):  # keep a template's own page number
+                paragraph.alignment = 2 if style['page_numbers'] == 'right' else 1
+                field = OxmlElement('w:fldSimple'); field.set(qn('w:instr'), 'PAGE')
+                paragraph._p.append(field)
     return doc
 
 
@@ -243,6 +266,6 @@ def build(path):
         (stage/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
         outputs={item.name:digest(item) for item in sorted(stage.iterdir()) if item.is_file()}
         (stage/'build.json').write_text(json.dumps({'schema_version':1,'paper_id':config['paper_id'],
-            'outputs':outputs,'visual_qa':'required before submission','citation_style':(journal+' preset' if journal else 'numbered; source Citation strings preserved'),'docx_style':style},indent=2),encoding='utf-8')
+            'outputs':outputs,'visual_qa':'required before submission','citation_style':(journal+' preset' if journal else 'numbered; source Citation strings preserved'),'docx_style':{k:v for k,v in style.items() if k!='reference'}},indent=2),encoding='utf-8')
         stage.rename(final)
     return final

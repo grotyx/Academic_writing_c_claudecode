@@ -259,7 +259,7 @@ def test_setup_interrupt_saves_nothing(capsys):
     def stop(_):
         raise KeyboardInterrupt
     assert lifecycle.setup([], ask=stop) == 1
-    assert lifecycle.load('config.json', {}) == {} and 'nothing saved' in capsys.readouterr().out
+    assert lifecycle.load('config.json', {}) == {} and 'settings not saved' in capsys.readouterr().out
 
 
 def test_checklist_menu_keys(capsys):

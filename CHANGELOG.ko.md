@@ -1,10 +1,11 @@
 # 변경 이력
 
-### Unreleased
+### v1.8.15 (261001)
 
 - 개인 라이브러리(`manuwright library`, `~/.manuwright/library/`): 목표 저널용·팀용·개인용으로 저장하는 Word 스타일과 Word 서식 파일(`manuwright target` 에서 그 저널용 서식을 추천)(`docx.reference` 로 빌드 원고의 바탕이 됨), 새 논문마다 복사되는 팀 정보, 새 논문 `Style/` 로 복사되는 글쓰기 스타일(본인·landmark·목표 저널 앵커, 용어집, style spec). 문체 추출과 팀 정보 채우기는 manuwright skill 의 에이전트 작업.
 - Word 스타일과 참고문헌 형식은 논문별: 새 `manuwright target`(논문 폴더 안에서 실행)가 목표 저널과 그 논문의 Word 스타일을 메뉴로 골라 그 `project.json` 에 저장. `manuwright setup` 은 더 이상 Word 스타일을 묻지 않음. `manuwright init` 이 안내.
 - `manuwright setup` 에서 OpenRouter 검토자를 고르면 OpenRouter API 키를 물음(입력 숨김, OpenRouter 로 확인, `~/.manuwright/secrets.json` 에 본인만 읽게 저장, config.json 에는 저장 안 함). `OPENROUTER_API_KEY` 가 없으면 `critical_review.py` 가 이 키를 사용.
+- 검토 후 보강: `--replace` 는 새 서식 파일을 먼저 준비한 뒤 교체(기존 파일 유실 방지), 서식 파일이 실제 .docx 인지 확인, 서식 파일의 줄·쪽 번호 중복 방지, `docx.reference` 는 논문 폴더 안만 허용하고 `build.json` 에 상대 경로로 기록, `target` 에서 Enter 가 서식을 임의로 바꾸지 않음, OpenRouter 키는 본인 전용 파일로 원자적 저장, `doctor` 가 저장된 키 인식, `writing import` 는 엔진 안내·예시 파일 제외.
 
 ### v1.8.14 (261001)
 

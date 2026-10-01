@@ -15,6 +15,16 @@ from .project import load_project, snapshot, verify, checker
 from .results import inside, digest
 
 
+
+def saved_key():
+    """The OpenRouter key `manuwright setup` saved (no import of critical_review: it needs requests)."""
+    try:
+        home=Path(os.environ.get('MANUWRIGHT_HOME') or Path.home()/'.manuwright')
+        data=json.loads((home/'secrets.json').read_text(encoding='utf-8'))
+        return data.get('openrouter_api_key') if isinstance(data,dict) else None
+    except (OSError,ValueError,RuntimeError):
+        return None
+
 def write_json(path, data):
     path.parent.mkdir(parents=True,exist_ok=True)
     temporary=path.with_name(path.name+'.'+uuid4().hex+'.tmp')
@@ -62,7 +72,7 @@ def main():
                   'python_supported':sys.version_info>=(3,10),
                   'dependencies':{name:importlib.util.find_spec(name) is not None for name in ['docx','requests','pytest']},
                   'executables':{name:bool(shutil.which(name)) for name in ['claude','codex','gemini','sh','pandoc']},
-                  'openrouter_key_present':bool(os.environ.get('OPENROUTER_API_KEY')),
+                  'openrouter_key_present':bool(os.environ.get('OPENROUTER_API_KEY') or saved_key()),
                   'hooks':hook_health(),
                   'note':'Presence does not verify authentication, model access or CLI flags. No network calls made.'}
             data['warnings']=[w for ok,w in [

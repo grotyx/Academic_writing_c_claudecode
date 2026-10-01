@@ -1,10 +1,11 @@
 # 変更履歴
 
-### Unreleased
+### v1.8.15 (261001)
 
 - 個人ライブラリ（`manuwright library`、`~/.manuwright/library/`）：投稿先ジャーナル用・チーム用・個人用に保存する Word スタイルと Word テンプレート（`manuwright target` でそのジャーナル用を推奨）（`docx.reference` でビルド原稿の土台になる）、新しい論文ごとにコピーされるチーム情報、新しい論文の `Style/` にコピーされる文体（自分・landmark・投稿先のアンカー、用語集、style spec）。文体抽出とチーム情報の入力は manuwright skill のエージェント作業。
 - Word スタイルと参考文献形式は論文ごと：新しい `manuwright target`（論文フォルダ内で実行）が投稿先ジャーナルとその論文の Word スタイルをメニューで選び、その `project.json` に保存。`manuwright setup` は Word スタイルを尋ねなくなった。`manuwright init` が案内。
 - `manuwright setup` で OpenRouter レビュアーを選ぶと API キーを入力（非表示、OpenRouter で確認、`~/.manuwright/secrets.json` に本人のみ読める形で保存、config.json には保存しない）。`OPENROUTER_API_KEY` がなければ `critical_review.py` がこのキーを使用。
+- レビュー後の強化：`--replace` は新しいテンプレートを先に準備してから置換、テンプレートが本物の .docx か確認、テンプレートの行・ページ番号を重複させない、`docx.reference` は論文フォルダ内のみ許可し `build.json` に相対パスで記録、`target` で Enter がスタイルを勝手に変えない、OpenRouter キーは本人専用ファイルに原子的に保存、`doctor` が保存済みキーを認識、`writing import` はエンジンの案内・例ファイルを除外。
 
 ### v1.8.14 (261001)
 

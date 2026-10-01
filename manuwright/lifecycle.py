@@ -254,13 +254,18 @@ SETUP_HELP = {
 }
 
 
+KEY_SAVED = []  # set when this run of setup stored a key
+
+
 def openrouter_key_step(secret):
     """Make sure OpenRouter reviewers have a key: environment, saved key, or ask (hidden input)."""
     from manuwright import models
     if os.environ.get('OPENROUTER_API_KEY'):
         print('  OpenRouter key: using the OPENROUTER_API_KEY environment variable.')
         return
-    saved = load('secrets.json', {}).get('openrouter_api_key')
+    secrets = load('secrets.json', {})
+    secrets = secrets if isinstance(secrets, dict) else {}
+    saved = secrets.get('openrouter_api_key')
     hint = f' (saved: ...{saved[-4:]}; Enter keeps it)' if saved else ' (Enter to skip)'
     key = secret(f'  OpenRouter API key, from https://openrouter.ai/keys{hint}: ').strip()
     if not key:
@@ -271,14 +276,15 @@ def openrouter_key_step(secret):
     if works is False:
         print('  OpenRouter rejected this key; it was not saved.')
         return
-    secrets = load('secrets.json', {})
     secrets['openrouter_api_key'] = key
     home().mkdir(parents=True, exist_ok=True)
-    path = home() / 'secrets.json'
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)  # owner-only from the first byte
+    path, staged = home() / 'secrets.json', home() / '.secrets.json.new'
+    staged.unlink(missing_ok=True)
+    fd = os.open(staged, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)  # owner-only from the first byte
     with os.fdopen(fd, 'w', encoding='utf-8') as handle:
         json.dump(secrets, handle)
-    os.chmod(path, 0o600)  # also tighten a file that existed before
+    os.replace(staged, path)  # never a moment where the key sits in a wider-readable file
+    KEY_SAVED.append(True)
     print('  Key saved to ' + str(home() / 'secrets.json') + (' (checked with OpenRouter).' if works else
           ' (could not reach OpenRouter to check it).'))
 
@@ -299,13 +305,14 @@ def setup(args, ask=input, secret=None):
                 return
             print('  not valid here; try again.')
 
+    KEY_SAVED.clear()
     if secret is None:
         import getpass
         secret = getpass.getpass if ask is input else ask
     try:
         return _setup_steps(data, prompt, ask, secret)
     except (EOFError, KeyboardInterrupt):
-        print('\nSetup stopped; nothing saved.')
+        print('\nSetup stopped; settings not saved' + (' (the OpenRouter key you entered was saved).' if KEY_SAVED else '.'))
         return 1
 
 
@@ -382,7 +389,8 @@ FONTS = ['Times New Roman', 'Arial', 'Calibri', 'Cambria', 'Helvetica']
 
 def find_manifest(args):
     if '--project' in args:
-        return Path(args[args.index('--project') + 1]).resolve()
+        index = args.index('--project') + 1
+        return Path(args[index]).resolve() if index < len(args) else None
     for folder in [Path.cwd(), *Path.cwd().parents]:
         if (folder / 'project.json').is_file():
             return folder / 'project.json'
@@ -427,20 +435,20 @@ def target(engine, args, ask=input):
             0 if item[1]['journal'] and item[1]['journal'] == target_journal else
             1 if item[1]['for'] in ('team', 'personal') else 2, item[0]))
         matching = [n for n, s in ranked if s['journal'] and s['journal'] == target_journal]
-        suggested = f'lib:{matching[0]}' if matching and not docx else 'keep'
-        if matching and not docx:
-            print(f"  You have a saved Word style for {label(target_journal)}: {matching[0]} (preselected).")
+        if matching:
+            print(f"  You have a saved Word style for {label(target_journal)}: {matching[0]} (listed first).")
         action = models.select_one(f'2. Word style for this paper (now: {now})',
                                    [('keep', 'Keep as it is'), ('default', f'Default: {DOCX_DEFAULT_TEXT}')]
-                                   + [(f'lib:{n}', library.describe_style(n, s, label)) for n, s in ranked]
-                                   + [('custom', "Set this paper's own style")], suggested, ask)
-        if action is None and suggested != 'keep':
-            action = suggested  # Enter on the numbered list keeps the suggestion for this journal
+                                   + [(f'lib:{n}', library.describe_style(n, s, label)
+                                       + ('   <- suggested for this journal' if n in matching else ''))
+                                      for n, s in ranked]
+                                   + [('custom', "Set this paper's own style")], 'keep', ask)
         if action == 'default':
             docx = {}
         elif action and action.startswith('lib:'):
             docx = library.apply_docx_style(action[4:], path.parent)
         elif action == 'custom':
+            docx = {k: v for k, v in docx.items() if k != 'reference'}  # own style replaces a template
             font = models.select_one('Font', [(f, f) for f in FONTS] + [('other', 'other: type a font name')],
                                      docx.get('font', 'Times New Roman'), ask)
             if font == 'other':
