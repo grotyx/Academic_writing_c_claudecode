@@ -22,10 +22,12 @@ from pathlib import Path
 
 KINDS = ('own', 'landmark', 'target_journal')
 USAGE = """usage: manuwright library [status]
-       manuwright library docx list | add <template.docx> --name NAME | save NAME [--project PATH] | remove NAME
+       manuwright library docx list | remove NAME
+       manuwright library docx add <template.docx> --name NAME [--journal KEY | --team | --personal]
+       manuwright library docx save NAME [--journal KEY | --team | --personal] [--project PATH]
        manuwright library profile [--edit | --import FILE]
-       manuwright library style add <paper.pdf|.md>... [--kind own|landmark|target_journal]
-       manuwright library style import <Style folder>
+       manuwright library writing add <paper.pdf|.md>... [--kind own|landmark|target_journal]
+       manuwright library writing import <folder with own/ landmark/ target_journal/ anchors>
   Existing names are never overwritten; add --replace to do that."""
 
 
@@ -42,17 +44,22 @@ def slug(name):
 
 # --- Word styles ------------------------------------------------------------
 
+SCOPES = {'journal': 'For journal', 'team': 'Team style', 'personal': 'My style'}
+
+
 def docx_styles():
-    """{name: {settings..., 'template': path or None}}"""
+    """{name: {'settings': {...}, 'template': path|None, 'for': journal|team|personal, 'journal': key|None}}"""
     out = {}
     for meta in sorted((root() / 'docx').glob('*.json')):
-        settings = json.loads(meta.read_text(encoding='utf-8'))
+        data = json.loads(meta.read_text(encoding='utf-8'))
         template = meta.with_suffix('.docx')
-        out[meta.stem] = {**settings, 'template': str(template) if template.is_file() else None}
+        out[meta.stem] = {'settings': data.get('settings', {}), 'for': data.get('for', 'personal'),
+                          'journal': data.get('journal'), 'template': str(template) if template.is_file() else None}
     return out
 
 
-def save_docx_style(name, settings, template=None, replace=False):
+def save_docx_style(name, settings, template=None, replace=False, scope='personal', journal=None):
+    """Save a Word style for a journal, the team or yourself; a .docx template is copied in."""
     folder = root() / 'docx'
     folder.mkdir(parents=True, exist_ok=True)
     name = slug(name)
@@ -60,16 +67,22 @@ def save_docx_style(name, settings, template=None, replace=False):
         raise ValueError(f'a style named "{name}" already exists; pick another name or add --replace')
     (folder / f'{name}.docx').unlink(missing_ok=True)  # a replaced style must not keep an old template
     clean = {k: v for k, v in settings.items() if k not in ('reference', 'template')}
-    (folder / f'{name}.json').write_text(json.dumps(clean, indent=2) + '\n', encoding='utf-8')
+    data = {'for': 'journal' if journal else scope, 'journal': journal, 'settings': clean}
+    (folder / f'{name}.json').write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
     if template:
         shutil.copyfile(template, folder / f'{name}.docx')
     return name
 
 
+def describe_style(name, style, journal_label=lambda j: j):
+    kind = (f"For {journal_label(style['journal'])}" if style['for'] == 'journal' else SCOPES[style['for']])
+    return f"{kind}: {name}{' (Word template)' if style['template'] else ''}"
+
+
 def apply_docx_style(name, paper_root):
     """project.json "docx" block for a saved style; a Word template is copied into the paper."""
     style = docx_styles()[name]
-    block = {k: v for k, v in style.items() if k != 'template'}
+    block = dict(style['settings'])
     if style['template']:
         target = paper_root / 'templates' / f'{name}.docx'
         target.parent.mkdir(exist_ok=True)
@@ -78,28 +91,36 @@ def apply_docx_style(name, paper_root):
     return block
 
 
+def scope_args(args):
+    """--journal KEY | --team | --personal (default) from a command line."""
+    if '--journal' in args:
+        return 'journal', args[args.index('--journal') + 1]
+    return ('team' if '--team' in args else 'personal'), None
+
+
 def docx_command(args):
     action = args[0] if args else 'list'
     if action == 'list':
         styles = docx_styles()
         for name, style in styles.items():
-            settings = ', '.join(f'{k}={v}' for k, v in style.items() if k != 'template')
-            print(f"  {name}: {'Word template' if style['template'] else ''}"
-                  f"{' + ' if style['template'] and settings else ''}{settings}")
+            settings = ', '.join(f'{k}={v}' for k, v in style['settings'].items())
+            print(f"  {describe_style(name, style)}{'  ' + settings if settings else ''}")
         if not styles:
-            print('  (none) -- add a Word template: manuwright library docx add mystyle.docx --name team')
+            print('  (none) -- e.g. manuwright library docx add bjj_template.docx --name bjj --journal bjj')
         return 0
     if action == 'add' and len(args) >= 2 and '--name' in args:
         source = Path(args[1]).expanduser()
         if source.suffix.lower() != '.docx' or not source.is_file():
             print(f'not a .docx file: {source}', file=sys.stderr)
             return 2
-        name = save_docx_style(args[args.index('--name') + 1], {}, source, '--replace' in args)
-        print(f'Saved Word template "{name}". Choose it per paper with: manuwright target')
+        scope, journal = scope_args(args)
+        name = save_docx_style(args[args.index('--name') + 1], {}, source, '--replace' in args, scope, journal)
+        print(f'Saved Word template "{name}" ({describe_style(name, docx_styles()[name])}). '
+              'Papers pick it in: manuwright target')
         return 0
     if action == 'save' and len(args) >= 2:
         from manuwright.lifecycle import find_manifest
-        manifest = find_manifest([a for a in args[2:] if a != '--replace'])
+        manifest = find_manifest(['--project', args[args.index('--project') + 1]] if '--project' in args else [])
         if not manifest:
             print('run inside a paper folder or pass --project PATH', file=sys.stderr)
             return 2
@@ -108,7 +129,11 @@ def docx_command(args):
             print('this paper uses the default style; set one first with: manuwright target', file=sys.stderr)
             return 2
         template = manifest.parent / block['reference'] if block.get('reference') else None
-        name = save_docx_style(args[1], block, template, '--replace' in args)
+        config = json.loads(manifest.read_text(encoding='utf-8'))
+        scope, journal = scope_args(args)
+        if scope == 'personal' and '--personal' not in args and config.get('journal'):
+            scope, journal = 'journal', config['journal']  # a paper's style usually belongs to its journal
+        name = save_docx_style(args[1], block, template, '--replace' in args, scope, journal)
         print(f'Saved "{name}" from {manifest}.')
         return 0
     if action == 'remove' and len(args) == 2:
@@ -160,7 +185,7 @@ def writing():
     return root() / 'writing'
 
 
-def style_command(args):
+def writing_command(args):
     action = args[0] if args else ''
     kind = args[args.index('--kind') + 1] if '--kind' in args else 'own'
     if kind not in KINDS:
@@ -246,8 +271,8 @@ def main(engine, args):
             return docx_command(args[1:])
         if args[0] == 'profile':
             return profile_command(engine, args[1:])
-        if args[0] == 'style':
-            return style_command(args[1:])
+        if args[0] in ('writing', 'style'):  # "style" was the first name
+            return writing_command(args[1:])
     except (OSError, ValueError, KeyError, IndexError) as exc:
         print(f'manuwright library: {exc}', file=sys.stderr)
         return 1

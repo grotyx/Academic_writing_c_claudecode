@@ -61,7 +61,7 @@ def test_init_copies_profile_and_writing_style(tmp_path):
     (source / 'PDF' / 'own').mkdir(parents=True)
     (source / 'PDF' / 'own' / 'park_2024.pdf').write_bytes(b'%PDF')
     (source / 'terminology.md').write_text('# Terms', encoding='utf-8')
-    assert library.main(ENGINE, ['style', 'import', str(source)]) == 0
+    assert library.main(ENGINE, ['writing', 'import', str(source)]) == 0
     assert library.main(ENGINE, ['profile']) == 0
     assert library.profile_path().read_text(encoding='utf-8').startswith('# Author')
     paper = tmp_path / 'paper'
@@ -96,3 +96,29 @@ def test_library_never_overwrites_without_replace(tmp_path, capsys):
     assert (library.writing() / 'own' / 'a.md').read_text() == 'second'
     library.main(ENGINE, ['profile'])
     assert library.main(ENGINE, ['profile', '--import', str(md)]) == 1
+
+
+def test_journal_style_is_suggested_for_that_journal(tmp_path, capsys):
+    template = make_template(tmp_path / 'bjj.docx')
+    assert library.main(ENGINE, ['docx', 'add', str(template), '--name', 'bjj-house', '--journal', 'bjj']) == 0
+    library.save_docx_style('mine', {'font': 'Arial'})  # a personal style is listed, not suggested
+    paper = tmp_path / 'paper'
+    lifecycle.init(ENGINE, [str(paper)])
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('js', ENGINE / 'scripts' / 'journal_styles.py')
+    js = importlib.util.module_from_spec(spec); spec.loader.exec_module(js)
+    bjj = str(list(js.STYLES).index('bjj') + 1)
+    answers = iter([bjj, ''])  # pick BJJ, then Enter: take the suggested BJJ style
+    assert lifecycle.target(ENGINE, ['--project', str(paper / 'project.json')], ask=lambda _: next(answers)) == 0
+    config = json.loads((paper / 'project.json').read_text())
+    assert config['journal'] == 'bjj' and config['docx'] == {'reference': 'templates/bjj-house.docx'}
+    out = capsys.readouterr().out
+    assert 'saved Word style for Bone Joint J: bjj-house' in out and 'My style: mine' in out
+    assert library.docx_styles()['bjj-house']['for'] == 'journal'
+
+
+def test_writing_is_the_command_and_style_still_works(tmp_path):
+    md = tmp_path / 'b.md'
+    md.write_text('x', encoding='utf-8')
+    assert library.main(ENGINE, ['writing', 'add', str(md)]) == 0
+    assert library.main(ENGINE, ['style', 'add', str(md), '--replace']) == 0

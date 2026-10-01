@@ -2,7 +2,7 @@
 
 ### Unreleased
 
-- 个人库（`manuwright library`，`~/.manuwright/library/`）：命名的 Word 样式与 Word 模板（通过 `docx.reference` 作为生成稿件的基础）、复制到每篇新论文的团队信息、复制到新论文 `Style/` 的写作风格（本人/经典/目标期刊锚点、术语表、style spec）。风格提取和团队信息填写由 manuwright skill 中的代理完成。
+- 个人库（`manuwright library`，`~/.manuwright/library/`）：按目标期刊、团队或个人保存的 Word 样式与 Word 模板（`manuwright target` 推荐该期刊的样式）（通过 `docx.reference` 作为生成稿件的基础）、复制到每篇新论文的团队信息、复制到新论文 `Style/` 的写作风格（本人/经典/目标期刊锚点、术语表、style spec）。风格提取和团队信息填写由 manuwright skill 中的代理完成。
 - Word 样式与参考文献格式按论文设置：新命令 `manuwright target`（在论文文件夹内运行）通过菜单选择目标期刊和该论文的 Word 样式并保存到其 `project.json`；`manuwright setup` 不再询问 Word 样式；`manuwright init` 会提示。
 - `manuwright setup` 选择 OpenRouter 审稿者时询问 API 密钥（隐藏输入，经 OpenRouter 校验，以仅本人可读方式保存在 `~/.manuwright/secrets.json`，不写入 config.json）；未设置 `OPENROUTER_API_KEY` 时 `critical_review.py` 使用该密钥。
 

@@ -2,7 +2,7 @@
 
 ### Unreleased
 
-- Personal library (`manuwright library`, `~/.manuwright/library/`): named Word styles and Word templates (a .docx designed in Word becomes the base of the built manuscript via `docx.reference`), a team profile copied to each new paper, and a writing style (own/landmark/target-journal anchors, terminology, style spec) copied into each new paper's `Style/`. Style extraction and profile filling are agent tasks in the manuwright skill.
+- Personal library (`manuwright library`, `~/.manuwright/library/`): named Word styles and Word templates saved for a target journal, the team or yourself (the journal's style is suggested in `manuwright target`) (a .docx designed in Word becomes the base of the built manuscript via `docx.reference`), a team profile copied to each new paper, and a writing style (own/landmark/target-journal anchors, terminology, style spec) copied into each new paper's `Style/`. Style extraction and profile filling are agent tasks in the manuwright skill.
 - Word style and reference format are per paper: new `manuwright target` (inside a paper folder) picks the target journal and that paper's Word style from menus and saves them in its `project.json`; `manuwright setup` no longer asks about Word style. `manuwright init` points to it.
 - `manuwright setup` asks for the OpenRouter API key when OpenRouter reviewers are chosen (hidden input, checked with OpenRouter, saved owner-only in `~/.manuwright/secrets.json`, never in config.json); `critical_review.py` uses it when `OPENROUTER_API_KEY` is not set.
 

@@ -16,7 +16,7 @@ description: Medical manuscript workflow with the manuwright engine. Use when pl
 
 `manuwright library` shows where it is (`~/.manuwright/library/`, or `$MANUWRIGHT_HOME/library`). New papers get copies from it at `manuwright init`; Word styles are chosen per paper in `manuwright target`.
 
-**"Register my writing style"** (the author added papers with `manuwright library style add <pdf|md> --kind own|landmark|target_journal`):
+**"Register my writing style"** (the author added papers with `manuwright library writing add <pdf|md> --kind own|landmark|target_journal`):
 1. Read the engine's `Style/style_guide.md` (folder next to `manuwright rules --path`) and follow its Extraction Framework and copyright policy: patterns, metrics and short phrases, never copied paragraphs.
 2. For each source in `library/writing/PDF/<kind>/` without a matching `library/writing/<kind>/<same basename>.md`, write that markdown anchor.
 3. Measure instead of guessing: run `manuwright style extract <text or md files>` for sentence length and citation density, and put those numbers in the anchors.

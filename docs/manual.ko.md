@@ -306,17 +306,18 @@ manuwright target
 여러 논문에 다시 쓰는 것은 어느 폴더에서 명령하든 한 곳, `~/.manuwright/library/` 에 모인다. `manuwright library` 로 무엇이 있는지 본다. 넣는 파일은 복사되므로 원본은 옮겨도 된다. 같은 이름이 있으면 `--replace` 를 붙이지 않는 한 덮어쓰지 않는다. 각 논문은 자기 사본을 갖는다(Word 서식 파일은 논문의 `templates/` 로 복사). 그래서 나중에 라이브러리를 바꿔도 기존 논문은 그대로다.
 
 ```sh
-manuwright library docx add our-template.docx --name team   # Word 에서 직접 만든 서식 파일
-manuwright library docx save team-spine                     # 또는 지금 논문의 서식을 저장
+manuwright library docx add bjj_template.docx --name bjj --journal bjj   # 특정 저널용 Word 서식 파일
+manuwright library docx add lab_template.docx --name lab --team          # 또는 팀용(--team)·개인용(--personal)
+manuwright library docx save bjj                                         # 또는 지금 논문의 서식을 저장
 manuwright library profile --edit                           # 팀 정보: 저자·소속·ORCID·연구비
 manuwright library profile --import profile/authors.md      # 기존 파일 재사용
-manuwright library style add my_2024_paper.pdf --kind own   # 내 문체를 보여 주는 논문
-manuwright library style import Style/                      # 기존 Style/ 폴더 가져오기
+manuwright library writing add my_2024_paper.pdf --kind own   # 내 문체를 보여 주는 논문
+manuwright library writing import Style/                      # 기존 Style/ 폴더 가져오기
 ```
 
-- **Word 스타일.** `manuwright target` 에서 논문마다 저장한 스타일을 고른다. Word 서식 파일은 그 파일의 글꼴·제목 스타일·여백을 그대로 쓴다(서식 파일 안의 글은 버리고 스타일만 사용). 그 위에 따로 정한 것(예: 줄 번호)만 바꾼다.
+- **Word 스타일.** Word 서식은 보통 목표 저널에 따라 정해지므로 저널용(`--journal`), 팀용(`--team`), 개인용(`--personal`)으로 저장한다. 논문 폴더에서 `docx save` 를 하면 그 논문의 저널에 연결된다. `manuwright target` 에서 저널을 고르면 그 저널용으로 저장한 서식이 맨 위에 미리 선택돼 나오고, 팀·개인 서식이 뒤에 나온다. Word 서식 파일은 그 파일의 글꼴·제목 스타일·여백을 그대로 쓴다(서식 파일 안의 글은 버리고 스타일만 사용). 그 위에 따로 정한 것(예: 줄 번호)만 바꾼다.
 - **팀 정보.** 새 논문마다 `profile/authors.md` 로 복사되고 title page 는 이걸로 쓴다. 에이전트에게 "이 CV 로 manuwright 팀 정보 채워줘" 라고 해도 된다. 라이브러리 파일만 고치고, ORCID·연구비 번호는 추측하지 않으며, 모르는 칸은 `[...]` 로 둔다.
-- **글쓰기 스타일.** 논문에서 문체를 뽑아내는 건 LLM 이 할 일이다. `style add` 다음 에이전트에게 "manuwright 라이브러리에 내 글쓰기 스타일 등록해줘" 라고 하면 manuwright skill 이 `Style/style_guide.md` 기준으로 패턴과 측정값(문장 길이, 인용 밀도)을 뽑는다. 문단 복사는 하지 않는다. 그 결과로 앵커 파일, `terminology.md`, `style_spec.md` 를 만든다. 새 논문은 이걸 `Style/` 로 받아 `/style-pass` 와 용어 검사에 쓴다. 원본 PDF 는 라이브러리에만 남는다.
+- **글쓰기 스타일.** `manuwright library writing import Style/` 에서 `writing` 은 명령어, `Style/` 은 가져올 폴더(여기서는 템플릿 저장소의 Style 폴더)다. 논문에서 문체를 뽑아내는 건 LLM 이 할 일이다. `writing add` 다음 에이전트에게 "manuwright 라이브러리에 내 글쓰기 스타일 등록해줘" 라고 하면 manuwright skill 이 `Style/style_guide.md` 기준으로 패턴과 측정값(문장 길이, 인용 밀도)을 뽑는다. 문단 복사는 하지 않는다. 그 결과로 앵커 파일, `terminology.md`, `style_spec.md` 를 만든다. 새 논문은 이걸 `Style/` 로 받아 `/style-pass` 와 용어 검사에 쓴다. 원본 PDF 는 라이브러리에만 남는다.
 
 ### 저널 참고문헌 형식
 

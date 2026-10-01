@@ -299,17 +299,18 @@ It asks two things from menus and saves them in that paper's `project.json`: the
 Things you reuse across papers live in one place, `~/.manuwright/library/`, whichever folder you run the command from; `manuwright library` shows what is there. Files you add are copied in, so the originals can move. A name that already exists is never overwritten unless you add `--replace`. Each paper keeps its own copy (a Word template goes to `templates/` in the paper), so changing the library later does not change existing papers.
 
 ```sh
-manuwright library docx add our-template.docx --name team   # a .docx you designed in Word
-manuwright library docx save team-spine                     # or: the style of the current paper
+manuwright library docx add bjj_template.docx --name bjj --journal bjj   # a Word file for one journal
+manuwright library docx add lab_template.docx --name lab --team          # or a team / --personal style
+manuwright library docx save bjj                                         # or: the current paper's style
 manuwright library profile --edit                           # team: authors, affiliations, ORCID, funding
 manuwright library profile --import profile/authors.md      # or reuse an existing one
-manuwright library style add my_2024_paper.pdf --kind own   # papers that show your writing style
-manuwright library style import Style/                      # or an existing Style/ folder
+manuwright library writing add my_2024_paper.pdf --kind own   # papers that show your writing style
+manuwright library writing import Style/                      # or an existing Style/ folder
 ```
 
-- **Word styles.** `manuwright target` lists your saved styles for each paper. A Word template keeps its own fonts, heading styles and margins; the build drops the template's text and uses its styles. Only what you set on top (for example line numbers) is changed.
+- **Word styles.** Word layout usually follows the target journal, so a style can be saved for a journal (`--journal`), for the team (`--team`) or as your own (`--personal`); `docx save` inside a paper links it to that paper's journal. In `manuwright target`, after you pick the journal, a style saved for that journal is listed first and preselected; team and personal styles follow. A Word template keeps its own fonts, heading styles and margins; the build drops the template's text and uses its styles. Only what you set on top (for example line numbers) is changed.
 - **Team profile.** Every new paper gets a copy in `profile/authors.md`, which the title page is written from. You can also ask your agent: "Fill my manuwright team profile from this CV". It edits the library file, never guesses an ORCID or grant number, and leaves `[...]` for what it does not know.
-- **Writing style.** Turning your papers into a style needs an LLM. After `style add`, ask your agent "register my writing style in the manuwright library". The manuwright skill follows `Style/style_guide.md`: patterns and measured numbers (sentence length, citation density), no copied paragraphs. It writes the anchors, `terminology.md` and `style_spec.md`. New papers get them in `Style/` and use them for `/style-pass` and the terminology lint. Source PDFs stay in the library.
+- **Writing style.** In `manuwright library writing import Style/`, `writing` is the command and `Style/` is the folder you import from (here the Style folder of a template checkout). Turning your papers into a style needs an LLM. After `writing add`, ask your agent "register my writing style in the manuwright library". The manuwright skill follows `Style/style_guide.md`: patterns and measured numbers (sentence length, citation density), no copied paragraphs. It writes the anchors, `terminology.md` and `style_spec.md`. New papers get them in `Style/` and use them for `/style-pass` and the terminology lint. Source PDFs stay in the library.
 
 ### Journal reference style
 

@@ -421,11 +421,21 @@ def target(engine, args, ask=input):
         now = ', '.join(f'{k}={v}' for k, v in docx.items()) or f'default ({DOCX_DEFAULT_TEXT})'
         from manuwright import library
         saved = library.docx_styles()
+        label = lambda key: styles.STYLES[key]['label'] if key in styles.STYLES else key
+        target_journal = config.get('journal')
+        ranked = sorted(saved.items(), key=lambda item: (
+            0 if item[1]['journal'] and item[1]['journal'] == target_journal else
+            1 if item[1]['for'] in ('team', 'personal') else 2, item[0]))
+        matching = [n for n, s in ranked if s['journal'] and s['journal'] == target_journal]
+        suggested = f'lib:{matching[0]}' if matching and not docx else 'keep'
+        if matching and not docx:
+            print(f"  You have a saved Word style for {label(target_journal)}: {matching[0]} (preselected).")
         action = models.select_one(f'2. Word style for this paper (now: {now})',
                                    [('keep', 'Keep as it is'), ('default', f'Default: {DOCX_DEFAULT_TEXT}')]
-                                   + [(f'lib:{n}', f"My saved style: {n}{' (Word template)' if s['template'] else ''}")
-                                      for n, s in saved.items()]
-                                   + [('custom', "Set this paper's own style")], 'keep', ask)
+                                   + [(f'lib:{n}', library.describe_style(n, s, label)) for n, s in ranked]
+                                   + [('custom', "Set this paper's own style")], suggested, ask)
+        if action is None and suggested != 'keep':
+            action = suggested  # Enter on the numbered list keeps the suggestion for this journal
         if action == 'default':
             docx = {}
         elif action and action.startswith('lib:'):
@@ -450,10 +460,17 @@ def target(engine, args, ask=input):
                 value = models.select_one(title, options, docx.get(key, default), ask)
                 if value is not None:
                     docx[key] = value
-            name = ask("  Save this style to your library for other papers? Name it, or Enter to skip: ").strip()
-            if name:
+            where = models.select_one('Save this style to your library?',
+                                      ([('journal', f'Yes, for {label(target_journal)} papers')] if target_journal else [])
+                                      + [('team', 'Yes, as a team style'), ('personal', 'Yes, as my style'),
+                                         ('no', 'No')], 'no', ask)
+            if where in ('journal', 'team', 'personal'):
+                default = target_journal if where == 'journal' else where
+                name = ask(f'  Name [{default}]: ').strip() or default
                 try:
-                    print(f'  saved as "{library.save_docx_style(name, docx)}"')
+                    saved_name = library.save_docx_style(name, docx, scope=where,
+                                                         journal=target_journal if where == 'journal' else None)
+                    print(f'  saved as "{saved_name}"')
                 except ValueError as exc:
                     print(f'  not saved: {exc}')
         if docx:
