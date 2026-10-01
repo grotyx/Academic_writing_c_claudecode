@@ -365,7 +365,7 @@ def _setup_steps(data, prompt, ask, secret):
     save('config.json', data)
     print(f'\nSaved to {home() / "config.json"}.')
     print('\n3. Obsidian reference library (optional, recommended)')
-    print('Word style and reference format belong to each paper: run `manuwright project` inside a paper folder.')
+    print('Word style and reference format belong to each paper: run `manuwright target` inside a paper folder.')
     try:
         from manuwright import obsidian
     except ImportError:  # lifecycle loaded from an engine folder (see agents())
@@ -389,16 +389,16 @@ def find_manifest(args):
     return None
 
 
-def project(engine, args, ask=input):
-    """manuwright project [--project PATH]: this paper's target journal and Word style, saved in its project.json."""
+def target(engine, args, ask=input):
+    """manuwright target [--project PATH]: this paper's target journal and Word style, saved in its project.json."""
     from manuwright import models
     path = find_manifest(args)
     if not path or not path.is_file():
-        print('manuwright project: no project.json here or above; run it inside a paper folder '
+        print('manuwright target: no project.json here or above; run it inside a paper folder '
               '(manuwright init <folder> creates one) or pass --project PATH.', file=sys.stderr)
         return 2
     if not sys.stdin.isatty() and ask is input:
-        print('manuwright project is interactive; run it in a terminal, or edit "journal" and "docx" in '
+        print('manuwright target is interactive; run it in a terminal, or edit "journal" and "docx" in '
               f'{path}', file=sys.stderr)
         return 2
     config = json.loads(path.read_text(encoding='utf-8'))
@@ -462,6 +462,9 @@ def project(engine, args, ask=input):
     return 0
 
 
+project = target  # earlier name, kept working
+
+
 # --- init / rules -----------------------------------------------------------
 
 ANALYSIS_PLAN = """# Analysis Plan
@@ -512,7 +515,7 @@ def init(engine, args):
         print(f'created {name}')
     register(root / 'project.json')
     print('\nSet the target journal and this paper\'s Word style any time: cd into the folder and run '
-          '`manuwright project`.')
+          '`manuwright target`.')
     print(f'\nNext: fill drafts/draft_plan.md and data/analysis_plan.md, get approval, then edit '
           f'project.json artifacts. `manuwright verify --project {root / "project.json"}` reports what is missing.')
     return 0

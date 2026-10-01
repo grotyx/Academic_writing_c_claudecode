@@ -23,7 +23,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.14
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
-manuwright project                              # this paper: target journal + Word style (menus)
+manuwright target                              # this paper: target journal + Word style (menus)
 manuwright search "your topic" --max 10         # or: manuwright evidence import-obsidian <citekey>
 #  write data/analysis_plan.md -> author approves -> manuwright record-approval ...
 #  analysis scripts -> results/*.csv -> tables;  drafts/draft_plan.md -> approval
@@ -289,14 +289,14 @@ Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.
 The reference format and the Word layout belong to each paper, not to your global settings. Inside a paper folder run:
 
 ```sh
-manuwright project
+manuwright target
 ```
 
 It asks two things from menus and saves them in that paper's `project.json`: the target journal (one of the presets below, or none) and the Word style (keep, default, or this paper's own font, size, line spacing, margins, line numbers, page numbers). Other papers are not affected. Changing it after a review makes that review stale, as any `project.json` edit does. `setup` no longer asks about Word style; the `docx.*` config keys above remain only as an optional personal default.
 
 ### Journal reference style
 
-The target journal chosen in `manuwright project` (or `"journal"` in `project.json`) makes the build write its reference format and in-text markers (superscript where the journal uses them):
+The target journal chosen in `manuwright target` (or `"journal"` in `project.json`) makes the build write its reference format and in-text markers (superscript where the journal uses them):
 
 ```sh
 manuwright format-references drafts/*.md --journal nejm --fetch   # cache full PubMed metadata once, preview the list

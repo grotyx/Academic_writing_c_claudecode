@@ -51,7 +51,7 @@ Setup and updates:
   rules [keyword|--path]     print the workflow rules (or one section)
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
   setup                      one interactive pass: models, reviewers, updates, Obsidian
-  project [--project PATH]   this paper's target journal (reference format) and Word style
+  target [--project PATH]    this paper's target journal (reference format) and Word style
   models                     recommended reviewer model sets (OpenRouter, opencode) with live price check
   config [set|unset <key> ...]         settings: auto-update, main-model, review.reviewers,
                                        review.openrouter-models, review.<agent>-model, docx.*
@@ -161,7 +161,7 @@ def main(argv=None):
             sys.path.insert(0, str(HERE.parent))
         from manuwright import models
         return models.main(rest)
-    if command in {'init', 'rules', 'update', 'config', 'setup', 'agents', 'project'}:
+    if command in {'init', 'rules', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
         lifecycle = load_lifecycle()
         if command in {'config', 'setup'}:
             return getattr(lifecycle, command)(rest)

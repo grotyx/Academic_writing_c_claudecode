@@ -99,7 +99,7 @@ uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
-manuwright project                      # inside the paper: target journal + Word style
+manuwright target                      # inside the paper: target journal + Word style
 ```
 
 | Agent | What `manuwright agents install` adds | Plan-first enforcement |

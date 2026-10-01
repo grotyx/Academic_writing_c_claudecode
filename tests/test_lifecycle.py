@@ -282,14 +282,14 @@ def test_writer_and_reviewer_names_match_across_spellings():
     assert flagged == ['anthropic/claude-opus-5.5']
 
 
-def test_project_sets_journal_and_word_style_for_one_paper(tmp_path, monkeypatch, capsys):
+def test_target_sets_journal_and_word_style_for_one_paper(tmp_path, monkeypatch, capsys):
     folder = tmp_path / 'paper1'
     assert lifecycle.init(ENGINE, [str(folder)]) == 0
     monkeypatch.chdir(folder / 'drafts')  # found from a subfolder too
     # numbered fallback: journal 3 (nejm), custom style: font 2 (Arial), size 3 (12), spacing 2 (1.5),
     # margins Enter (keep default), line numbers 2 (page), page numbers 3 (off)
     answers = iter(['3', '3', '2', '3', '2', '', '2', '3'])
-    assert lifecycle.project(ENGINE, [], ask=lambda _: next(answers)) == 0
+    assert lifecycle.target(ENGINE, [], ask=lambda _: next(answers)) == 0
     config = json.loads((folder / 'project.json').read_text())
     assert config['journal'] == 'nejm'
     assert config['docx'] == {'font': 'Arial', 'size': 12, 'line_spacing': 1.5, 'line_numbers': 'page',
@@ -297,12 +297,16 @@ def test_project_sets_journal_and_word_style_for_one_paper(tmp_path, monkeypatch
     assert 'stale' in capsys.readouterr().out
     assert lifecycle.load('config.json', {}).get('docx') is None  # global settings untouched
     answers = iter(['15', '2'])  # journal: None (last of 14 presets + 1); Word style: back to default
-    assert lifecycle.project(ENGINE, [], ask=lambda _: next(answers)) == 0
+    assert lifecycle.target(ENGINE, [], ask=lambda _: next(answers)) == 0
     config = json.loads((folder / 'project.json').read_text())
     assert 'journal' not in config and 'docx' not in config
 
 
-def test_project_needs_a_paper_folder(tmp_path, monkeypatch, capsys):
+def test_target_needs_a_paper_folder(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
-    assert lifecycle.project(ENGINE, [], ask=lambda _: '') == 2
+    assert lifecycle.target(ENGINE, [], ask=lambda _: '') == 2
     assert 'no project.json' in capsys.readouterr().err
+
+
+def test_project_is_an_alias_of_target():
+    assert lifecycle.project is lifecycle.target
