@@ -28,6 +28,8 @@ exclude = ["**/__pycache__", "**/*.pyc"]
 "harness" = "manuwright/harness"
 "scripts" = "manuwright/scripts"
 "Style/terminology.md" = "manuwright/Style/terminology.md"
+"Style/style_guide.md" = "manuwright/Style/style_guide.md"
+"profile/example_authors.md" = "manuwright/profile/example_authors.md"
 "WORKFLOW.md" = "manuwright/WORKFLOW.md"
 "docs" = "manuwright/docs"
 "review/gates/_TEMPLATE.GATE.md" = "manuwright/review/gates/_TEMPLATE.GATE.md"
@@ -42,6 +44,6 @@ exclude = ["**/__pycache__", "**/*.pyc"]
 
 [tool.hatch.build.targets.sdist]
 only-include = ["pyproject.toml", "README.md", "manuwright", "harness", "scripts",
-                "Style/terminology.md", "WORKFLOW.md", "docs", "review/gates/_TEMPLATE.GATE.md",
+                "Style/terminology.md", "Style/style_guide.md", "profile/example_authors.md", "WORKFLOW.md", "docs", "review/gates/_TEMPLATE.GATE.md",
                 "skills", "hooks", ".claude-plugin", ".codex-plugin", ".agents/plugins", "gemini-extension.json", "plugin.json"]
 exclude = ["**/__pycache__", "**/*.pyc"]

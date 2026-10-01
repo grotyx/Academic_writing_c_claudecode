@@ -288,7 +288,7 @@ def test_target_sets_journal_and_word_style_for_one_paper(tmp_path, monkeypatch,
     monkeypatch.chdir(folder / 'drafts')  # found from a subfolder too
     # numbered fallback: journal 3 (nejm), custom style: font 2 (Arial), size 3 (12), spacing 2 (1.5),
     # margins Enter (keep default), line numbers 2 (page), page numbers 3 (off)
-    answers = iter(['3', '3', '2', '3', '2', '', '2', '3'])
+    answers = iter(['3', '3', '2', '3', '2', '', '2', '3', ''])  # last: don't save to the library
     assert lifecycle.target(ENGINE, [], ask=lambda _: next(answers)) == 0
     config = json.loads((folder / 'project.json').read_text())
     assert config['journal'] == 'nejm'

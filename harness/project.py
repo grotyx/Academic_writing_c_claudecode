@@ -72,6 +72,9 @@ def snapshot(path, config):
             if key in ('ai_usage', 'checklist') and not record.exists():
                 continue
             files.add(record)
+    reference = (config.get('docx') or {}).get('reference') if isinstance(config.get('docx'), dict) else None
+    if reference:  # the Word template shapes the built manuscript
+        files.add(inside(root, reference))
     metadata = inside(root, config['evidence']).with_name('reference_metadata.json') if config.get('evidence') else None
     if metadata and metadata.exists():  # cached PubMed metadata shapes the journal-formatted bibliography
         files.add(metadata)

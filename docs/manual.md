@@ -294,6 +294,23 @@ manuwright target
 
 It asks two things from menus and saves them in that paper's `project.json`: the target journal (one of the presets below, or none) and the Word style (keep, default, or this paper's own font, size, line spacing, margins, line numbers, page numbers). Other papers are not affected. Changing it after a review makes that review stale, as any `project.json` edit does. `setup` no longer asks about Word style; the `docx.*` config keys above remain only as an optional personal default.
 
+### Personal library: Word styles, team profile, writing style
+
+Things you reuse across papers live in `~/.manuwright/library/`; `manuwright library` shows what is there.
+
+```sh
+manuwright library docx add our-template.docx --name team   # a .docx you designed in Word
+manuwright library docx save team-spine                     # or: the style of the current paper
+manuwright library profile --edit                           # team: authors, affiliations, ORCID, funding
+manuwright library profile --import profile/authors.md      # or reuse an existing one
+manuwright library style add my_2024_paper.pdf --kind own   # papers that show your writing style
+manuwright library style import Style/                      # or an existing Style/ folder
+```
+
+- **Word styles.** `manuwright target` lists your saved styles for each paper. A Word template keeps its own fonts, heading styles and margins; the build drops the template's text and uses its styles. Only what you set on top (for example line numbers) is changed.
+- **Team profile.** Every new paper gets a copy in `profile/authors.md`, which the title page is written from. You can also ask your agent: "Fill my manuwright team profile from this CV". It edits the library file, never guesses an ORCID or grant number, and leaves `[...]` for what it does not know.
+- **Writing style.** Turning your papers into a style needs an LLM. After `style add`, ask your agent "register my writing style in the manuwright library". The manuwright skill follows `Style/style_guide.md`: patterns and measured numbers (sentence length, citation density), no copied paragraphs. It writes the anchors, `terminology.md` and `style_spec.md`. New papers get them in `Style/` and use them for `/style-pass` and the terminology lint. Source PDFs stay in the library.
+
 ### Journal reference style
 
 The target journal chosen in `manuwright target` (or `"journal"` in `project.json`) makes the build write its reference format and in-text markers (superscript where the journal uses them):

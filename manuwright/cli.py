@@ -52,6 +52,7 @@ Setup and updates:
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
   setup                      one interactive pass: models, reviewers, updates, Obsidian
   target [--project PATH]    this paper's target journal (reference format) and Word style
+  library [docx|profile|style ...]   your reusable Word styles/templates, team profile, writing style
   models                     recommended reviewer model sets (OpenRouter, opencode) with live price check
   config [set|unset <key> ...]         settings: auto-update, main-model, review.reviewers,
                                        review.openrouter-models, review.<agent>-model, docx.*
@@ -156,6 +157,11 @@ def main(argv=None):
         print('usage: manuwright obsidian status|install|connect [--vault PATH] [--only a,b] [--dry-run] [--yes]\n'
               '       manuwright evidence import-obsidian <citekey>... [--vault PATH]', file=sys.stderr)
         return 2
+    if command == 'library':
+        if not __package__:
+            sys.path.insert(0, str(HERE.parent))
+        from manuwright import library
+        return library.main(ENGINE, rest)
     if command == 'models':
         if not __package__:
             sys.path.insert(0, str(HERE.parent))

@@ -29,22 +29,41 @@ def user_docx():
         return {}
 
 
-def docx_style(config):
+def check_docx_values(source, values, allow_reference=False):
+    if not isinstance(values, dict):
+        raise ValueError(f'{source} docx must be an object')
+    for key, value in values.items():
+        if key == 'reference' and allow_reference:
+            if not (isinstance(value, str) and value.lower().endswith('.docx')):
+                raise ValueError(f'{source} docx.reference must be a .docx path inside the paper folder')
+            continue
+        if key not in DOCX_DEFAULTS:
+            raise ValueError(f'{source} docx: unknown key {key!r} (known: {", ".join(DOCX_DEFAULTS)}, reference)')
+        if key in DOCX_CHOICES and value not in DOCX_CHOICES[key]:
+            raise ValueError(f'{source} docx.{key} must be one of {", ".join(DOCX_CHOICES[key])}')
+        if key == 'font' and not (isinstance(value, str) and value.strip()):
+            raise ValueError(f'{source} docx.font must be a font name')
+        if key not in DOCX_CHOICES and key != 'font' and not (
+                isinstance(value, (int, float)) and not isinstance(value, bool) and 0 < value <= 72):
+            raise ValueError(f'{source} docx.{key} must be a positive number')
+
+
+def docx_style(config, root=None):
+    """Resolved Word style. With "reference" (a .docx designed in Word) the template's own styles
+    are the base and only keys written in project.json are applied on top; otherwise defaults <
+    user default (~/.manuwright/config.json) < project.json."""
+    project = config.get('docx', {})
+    check_docx_values('project.json', project, allow_reference=True)
+    if isinstance(project, dict) and project.get('reference'):
+        path = Path(project['reference'])
+        path = path if path.is_absolute() or root is None else inside(root, project['reference'])
+        if not path.is_file():
+            raise ValueError(f'docx.reference not found: {project["reference"]}')
+        return {**{k: v for k, v in project.items() if k != 'reference'}, 'reference': str(path)}
     style = dict(DOCX_DEFAULTS)
-    for source, values in (('user config', user_docx()), ('project.json', config.get('docx', {}))):
-        if not isinstance(values, dict):
-            raise ValueError(f'{source} docx must be an object')
-        for key, value in values.items():
-            if key not in DOCX_DEFAULTS:
-                raise ValueError(f'{source} docx: unknown key {key!r} (known: {", ".join(DOCX_DEFAULTS)})')
-            if key in DOCX_CHOICES and value not in DOCX_CHOICES[key]:
-                raise ValueError(f'{source} docx.{key} must be one of {", ".join(DOCX_CHOICES[key])}')
-            if key == 'font' and not (isinstance(value, str) and value.strip()):
-                raise ValueError(f'{source} docx.font must be a font name')
-            if key not in DOCX_CHOICES and key != 'font' and not (
-                    isinstance(value, (int, float)) and not isinstance(value, bool) and 0 < value <= 72):
-                raise ValueError(f'{source} docx.{key} must be a positive number')
-            style[key] = value
+    check_docx_values('user config', user_docx())
+    style.update(user_docx())
+    style.update(project)
     return style
 
 
@@ -53,20 +72,33 @@ def document(style=DOCX_DEFAULTS, numbered=True):
     from docx.shared import Inches, Pt, RGBColor
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
-    doc = Document()
+    if style.get('reference'):
+        doc = Document(style['reference'])  # the author's Word template: keep its styles, drop its text
+        body = doc.element.body
+        for child in list(body):
+            if not child.tag.endswith('}sectPr'):
+                body.remove(child)
+    else:
+        doc = Document()
     normal = doc.styles['Normal']
-    normal.font.name = style['font']; normal.font.size = Pt(style['size'])
-    normal.font.color.rgb = RGBColor(0, 0, 0)
-    normal.paragraph_format.line_spacing = style['line_spacing']
+    if 'font' in style:
+        normal.font.name = style['font']
+    if 'size' in style:
+        normal.font.size = Pt(style['size'])
+    if not style.get('reference'):
+        normal.font.color.rgb = RGBColor(0, 0, 0)
+    if 'line_spacing' in style:
+        normal.paragraph_format.line_spacing = style['line_spacing']
     for section in doc.sections:
-        section.top_margin = section.bottom_margin = Inches(style['margin_inches'])
-        section.left_margin = section.right_margin = Inches(style['margin_inches'])
-        if numbered and style['line_numbers'] != 'off':
+        if 'margin_inches' in style:
+            section.top_margin = section.bottom_margin = Inches(style['margin_inches'])
+            section.left_margin = section.right_margin = Inches(style['margin_inches'])
+        if numbered and style.get('line_numbers', 'off') != 'off':
             lines = OxmlElement('w:lnNumType')
             lines.set(qn('w:countBy'), '1')
             lines.set(qn('w:restart'), 'newPage' if style['line_numbers'] == 'page' else 'continuous')
             section._sectPr.append(lines)
-        if numbered and style['page_numbers'] != 'off':
+        if numbered and style.get('page_numbers', 'off') != 'off':
             paragraph = section.footer.paragraphs[0]
             paragraph.alignment = 2 if style['page_numbers'] == 'right' else 1
             field = OxmlElement('w:fldSimple'); field.set(qn('w:instr'), 'PAGE')
@@ -127,8 +159,14 @@ def append_markdown(doc, text, style=DOCX_DEFAULTS):
             continue
         match = re.match(r'^(#{1,6})\s+(.+)',line)
         if match:
+            level=min(len(match.group(1)),2)
+            if style.get('reference') and f'Heading {level}' in [st.name for st in doc.styles]:
+                doc.add_paragraph(match.group(2),style=f'Heading {level}')  # the template's own heading style
+                continue
             run=doc.add_paragraph().add_run(match.group(2));run.bold=True
-            run.italic=len(match.group(1))>1;run.font.size=Pt(style['heading_size'] if len(match.group(1))==1 else style['subheading_size'])
+            run.italic=level>1
+            size=style.get('heading_size' if level==1 else 'subheading_size')
+            if size: run.font.size=Pt(size)
         else:
             prose=[line]
             while i<len(lines) and lines[i].strip() and not lines[i].lstrip().startswith(('#','|','- ')):
@@ -138,7 +176,7 @@ def append_markdown(doc, text, style=DOCX_DEFAULTS):
 
 def build(path):
     path, config = load_project(path);root=path.parent
-    style=docx_style(config)  # fail on a bad style before the (slower) verification
+    style=docx_style(config,root)  # fail on a bad style before the (slower) verification
     report=verify(path,'submission')
     if report['status']!='PASS':
         raise ValueError('submission verification '+report['status']+': '+', '.join(x['check'] for x in report['checks'] if x['status'] in {'FAIL','BLOCKED'}))

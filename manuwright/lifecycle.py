@@ -419,11 +419,17 @@ def target(engine, args, ask=input):
                 config.pop('journal', None)
         docx = dict(config.get('docx', {}))
         now = ', '.join(f'{k}={v}' for k, v in docx.items()) or f'default ({DOCX_DEFAULT_TEXT})'
+        from manuwright import library
+        saved = library.docx_styles()
         action = models.select_one(f'2. Word style for this paper (now: {now})',
-                                   [('keep', 'Keep as it is'), ('default', f'Default: {DOCX_DEFAULT_TEXT}'),
-                                    ('custom', "Set this paper's own style")], 'keep', ask)
+                                   [('keep', 'Keep as it is'), ('default', f'Default: {DOCX_DEFAULT_TEXT}')]
+                                   + [(f'lib:{n}', f"My saved style: {n}{' (Word template)' if s['template'] else ''}")
+                                      for n, s in saved.items()]
+                                   + [('custom', "Set this paper's own style")], 'keep', ask)
         if action == 'default':
             docx = {}
+        elif action and action.startswith('lib:'):
+            docx = library.apply_docx_style(action[4:], path.parent)
         elif action == 'custom':
             font = models.select_one('Font', [(f, f) for f in FONTS] + [('other', 'other: type a font name')],
                                      docx.get('font', 'Times New Roman'), ask)
@@ -444,6 +450,9 @@ def target(engine, args, ask=input):
                 value = models.select_one(title, options, docx.get(key, default), ask)
                 if value is not None:
                     docx[key] = value
+            name = ask("  Save this style to your library for other papers? Name it, or Enter to skip: ").strip()
+            if name:
+                print(f'  saved as "{library.save_docx_style(name, docx)}"')
         if docx:
             config['docx'] = docx
         else:
@@ -513,6 +522,15 @@ def init(engine, args):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(text, encoding='utf-8')
         print(f'created {name}')
+    from manuwright import library
+    updates, copied = library.copy_into_paper(root)
+    if updates:
+        manifest_path = root / 'project.json'
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+        manifest.update(updates)
+        manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    for name in copied:
+        print(f'copied {name} from your library')
     register(root / 'project.json')
     print('\nSet the target journal and this paper\'s Word style any time: cd into the folder and run '
           '`manuwright target`.')
