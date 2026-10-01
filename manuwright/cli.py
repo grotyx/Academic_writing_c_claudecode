@@ -48,6 +48,8 @@ Standalone tools (same flags as scripts/*.py; project paths default to the curre
   manuwright <tool> --help    shows that tool's own options
 Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
+  approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
+                             record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
   setup                      one interactive pass: models, reviewers, updates, Obsidian

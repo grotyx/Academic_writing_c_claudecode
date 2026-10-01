@@ -1,6 +1,6 @@
 # Changelog
 
-### Unreleased
+### v1.8.16 (261001)
 
 - Chat approval: when the author approves a plan in chat ("승인"), the agent records it with `manuwright approve <plan> --kind analysis|draft --approved-by NAME --quote "..."`; the box is ticked with who/when/what and a hashed receipt is written, so the plan-first hook lets the work continue. Agents still never approve on their own.
 - Per-paper analysis environment: `manuwright env` builds a uv-managed Python 3.12 with `data/requirements.txt` (pandas, numpy, scipy, statsmodels, matplotlib, openpyxl) outside the paper folder and writes `data/environment.lock.txt`; `manuwright run <script>` runs analysis scripts with it. A broken system, Homebrew or pyenv Python no longer blocks analysis.
