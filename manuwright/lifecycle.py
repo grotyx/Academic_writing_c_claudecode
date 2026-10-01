@@ -6,6 +6,7 @@ the new version or holds a fresh semantic review / human signoff that an
 engine change would invalidate.
 """
 from __future__ import annotations
+import importlib.util
 import json
 import os
 import re
@@ -359,15 +360,12 @@ def _setup_steps(data, prompt, ask, secret):
         review['openrouter_models'] = openrouter
     review['reviewers'] = local + (['openrouter'] if openrouter else []) + [f'opencode:{m}' for m in opencode]
     print(f"  reviewers: {', '.join(review['reviewers']) or 'none'}")
-    print('\n2. Word (DOCX) style: your default; a project.json "docx" block overrides it per journal')
-    if ask('  Change the Word style? [y/N]: ').strip().lower() in {'y', 'yes'}:
-        for key in [k for k in CONFIG_KEYS if k.startswith('docx.')]:
-            prompt(key)
-    print('\n3. Updates')
+    print('\n2. Updates')
     prompt('auto-update')
     save('config.json', data)
     print(f'\nSaved to {home() / "config.json"}.')
-    print('\n4. Obsidian reference library (optional, recommended)')
+    print('\n3. Obsidian reference library (optional, recommended)')
+    print('Word style and reference format belong to each paper: run `manuwright project` inside a paper folder.')
     try:
         from manuwright import obsidian
     except ImportError:  # lifecycle loaded from an engine folder (see agents())
@@ -375,6 +373,94 @@ def _setup_steps(data, prompt, ask, secret):
         from manuwright import obsidian
     obsidian.offer_connect()
     return 0
+
+# --- per-paper settings -----------------------------------------------------
+
+DOCX_DEFAULT_TEXT = 'Times New Roman 10 pt, double spacing, 1-inch margins, line numbers, page numbers centred'
+FONTS = ['Times New Roman', 'Arial', 'Calibri', 'Cambria', 'Helvetica']
+
+
+def find_manifest(args):
+    if '--project' in args:
+        return Path(args[args.index('--project') + 1]).resolve()
+    for folder in [Path.cwd(), *Path.cwd().parents]:
+        if (folder / 'project.json').is_file():
+            return folder / 'project.json'
+    return None
+
+
+def project(engine, args, ask=input):
+    """manuwright project [--project PATH]: this paper's target journal and Word style, saved in its project.json."""
+    from manuwright import models
+    path = find_manifest(args)
+    if not path or not path.is_file():
+        print('manuwright project: no project.json here or above; run it inside a paper folder '
+              '(manuwright init <folder> creates one) or pass --project PATH.', file=sys.stderr)
+        return 2
+    if not sys.stdin.isatty() and ask is input:
+        print('manuwright project is interactive; run it in a terminal, or edit "journal" and "docx" in '
+              f'{path}', file=sys.stderr)
+        return 2
+    config = json.loads(path.read_text(encoding='utf-8'))
+    before = json.dumps(config, sort_keys=True)
+    spec = importlib.util.spec_from_file_location('journal_styles', engine / 'scripts' / 'journal_styles.py')
+    styles = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(styles)
+    print(f'Settings for this paper only ({path})\n')
+    try:
+        journal = models.select_one(
+            '1. Target journal: reference list format and in-text markers',
+            [(name, f"{style['label']}  ({name})") for name, style in styles.STYLES.items()]
+            + [('', 'None: keep the registered citation strings, numbered [1]')], config.get('journal', ''), ask)
+        if journal is not None:
+            if journal:
+                config['journal'] = journal
+            else:
+                config.pop('journal', None)
+        docx = dict(config.get('docx', {}))
+        now = ', '.join(f'{k}={v}' for k, v in docx.items()) or f'default ({DOCX_DEFAULT_TEXT})'
+        action = models.select_one(f'2. Word style for this paper (now: {now})',
+                                   [('keep', 'Keep as it is'), ('default', f'Default: {DOCX_DEFAULT_TEXT}'),
+                                    ('custom', "Set this paper's own style")], 'keep', ask)
+        if action == 'default':
+            docx = {}
+        elif action == 'custom':
+            font = models.select_one('Font', [(f, f) for f in FONTS] + [('other', 'other: type a font name')],
+                                     docx.get('font', 'Times New Roman'), ask)
+            if font == 'other':
+                font = ask('  Font name: ').strip() or None
+            choices = [
+                ('size', 'Body text size (pt)', [(10, '10'), (11, '11'), (12, '12')], 10),
+                ('line_spacing', 'Line spacing', [(1.0, 'single'), (1.5, '1.5'), (2.0, 'double')], 2.0),
+                ('margin_inches', 'Margins', [(1.0, '1 inch (2.54 cm)'), (0.79, '2 cm'), (1.18, '3 cm')], 1.0),
+                ('line_numbers', 'Line numbers', [('continuous', 'continuous'), ('page', 'restart each page'),
+                                                  ('off', 'off')], 'continuous'),
+                ('page_numbers', 'Page numbers', [('center', 'bottom centre'), ('right', 'bottom right'),
+                                                  ('off', 'off')], 'center'),
+            ]
+            if font:
+                docx['font'] = font
+            for key, title, options, default in choices:
+                value = models.select_one(title, options, docx.get(key, default), ask)
+                if value is not None:
+                    docx[key] = value
+        if docx:
+            config['docx'] = docx
+        else:
+            config.pop('docx', None)
+    except (EOFError, KeyboardInterrupt):
+        print('\nStopped; project.json unchanged.')
+        return 1
+    if json.dumps(config, sort_keys=True) == before:
+        print('\nNothing changed.')
+        return 0
+    path.write_text(json.dumps(config, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    print(f"\nSaved to {path}: journal={config.get('journal', 'none')}, "
+          f"Word style={config.get('docx', 'default')}.\n"
+          'project.json is part of the review record: reviews or sign-off made before this change are now stale; '
+          'run `manuwright verify` and renew them before the submission build.')
+    return 0
+
 
 # --- init / rules -----------------------------------------------------------
 
@@ -425,6 +511,8 @@ def init(engine, args):
         target.write_text(text, encoding='utf-8')
         print(f'created {name}')
     register(root / 'project.json')
+    print('\nSet the target journal and this paper\'s Word style any time: cd into the folder and run '
+          '`manuwright project`.')
     print(f'\nNext: fill drafts/draft_plan.md and data/analysis_plan.md, get approval, then edit '
           f'project.json artifacts. `manuwright verify --project {root / "project.json"}` reports what is missing.')
     return 0

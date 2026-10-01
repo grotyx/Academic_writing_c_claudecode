@@ -223,15 +223,13 @@ def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
                     'deepseek/b', 'n', 'deepseek/a',  # OpenRouter: unknown id refused, then a known one
                     'sk-or-good',                     # OpenRouter key, hidden input
                     '9', 'opencode-go/kimi-k3,opencode-go/glm-5.3',  # opencode: out-of-range number, then own ids
-                    'y', 'Arial', 'huge', '12', '', '', '', '1.5', 'page', 'left', 'right',  # docx, with 2 retries
                     'maybe', 'on'])          # auto-update, with 1 retry
     assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
     data = lifecycle.load('config.json', {})
     assert data['main_model'] == 'claude-opus-5-5'
     assert data['review']['reviewers'] == ['codex', 'openrouter', 'opencode:opencode-go/kimi-k3', 'opencode:opencode-go/glm-5.3']
     assert data['review']['openrouter_models'] == ['deepseek/a']
-    assert data['docx'] == {'font': 'Arial', 'size': 12.0, 'margin_inches': 1.5,
-                            'line_numbers': 'page', 'page_numbers': 'right'}
+    assert 'docx' not in data  # Word style is per paper (manuwright project)
     assert data['auto_update'] is True and offered == [1]
     secrets = lifecycle.home() / 'secrets.json'
     assert json.loads(secrets.read_text())['openrouter_api_key'] == 'sk-or-good'
@@ -249,7 +247,7 @@ def test_setup_picks_a_recommended_set(monkeypatch):
     monkeypatch.setattr(models, 'opencode_models', set)
     monkeypatch.delenv('OPENROUTER_API_KEY', raising=False)
     monkeypatch.setattr(models, 'key_works', lambda key: False)
-    answers = iter(['', '-', '1', 'sk-bad', '0', 'n', ''])  # a rejected key is not saved
+    answers = iter(['', '-', '1', 'sk-bad', '0', ''])  # a rejected key is not saved
     assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
     review = lifecycle.load('config.json', {})['review']
     assert review['reviewers'] == ['openrouter']
@@ -282,3 +280,29 @@ def test_writer_and_reviewer_names_match_across_spellings():
     cr = importlib.util.module_from_spec(spec); spec.loader.exec_module(cr)
     flagged = cr.not_independent([('openrouter', 'anthropic/claude-opus-5.5'), ('openrouter', 'z-ai/glm-5.3')], 'claude-opus-5-5')
     assert flagged == ['anthropic/claude-opus-5.5']
+
+
+def test_project_sets_journal_and_word_style_for_one_paper(tmp_path, monkeypatch, capsys):
+    folder = tmp_path / 'paper1'
+    assert lifecycle.init(ENGINE, [str(folder)]) == 0
+    monkeypatch.chdir(folder / 'drafts')  # found from a subfolder too
+    # numbered fallback: journal 3 (nejm), custom style: font 2 (Arial), size 3 (12), spacing 2 (1.5),
+    # margins Enter (keep default), line numbers 2 (page), page numbers 3 (off)
+    answers = iter(['3', '3', '2', '3', '2', '', '2', '3'])
+    assert lifecycle.project(ENGINE, [], ask=lambda _: next(answers)) == 0
+    config = json.loads((folder / 'project.json').read_text())
+    assert config['journal'] == 'nejm'
+    assert config['docx'] == {'font': 'Arial', 'size': 12, 'line_spacing': 1.5, 'line_numbers': 'page',
+                              'page_numbers': 'off'}
+    assert 'stale' in capsys.readouterr().out
+    assert lifecycle.load('config.json', {}).get('docx') is None  # global settings untouched
+    answers = iter(['15', '2'])  # journal: None (last of 14 presets + 1); Word style: back to default
+    assert lifecycle.project(ENGINE, [], ask=lambda _: next(answers)) == 0
+    config = json.loads((folder / 'project.json').read_text())
+    assert 'journal' not in config and 'docx' not in config
+
+
+def test_project_needs_a_paper_folder(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    assert lifecycle.project(ENGINE, [], ask=lambda _: '') == 2
+    assert 'no project.json' in capsys.readouterr().err

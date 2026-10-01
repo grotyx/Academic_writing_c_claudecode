@@ -23,6 +23,7 @@
 uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.14
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
+manuwright project                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
 manuwright search "연구 주제" --max 10           # 또는: manuwright evidence import-obsidian <citekey>
 #  data/analysis_plan.md 작성 -> 저자 승인 -> manuwright record-approval ...
 #  분석 스크립트 -> results/*.csv -> 표;  drafts/draft_plan.md -> 승인
@@ -290,15 +291,19 @@ manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1�
 
 `manuwright config` 로 설정을 보고, `manuwright config unset <키>` 로 지운다.
 
-저널마다 서식 규정이 다르면 그 논문의 `project.json` 에 `"docx"` 블록을 넣는다. 그 논문에서만 기본 스타일을 덮어쓴다.
+### 논문별 설정: 목표 저널과 Word 스타일
 
-```json
-"docx": {"font": "Arial", "size": 12, "line_spacing": 1.5, "line_numbers": "page", "page_numbers": "right"}
+참고문헌 형식과 Word 서식은 전체 설정이 아니라 논문마다 정한다. 논문 폴더 안에서:
+
+```sh
+manuwright project
 ```
+
+메뉴로 두 가지를 묻고 그 논문의 `project.json` 에만 저장한다: 목표 저널(아래 프리셋 중 하나, 또는 없음)과 Word 스타일(그대로 / 기본값 / 이 논문만의 글꼴·크기·줄 간격·여백·줄 번호·쪽 번호). 다른 논문에는 영향이 없다. 검토 뒤에 바꾸면 다른 `project.json` 수정과 마찬가지로 그 검토는 stale 이 된다. `setup` 은 이제 Word 스타일을 묻지 않는다(위 `docx.*` 키는 선택 사항인 개인 기본값으로만 남음).
 
 ### 저널 참고문헌 형식
 
-`project.json` 에 목표 저널을 적으면 빌드가 그 저널의 참고문헌 형식과 본문 인용 표시(위첨자를 쓰는 저널은 위첨자)로 만든다.
+`manuwright project` 에서 고른 목표 저널(또는 `project.json` 의 `"journal"`)에 맞춰 빌드가 참고문헌 형식과 본문 인용 표시(위첨자를 쓰는 저널은 위첨자)를 만든다.
 
 ```sh
 manuwright format-references drafts/*.md --journal nejm --fetch   # PubMed 전체 서지를 한 번 캐시하고 목록 미리보기

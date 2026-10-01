@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- Word style and reference format are per paper: new `manuwright project` (inside a paper folder) picks the target journal and that paper's Word style from menus and saves them in its `project.json`; `manuwright setup` no longer asks about Word style. `manuwright init` points to it.
 - `manuwright setup` asks for the OpenRouter API key when OpenRouter reviewers are chosen (hidden input, checked with OpenRouter, saved owner-only in `~/.manuwright/secrets.json`, never in config.json); `critical_review.py` uses it when `OPENROUTER_API_KEY` is not set.
 
 ### v1.8.14 (261001)

@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- Word 样式与参考文献格式按论文设置：新命令 `manuwright project`（在论文文件夹内运行）通过菜单选择目标期刊和该论文的 Word 样式并保存到其 `project.json`；`manuwright setup` 不再询问 Word 样式；`manuwright init` 会提示。
 - `manuwright setup` 选择 OpenRouter 审稿者时询问 API 密钥（隐藏输入，经 OpenRouter 校验，以仅本人可读方式保存在 `~/.manuwright/secrets.json`，不写入 config.json）；未设置 `OPENROUTER_API_KEY` 时 `critical_review.py` 使用该密钥。
 
 ### v1.8.14 (261001)

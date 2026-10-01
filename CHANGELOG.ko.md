@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- Word 스타일과 참고문헌 형식은 논문별: 새 `manuwright project`(논문 폴더 안에서 실행)가 목표 저널과 그 논문의 Word 스타일을 메뉴로 골라 그 `project.json` 에 저장. `manuwright setup` 은 더 이상 Word 스타일을 묻지 않음. `manuwright init` 이 안내.
 - `manuwright setup` 에서 OpenRouter 검토자를 고르면 OpenRouter API 키를 물음(입력 숨김, OpenRouter 로 확인, `~/.manuwright/secrets.json` 에 본인만 읽게 저장, config.json 에는 저장 안 함). `OPENROUTER_API_KEY` 가 없으면 `critical_review.py` 가 이 키를 사용.
 
 ### v1.8.14 (261001)

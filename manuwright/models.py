@@ -191,6 +191,22 @@ def pick(title, options, selected, presets=None, single=False, keys=None):
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, saved)
 
 
+def select_one(title, options, current, ask=input):
+    """Single choice: arrow-key menu on a terminal, numbered list otherwise. None = keep current."""
+    if can_menu() and ask is input:
+        return (pick(title, options, {current}, single=True) or [None])[0]
+    print(f'  {title}')
+    for i, (value, label) in enumerate(options, 1):
+        print(f"   {i}. {label}{'  (current)' if value == current else ''}")
+    while True:
+        answer = ask(f'  Pick 1-{len(options)} (Enter keeps the current choice): ').strip()
+        if not answer:
+            return None
+        if answer.isdigit() and 1 <= int(answer) <= len(options):
+            return options[int(answer) - 1][0]
+        print('  not valid here; try again.')
+
+
 def model_options(sets, current, known, prices):
     """Every model in the sets (plus any current custom id), labelled with availability and cost."""
     values = list(dict.fromkeys([m for _, models in sets.values() for m in models] + list(current)))
