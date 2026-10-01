@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.19 (261001)
+
+- `manuwright init --refresh-rules`（既存の論文フォルダ内で）：エージェント規則ファイル（AGENTS.md、CLAUDE.md、GEMINI.md）だけをインストール済みエンジンに合わせて更新、旧ファイルは `.bak` に保存。`manuwright update` が案内。テンプレートのチェックアウトは `git pull` で。
+
 ### v1.8.18 (261001)
 
 - 補足資料：`project.json` に `supplements` リストを追加（例：`drafts/supp_table_1.md`）。表と同様に検査し、`supplementary_<名前>` として別ファイルで出力。`tables` に `supp…` ファイルを入れる、または同じ表番号が 2 回出る場合は拒否（本文の Table N を上書きするため）。

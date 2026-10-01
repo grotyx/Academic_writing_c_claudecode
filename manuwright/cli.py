@@ -49,6 +49,7 @@ Standalone tools (same flags as scripts/*.py; project paths default to the curre
   manuwright <tool> --help    shows that tool's own options
 Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
+  init --refresh-rules       in an existing paper: update only its agent rules (AGENTS/CLAUDE/GEMINI.md) after an update
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)

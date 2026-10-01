@@ -170,7 +170,9 @@ def update(engine, args):
         handle.write(f'{datetime.now(timezone.utc).isoformat()} {current} -> {target} exit={code}'
                      f'{" auto" if auto else ""}\n')
     if code == 0:
-        print(f'manuwright {current} -> {target}. Roll back: manuwright update --to {current}')
+        print(f'manuwright {current} -> {target}. Roll back: manuwright update --to {current}\n'
+              'Then: `manuwright agents update`, and in each paper folder `manuwright init --refresh-rules` '
+              '(updates only the agent rule files).')
     return code
 
 
@@ -527,11 +529,40 @@ ANALYSIS_PLAN = """# Analysis Plan
 """
 
 
+BOOTSTRAP_FILES = ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md')
+
+
+def refresh_rules(engine, root):
+    """Bring an existing paper's agent rule files up to this engine version (old copies kept as .bak)."""
+    bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
+    changed = []
+    for name in BOOTSTRAP_FILES:
+        target = root / name
+        if target.exists() and target.read_text(encoding='utf-8') == bootstrap:
+            continue
+        if target.exists() and '@WORKFLOW.md' in target.read_text(encoding='utf-8'):
+            print(f'kept {name}: this folder is a template checkout; update it with `git pull` instead.')
+            continue
+        if target.exists():
+            shutil.copyfile(target, target.with_name(name + '.bak'))
+        target.write_text(bootstrap, encoding='utf-8')
+        changed.append(name)
+    print(f"Agent rules {'updated: ' + ', '.join(changed) + ' (previous copies saved as .bak)' if changed else 'already current'}."
+          ' Nothing else in the paper was changed.')
+    return 0
+
+
 def init(engine, args):
-    """manuwright init [folder]: starter paper folder; never overwrites, never approves."""
+    """manuwright init [folder] [--refresh-rules]: starter paper folder; never overwrites, never approves."""
+    refresh = '--refresh-rules' in args
+    args = [a for a in args if a != '--refresh-rules']
     root = Path(args[0] if args else '.').resolve()
     if (root / 'project.json').exists():
-        print(f'manuwright: {root / "project.json"} already exists; nothing changed.', file=sys.stderr)
+        if refresh:
+            return refresh_rules(engine, root)
+        print(f'manuwright: {root / "project.json"} already exists; nothing changed. After an update, '
+              f'`manuwright init --refresh-rules` brings this paper\'s agent rules (AGENTS.md, CLAUDE.md, '
+              'GEMINI.md) up to date.', file=sys.stderr)
         return 1
     from manuwright import analysis_env
     manifest = json.loads((engine / 'docs' / 'project.example.json').read_text(encoding='utf-8'))

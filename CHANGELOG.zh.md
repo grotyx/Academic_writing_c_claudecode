@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.19 (261001)
+
+- `manuwright init --refresh-rules`（在已有论文文件夹内）：仅把代理规则文件（AGENTS.md、CLAUDE.md、GEMINI.md）更新到已安装引擎版本，旧文件保存为 `.bak`；`manuwright update` 会提示。模板仓库文件夹请用 `git pull`。
+
 ### v1.8.18 (261001)
 
 - 补充材料：`project.json` 新增 `supplements` 列表（如 `drafts/supp_table_1.md`），像表格一样检查，并单独生成 `supplementary_<名称>` 文件。若在 `tables` 中放入 `supp…` 文件或同一表号出现两次则拒绝（否则会覆盖正文 Table N）。

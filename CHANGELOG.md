@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.19 (261001)
+
+- `manuwright init --refresh-rules` (inside an existing paper) updates only its agent rule files (AGENTS.md, CLAUDE.md, GEMINI.md) to the installed engine, keeping `.bak` copies; `manuwright update` points to it. Template checkouts are left to `git pull`.
+
 ### v1.8.18 (261001)
 
 - Supplementary material: a new `supplements` list in `project.json` (e.g. `drafts/supp_table_1.md`) is checked like tables and built as separate `supplementary_<name>` files. A `supp…` file listed under `tables` is refused, and two files with the same main table number are refused, because either would overwrite main Table N in the package.

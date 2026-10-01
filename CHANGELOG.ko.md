@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.19 (261001)
+
+- `manuwright init --refresh-rules`(기존 논문 폴더 안에서): 에이전트 규칙 파일(AGENTS.md, CLAUDE.md, GEMINI.md)만 설치된 엔진 버전으로 갱신, 이전 파일은 `.bak` 으로 보관. `manuwright update` 가 안내. 템플릿 저장소 폴더는 `git pull` 로.
+
 ### v1.8.18 (261001)
 
 - 보충 자료: `project.json` 에 `supplements` 목록 추가(예: `drafts/supp_table_1.md`). 표처럼 검사하고 `supplementary_<이름>` 파일로 따로 만든다. `tables` 에 `supp…` 파일을 넣거나 같은 표 번호가 두 번 나오면 거부(패키지에서 본문 Table N 을 덮어쓰기 때문).

@@ -321,3 +321,20 @@ def test_masked_key_input_shows_stars_and_handles_backspace():
     shown = out.getvalue()
     assert 'sk-or' not in shown and shown.count('*') == 13 and '\b \b' in shown
     assert models.mask('sk-or-v1-0123456789abcdef') == 'sk-or-v1...cdef (25 characters)'
+
+
+def test_refresh_rules_updates_only_agent_files(tmp_path, capsys):
+    paper = tmp_path / 'paper'
+    lifecycle.init(ENGINE, [str(paper)])
+    (paper / 'CLAUDE.md').write_text('old rules', encoding='utf-8')
+    (paper / 'drafts' / 'draft_plan.md').write_text('my plan', encoding='utf-8')
+    assert lifecycle.init(ENGINE, [str(paper)]) == 1 and '--refresh-rules' in capsys.readouterr().err
+    assert lifecycle.init(ENGINE, [str(paper), '--refresh-rules']) == 0
+    assert (paper / 'CLAUDE.md').read_text(encoding='utf-8') == (ENGINE / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
+    assert (paper / 'CLAUDE.md.bak').read_text(encoding='utf-8') == 'old rules'
+    assert (paper / 'drafts' / 'draft_plan.md').read_text(encoding='utf-8') == 'my plan'
+    assert 'manuwright approve' in (paper / 'AGENTS.md').read_text(encoding='utf-8')
+
+    (paper / 'GEMINI.md').write_text('# x\n@WORKFLOW.md\n', encoding='utf-8')
+    lifecycle.init(ENGINE, [str(paper), '--refresh-rules'])
+    assert '@WORKFLOW.md' in (paper / 'GEMINI.md').read_text(encoding='utf-8')

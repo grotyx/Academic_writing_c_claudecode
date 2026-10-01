@@ -20,7 +20,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.18
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.19
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -38,7 +38,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.18
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.19
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -263,6 +263,7 @@ Then `manuwright build --project project.json` writes the DOCX package (manuscri
 manuwright update --check
 manuwright update && manuwright agents update
 manuwright config set auto-update on      # patch releases only, at most daily
+manuwright init --refresh-rules           # inside each existing paper: update its agent rules
 ```
 
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
