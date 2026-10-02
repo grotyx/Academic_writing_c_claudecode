@@ -1,5 +1,10 @@
 # 변경 이력
 
+### v1.8.21 (261002)
+
+- Windows(uv 설치): `manuwright update` 가 실행 중인 `manuwright.exe` 안에서 `uv tool install --force` 를 돌리지 않는다. Windows 는 실행 중인 exe 를 교체할 수 없어 재설치가 실패하면 설치가 반쯤 지워진 채 남았다(`ModuleNotFoundError: No module named 'manuwright'`). 이제 에이전트 세션을 닫고 새 터미널에서 실행할 명령을 출력하며, 같은 명령으로 깨진 설치도 복구된다.
+- 새 릴리스가 없으면 `manuwright update` 는 현재 버전을 다시 설치하지 않고 "up to date" 를 표시한다(`--to` 로 요청하면 재설치).
+
 ### v1.8.20 (261002)
 
 - Windows(비 UTF-8 코드 페이지, 예: 한국어 Windows의 cp949): `manuwright setup` 의 Obsidian 라이브러리 연결 확인 중 백그라운드 스레드에서 `UnicodeDecodeError` traceback 이 출력되던 문제 수정. 에이전트 CLI(`claude`/`codex`/`agy mcp`, `opencode models`), `git ls-remote`, `uv pip freeze`, `doctor` 훅 점검의 출력을 시스템 코드 페이지 대신 UTF-8 로 읽음(디코딩 불가 바이트는 대체).

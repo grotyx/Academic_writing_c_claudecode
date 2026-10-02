@@ -1,5 +1,10 @@
 # 变更记录
 
+### v1.8.21 (261002)
+
+- Windows（uv 安装）：`manuwright update` 不再在运行中的 `manuwright.exe` 内执行 `uv tool install --force`。Windows 无法替换正在运行的 exe，重装失败会留下被删一半的安装（`ModuleNotFoundError: No module named 'manuwright'`）。现在会输出命令，需关闭代理会话后在新终端运行；同一命令也能修复损坏的安装。
+- 没有新版本时，`manuwright update` 显示 "up to date"，不再重装当前版本（指定 `--to` 时仍会重装）。
+
 ### v1.8.20 (261002)
 
 - Windows（非 UTF-8 代码页，例如韩文 Windows 的 cp949）：修复 `manuwright setup` 检查 Obsidian 库连接时后台线程打印 `UnicodeDecodeError` 回溯的问题。代理 CLI（`claude`/`codex`/`agy mcp`、`opencode models`）、`git ls-remote`、`uv pip freeze` 及 `doctor` 钩子检查的输出改为按 UTF-8 读取（无法解码的字节被替换），不再使用系统代码页。

@@ -107,6 +107,10 @@ def auto_blockers(project_api, current, new, manifests):
     return reasons
 
 
+def on_windows():
+    return os.name == 'nt'
+
+
 def install_command(tag):
     source = f'git+{REPO_URL}@v{tag}'
     if shutil.which('uv') and 'uv' in Path(sys.prefix).parts:
@@ -136,7 +140,7 @@ def update(engine, args):
         return 0 if auto else 1
     target = target.lstrip('v')
     newer = api.version_tuple(target) > api.version_tuple(current)
-    if '--check' in args or (auto and not newer):
+    if '--check' in args or (not newer and '--to' not in args):
         print(f'manuwright {current}; latest {target}' + ('' if newer else ' (up to date)'))
         return 0
     manifests = known_projects()
@@ -153,6 +157,14 @@ def update(engine, args):
     for path in stale:
         print(f'note: {path} review/signoff will need re-review after this update.')
     command = install_command(target)
+    if on_windows() and command[0] == 'uv':
+        # uv deletes the tool environment before reinstalling; Windows cannot replace the running
+        # manuwright.exe, so an in-process update left a half-removed install (ModuleNotFoundError).
+        print(f'manuwright {current} -> {target}: Windows cannot replace manuwright while it is running.\n'
+              'Close agent sessions (Claude Code, Codex, ...) and run in a new terminal:\n'
+              f'  {" ".join(command)}\n'
+              'Then: `manuwright agents update`, and in each paper folder `manuwright init --refresh-rules`.')
+        return 0
     log = home() / 'update.log'
     home().mkdir(parents=True, exist_ok=True)
     if '--background' in args:  # session hooks have short timeouts; never kill an install midway

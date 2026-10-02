@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.20
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.21
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | skills in `~/.config/opencode/skills` | `manuwright verify` |
 | Muse | user skills | `manuwright verify` |
 
-**Update.** `manuwright update` installs the newest release and `manuwright agents update` refreshes the adapters. Opt in to automatic patch updates with `manuwright config set auto-update on`: it checks once a day and never applies an update that would invalidate a paper's current review. Template users: `git pull`, or see the [migration guide](docs/migration_guide.md).
+**Update.** `manuwright update` installs the newest release and `manuwright agents update` refreshes the adapters. Opt in to automatic patch updates with `manuwright config set auto-update on`: it checks once a day and never applies an update that would invalidate a paper's current review. On Windows (uv install) `manuwright update` prints the `uv tool install --force ...` command to run in a new terminal, because Windows cannot replace the running `manuwright.exe`. Template users: `git pull`, or see the [migration guide](docs/migration_guide.md).
 
 **Uninstall.** `claude plugin uninstall manuwright@manuwright`, `codex plugin remove manuwright@manuwright`, `agy plugin uninstall manuwright`, `muse skills uninstall manuwright`, then `uv tool uninstall manuwright`.
 
