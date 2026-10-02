@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.20 (261002)
+
+- Windows（非 UTF-8 コードページ、例：韓国語 Windows の cp949）：`manuwright setup` の Obsidian ライブラリ接続確認中にバックグラウンドスレッドから `UnicodeDecodeError` のトレースバックが表示される問題を修正。エージェント CLI（`claude`/`codex`/`agy mcp`、`opencode models`）、`git ls-remote`、`uv pip freeze`、`doctor` のフック確認の出力をシステムのコードページではなく UTF-8 で読む（デコード不能なバイトは置換）。
+
 ### v1.8.19 (261001)
 
 - `manuwright init --refresh-rules`（既存の論文フォルダ内で）：エージェント規則ファイル（AGENTS.md、CLAUDE.md、GEMINI.md）だけをインストール済みエンジンに合わせて更新、旧ファイルは `.bak` に保存。`manuwright update` が案内。テンプレートのチェックアウトは `git pull` で。

@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.20 (261002)
+
+- Windows（非 UTF-8 代码页，例如韩文 Windows 的 cp949）：修复 `manuwright setup` 检查 Obsidian 库连接时后台线程打印 `UnicodeDecodeError` 回溯的问题。代理 CLI（`claude`/`codex`/`agy mcp`、`opencode models`）、`git ls-remote`、`uv pip freeze` 及 `doctor` 钩子检查的输出改为按 UTF-8 读取（无法解码的字节被替换），不再使用系统代码页。
+
 ### v1.8.19 (261001)
 
 - `manuwright init --refresh-rules`（在已有论文文件夹内）：仅把代理规则文件（AGENTS.md、CLAUDE.md、GEMINI.md）更新到已安装引擎版本，旧文件保存为 `.bak`；`manuwright update` 会提示。模板仓库文件夹请用 `git pull`。

@@ -1,5 +1,9 @@
 # 변경 이력
 
+### v1.8.20 (261002)
+
+- Windows(비 UTF-8 코드 페이지, 예: 한국어 Windows의 cp949): `manuwright setup` 의 Obsidian 라이브러리 연결 확인 중 백그라운드 스레드에서 `UnicodeDecodeError` traceback 이 출력되던 문제 수정. 에이전트 CLI(`claude`/`codex`/`agy mcp`, `opencode models`), `git ls-remote`, `uv pip freeze`, `doctor` 훅 점검의 출력을 시스템 코드 페이지 대신 UTF-8 로 읽음(디코딩 불가 바이트는 대체).
+
 ### v1.8.19 (261001)
 
 - `manuwright init --refresh-rules`(기존 논문 폴더 안에서): 에이전트 규칙 파일(AGENTS.md, CLAUDE.md, GEMINI.md)만 설치된 엔진 버전으로 갱신, 이전 파일은 `.bak` 으로 보관. `manuwright update` 가 안내. 템플릿 저장소 폴더는 `git pull` 로.

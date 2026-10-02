@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.20 (261002)
+
+- Windows (non-UTF-8 code page, e.g. cp949 on Korean Windows): `manuwright setup` no longer prints a `UnicodeDecodeError` traceback from a background thread while checking the Obsidian library connection. Output of agent CLIs (`claude`/`codex`/`agy mcp`, `opencode models`), `git ls-remote`, `uv pip freeze` and the `doctor` hook probe is now read as UTF-8 (undecodable bytes replaced) instead of the system code page.
+
 ### v1.8.19 (261001)
 
 - `manuwright init --refresh-rules` (inside an existing paper) updates only its agent rule files (AGENTS.md, CLAUDE.md, GEMINI.md) to the installed engine, keeping `.bak` copies; `manuwright update` points to it. Template checkouts are left to `git pull`.

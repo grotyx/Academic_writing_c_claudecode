@@ -43,7 +43,8 @@ def hook_health():
         return {'ok':False,'detail':'POSIX sh not found'}
     try:
         done=subprocess.run([sh,'scripts/hooks/run.sh','scripts/hooks/enforce_gates.py'],cwd=repo,
-            input='{"tool_name":"Read","tool_input":{}}',capture_output=True,text=True,timeout=30)
+            input='{"tool_name":"Read","tool_input":{}}',capture_output=True,text=True,
+            encoding='utf-8',errors='replace',timeout=30)
     except (OSError,subprocess.TimeoutExpired) as exc:
         return {'ok':False,'detail':str(exc)}
     detail=(done.stderr or done.stdout).strip().splitlines()

@@ -62,8 +62,10 @@ def build(root, paper_id, run=subprocess.run):
     run(['uv', 'pip', 'install', '--python', str(python_of(env)), '-r', str(requirements)], check=True, env=managed)
     check = run([str(python_of(env)), '-c',
                  'import sys, pandas, scipy, statsmodels; print(sys.version.split()[0], pandas.__version__, '
-                 'scipy.__version__, statsmodels.__version__)'], check=True, capture_output=True, text=True)
-    frozen = run(['uv', 'pip', 'freeze', '--python', str(python_of(env))], check=True, capture_output=True, text=True)
+                 'scipy.__version__, statsmodels.__version__)'], check=True, capture_output=True, text=True,
+                encoding='utf-8', errors='replace')
+    frozen = run(['uv', 'pip', 'freeze', '--python', str(python_of(env))], check=True, capture_output=True, text=True,
+                 encoding='utf-8', errors='replace')
     python_version, pandas_v, scipy_v, statsmodels_v = check.stdout.split()
     (root / 'data' / 'environment.lock.txt').write_text(
         f'# Analysis environment for {paper_id}: Python {python_version}\n' + frozen.stdout, encoding='utf-8')
