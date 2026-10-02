@@ -82,7 +82,7 @@ def latest_release():
     """Newest vX.Y.Z tag on the public repository, or None when offline."""
     try:
         out = subprocess.run(['git', 'ls-remote', '--tags', '--refs', REPO_URL], capture_output=True,
-                             text=True, timeout=20).stdout
+                             text=True, encoding='utf-8', errors='replace', timeout=20).stdout
     except (OSError, subprocess.TimeoutExpired):
         return None
     tags = re.findall(r'refs/tags/v(\d+\.\d+\.\d+)$', out, re.M)

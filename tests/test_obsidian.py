@@ -148,6 +148,8 @@ def test_agent_probes_never_touch_the_terminal(monkeypatch):
     monkeypatch.setattr(obsidian.subprocess, 'run', fake_run)
     assert obsidian.connected('codex') is True
     assert seen['stdin'] is obsidian.subprocess.DEVNULL and seen['start_new_session'] is True
+    # agent CLIs print UTF-8; the Windows code page (cp949 on Korean Windows) crashed the reader thread
+    assert seen['encoding'] == 'utf-8' and seen['errors'] == 'replace'
 
 
 def test_ask_survives_closed_input(monkeypatch):

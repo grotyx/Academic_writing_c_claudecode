@@ -82,7 +82,8 @@ def connected(agent):
     argv = {'claude': ['claude', 'mcp', 'get', SERVER], 'codex': ['codex', 'mcp', 'get', SERVER],
             'agy': ['agy', 'mcp', 'list']}[agent]
     try:
-        done = subprocess.run(argv, capture_output=True, text=True, timeout=20, **DETACHED)
+        done = subprocess.run(argv, capture_output=True, text=True, encoding='utf-8',
+                              errors='replace', timeout=20, **DETACHED)
     except (OSError, subprocess.TimeoutExpired):
         return False
     return SERVER in done.stdout if agent == 'agy' else done.returncode == 0

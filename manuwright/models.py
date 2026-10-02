@@ -63,7 +63,8 @@ def opencode_models():
     if not shutil.which('opencode'):
         return set()
     try:  # detached from the terminal (see obsidian.DETACHED)
-        done = subprocess.run(['opencode', 'models'], capture_output=True, text=True, timeout=30,
+        done = subprocess.run(['opencode', 'models'], capture_output=True, text=True, encoding='utf-8',
+                              errors='replace', timeout=30,
                               stdin=subprocess.DEVNULL, start_new_session=True)
     except (OSError, subprocess.TimeoutExpired):
         return set()
