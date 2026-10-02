@@ -96,6 +96,22 @@ def test_auto_update_waits_for_fresh_reviews(fake_release, project, capsys):
     assert not calls and 'not auto-applied' in capsys.readouterr().out
 
 
+def test_manual_update_skips_reinstall_when_up_to_date(fake_release, monkeypatch, capsys):
+    engine, calls = fake_release
+    monkeypatch.setattr(lifecycle, 'latest_release', lambda: __version__)
+    assert lifecycle.update(engine, []) == 0
+    assert not calls and 'up to date' in capsys.readouterr().out
+
+
+def test_windows_uv_update_prints_command_instead_of_replacing_running_exe(fake_release, monkeypatch, capsys):
+    engine, calls = fake_release
+    monkeypatch.setattr(lifecycle, 'install_command', lambda tag: ['uv', 'tool', 'install', '--force', f'x@v{tag}'])
+    monkeypatch.setattr(lifecycle, 'on_windows', lambda: True)
+    assert lifecycle.update(engine, []) == 0
+    out = capsys.readouterr().out
+    assert not calls and 'uv tool install --force' in out and 'new terminal' in out
+
+
 def test_update_refuses_source_checkout():
     assert lifecycle.update(ENGINE, ['--check']) == 1
 

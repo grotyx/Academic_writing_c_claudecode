@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.20
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.21
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` の skill | `manuwright verify` |
 | Muse | ユーザー skill | `manuwright verify` |
 
-**更新。** `manuwright update` が最新リリースをインストールし、`manuwright agents update` がアダプターを更新する。`manuwright config set auto-update on` で patch の自動更新を有効にできる。1 日 1 回確認し、論文の現在のレビューを無効にする更新は適用しない。テンプレート利用者は `git pull`、または[移行ガイド](docs/migration_guide.md)を参照。
+**更新。** `manuwright update` が最新リリースをインストールし、`manuwright agents update` がアダプターを更新する。`manuwright config set auto-update on` で patch の自動更新を有効にできる。1 日 1 回確認し、論文の現在のレビューを無効にする更新は適用しない。Windows（uv インストール）では実行中の `manuwright.exe` を置き換えられないため、`manuwright update` は新しいターミナルで実行する `uv tool install --force ...` コマンドを表示する。テンプレート利用者は `git pull`、または[移行ガイド](docs/migration_guide.md)を参照。
 
 **アンインストール。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`、最後に `uv tool uninstall manuwright`。
 

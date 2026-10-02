@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.20
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.21
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` 中的 skill | `manuwright verify` |
 | Muse | 用户 skill | `manuwright verify` |
 
-**更新。** `manuwright update` 安装最新版本，`manuwright agents update` 刷新适配器。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
+**更新。** `manuwright update` 安装最新版本，`manuwright agents update` 刷新适配器。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会输出需在新终端中运行的 `uv tool install --force ...` 命令。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
 
 **卸载。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`，最后 `uv tool uninstall manuwright`。
 

@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.8.21 (261002)
+
+- Windows (uv install): `manuwright update` no longer runs `uv tool install --force` from inside the running `manuwright.exe`, which Windows cannot replace; the failed reinstall left a half-removed install (`ModuleNotFoundError: No module named 'manuwright'`). It now prints the command to run in a new terminal after closing agent sessions; the same command repairs a broken install.
+- `manuwright update` with no newer release says "up to date" instead of reinstalling the current version (`--to` still reinstalls on request).
+
 ### v1.8.20 (261002)
 
 - Windows (non-UTF-8 code page, e.g. cp949 on Korean Windows): `manuwright setup` no longer prints a `UnicodeDecodeError` traceback from a background thread while checking the Obsidian library connection. Output of agent CLIs (`claude`/`codex`/`agy mcp`, `opencode models`), `git ls-remote`, `uv pip freeze` and the `doctor` hook probe is now read as UTF-8 (undecodable bytes replaced) instead of the system code page.

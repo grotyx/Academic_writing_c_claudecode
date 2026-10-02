@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.20
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.21
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` 의 skill | `manuwright verify` |
 | Muse | 사용자 skill | `manuwright verify` |
 
-**업데이트.** `manuwright update` 가 최신 릴리스를 설치하고, `manuwright agents update` 가 어댑터를 갱신한다. `manuwright config set auto-update on` 으로 patch 자동 업데이트를 켤 수 있다. 하루 한 번 확인하고, 논문의 현재 리뷰를 무효로 만들 업데이트는 적용하지 않는다. 템플릿 사용자는 `git pull`, 또는 [이전 가이드](docs/migration_guide.md) 참고.
+**업데이트.** `manuwright update` 가 최신 릴리스를 설치하고, `manuwright agents update` 가 어댑터를 갱신한다. `manuwright config set auto-update on` 으로 patch 자동 업데이트를 켤 수 있다. 하루 한 번 확인하고, 논문의 현재 리뷰를 무효로 만들 업데이트는 적용하지 않는다. Windows(uv 설치)에서는 실행 중인 `manuwright.exe` 를 교체할 수 없어 `manuwright update` 가 새 터미널에서 실행할 `uv tool install --force ...` 명령을 출력한다. 템플릿 사용자는 `git pull`, 또는 [이전 가이드](docs/migration_guide.md) 참고.
 
 **삭제.** `claude plugin uninstall manuwright@manuwright`, `codex plugin remove manuwright@manuwright`, `agy plugin uninstall manuwright`, `muse skills uninstall manuwright`, 그다음 `uv tool uninstall manuwright`.
 
