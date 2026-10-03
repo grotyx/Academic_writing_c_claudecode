@@ -384,6 +384,18 @@ def test_masked_key_input_shows_stars_and_handles_backspace():
     assert models.mask('sk-or-v1-0123456789abcdef') == 'sk-or-v1...cdef (25 characters)'
 
 
+def test_masked_key_input_pastes_the_clipboard_on_ctrl_v():
+    # Classic PowerShell console: Ctrl+V reaches getwch as \x16, not as the key text; Windows special
+    # keys arrive as \xe0 + code and must not end up in the key.
+    import io
+    from manuwright import models
+    out = io.StringIO()
+    typed = iter(['\x16', '\xe0', 'K', '\r'])
+    key = models.masked_input('key: ', typed, out, paste=lambda: '  sk-or-v1-abc\r\n')
+    assert key == 'sk-or-v1-abc' and out.getvalue().count('*') == 12
+    assert models.masked_input('key: ', iter(['\x16', '\r']), io.StringIO()) == ''  # no clipboard reader
+
+
 def test_refresh_rules_updates_only_agent_files(tmp_path, capsys):
     paper = tmp_path / 'paper'
     lifecycle.init(ENGINE, [str(paper)])

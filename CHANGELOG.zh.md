@@ -3,6 +3,7 @@
 ### v1.8.24 (261003)
 
 - `manuwright setup`：在 Windows（以及没有方向键菜单的终端）上，主模型改为从编号列表中选择，而不是空白输入。列表和方向键菜单都会标明运行各模型的代理 CLI 是否已安装（"Claude Code installed"、"Codex not installed"），并把可运行的模型排在前面；仍可直接输入模型 id。输入 `claude` 这样的代理名称会被拒绝并给出提示，因为它不是模型 id，无法标记使用同一模型的评审者。代理评审者输入前会列出每个代理的安装状态。
+- `manuwright setup`：在经典 PowerShell 窗口中用 Ctrl+V 粘贴 OpenRouter 密钥时什么也不显示，因为控制台把 Ctrl+V 作为控制字符而不是粘贴的文本发送给程序。现在隐藏的密钥输入在收到 Ctrl+V 时直接读取 Windows 剪贴板，方向键和功能键也不会混入密钥。
 
 ### v1.8.23 (261003)
 

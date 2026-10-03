@@ -131,17 +131,46 @@ def read_keys():
             yield ch
 
 
-def masked_input(prompt, chars=None, out=None):
+def windows_clipboard():
+    """Clipboard text on Windows ('' when unavailable): Ctrl+V in a classic PowerShell console window
+    reaches the program as the control character \\x16 instead of the pasted text."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+        user32, kernel32 = ctypes.windll.user32, ctypes.windll.kernel32
+        user32.GetClipboardData.restype = wintypes.HANDLE
+        kernel32.GlobalLock.argtypes, kernel32.GlobalLock.restype = [wintypes.HGLOBAL], ctypes.c_void_p
+        kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+        if not user32.OpenClipboard(None):
+            return ''
+        try:
+            handle = user32.GetClipboardData(13)  # CF_UNICODETEXT
+            pointer = kernel32.GlobalLock(handle) if handle else None
+            if not pointer:
+                return ''
+            try:
+                return ctypes.wstring_at(pointer)
+            finally:
+                kernel32.GlobalUnlock(handle)
+        finally:
+            user32.CloseClipboard()
+    except (AttributeError, OSError):
+        return ''
+
+
+def masked_input(prompt, chars=None, out=None, paste=None):
     """Read a secret showing one * per character (Backspace works, pasting works). Returns the text.
 
     chars: an iterator of single characters (tests); default reads the terminal (POSIX) or the console
-    (Windows), falling back to getpass when neither is interactive."""
+    (Windows), falling back to getpass when neither is interactive. paste: returns the clipboard text
+    when Ctrl+V arrives as \\x16 (Windows console) instead of as the pasted characters."""
     out = out or sys.stdout
     restore = None
     if chars is None:
         if os.name == 'nt' and sys.stdin.isatty():
             import msvcrt
             chars = iter(msvcrt.getwch, None)
+            paste = paste or windows_clipboard
         elif os.name == 'posix' and sys.stdin.isatty():
             import termios
             import tty
@@ -156,13 +185,24 @@ def masked_input(prompt, chars=None, out=None):
     out.write(prompt)
     out.flush()
     text = []
+    special = False
     try:
         for ch in chars:
+            if special:  # second half of a Windows arrow/function key: not part of the secret
+                special = False
+                continue
+            if ch in ('\x00', '\xe0'):
+                special = True
+                continue
             if ch in ('\r', '\n', ''):
                 break
             if ch == '\x03':
                 raise KeyboardInterrupt
-            if ch in ('\x7f', '\b'):
+            if ch == '\x16':
+                pasted = [c for c in (paste() if paste else '').strip() if c.isprintable()]
+                text.extend(pasted)
+                out.write('*' * len(pasted))
+            elif ch in ('\x7f', '\b'):
                 if text:
                     text.pop()
                     out.write('\b \b')

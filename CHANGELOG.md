@@ -3,6 +3,7 @@
 ### v1.8.24 (261003)
 
 - `manuwright setup`: the main model is a numbered list on Windows (and any terminal without the arrow-key menu) instead of a blank text prompt. Both the list and the arrow menu mark which agent CLI runs each model ("Claude Code installed", "Codex not installed") and put the models you can run first; a model id can still be typed. Typing an agent name such as `claude` is refused with a hint, because it is not a model id and would never flag a reviewer on the same model. The agent-reviewer prompt lists each agent with its install status.
+- `manuwright setup`: pasting the OpenRouter key with Ctrl+V in a classic PowerShell window showed nothing, because the console sends Ctrl+V to the program as a control character, not the pasted text. The hidden key prompt now reads the Windows clipboard on Ctrl+V, and arrow/function keys no longer leak into the key.
 
 ### v1.8.23 (261003)
 
