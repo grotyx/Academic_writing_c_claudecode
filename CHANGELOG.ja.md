@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.23 (261003)
+
+- Windows：`manuwright agents update`（および Obsidian 接続ステップ、エージェント確認、`opencode models`）はエージェント CLI を PATH 上のフルパスで実行する。`muse` など npm でインストールした CLI は `.cmd` シムで、`shutil.which` は見つけるが Windows の CreateProcess は名前だけでは見つけられず、`FileNotFoundError: [WinError 2]` で停止していた。それでも起動できないプログラムはそのエージェントのエラーとして表示し、残りのエージェントは続行する。
+
 ### v1.8.22 (261003)
 
 - `manuwright agents update` は登録済みのパスを更新せず、Claude・Codex の marketplace を現在のエンジンフォルダから再登録する。再インストールで別の Python が選ばれると（`python3.11` → `python3.12` site-packages）削除済みフォルダを指して失敗していた（Claude `ENOENT`、Codex `marketplace root does not contain a supported manifest`）。Codex の `marketplace upgrade` は Git marketplace しか更新しないため、ローカルの marketplace は更新されなかった。

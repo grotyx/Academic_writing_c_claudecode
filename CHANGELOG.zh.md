@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.23 (261003)
+
+- Windows：`manuwright agents update`（以及 Obsidian 连接步骤、代理检查、`opencode models`）按 PATH 中的完整路径运行代理 CLI。`muse` 等通过 npm 安装的 CLI 是 `.cmd` 包装文件，`shutil.which` 能找到，但 Windows CreateProcess 仅凭名称找不到，导致 `FileNotFoundError: [WinError 2]` 中断。仍无法启动的程序会作为该代理的错误报告，其余代理继续执行。
+
 ### v1.8.22 (261003)
 
 - `manuwright agents update` 不再刷新已登记的路径，而是从当前引擎文件夹重新添加 Claude、Codex marketplace。重装时选中了另一个 Python（`python3.11` → `python3.12` site-packages）会使其指向已删除的文件夹而失败（Claude `ENOENT`，Codex `marketplace root does not contain a supported manifest`）。Codex 的 `marketplace upgrade` 只刷新 Git marketplace，本地 marketplace 从未被更新。

@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.23 (261003)
+
+- Windows: `manuwright agents update` (and the Obsidian connect step, agent probes and `opencode models`) run agent CLIs by their full PATH location. npm-installed CLIs such as `muse` are `.cmd` shims that `shutil.which` finds but Windows' CreateProcess does not, so a bare name crashed with `FileNotFoundError: [WinError 2]`. A program that still cannot start is reported for that agent and the remaining agents continue.
+
 ### v1.8.22 (261003)
 
 - `manuwright agents update` re-adds the Claude and Codex marketplaces from the current engine folder instead of refreshing the registered path. A reinstall that picked another Python (`python3.11` → `python3.12` site-packages) left them pointing at a deleted folder (`ENOENT` in Claude, `marketplace root does not contain a supported manifest` in Codex). Codex's `marketplace upgrade` only refreshes Git marketplaces, so it never updated the local one.

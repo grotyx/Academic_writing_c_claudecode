@@ -150,6 +150,23 @@ def test_agents_dry_run_lists_native_commands(monkeypatch, capsys):
     assert lifecycle.agents(ENGINE, ['install', '--only', 'cursor']) == 2
 
 
+def test_agents_run_resolved_paths_and_survive_a_missing_program(monkeypatch, capsys):
+    # Windows: npm agent CLIs are .cmd shims; CreateProcess only finds them by full path, and a
+    # missing program must not abort the remaining agents with a traceback.
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: f'C:/npm/{name}.cmd')
+    calls = []
+    def fake_call(cmd):
+        calls.append(cmd)
+        if cmd[0].endswith('muse.cmd'):
+            raise FileNotFoundError(2, 'The system cannot find the file specified')
+        return 0
+    monkeypatch.setattr(lifecycle.subprocess, 'call', fake_call)
+    assert lifecycle.agents(ENGINE, ['update', '--only', 'claude,muse,agy']) == 1
+    assert calls and all(cmd[0].endswith('.cmd') for cmd in calls)
+    assert any(cmd[0].endswith('agy.cmd') for cmd in calls)  # agents after the failure still run
+    assert '[muse] exit FileNotFoundError' in capsys.readouterr().out
+
+
 def test_agents_update_repoints_marketplaces_to_the_current_engine(monkeypatch, capsys):
     # A reinstall can move the engine (python3.11 -> python3.12 site-packages); `marketplace update`
     # / `upgrade` then fail on the old, deleted path, so update re-adds from the current folder.

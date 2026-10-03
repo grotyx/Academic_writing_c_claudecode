@@ -107,6 +107,13 @@ def auto_blockers(project_api, current, new, manifests):
     return reasons
 
 
+def native(argv):
+    """argv with the program resolved on PATH. On Windows, npm-installed agent CLIs are .cmd
+    shims that shutil.which finds but CreateProcess does not, so a bare name fails with
+    FileNotFoundError [WinError 2]."""
+    return [shutil.which(argv[0]) or argv[0], *argv[1:]]
+
+
 def on_windows():
     return os.name == 'nt'
 
@@ -691,7 +698,10 @@ def agents(engine, args):
                 continue
             print(f'[{agent}] ' + ' '.join(step), flush=True)
             if not dry:
-                code = subprocess.call(step)
+                try:
+                    code = subprocess.call(native(step))
+                except OSError as exc:
+                    code = f'{type(exc).__name__}: {exc}'
                 if code:
                     failed += 1
                     print(f'[{agent}] exit {code}; continuing with the next agent')
