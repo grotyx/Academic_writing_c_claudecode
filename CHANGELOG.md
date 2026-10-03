@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.25 (261003)
+
+- `manuwright setup`: the OpenRouter key can come from the clipboard. In Windows Terminal running PowerShell, pasted text never reached the hidden key prompt, even after v1.8.24. Copy the key and press Enter on the empty prompt: setup offers the key it finds on the clipboard (shown masked, only if it looks like an OpenRouter key, Y/n) before checking and saving it. On macOS the clipboard is read with pbpaste.
+
 ### v1.8.24 (261003)
 
 - `manuwright setup`: the main model is a numbered list on Windows (and any terminal without the arrow-key menu) instead of a blank text prompt. Both the list and the arrow menu mark which agent CLI runs each model ("Claude Code installed", "Codex not installed") and put the models you can run first; a model id can still be typed. Typing an agent name such as `claude` is refused with a hint, because it is not a model id and would never flag a reviewer on the same model. The agent-reviewer prompt lists each agent with its install status.

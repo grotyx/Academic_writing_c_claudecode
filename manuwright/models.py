@@ -12,6 +12,7 @@ from __future__ import annotations
 import difflib
 import json
 import os
+import re
 import sys
 import shutil
 import subprocess
@@ -156,6 +157,26 @@ def windows_clipboard():
             user32.CloseClipboard()
     except (AttributeError, OSError):
         return ''
+
+
+def clipboard_text():
+    """The clipboard as text ('' when unavailable): Windows API, or pbpaste on macOS."""
+    if os.name == 'nt':
+        return windows_clipboard()
+    if sys.platform == 'darwin' and shutil.which('pbpaste'):
+        try:
+            return subprocess.run(['pbpaste'], capture_output=True, text=True, encoding='utf-8',
+                                  errors='replace', timeout=5).stdout
+        except (OSError, subprocess.TimeoutExpired):
+            return ''
+    return ''
+
+
+def clipboard_key():
+    """An OpenRouter key on the clipboard, or ''. Lets the author copy the key and press Enter where a
+    terminal does not deliver pasted text to the hidden prompt (Windows Terminal hosting PowerShell)."""
+    text = clipboard_text().strip()
+    return text if re.fullmatch(r'sk-or-[A-Za-z0-9_-]{16,}', text) else ''
 
 
 def masked_input(prompt, chars=None, out=None, paste=None):
