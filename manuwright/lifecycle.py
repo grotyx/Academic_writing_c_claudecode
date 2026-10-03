@@ -283,7 +283,7 @@ def models_masked_input(prompt):
     return models.masked_input(prompt)
 
 
-def openrouter_key_step(secret):
+def openrouter_key_step(secret, ask=input):
     """Make sure OpenRouter reviewers have a key: environment, saved key, or ask (hidden input)."""
     from manuwright import models
     if os.environ.get('OPENROUTER_API_KEY'):
@@ -293,7 +293,12 @@ def openrouter_key_step(secret):
     secrets = secrets if isinstance(secrets, dict) else {}
     saved = secrets.get('openrouter_api_key')
     hint = f' (saved: ...{saved[-4:]}; Enter keeps it)' if saved else ' (Enter to skip)'
+    print('  Paste the key, or copy it and just press Enter to read it from the clipboard.')
     key = secret(f'  OpenRouter API key, from https://openrouter.ai/keys{hint}: ').strip()
+    clipped = '' if key else models.clipboard_key()
+    if clipped and clipped != saved:
+        answer = ask(f'  Use the key on the clipboard, {models.mask(clipped)}? [Y/n]: ').strip().lower()
+        key = clipped if answer in ('', 'y', 'yes') else ''
     if not key:
         if not saved:
             print('  No key: OpenRouter reviewers will be skipped until you set one (run setup again).')
@@ -408,7 +413,7 @@ def _setup_steps(data, prompt, ask, secret):
     if openrouter is None:
         openrouter = review.get('openrouter_models', []) if 'openrouter' in current else []
     if openrouter:
-        openrouter_key_step(secret)
+        openrouter_key_step(secret, ask)
     opencode_now = [r.split(':', 1)[1] for r in current if r.startswith('opencode:')]
     opencode = models.choose('opencode', models.OPENCODE_SETS, opencode_now, models.opencode_models(), None, ask)
     if opencode is None:

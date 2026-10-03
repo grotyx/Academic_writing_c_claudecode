@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.25 (261003)
+
+- `manuwright setup`：OpenRouter 密钥可以从剪贴板读取。在运行 PowerShell 的 Windows Terminal 中，即使在 v1.8.24 之后，粘贴的文本仍无法到达隐藏的密钥输入。复制密钥后在空输入处按 Enter，setup 会以遮蔽形式显示剪贴板中的密钥（仅当其形如 OpenRouter 密钥时，Y/n），确认后再验证并保存。macOS 上通过 pbpaste 读取剪贴板。
+
 ### v1.8.24 (261003)
 
 - `manuwright setup`：在 Windows（以及没有方向键菜单的终端）上，主模型改为从编号列表中选择，而不是空白输入。列表和方向键菜单都会标明运行各模型的代理 CLI 是否已安装（"Claude Code installed"、"Codex not installed"），并把可运行的模型排在前面；仍可直接输入模型 id。输入 `claude` 这样的代理名称会被拒绝并给出提示，因为它不是模型 id，无法标记使用同一模型的评审者。代理评审者输入前会列出每个代理的安装状态。

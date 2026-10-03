@@ -396,6 +396,23 @@ def test_masked_key_input_pastes_the_clipboard_on_ctrl_v():
     assert models.masked_input('key: ', iter(['\x16', '\r']), io.StringIO()) == ''  # no clipboard reader
 
 
+def test_openrouter_key_from_clipboard_when_paste_does_not_arrive(monkeypatch, capsys):
+    # Windows Terminal + PowerShell: pasted text never reaches the hidden prompt, so an empty Enter
+    # offers the key found on the clipboard (only something shaped like an OpenRouter key).
+    from manuwright import models
+    monkeypatch.delenv('OPENROUTER_API_KEY', raising=False)
+    monkeypatch.setattr(models, 'key_works', lambda key: True)
+    monkeypatch.setattr(models, 'clipboard_text', lambda: '  sk-or-v1-0123456789abcdef0123\r\n')
+    lifecycle.openrouter_key_step(lambda _: '', ask=lambda _: 'n')  # declined: nothing saved
+    assert not (lifecycle.home() / 'secrets.json').exists()
+    lifecycle.openrouter_key_step(lambda _: '', ask=lambda _: '')
+    saved = json.loads((lifecycle.home() / 'secrets.json').read_text())['openrouter_api_key']
+    assert saved == 'sk-or-v1-0123456789abcdef0123'
+    assert 'sk-or-v1-0123456789abcdef0123' not in capsys.readouterr().out  # only the masked form is shown
+    monkeypatch.setattr(models, 'clipboard_text', lambda: 'some copied paragraph')
+    assert models.clipboard_key() == ''
+
+
 def test_refresh_rules_updates_only_agent_files(tmp_path, capsys):
     paper = tmp_path / 'paper'
     lifecycle.init(ENGINE, [str(paper)])
