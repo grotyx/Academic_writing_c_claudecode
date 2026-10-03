@@ -43,6 +43,8 @@ AGENTS = ['claude', 'codex', 'muse', 'agy']
 # Agent CLIs run on the plan you are signed in with; OpenRouter is billed per call.
 AGENT_LABELS = {'claude': 'Claude Code (subscription)', 'codex': 'Codex (subscription)',
                 'muse': 'Muse Code (subscription)', 'agy': 'Antigravity / Gemini (subscription)'}
+# Which agent CLI runs a writer model's family (for "installed" hints in setup).
+WRITER_AGENT = {'anthropic': 'claude', 'openai': 'codex', 'google': 'agy'}
 BILLING = {'OpenRouter': 'pay per use with your OpenRouter key', 'opencode': 'opencode Go subscription'}
 # One manuscript review: about 25k tokens in, 4k out.
 REVIEW_TOKENS = (25_000, 4_000)
@@ -129,17 +131,46 @@ def read_keys():
             yield ch
 
 
-def masked_input(prompt, chars=None, out=None):
+def windows_clipboard():
+    """Clipboard text on Windows ('' when unavailable): Ctrl+V in a classic PowerShell console window
+    reaches the program as the control character \\x16 instead of the pasted text."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+        user32, kernel32 = ctypes.windll.user32, ctypes.windll.kernel32
+        user32.GetClipboardData.restype = wintypes.HANDLE
+        kernel32.GlobalLock.argtypes, kernel32.GlobalLock.restype = [wintypes.HGLOBAL], ctypes.c_void_p
+        kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+        if not user32.OpenClipboard(None):
+            return ''
+        try:
+            handle = user32.GetClipboardData(13)  # CF_UNICODETEXT
+            pointer = kernel32.GlobalLock(handle) if handle else None
+            if not pointer:
+                return ''
+            try:
+                return ctypes.wstring_at(pointer)
+            finally:
+                kernel32.GlobalUnlock(handle)
+        finally:
+            user32.CloseClipboard()
+    except (AttributeError, OSError):
+        return ''
+
+
+def masked_input(prompt, chars=None, out=None, paste=None):
     """Read a secret showing one * per character (Backspace works, pasting works). Returns the text.
 
     chars: an iterator of single characters (tests); default reads the terminal (POSIX) or the console
-    (Windows), falling back to getpass when neither is interactive."""
+    (Windows), falling back to getpass when neither is interactive. paste: returns the clipboard text
+    when Ctrl+V arrives as \\x16 (Windows console) instead of as the pasted characters."""
     out = out or sys.stdout
     restore = None
     if chars is None:
         if os.name == 'nt' and sys.stdin.isatty():
             import msvcrt
             chars = iter(msvcrt.getwch, None)
+            paste = paste or windows_clipboard
         elif os.name == 'posix' and sys.stdin.isatty():
             import termios
             import tty
@@ -154,13 +185,24 @@ def masked_input(prompt, chars=None, out=None):
     out.write(prompt)
     out.flush()
     text = []
+    special = False
     try:
         for ch in chars:
+            if special:  # second half of a Windows arrow/function key: not part of the secret
+                special = False
+                continue
+            if ch in ('\x00', '\xe0'):
+                special = True
+                continue
             if ch in ('\r', '\n', ''):
                 break
             if ch == '\x03':
                 raise KeyboardInterrupt
-            if ch in ('\x7f', '\b'):
+            if ch == '\x16':
+                pasted = [c for c in (paste() if paste else '').strip() if c.isprintable()]
+                text.extend(pasted)
+                out.write('*' * len(pasted))
+            elif ch in ('\x7f', '\b'):
                 if text:
                     text.pop()
                     out.write('\b \b')
@@ -179,6 +221,19 @@ def masked_input(prompt, chars=None, out=None):
 def mask(key):
     """What the author sees after typing a key: start, end and length, never the middle."""
     return f'{key[:8]}...{key[-4:]} ({len(key)} characters)' if len(key) > 14 else f'{len(key)} characters'
+
+
+def writer_options(main=None):
+    """Main-model choices, models whose agent CLI is installed first, each labelled with that CLI."""
+    options = []
+    for model in dict.fromkeys(WRITERS + ([main] if main else [])):
+        agent = WRITER_AGENT.get(model.split('/')[0])
+        if agent:
+            note = AGENT_LABELS[agent].split(' (')[0] + (' installed' if shutil.which(agent) else ' not installed')
+        else:
+            note = ''
+        options.append((model, f'{model:<32} {note}'.rstrip(), bool(agent and shutil.which(agent))))
+    return [(v, label) for v, label, _ in sorted(options, key=lambda o: not o[2])]
 
 
 def can_menu():

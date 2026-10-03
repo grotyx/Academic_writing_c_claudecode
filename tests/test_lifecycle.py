@@ -284,6 +284,23 @@ def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
     assert 'not valid' in out and 'did you mean "deepseek/a"' in out and '~$0.032/review' in out
 
 
+def test_setup_main_model_is_a_numbered_choice_with_installed_agents(monkeypatch, capsys):
+    from manuwright import obsidian, models
+    monkeypatch.setattr(obsidian, 'offer_connect', lambda: None)
+    monkeypatch.setattr(models, 'openrouter_prices', lambda: {})
+    monkeypatch.setattr(models, 'opencode_models', set)
+    monkeypatch.setattr(models.shutil, 'which', lambda name: '/bin/codex' if name == 'codex' else None)
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/codex' if name == 'codex' else None)
+    answers = iter(['claude', '99', '1', '', '0', '0', ''])  # agent name and bad number refused, then 1
+    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    out = capsys.readouterr().out
+    first = next(line for line in out.splitlines() if line.startswith('   1. '))
+    assert 'openai/' in first and 'Codex installed' in first  # installed agent's models listed first
+    assert 'Claude Code not installed' in out and 'is an agent, not a model' in out
+    assert 'claude' in out and 'not installed' in out  # reviewer list shows install status
+    assert lifecycle.load('config.json', {})['main_model'] == models.writer_options()[0][0]
+
+
 def test_setup_picks_a_recommended_set(monkeypatch):
     from manuwright import obsidian, models
     monkeypatch.setattr(obsidian, 'offer_connect', lambda: None)
@@ -365,6 +382,18 @@ def test_masked_key_input_shows_stars_and_handles_backspace():
     shown = out.getvalue()
     assert 'sk-or' not in shown and shown.count('*') == 13 and '\b \b' in shown
     assert models.mask('sk-or-v1-0123456789abcdef') == 'sk-or-v1...cdef (25 characters)'
+
+
+def test_masked_key_input_pastes_the_clipboard_on_ctrl_v():
+    # Classic PowerShell console: Ctrl+V reaches getwch as \x16, not as the key text; Windows special
+    # keys arrive as \xe0 + code and must not end up in the key.
+    import io
+    from manuwright import models
+    out = io.StringIO()
+    typed = iter(['\x16', '\xe0', 'K', '\r'])
+    key = models.masked_input('key: ', typed, out, paste=lambda: '  sk-or-v1-abc\r\n')
+    assert key == 'sk-or-v1-abc' and out.getvalue().count('*') == 12
+    assert models.masked_input('key: ', iter(['\x16', '\r']), io.StringIO()) == ''  # no clipboard reader
 
 
 def test_refresh_rules_updates_only_agent_files(tmp_path, capsys):

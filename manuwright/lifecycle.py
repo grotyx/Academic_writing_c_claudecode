@@ -342,6 +342,29 @@ def setup(args, ask=input, secret=None):
         return 1
 
 
+def main_model_step(data, ask, models):
+    """Numbered main-model choice (terminals without the arrow menu, e.g. Windows): a number picks a
+    listed model, any other text is a model id, Enter keeps, "-" clears."""
+    options = models.writer_options(data.get('main_model'))
+    print(SETUP_HELP['main-model'])
+    for i, (value, label) in enumerate(options, 1):
+        print(f"   {i}. {label}{'  (current)' if value == data.get('main_model') else ''}")
+    while True:
+        answer = ask(f"  main-model: number or model id [{show_setting(data, 'main-model')}]: ").strip()
+        if not answer:
+            return
+        if answer.isdigit():
+            if 1 <= int(answer) <= len(options):
+                data['main_model'] = options[int(answer) - 1][0]
+                return
+        elif answer in models.AGENTS:
+            print(f'  {answer} is an agent, not a model: pick the model you write with by number.')
+            continue
+        elif apply_setting(data, 'main-model', None if answer == '-' else answer):
+            return
+        print('  not valid here; try again.')
+
+
 def _setup_steps(data, prompt, ask, secret):
     try:
         from manuwright import models
@@ -355,11 +378,10 @@ def _setup_steps(data, prompt, ask, secret):
     menu = models.can_menu() and ask is input
     if menu:
         main = data.get('main_model')
-        writers = list(dict.fromkeys(models.WRITERS + ([main] if main else [])))
         print('Reviewers read the finished draft in the independent review step (critical review). '
               'Pick 3-5 that differ from the model you write with.')
         picked = models.pick('Main model: the model you WRITE with (not a reviewer; a reviewer on it is flagged)',
-                             [(w, w) for w in writers] + [('', 'other: type a model id')], {main}, single=True)
+                             models.writer_options(main) + [('', 'other: type a model id')], {main}, single=True)
         if picked == ['']:
             prompt('main-model')
         elif picked:
@@ -371,9 +393,11 @@ def _setup_steps(data, prompt, ask, secret):
         if picked is not None:
             local = picked
     else:
-        prompt('main-model')
+        main_model_step(data, ask, models)
         SETUP_HELP['review.local'] = ('agent reviewers on your signed-in plan (subscription), comma-separated: '
                                       'claude, codex, muse, agy (empty = none)')
+        for agent in models.AGENTS:
+            print(f"   {agent:<6} {models.AGENT_LABELS[agent]}{'' if shutil.which(agent) else '   - not installed'}")
         answer = ask(f"{SETUP_HELP['review.local']}\n  agents [{','.join(local) or 'none'}]: ").strip()
         if answer:
             local = [] if answer == '-' else [a.strip() for a in answer.split(',') if a.strip()]

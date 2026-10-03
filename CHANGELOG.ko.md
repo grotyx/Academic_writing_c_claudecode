@@ -1,5 +1,10 @@
 # 변경 이력
 
+### v1.8.24 (261003)
+
+- `manuwright setup`: Windows(및 화살표 메뉴가 없는 터미널)에서 메인 모델을 빈 입력 대신 번호 목록으로 고른다. 목록과 화살표 메뉴 모두 각 모델을 실행하는 에이전트 CLI 의 설치 여부("Claude Code installed", "Codex not installed")를 표시하고 실행할 수 있는 모델을 먼저 보여 준다. 모델 id 직접 입력도 된다. `claude` 같은 에이전트 이름은 모델 id 가 아니어서 같은 모델을 쓰는 검토자를 표시하지 못하므로, 안내와 함께 다시 묻는다. 에이전트 검토자 입력 전에 에이전트별 설치 여부를 보여 준다.
+- `manuwright setup`: 기본 PowerShell 창에서 OpenRouter 키를 Ctrl+V 로 붙여넣으면 아무것도 표시되지 않았다. 콘솔이 Ctrl+V 를 붙여넣은 글자가 아니라 제어 문자로 프로그램에 보내기 때문이다. 이제 키 입력(숨김)에서 Ctrl+V 를 받으면 Windows 클립보드를 직접 읽고, 방향키·기능키가 키 값에 섞이지 않는다.
+
 ### v1.8.23 (261003)
 
 - Windows: `manuwright agents update`(및 Obsidian 연결 단계, 에이전트 점검, `opencode models`)가 에이전트 CLI 를 PATH 상의 전체 경로로 실행한다. `muse` 처럼 npm 으로 설치된 CLI 는 `.cmd` 파일이라 `shutil.which` 는 찾지만 Windows CreateProcess 는 이름만으로 찾지 못해 `FileNotFoundError: [WinError 2]` 로 중단됐다. 그래도 실행할 수 없는 프로그램은 해당 에이전트 오류로 표시하고 나머지 에이전트는 계속 진행한다.
