@@ -62,6 +62,13 @@ def read_json(path):
 
 # Agent CLIs run detached from the terminal: an agent TUI that grabs the tty and is then killed
 # leaves it in raw mode, where Enter never completes a line and the next prompt looks frozen.
+def native(argv):
+    """argv with the program resolved on PATH. On Windows, npm-installed agent CLIs are .cmd
+    shims that shutil.which finds but CreateProcess does not, so a bare name fails with
+    FileNotFoundError [WinError 2]."""
+    return [shutil.which(argv[0]) or argv[0], *argv[1:]]
+
+
 DETACHED = dict(stdin=subprocess.DEVNULL, start_new_session=True)
 
 
@@ -82,7 +89,7 @@ def connected(agent):
     argv = {'claude': ['claude', 'mcp', 'get', SERVER], 'codex': ['codex', 'mcp', 'get', SERVER],
             'agy': ['agy', 'mcp', 'list']}[agent]
     try:
-        done = subprocess.run(argv, capture_output=True, text=True, encoding='utf-8',
+        done = subprocess.run(native(argv), capture_output=True, text=True, encoding='utf-8',
                               errors='replace', timeout=20, **DETACHED)
     except (OSError, subprocess.TimeoutExpired):
         return False
@@ -177,7 +184,14 @@ def connect(args):
                         failed += 1
                 continue
             print(f'[{agent}] ' + ' '.join(step), flush=True)
-            if not dry and subprocess.call(step, **DETACHED):
+            if dry:
+                continue
+            try:
+                code = subprocess.call(native(step), **DETACHED)
+            except OSError as exc:
+                print(f'[{agent}] {exc}', flush=True)
+                code = 1
+            if code:
                 failed += 1
     print('Obsidian must be open with Settings > Academic Paper Citation Manager > External AI (MCP) enabled. '
           'Restart the agents to load the server. Cite only [EVID:id] entries from knowledge/evidence.md; '

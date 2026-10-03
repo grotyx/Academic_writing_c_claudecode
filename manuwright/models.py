@@ -60,10 +60,11 @@ def openrouter_prices():
 
 def opencode_models():
     """Model ids opencode can use; empty when opencode is missing or slow."""
-    if not shutil.which('opencode'):
+    exe = shutil.which('opencode')  # full path: a bare name misses Windows .cmd shims
+    if not exe:
         return set()
     try:  # detached from the terminal (see obsidian.DETACHED)
-        done = subprocess.run(['opencode', 'models'], capture_output=True, text=True, encoding='utf-8',
+        done = subprocess.run([exe, 'models'], capture_output=True, text=True, encoding='utf-8',
                               errors='replace', timeout=30,
                               stdin=subprocess.DEVNULL, start_new_session=True)
     except (OSError, subprocess.TimeoutExpired):
