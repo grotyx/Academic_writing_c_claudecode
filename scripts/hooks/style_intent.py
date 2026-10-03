@@ -55,7 +55,9 @@ INJECTION = (
 def detect(prompt: str) -> bool:
     if not prompt:
         return False
-    low = prompt.lower()
+    # Drop paths, URLs and identifiers before matching: pasted logs carry the repository name
+    # (Academic_writing_...) and lines like "Restart to apply changes", which are not a request.
+    low = re.sub(r"\S*[/\\_@]\S*", " ", prompt.lower())
     has_style = any(re.search(p, low) for p in TRIGGERS)
     if not has_style:
         return False

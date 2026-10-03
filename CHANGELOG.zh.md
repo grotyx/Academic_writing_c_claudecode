@@ -1,5 +1,10 @@
 # 变更记录
 
+### v1.8.26 (261003)
+
+- 发布标签自动化：`main` 上的 tests 通过后，新的 `release` 工作流按 `harness/__init__.py` 的版本创建 `vX.Y.Z` 标签和 GitHub Release（说明取自本变更记录），标签已存在则跳过。版本提升的合并无需手动打标签即可进入 `manuwright update`。
+- style-pass 钩子不再对粘贴的终端日志作出反应：查找"学术风格"请求时忽略路径、URL 和标识符（如仓库名 `Academic_writing_...`），因此以 "Restart to apply changes" 结尾的安装日志不会被误认为改写请求。
+
 ### v1.8.25 (261003)
 
 - `manuwright setup`：OpenRouter 密钥可以从剪贴板读取。在运行 PowerShell 的 Windows Terminal 中，即使在 v1.8.24 之后，粘贴的文本仍无法到达隐藏的密钥输入。复制密钥后在空输入处按 Enter，setup 会以遮蔽形式显示剪贴板中的密钥（仅当其形如 OpenRouter 密钥时，Y/n），确认后再验证并保存。macOS 上通过 pbpaste 读取剪贴板。

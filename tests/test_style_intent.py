@@ -47,8 +47,15 @@ class DetectTests(unittest.TestCase):
             "what is academic writing?",
             "이 결과 정리해서 커밋해줘",
             "",
+            # pasted install log: repository name + "apply" are not a style request
+            "uv tool install git+https://github.com/x/Academic_writing_c_claudecode@v1.8.25\n"
+            "Restart to apply changes.\n잘 된거지?",
+            r"C:\Users\me\Academic_paper\drafts 정리해줘",
         ):
             self.assertFalse(self.m.detect(prompt), prompt)
+
+    def test_triggers_next_to_a_pasted_path(self) -> None:
+        self.assertTrue(self.m.detect("drafts/03_introduction.md 를 학술적으로 바꿔줘"))
 
 
 class EvaluateTests(unittest.TestCase):

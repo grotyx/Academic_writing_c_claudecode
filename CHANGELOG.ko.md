@@ -1,5 +1,10 @@
 # 변경 이력
 
+### v1.8.26 (261003)
+
+- 릴리스 태그 자동화: `main` 에서 tests 가 통과하면 새 `release` 워크플로가 `harness/__init__.py` 버전으로 `vX.Y.Z` 태그와 GitHub Release(이 변경 이력에서 노트 작성)를 만든다. 태그가 이미 있으면 건너뛴다. 버전을 올린 머지가 수동 태그 없이 `manuwright update` 에 반영된다.
+- style-pass 훅이 붙여넣은 터미널 로그에 반응하지 않는다: "학술 스타일" 요청을 찾을 때 경로·URL·식별자(저장소 이름 `Academic_writing_...` 등)를 무시하므로, "Restart to apply changes" 로 끝나는 설치 로그를 변환 요청으로 오인하지 않는다.
+
 ### v1.8.25 (261003)
 
 - `manuwright setup`: OpenRouter 키를 클립보드에서 가져올 수 있다. PowerShell 을 띄운 Windows Terminal 에서는 v1.8.24 이후에도 붙여넣은 글자가 숨김 키 입력에 전달되지 않았다. 키를 복사한 뒤 빈 입력에서 Enter 를 누르면, 클립보드에 있는 키를 가려서 보여 주고(OpenRouter 키 형태일 때만, Y/n) 확인 후 검증·저장한다. macOS 에서는 pbpaste 로 클립보드를 읽는다.
