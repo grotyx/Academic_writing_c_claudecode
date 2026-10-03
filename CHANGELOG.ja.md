@@ -1,5 +1,10 @@
 # 変更履歴
 
+### v1.8.26 (261003)
+
+- リリースタグの自動化：`main` で tests が通ると、新しい `release` ワークフローが `harness/__init__.py` のバージョンで `vX.Y.Z` タグと GitHub Release（この変更履歴からノートを作成）を作る。タグが既にあればスキップ。バージョンを上げたマージが手動タグなしで `manuwright update` に届く。
+- style-pass フックが貼り付けたターミナルログに反応しない：「学術スタイル」の依頼を探す際、パス・URL・識別子（リポジトリ名 `Academic_writing_...` など）を無視するため、"Restart to apply changes" で終わるインストールログを変換依頼と誤認しない。
+
 ### v1.8.25 (261003)
 
 - `manuwright setup`：OpenRouter キーをクリップボードから取り込めるようにした。PowerShell を起動した Windows Terminal では、v1.8.24 以降も貼り付けた文字が非表示のキー入力に届かなかった。キーをコピーして空の入力で Enter を押すと、クリップボードのキーをマスク表示して（OpenRouter キーの形のときのみ、Y/n）確認後に検証・保存する。macOS では pbpaste でクリップボードを読む。

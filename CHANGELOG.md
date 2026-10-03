@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.8.26 (261003)
+
+- Releases are tagged automatically: after the tests pass on `main`, the new `release` workflow creates the `vX.Y.Z` tag and a GitHub Release (notes from this changelog) for the version in `harness/__init__.py`, unless that tag already exists. A merged version bump now reaches `manuwright update` without a manual tagging step.
+- The style-pass hook no longer fires on pasted terminal logs: paths, URLs and identifiers (such as the repository name `Academic_writing_...`) are ignored when looking for an "academic style" request, so an install log ending in "Restart to apply changes" is not mistaken for one.
+
 ### v1.8.25 (261003)
 
 - `manuwright setup`: the OpenRouter key can come from the clipboard. In Windows Terminal running PowerShell, pasted text never reached the hidden key prompt, even after v1.8.24. Copy the key and press Enter on the empty prompt: setup offers the key it finds on the clipboard (shown masked, only if it looks like an OpenRouter key, Y/n) before checking and saving it. On macOS the clipboard is read with pbpaste.

@@ -1,0 +1,50 @@
+name: release
+
+# Tag a release automatically once the tests pass on main: when harness/__init__.py
+# carries a version that has no vX.Y.Z tag yet, create the annotated tag and a GitHub
+# Release with that version's CHANGELOG entry. `manuwright update` installs from the
+# newest tag, so a merged version bump reaches users without a manual tagging step.
+
+on:
+  workflow_run:
+    workflows: [tests]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Tag and release the version if it is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          version=$(python3 -c "import re; print(re.search(r\"__version__ = '([^']+)'\", open('harness/__init__.py').read()).group(1))")
+          tag="v$version"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "$tag already exists; nothing to do."
+            exit 0
+          fi
+          # Only tag the newest version: a later commit on main may already carry a newer one.
+          git fetch -q origin main
+          head_version=$(git show origin/main:harness/__init__.py | python3 -c "import re,sys; print(re.search(r\"__version__ = '([^']+)'\", sys.stdin.read()).group(1))")
+          if [ "$head_version" != "$version" ]; then
+            echo "main has moved on to $head_version; skipping $tag."
+            exit 0
+          fi
+          awk -v h="### $tag " 'index($0, h) == 1 {on=1; next} on && /^### v/ {exit} on {print}' CHANGELOG.md > notes.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "$tag" "$SHA"
+          git push origin "$tag"
+          gh release create "$tag" --title "$tag" --notes-file notes.md --verify-tag

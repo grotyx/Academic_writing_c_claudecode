@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.8.25)
+# Academic Paper Writing Project (v1.8.26)
 
-## Shared Engine (v1.8.25)
+## Shared Engine (v1.8.26)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -255,7 +255,7 @@ Use a capable planner for design, a shell-capable analyst for reproducible analy
 - **버전 bump (semver):**
   - **프로젝트 버전** = `WORKFLOW.md`·`CLAUDE.md`·`GEMINI.md` 헤더 + `harness/__init__.py` + plugin manifest 4종(`.claude-plugin/`·`.codex-plugin/`·`plugin.json`·`gemini-extension.json`, 테스트가 일치 확인) + README 4종 설치 예시의 태그(`@vX.Y.Z`). **cadence 느리게:** 개별 스크립트/플래그 추가·개선·문서·버그는 **patch**(1.5.3→1.5.4). minor는 **큰 마일스톤**(여러 기능 묶음, phase 단위 신규 역량, 워크플로 구조 변경)에만. 호환성 깨짐 = major. 작은 기능 하나마다 minor 올리지 말 것.
   - 변경된 **개별 doc**은 자체 헤더 semver도 올린다 (예: `verification_protocol.md` 0.2.0→0.3.0).
-  - `CHANGELOG.md`·`.ko`·`.ja`·`.zh` 에 `### vX.Y.Z (YYMMDD)` 항목 추가 (오늘 날짜). 릴리스는 `git tag -a vX.Y.Z` 후 push (`manuwright update` 의 채널).
+  - `CHANGELOG.md`·`.ko`·`.ja`·`.zh` 에 `### vX.Y.Z (YYMMDD)` 항목 추가 (오늘 날짜). 릴리스 태그(`manuwright update` 의 채널)는 `main` 의 tests 가 통과하면 `.github/workflows/release.yml` 이 `harness/__init__.py` 버전으로 `vX.Y.Z` 태그와 GitHub Release 를 자동 생성한다(이미 있으면 건너뜀). 수동으로 만들 필요 없음.
 - **자동 commit+push:** 변경이 **검증(테스트 green)되면** 사용자 확인 없이 commit + push 한다. 표준 커밋 메시지 형식 사용. protected 파일(`.gitignore`의 PDF/`profile/`/Style 앵커)은 자동 제외됨.
 - **STOP — 자동 push 금지, 먼저 확인:** ① 비공개/민감 데이터가 staged될 위험, ② 대규모 파괴적 변경, ③ 사용자 manuscript 본문(`drafts/` WIP)이 함께 휩쓸릴 때, ④ history 재작성·force-push·revert(명시 요청 시에만). 이 경우 멈추고 사용자에게 확인한다.
 
