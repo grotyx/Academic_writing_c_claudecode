@@ -150,6 +150,17 @@ def test_agents_dry_run_lists_native_commands(monkeypatch, capsys):
     assert lifecycle.agents(ENGINE, ['install', '--only', 'cursor']) == 2
 
 
+def test_agents_update_repoints_marketplaces_to_the_current_engine(monkeypatch, capsys):
+    # A reinstall can move the engine (python3.11 -> python3.12 site-packages); `marketplace update`
+    # / `upgrade` then fail on the old, deleted path, so update re-adds from the current folder.
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/' + name)
+    assert lifecycle.agents(ENGINE, ['update', '--only', 'claude,codex', '--dry-run']) == 0
+    out = capsys.readouterr().out
+    for agent in ('claude', 'codex'):
+        assert f'[{agent}] {agent} plugin marketplace add {ENGINE}' in out
+    assert 'marketplace update' not in out and 'marketplace upgrade' not in out
+
+
 def hook_run(args, cwd, stdin='{}'):
     import subprocess, sys
     return subprocess.run([sys.executable, str(ENGINE / 'manuwright/cli.py'), 'hook', *args], cwd=cwd, input=stdin,

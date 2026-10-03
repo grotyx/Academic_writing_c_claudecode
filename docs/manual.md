@@ -20,7 +20,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.21
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.22
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -38,7 +38,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.21
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.22
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -269,6 +269,17 @@ manuwright init --refresh-rules           # inside each existing paper: update i
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
 
 On Windows with a uv install, `manuwright update` does not install in place (Windows cannot replace the running `manuwright.exe`); it prints the command instead. Close agent sessions and run it in a new terminal: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z`. If an earlier update left `ModuleNotFoundError: No module named 'manuwright'`, the same command repairs it.
+
+Check that an update worked:
+
+```sh
+manuwright --version                 # CLI version and engine folder
+manuwright update --check            # "(up to date)" when the newest release is installed
+claude plugin marketplace list       # manuwright path = the engine folder printed by --version
+codex plugin marketplace list        # same path
+```
+
+The engine folder can change on reinstall (for example `.../python3.11/site-packages/manuwright` → `.../python3.12/...`). `manuwright agents update` re-adds the Claude and Codex marketplaces from the current folder, so they never point at a deleted path. An agent that still reports a different plugin version after `agents update` needs a restart.
 
 ### Settings
 

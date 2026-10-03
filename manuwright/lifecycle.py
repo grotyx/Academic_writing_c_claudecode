@@ -644,16 +644,16 @@ def agent_steps(engine, agent, mode):
     """Native commands (or a copy step) that install/update this engine's adapters for one agent.
 
     The installed engine folder is itself the plugin/marketplace root, so adapters always
-    match the CLI version that installed them.
+    match the CLI version that installed them. That folder moves when a reinstall picks another
+    Python (.../python3.11/site-packages -> .../python3.12/...), so update re-adds the marketplace
+    from the current folder: both CLIs re-point an existing `manuwright` marketplace on add.
     """
     root, skills = str(engine), sorted(p for p in (engine / 'skills').iterdir() if (p / 'SKILL.md').is_file())
     if agent == 'claude':
-        if mode == 'install':
-            return [['claude', 'plugin', 'marketplace', 'add', root], ['claude', 'plugin', 'install', 'manuwright@manuwright']]
-        return [['claude', 'plugin', 'marketplace', 'update', 'manuwright'], ['claude', 'plugin', 'update', 'manuwright@manuwright']]
+        steps = [['claude', 'plugin', 'marketplace', 'add', root], ['claude', 'plugin', 'install', 'manuwright@manuwright']]
+        return steps + ([['claude', 'plugin', 'update', 'manuwright@manuwright']] if mode == 'update' else [])
     if agent == 'codex':
-        first = ['codex', 'plugin', 'marketplace', 'add', root] if mode == 'install' else ['codex', 'plugin', 'marketplace', 'upgrade']
-        return [first, ['codex', 'plugin', 'add', 'manuwright@manuwright']]
+        return [['codex', 'plugin', 'marketplace', 'add', root], ['codex', 'plugin', 'add', 'manuwright@manuwright']]
     if agent == 'agy':
         return [['agy', 'plugin', 'install', root]]
     if agent == 'muse':

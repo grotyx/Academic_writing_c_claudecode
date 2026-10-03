@@ -1,5 +1,10 @@
 # 変更履歴
 
+### v1.8.22 (261003)
+
+- `manuwright agents update` は登録済みのパスを更新せず、Claude・Codex の marketplace を現在のエンジンフォルダから再登録する。再インストールで別の Python が選ばれると（`python3.11` → `python3.12` site-packages）削除済みフォルダを指して失敗していた（Claude `ENOENT`、Codex `marketplace root does not contain a supported manifest`）。Codex の `marketplace upgrade` は Git marketplace しか更新しないため、ローカルの marketplace は更新されなかった。
+- マニュアル：更新の確認方法（`manuwright --version`、`update --check`、`claude|codex plugin marketplace list`）。
+
 ### v1.8.21 (261002)
 
 - Windows（uv インストール）：`manuwright update` は実行中の `manuwright.exe` の中から `uv tool install --force` を実行しない。Windows は実行中の exe を置き換えられず、再インストールの失敗で半分削除されたインストールが残った（`ModuleNotFoundError: No module named 'manuwright'`）。エージェントセッションを閉じて新しいターミナルで実行するコマンドを表示し、同じコマンドで壊れたインストールも修復できる。
