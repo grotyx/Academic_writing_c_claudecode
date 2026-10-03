@@ -20,7 +20,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.21
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.22
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -38,7 +38,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.21
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.22
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -276,6 +276,17 @@ manuwright init --refresh-rules           # 기존 논문 폴더마다: 에이�
 등록된 논문이 엔진을 고정했거나(`project.json` 의 `"engine": ">=1.8,<1.9"`), 엔진이 바뀌면 무효가 될 유효한 검토가 있으면 자동 업데이트는 기다린다. 되돌리기: `manuwright update --to <버전>`.
 
 Windows 에서 uv 로 설치했다면 `manuwright update` 는 직접 설치하지 않고 명령을 출력한다(실행 중인 `manuwright.exe` 는 Windows 에서 교체할 수 없다). 에이전트 세션을 닫고 새 터미널에서 실행: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z`. 이전 업데이트 후 `ModuleNotFoundError: No module named 'manuwright'` 가 나오면 같은 명령으로 복구된다.
+
+업데이트가 잘 됐는지 확인:
+
+```sh
+manuwright --version                 # CLI 버전과 엔진 폴더
+manuwright update --check            # 최신 릴리스면 "(up to date)"
+claude plugin marketplace list       # manuwright 경로 = --version 이 출력한 엔진 폴더
+codex plugin marketplace list        # 같은 경로
+```
+
+재설치 때 엔진 폴더가 바뀔 수 있다(예: `.../python3.11/site-packages/manuwright` → `.../python3.12/...`). `manuwright agents update` 는 Claude·Codex marketplace 를 현재 폴더로 다시 등록하므로 지워진 경로를 가리키지 않는다. `agents update` 뒤에도 에이전트가 다른 플러그인 버전을 말하면 그 에이전트를 재시작한다.
 
 ### 설정
 

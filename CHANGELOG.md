@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.8.22 (261003)
+
+- `manuwright agents update` re-adds the Claude and Codex marketplaces from the current engine folder instead of refreshing the registered path. A reinstall that picked another Python (`python3.11` → `python3.12` site-packages) left them pointing at a deleted folder (`ENOENT` in Claude, `marketplace root does not contain a supported manifest` in Codex). Codex's `marketplace upgrade` only refreshes Git marketplaces, so it never updated the local one.
+- Manual: how to check an update worked (`manuwright --version`, `update --check`, `claude|codex plugin marketplace list`).
+
 ### v1.8.21 (261002)
 
 - Windows (uv install): `manuwright update` no longer runs `uv tool install --force` from inside the running `manuwright.exe`, which Windows cannot replace; the failed reinstall left a half-removed install (`ModuleNotFoundError: No module named 'manuwright'`). It now prints the command to run in a new terminal after closing agent sessions; the same command repairs a broken install.
