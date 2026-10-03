@@ -1,5 +1,9 @@
 # 变更记录
 
+### v1.8.24 (261003)
+
+- `manuwright setup`：在 Windows（以及没有方向键菜单的终端）上，主模型改为从编号列表中选择，而不是空白输入。列表和方向键菜单都会标明运行各模型的代理 CLI 是否已安装（"Claude Code installed"、"Codex not installed"），并把可运行的模型排在前面；仍可直接输入模型 id。输入 `claude` 这样的代理名称会被拒绝并给出提示，因为它不是模型 id，无法标记使用同一模型的评审者。代理评审者输入前会列出每个代理的安装状态。
+
 ### v1.8.23 (261003)
 
 - Windows：`manuwright agents update`（以及 Obsidian 连接步骤、代理检查、`opencode models`）按 PATH 中的完整路径运行代理 CLI。`muse` 等通过 npm 安装的 CLI 是 `.cmd` 包装文件，`shutil.which` 能找到，但 Windows CreateProcess 仅凭名称找不到，导致 `FileNotFoundError: [WinError 2]` 中断。仍无法启动的程序会作为该代理的错误报告，其余代理继续执行。

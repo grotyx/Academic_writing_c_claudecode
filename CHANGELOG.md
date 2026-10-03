@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.8.24 (261003)
+
+- `manuwright setup`: the main model is a numbered list on Windows (and any terminal without the arrow-key menu) instead of a blank text prompt. Both the list and the arrow menu mark which agent CLI runs each model ("Claude Code installed", "Codex not installed") and put the models you can run first; a model id can still be typed. Typing an agent name such as `claude` is refused with a hint, because it is not a model id and would never flag a reviewer on the same model. The agent-reviewer prompt lists each agent with its install status.
+
 ### v1.8.23 (261003)
 
 - Windows: `manuwright agents update` (and the Obsidian connect step, agent probes and `opencode models`) run agent CLIs by their full PATH location. npm-installed CLIs such as `muse` are `.cmd` shims that `shutil.which` finds but Windows' CreateProcess does not, so a bare name crashed with `FileNotFoundError: [WinError 2]`. A program that still cannot start is reported for that agent and the remaining agents continue.

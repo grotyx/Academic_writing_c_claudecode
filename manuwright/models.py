@@ -43,6 +43,8 @@ AGENTS = ['claude', 'codex', 'muse', 'agy']
 # Agent CLIs run on the plan you are signed in with; OpenRouter is billed per call.
 AGENT_LABELS = {'claude': 'Claude Code (subscription)', 'codex': 'Codex (subscription)',
                 'muse': 'Muse Code (subscription)', 'agy': 'Antigravity / Gemini (subscription)'}
+# Which agent CLI runs a writer model's family (for "installed" hints in setup).
+WRITER_AGENT = {'anthropic': 'claude', 'openai': 'codex', 'google': 'agy'}
 BILLING = {'OpenRouter': 'pay per use with your OpenRouter key', 'opencode': 'opencode Go subscription'}
 # One manuscript review: about 25k tokens in, 4k out.
 REVIEW_TOKENS = (25_000, 4_000)
@@ -179,6 +181,19 @@ def masked_input(prompt, chars=None, out=None):
 def mask(key):
     """What the author sees after typing a key: start, end and length, never the middle."""
     return f'{key[:8]}...{key[-4:]} ({len(key)} characters)' if len(key) > 14 else f'{len(key)} characters'
+
+
+def writer_options(main=None):
+    """Main-model choices, models whose agent CLI is installed first, each labelled with that CLI."""
+    options = []
+    for model in dict.fromkeys(WRITERS + ([main] if main else [])):
+        agent = WRITER_AGENT.get(model.split('/')[0])
+        if agent:
+            note = AGENT_LABELS[agent].split(' (')[0] + (' installed' if shutil.which(agent) else ' not installed')
+        else:
+            note = ''
+        options.append((model, f'{model:<32} {note}'.rstrip(), bool(agent and shutil.which(agent))))
+    return [(v, label) for v, label, _ in sorted(options, key=lambda o: not o[2])]
 
 
 def can_menu():

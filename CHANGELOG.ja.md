@@ -1,5 +1,9 @@
 # 変更履歴
 
+### v1.8.24 (261003)
+
+- `manuwright setup`：Windows（および矢印キーメニューのない端末）ではメインモデルを空の入力欄ではなく番号付きリストから選ぶ。リストと矢印メニューの両方で、各モデルを実行するエージェント CLI のインストール状況（"Claude Code installed"、"Codex not installed"）を表示し、実行できるモデルを先に並べる。モデル id の直接入力も可能。`claude` のようなエージェント名はモデル id ではなく、同じモデルのレビュアーを検出できないため、案内付きで再入力を求める。エージェントレビュアーの入力前にエージェントごとのインストール状況を表示する。
+
 ### v1.8.23 (261003)
 
 - Windows：`manuwright agents update`（および Obsidian 接続ステップ、エージェント確認、`opencode models`）はエージェント CLI を PATH 上のフルパスで実行する。`muse` など npm でインストールした CLI は `.cmd` シムで、`shutil.which` は見つけるが Windows の CreateProcess は名前だけでは見つけられず、`FileNotFoundError: [WinError 2]` で停止していた。それでも起動できないプログラムはそのエージェントのエラーとして表示し、残りのエージェントは続行する。
