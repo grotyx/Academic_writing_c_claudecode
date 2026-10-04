@@ -6,6 +6,8 @@
 .vscode/
 
 # Presentation files (not part of manuscript workflow)
+# Promo videos, thumbnails and upload text (large, local only)
+/promo/
 presentation/
 
 # Personal profile (author info, contacts, funding).
