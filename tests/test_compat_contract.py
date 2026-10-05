@@ -106,6 +106,19 @@ def test_installed_engine_is_not_the_checkout(tmp_path):
 
 
 @installed
+def test_installed_guides_are_readable_from_a_paper_folder(tmp_path):
+    # A paper folder has no docs/: every guide the rules cite must print from the installed engine.
+    listing = manuwright('guide', cwd=tmp_path)
+    assert listing.returncode == 0 and 'writing_guide' in listing.stdout, listing
+    rules = manuwright('rules', cwd=tmp_path).stdout
+    cited = rules.split('--- Guides cited above')[1].split('\n')[2:]
+    names = [line.strip() for line in cited if line.strip()]
+    assert len(names) >= 15, names
+    shown = manuwright('guide', *names, cwd=tmp_path)
+    assert shown.returncode == 0 and all(f'===== docs/{n}.md =====' in shown.stdout for n in names), shown.stderr
+
+
+@installed
 def test_installed_tools_read_the_current_project(project):
     root = project.parent
     put(root / 'drafts/03_introduction.md', '# Introduction\n\nA claim [EVID:ghost_2020].\n')

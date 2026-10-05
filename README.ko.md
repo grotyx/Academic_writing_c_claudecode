@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.26
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.27
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -120,6 +120,7 @@ manuwright target                      # inside the paper: target journal + Word
 |---|---|
 | `manuwright init [folder]` | 논문 폴더 시작: manifest, 계획 템플릿(미승인), 근거 목록, 에이전트 규칙 |
 | `manuwright rules [keyword]` | 워크플로 규칙 전체 또는 한 절 출력 |
+| `manuwright guide [name ...]` | 규칙이 인용하는 엔진 가이드(`docs/<name>.md`) 목록 또는 내용 출력 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 그 단계의 모든 검사 실행 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 파일 하나에 검사기 하나 실행 |
 | `manuwright gate` / `verify-all` | 단계 게이트 기록을 실제 검사 결과와 대조 |

@@ -1,6 +1,6 @@
 # Shared manuscript engine (v1.1.2)
 
-Project release: v1.8.26. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.27. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -48,7 +48,8 @@ Setup and updates (installed CLI):
 
 ```sh
 manuwright init my-paper            # starter folder: project.json, plan templates (unapproved), evidence.md, AGENTS/CLAUDE/GEMINI.md
-manuwright rules "Citation"         # print one WORKFLOW section (or all with no argument; --path for the file)
+manuwright rules "Citation"         # print one WORKFLOW section (or all with no argument; --path for the file); ends with the guides it cites
+manuwright guide writing_guide      # print an engine guide the rules cite as docs/<name>.md (several names allowed; none = list)
 manuwright update --check           # compare with the newest vX.Y.Z tag
 manuwright update [--to X.Y.Z]      # reinstall that release (uv tool install --force, else pip); logs to ~/.manuwright/update.log
 manuwright config set auto-update on

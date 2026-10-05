@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.26
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.27
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -120,6 +120,7 @@ manuwright target                      # inside the paper: target journal + Word
 |---|---|
 | `manuwright init [folder]` | Start a paper folder: manifest, plan templates (unapproved), evidence registry, agent rules |
 | `manuwright rules [keyword]` | Print the workflow rules, or one section |
+| `manuwright guide [name ...]` | List the engine guides the rules cite (`docs/<name>.md`), or print them |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | Run every check for that stage |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | Run one checker on one file |
 | `manuwright gate` / `verify-all` | Check a phase-gate ledger against live checkers |

@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.26
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.27
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -120,6 +120,7 @@ manuwright target                      # inside the paper: target journal + Word
 |---|---|
 | `manuwright init [folder]` | 创建论文文件夹：manifest、计划模板（未批准）、证据登记表、智能体规则 |
 | `manuwright rules [keyword]` | 打印全部工作流规则或其中一节 |
+| `manuwright guide [name ...]` | 列出或打印规则引用的引擎指南（`docs/<name>.md`） |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 运行该阶段的全部检查 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 对单个文件运行单个检查器 |
 | `manuwright gate` / `verify-all` | 将阶段门禁记录与实时检查结果对照 |

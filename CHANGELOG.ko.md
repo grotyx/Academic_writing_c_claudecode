@@ -1,5 +1,12 @@
 # 변경 이력
 
+### v1.8.27 (261005)
+
+- 새 명령 `manuwright guide [name ...]`: 규칙은 가이드를 `docs/<name>.md` 로 인용하지만, 논문 폴더에는 `docs/` 가 없다(가이드는 설치된 엔진에 있음). `manuwright guide` 는 목록을, `manuwright guide writing_guide qc_guide` 는 하나 이상을 전체 출력한다(`docs/…md` 경로도 되고, 오타는 후보를 제안). 출력된 가이드 끝에는 그 가이드가 인용하는 다른 가이드를 표시한다.
+- `manuwright rules`(전체 또는 한 절) 출력 끝에 그 내용이 인용하는 가이드 목록과 바로 쓸 수 있는 `manuwright guide …` 명령을 붙여 빠뜨리지 않게 했다. `docs/` 없이 이름만 적힌 가이드도 포함한다.
+- 논문의 에이전트 규칙(AGENTS.md, CLAUDE.md, GEMINI.md)과 manuwright 스킬에 가이드 위치와, 단계마다 해당 가이드를 `manuwright guide` 로 읽으라는 안내를 넣었다. 기존 논문: 각 논문 폴더에서 `manuwright init --refresh-rules`.
+- CLI 가 UTF-8 로 출력해, 한국어 Windows(cp949)에서 에이전트가 파이프로 규칙·가이드(한국어, ✅ 🔒)를 읽을 때 실패하지 않는다.
+
 ### v1.8.26 (261003)
 
 - 릴리스 태그 자동화: `main` 에서 tests 가 통과하면 새 `release` 워크플로가 `harness/__init__.py` 버전으로 `vX.Y.Z` 태그와 GitHub Release(이 변경 이력에서 노트 작성)를 만든다. 태그가 이미 있으면 건너뛴다. 버전을 올린 머지가 수동 태그 없이 `manuwright update` 에 반영된다.

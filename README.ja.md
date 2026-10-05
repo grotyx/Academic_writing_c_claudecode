@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.26
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.27
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -120,6 +120,7 @@ manuwright target                      # inside the paper: target journal + Word
 |---|---|
 | `manuwright init [folder]` | 論文フォルダを開始：manifest、計画テンプレート（未承認）、根拠リスト、エージェント規則 |
 | `manuwright rules [keyword]` | ワークフロー規則の全体または 1 節を表示 |
+| `manuwright guide [name ...]` | 規則が引用するエンジンのガイド（`docs/<name>.md`）の一覧または内容を表示 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | その段階のすべての検査を実行 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 1 つのファイルに 1 つのチェッカーを実行 |
 | `manuwright gate` / `verify-all` | フェーズゲートの記録を実際の検査結果と照合 |
