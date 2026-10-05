@@ -1,5 +1,12 @@
 # Changelog
 
+### v1.8.27 (261005)
+
+- New `manuwright guide [name ...]`: the rules cite guides as `docs/<name>.md`, but a paper folder has no `docs/` (guides live in the installed engine). `manuwright guide` lists them, `manuwright guide writing_guide qc_guide` prints one or more in full (a `docs/…md` path also works; a typo gets suggestions), and each printed guide names the other guides it cites.
+- `manuwright rules` (whole workflow or one section) now ends with the guides that text cites, as a ready `manuwright guide …` command, so none is missed; this includes guides named without the `docs/` prefix.
+- The paper's agent rules (AGENTS.md, CLAUDE.md, GEMINI.md) and the manuwright skill say where the guides are and to read the ones for each step with `manuwright guide`. Existing papers: run `manuwright init --refresh-rules` inside each paper folder.
+- The CLI writes UTF-8, so rules and guides (Korean text, ✅ 🔒) no longer fail when an agent reads them through a pipe on Korean Windows (cp949).
+
 ### v1.8.26 (261003)
 
 - Releases are tagged automatically: after the tests pass on `main`, the new `release` workflow creates the `vX.Y.Z` tag and a GitHub Release (notes from this changelog) for the version in `harness/__init__.py`, unless that tag already exists. A merged version bump now reaches `manuwright update` without a manual tagging step.

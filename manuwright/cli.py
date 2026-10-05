@@ -53,6 +53,7 @@ Setup and updates:
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)
+  guide [name ...]           list the engine guides the rules cite as docs/<name>.md, or print them
   update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
   setup                      one interactive pass: models, reviewers, updates, Obsidian
   target [--project PATH]    this paper's target journal (reference format) and Word style
@@ -143,6 +144,11 @@ def load_lifecycle():
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
+    for stream in (sys.stdout, sys.stderr):
+        try:  # rules and guides hold Korean and symbols; agents read piped output as UTF-8, not cp949
+            stream.reconfigure(encoding='utf-8', errors='replace')
+        except (AttributeError, ValueError):
+            pass
     if not argv or argv[0] in {'-h', '--help', 'help'}:
         print(USAGE)
         return 0
@@ -178,7 +184,7 @@ def main(argv=None):
             sys.path.insert(0, str(HERE.parent))
         from manuwright import models
         return models.main(rest)
-    if command in {'init', 'rules', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
+    if command in {'init', 'rules', 'guide', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
         lifecycle = load_lifecycle()
         if command in {'config', 'setup'}:
             return getattr(lifecycle, command)(rest)

@@ -413,6 +413,33 @@ def test_openrouter_key_from_clipboard_when_paste_does_not_arrive(monkeypatch, c
     assert models.clipboard_key() == ''
 
 
+def test_guide_lists_prints_and_points_from_rules(capsys):
+    assert lifecycle.guide(ENGINE, []) == 0
+    listing = capsys.readouterr().out
+    assert 'writing_guide' in listing and 'verification_protocol' in listing and 'guide/overview' in listing
+    assert lifecycle.guide(ENGINE, ['docs/writing_guide.md', 'qc_guide']) == 0  # path form and name, together
+    out = capsys.readouterr().out
+    assert '===== docs/writing_guide.md =====' in out and '===== docs/qc_guide.md =====' in out
+    assert lifecycle.guide(ENGINE, ['writng_guide']) == 1
+    assert 'Did you mean: writing_guide' in capsys.readouterr().err
+    # every guide WORKFLOW.md cites (docs/x.md or a bare guide name) is listed under the rules
+    assert lifecycle.rules(ENGINE, []) == 0
+    footer = capsys.readouterr().out.split('--- Guides cited above')[1]
+    import re
+    workflow = (ENGINE / 'WORKFLOW.md').read_text(encoding='utf-8')
+    cited = {n for n in re.findall(r'(?:docs/)?([A-Za-z0-9_][A-Za-z0-9_./-]*?)\.md', workflow)
+             if (ENGINE / 'docs' / f'{n}.md').is_file()}
+    assert cited and all(f'  {n}' in footer for n in cited), cited
+    assert lifecycle.rules(ENGINE, ['Draft Plan Mandatory']) == 0
+    assert 'manuwright guide draft_plan_template' in capsys.readouterr().out
+
+
+def test_paper_rules_say_where_the_guides_are(tmp_path):
+    lifecycle.init(ENGINE, [str(tmp_path / 'paper')])
+    for name in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'):
+        assert 'manuwright guide <name>' in (tmp_path / 'paper' / name).read_text(encoding='utf-8')
+
+
 def test_refresh_rules_updates_only_agent_files(tmp_path, capsys):
     paper = tmp_path / 'paper'
     lifecycle.init(ENGINE, [str(paper)])

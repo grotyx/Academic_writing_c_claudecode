@@ -1,5 +1,12 @@
 # 变更记录
 
+### v1.8.27 (261005)
+
+- 新命令 `manuwright guide [name ...]`：规则以 `docs/<name>.md` 引用指南，但论文文件夹中没有 `docs/`（指南位于已安装的引擎中）。`manuwright guide` 列出指南，`manuwright guide writing_guide qc_guide` 完整打印一个或多个（也接受 `docs/…md` 路径，拼写错误会给出候选）。打印的指南末尾会列出它引用的其他指南。
+- `manuwright rules`（全部或一节）的输出末尾附上该内容引用的指南列表和可直接使用的 `manuwright guide …` 命令，避免遗漏；也包括未带 `docs/` 前缀、只写名称的指南。
+- 论文的代理规则（AGENTS.md、CLAUDE.md、GEMINI.md）和 manuwright 技能中加入指南位置说明，并要求每一步用 `manuwright guide` 阅读相应指南。已有论文：在每个论文文件夹中运行 `manuwright init --refresh-rules`。
+- CLI 以 UTF-8 输出，因此在韩文 Windows（cp949）上代理通过管道读取规则和指南（韩文、✅ 🔒）时不再失败。
+
 ### v1.8.26 (261003)
 
 - 发布标签自动化：`main` 上的 tests 通过后，新的 `release` 工作流按 `harness/__init__.py` 的版本创建 `vX.Y.Z` 标签和 GitHub Release（说明取自本变更记录），标签已存在则跳过。版本提升的合并无需手动打标签即可进入 `manuwright update`。

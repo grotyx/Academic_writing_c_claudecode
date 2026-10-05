@@ -661,14 +661,76 @@ def rules(engine, args):
         return 0
     text = workflow.read_text(encoding='utf-8')
     if not args:
-        print(text)
+        print(text.rstrip() + guide_footer(engine, text))
         return 0
     keyword = ' '.join(args).lower()
     parts = re.split(r'(?m)^(?=#{2,3} )', text)
     hits = [part for part in parts if keyword in part.splitlines()[0].lower()]
-    print('\n'.join(hits) if hits else f'No section heading contains {keyword!r}. Headings:\n'
+    print('\n'.join(hits).rstrip() + guide_footer(engine, '\n'.join(hits)) if hits else
+          f'No section heading contains {keyword!r}. Headings:\n'
           + '\n'.join(line for line in text.splitlines() if line.startswith(('## ', '### '))))
     return 0 if hits else 1
+
+
+# --- engine guides (docs/) --------------------------------------------------
+# The rules cite guides as `docs/<name>.md`. Those live in the installed engine, not in the
+# paper folder, so agents read them with `manuwright guide <name>` instead of opening a path.
+
+def guide_files(engine):
+    """{name: path} for every guide, name relative to docs/ without .md (e.g. 'writing_guide')."""
+    root = engine / 'docs'
+    return {p.relative_to(root).with_suffix('').as_posix(): p for p in sorted(root.rglob('*.md'))}
+
+
+def guide_title(path):
+    for line in path.read_text(encoding='utf-8', errors='replace').splitlines():
+        if line.startswith('#'):
+            return line.lstrip('#').strip()
+    return ''
+
+
+def guide_refs(engine, text):
+    """Guides that text cites (docs/<name>.md, or a bare <name>.md that is a guide), in order of first
+    mention, existing ones only."""
+    names = guide_files(engine)
+    found = re.findall(r'(?:docs/)?([A-Za-z0-9_][A-Za-z0-9_./-]*?)\.md\b', text)
+    return [n for n in dict.fromkeys(found) if n in names]
+
+
+def guide_footer(engine, text):
+    refs = guide_refs(engine, text)
+    if not refs:
+        return ''
+    return ('\n\n--- Guides cited above (they live in the engine, not in this folder). Read the one for this '
+            'step with `manuwright guide <name>`, or all at once: `manuwright guide ' + ' '.join(refs) + '`\n'
+            + '\n'.join(f'  {n}' for n in refs))
+
+
+def guide(engine, args):
+    """manuwright guide [name ...]: list the engine guides, or print one or more in full."""
+    files = guide_files(engine)
+    if not args:
+        print('Engine guides (the rules cite them as docs/<name>.md). Print one: manuwright guide <name>')
+        for name, path in files.items():
+            print(f'  {name:<32} {guide_title(path)}')
+        return 0
+    wanted = []
+    for arg in args:
+        key = re.sub(r'\.md$', '', arg.replace('\\', '/')).removeprefix('docs/').strip('/')
+        match = key if key in files else next((n for n in files if n.lower() == key.lower()), None)
+        if match is None:
+            import difflib
+            close = difflib.get_close_matches(key, list(files), n=3, cutoff=0.5)
+            print(f'No guide {arg!r}.' + (f' Did you mean: {", ".join(close)}?' if close else '')
+                  + ' List them with `manuwright guide`.', file=sys.stderr)
+            return 1
+        wanted.append(match)
+    for i, name in enumerate(dict.fromkeys(wanted)):
+        text = files[name].read_text(encoding='utf-8')
+        cited = [n for n in guide_refs(engine, text) if n != name and n not in wanted]
+        print(('\n\n' if i else '') + f'===== docs/{name}.md =====\n' + text.rstrip()
+              + (f'\n\n--- This guide also cites: {", ".join(cited)} (manuwright guide <name>)' if cited else ''))
+    return 0
 
 
 # --- agent adapters ---------------------------------------------------------

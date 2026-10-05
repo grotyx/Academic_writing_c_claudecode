@@ -1,5 +1,12 @@
 # 変更履歴
 
+### v1.8.27 (261005)
+
+- 新コマンド `manuwright guide [name ...]`：規則はガイドを `docs/<name>.md` として引用するが、論文フォルダには `docs/` がない（ガイドはインストール済みエンジンにある）。`manuwright guide` で一覧、`manuwright guide writing_guide qc_guide` で 1 つ以上を全文表示（`docs/…md` のパスも可、誤字には候補を提示）。表示したガイドの末尾に、そのガイドが引用する他のガイドを示す。
+- `manuwright rules`（全体または 1 節）の出力末尾に、その内容が引用するガイドの一覧とすぐ使える `manuwright guide …` コマンドを付け、読み漏れを防ぐ。`docs/` なしで名前だけ書かれたガイドも含む。
+- 論文のエージェント規則（AGENTS.md、CLAUDE.md、GEMINI.md）と manuwright スキルに、ガイドの場所と各ステップで該当ガイドを `manuwright guide` で読むよう案内を追加。既存の論文：各論文フォルダで `manuwright init --refresh-rules`。
+- CLI が UTF-8 で出力するため、韓国語 Windows（cp949）でエージェントがパイプ経由で規則・ガイド（韓国語、✅ 🔒）を読んでも失敗しない。
+
 ### v1.8.26 (261003)
 
 - リリースタグの自動化：`main` で tests が通ると、新しい `release` ワークフローが `harness/__init__.py` のバージョンで `vX.Y.Z` タグと GitHub Release（この変更履歴からノートを作成）を作る。タグが既にあればスキップ。バージョンを上げたマージが手動タグなしで `manuwright update` に届く。
