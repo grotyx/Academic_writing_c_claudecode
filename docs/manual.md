@@ -20,7 +20,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.28
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.29
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -38,7 +38,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.28
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.29
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -261,14 +261,14 @@ Then `manuwright build --project project.json` writes the DOCX package (manuscri
 
 ```sh
 manuwright update --check
-manuwright update && manuwright agents update
+manuwright update                         # installs, then runs `manuwright agents update` (--no-agents to skip)
 manuwright config set auto-update on      # patch releases only, at most daily
 manuwright init --refresh-rules           # inside each existing paper: update its agent rules
 ```
 
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
 
-On Windows with a uv install, `manuwright update` does not install in place (Windows cannot replace the running `manuwright.exe`); it prints the command instead. Close agent sessions and run it in a new terminal: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z`. If an earlier update left `ModuleNotFoundError: No module named 'manuwright'`, the same command repairs it.
+On Windows with a uv install, `manuwright update` does not install in place (Windows cannot replace the running `manuwright.exe`); it prints the command instead. Close agent sessions and paste it into a new PowerShell window: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update }` (installs, then refreshes the agent adapters). After any update, `manuwright update` lists the registered paper folders that need `manuwright init --refresh-rules`. If an earlier update left `ModuleNotFoundError: No module named 'manuwright'`, the same command repairs it.
 
 Check that an update worked:
 

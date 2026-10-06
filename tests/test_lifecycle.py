@@ -83,7 +83,7 @@ def test_auto_update_is_opt_in_and_daily(fake_release, capsys):
     assert not calls  # already checked today
     lifecycle.save('state.json', {})
     assert lifecycle.update(engine, ['--auto']) == 0
-    assert len(calls) == 1 and calls[0][-1].endswith('@v' + lifecycle.latest_release())
+    assert calls[0][-1].endswith('@v' + lifecycle.latest_release()) and calls[1][-2:] == ['agents', 'update']
     assert '->' in (lifecycle.home() / 'update.log').read_text(encoding='utf-8')
 
 
@@ -94,6 +94,28 @@ def test_auto_update_waits_for_fresh_reviews(fake_release, project, capsys):
     sign(project)
     assert lifecycle.update(engine, ['--auto']) == 0
     assert not calls and 'not auto-applied' in capsys.readouterr().out
+
+
+def test_update_refreshes_agents_with_the_new_cli_and_names_papers(fake_release, project, monkeypatch, capsys):
+    engine, calls = fake_release
+    monkeypatch.setattr(lifecycle, 'on_windows', lambda: False)
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: f'/new/bin/{name}')
+    lifecycle.register(project)
+    assert lifecycle.update(engine, []) == 0
+    assert len(calls) == 2 and calls[1] == ['/new/bin/manuwright', 'agents', 'update']  # installed CLI, not this one
+    out = capsys.readouterr().out
+    assert 'init --refresh-rules' in out and str(project.parent) in out
+    calls.clear()
+    assert lifecycle.update(engine, ['--to', lifecycle.latest_release(), '--no-agents']) == 0
+    assert len(calls) == 1 and 'not refreshed (--no-agents)' in capsys.readouterr().out
+
+
+def test_windows_update_line_chains_the_agent_refresh(fake_release, monkeypatch, capsys):
+    engine, calls = fake_release
+    monkeypatch.setattr(lifecycle, 'install_command', lambda tag: ['uv', 'tool', 'install', '--force', f'x@v{tag}'])
+    monkeypatch.setattr(lifecycle, 'on_windows', lambda: True)
+    assert lifecycle.update(engine, []) == 0
+    assert not calls and '; if ($?) { manuwright agents update }' in capsys.readouterr().out
 
 
 def test_manual_update_skips_reinstall_when_up_to_date(fake_release, monkeypatch, capsys):
@@ -109,7 +131,7 @@ def test_windows_uv_update_prints_command_instead_of_replacing_running_exe(fake_
     monkeypatch.setattr(lifecycle, 'on_windows', lambda: True)
     assert lifecycle.update(engine, []) == 0
     out = capsys.readouterr().out
-    assert not calls and 'uv tool install --force' in out and 'new terminal' in out
+    assert not calls and 'uv tool install --force' in out and 'new PowerShell window' in out
 
 
 def test_update_refuses_source_checkout():

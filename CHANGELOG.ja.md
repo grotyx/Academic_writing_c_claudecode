@@ -1,5 +1,10 @@
 # 変更履歴
 
+### v1.8.29 (261006)
+
+- `manuwright update` はインストールに成功するとエージェントアダプターの更新まで続けて行う：新しくインストールした CLI で `manuwright agents update` を実行し（`--no-agents` で省略）、`manuwright init --refresh-rules` が必要な登録済み論文フォルダの一覧を表示する。
+- Windows（uv インストール）：表示される更新コマンドは 1 回の貼り付けでインストールと更新を行う：`uv tool install --force ...; if ($?) { manuwright agents update }`（PowerShell 5・7 の両方で動作）。
+
 ### v1.8.28 (261006)
 
 - `manuwright guide`・`rules` が引用されたガイドを漏れなく見つける：ガイド名の直後に韓国語が続く場合（`writing_guide.md에`）、`\b` がハングルを単語文字とみなすため見落としていた。`./docs/x.md`、`engine/docs/x.md`、Windows パス、同じガイドフォルダ内のファイルも、本文と引数の両方で認識する。
