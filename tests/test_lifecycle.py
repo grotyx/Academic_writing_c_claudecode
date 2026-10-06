@@ -189,6 +189,21 @@ def test_agents_run_resolved_paths_and_survive_a_missing_program(monkeypatch, ca
     assert '[muse] exit FileNotFoundError' in capsys.readouterr().out
 
 
+def test_codex_marketplace_from_another_existing_folder_is_removed_then_re_added(monkeypatch, capsys):
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/' + name)
+    calls, refused = [], [True]
+    def fake_call(cmd):
+        calls.append(cmd[1:])
+        if cmd[1:5] == ['plugin', 'marketplace', 'add', str(ENGINE)] and refused:
+            refused.pop()  # "already added from a different source" the first time
+            return 1
+        return 0
+    monkeypatch.setattr(lifecycle.subprocess, 'call', fake_call)
+    assert lifecycle.agents(ENGINE, ['update', '--only', 'codex']) == 0
+    assert calls == [['plugin', 'marketplace', 'add', str(ENGINE)], ['plugin', 'marketplace', 'remove', 'manuwright'],
+                     ['plugin', 'marketplace', 'add', str(ENGINE)], ['plugin', 'add', 'manuwright@manuwright']]
+
+
 def test_agents_update_repoints_marketplaces_to_the_current_engine(monkeypatch, capsys):
     # A reinstall can move the engine (python3.11 -> python3.12 site-packages); `marketplace update`
     # / `upgrade` then fail on the old, deleted path, so update re-adds from the current folder.
@@ -476,6 +491,61 @@ def test_paper_rules_say_where_the_guides_are(tmp_path):
     lifecycle.init(ENGINE, [str(tmp_path / 'paper')])
     for name in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'):
         assert 'manuwright guide <name>' in (tmp_path / 'paper' / name).read_text(encoding='utf-8')
+
+
+def test_refresh_all_updates_every_registered_paper(tmp_path, capsys):
+    papers = [tmp_path / 'a', tmp_path / 'b']
+    for paper in papers:
+        lifecycle.init(ENGINE, [str(paper)])
+        lifecycle.register(paper / 'project.json')
+    (papers[0] / 'CLAUDE.md').write_text('old rules', encoding='utf-8')
+    assert lifecycle.stale_papers(ENGINE) == [papers[0]]
+    assert lifecycle.init(ENGINE, ['--refresh-rules', '--all']) == 0
+    assert lifecycle.stale_papers(ENGINE) == []
+    assert (papers[0] / 'CLAUDE.md.bak').read_text(encoding='utf-8') == 'old rules'
+    assert not (papers[1] / 'CLAUDE.md.bak').exists()  # already current: untouched
+
+
+def test_update_offers_to_refresh_registered_papers(fake_release, project, monkeypatch, capsys):
+    engine, calls = fake_release
+    monkeypatch.setattr(lifecycle, 'on_windows', lambda: False)
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: f'/new/bin/{name}')
+    monkeypatch.setattr(lifecycle.sys.stdin, 'isatty', lambda: True, raising=False)
+    monkeypatch.setattr('builtins.input', lambda prompt: '')
+    lifecycle.register(project)
+    assert lifecycle.update(engine, []) == 0
+    assert calls[-1] == ['/new/bin/manuwright', 'init', '--refresh-rules', '--all']
+
+
+def test_check_reports_each_item_with_a_fix(project, monkeypatch, capsys):
+    monkeypatch.setattr(lifecycle, 'latest_release', lambda: __version__)
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/claude' if name == 'claude' else None)
+    good = {('claude', 'plugin', 'marketplace', 'list', '--json'): json.dumps([{'name': 'manuwright', 'path': str(ENGINE)}]),
+            ('claude', 'plugin', 'list', '--json'): json.dumps([{'id': 'manuwright@manuwright', 'version': __version__}])}
+    monkeypatch.setattr(lifecycle, '_run_text', lambda argv: good[tuple(argv)])
+    lifecycle.config(['set', 'main-model', 'claude'])
+    assert lifecycle.check(ENGINE, []) == 1
+    out = capsys.readouterr().out
+    assert '✓ Version' in out and '✓ Claude Code' in out
+    assert "is an agent, not a model id" in out and 'fix: manuwright config set auto-update on' in out
+    lifecycle.config(['set', 'main-model', 'anthropic/claude-opus-5.5'])
+    lifecycle.config(['set', 'auto-update', 'on'])
+    good[('claude', 'plugin', 'marketplace', 'list', '--json')] = json.dumps([{'name': 'manuwright', 'path': '/gone/python3.11'}])
+    assert lifecycle.check(ENGINE, []) == 1
+    out = capsys.readouterr().out
+    assert '✗ Claude Code' in out and 'not this engine' in out and 'fix: manuwright agents update' in out
+    good[('claude', 'plugin', 'marketplace', 'list', '--json')] = json.dumps([{'name': 'manuwright', 'path': str(ENGINE)}])
+    assert lifecycle.check(ENGINE, []) == 0 and 'All good.' in capsys.readouterr().out
+
+
+def test_check_reads_codex_version_from_a_path_with_spaces(monkeypatch):
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/codex' if name == 'codex' else None)
+    monkeypatch.setattr(lifecycle, '_same_path', lambda a, b: True)
+    out = {('codex', 'plugin', 'marketplace', 'list'): 'MARKETPLACE  ROOT\nmanuwright   C:\\Users\\John Doe\\eng\n',
+           ('codex', 'plugin', 'list'): ('PLUGIN                 STATUS              VERSION  SOURCE\n'
+                                         f'manuwright@manuwright  installed, enabled  {__version__}   C:\\Users\\John Doe\\eng\n')}
+    monkeypatch.setattr(lifecycle, '_run_text', lambda argv: out[tuple(argv)])
+    assert lifecycle.adapter_checks(ENGINE, __version__) == [(True, 'Codex', f'plugin {__version__}')]
 
 
 def test_refresh_rules_updates_only_agent_files(tmp_path, capsys):

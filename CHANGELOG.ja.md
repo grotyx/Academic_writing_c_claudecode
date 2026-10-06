@@ -1,5 +1,13 @@
 # 変更履歴
 
+### v1.8.30 (261006)
+
+- 新コマンド `manuwright check`：最新バージョンか、エージェントごとの manuwright プラグイン（Claude Code・Codex：登録フォルダとバージョン、opencode：スキル）、メインモデル（`claude` のようなエージェント名は指摘）、OpenRouter レビュアー使用時のキー、自動更新、エージェント規則が古い登録済み論文を 1 画面に表示し、✗ ごとに直すコマンドを示す。
+- `manuwright init --refresh-rules --all` が登録済みのすべての論文を更新する。`manuwright update` はインストール後にこれを 1 回尋ねる（対話端末のみ）。
+- `manuwright setup` は初回に自動更新を推奨する（Enter = on）。
+- 修正：Codex の登録元フォルダがまだ存在すると `agents update` が付け替えられなかった（"already added from a different source"）。既存の登録を削除して追加し直すようにした。
+- テストが実際の `~/.manuwright` に論文一覧・設定を書き込まない（共通の `MANUWRIGHT_HOME` フィクスチャ）。
+
 ### v1.8.29 (261006)
 
 - `manuwright update` はインストールに成功するとエージェントアダプターの更新まで続けて行う：新しくインストールした CLI で `manuwright agents update` を実行し（`--no-agents` で省略）、`manuwright init --refresh-rules` が必要な登録済み論文フォルダの一覧を表示する。
