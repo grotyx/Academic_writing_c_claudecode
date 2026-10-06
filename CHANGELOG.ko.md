@@ -1,5 +1,12 @@
 # 변경 이력
 
+### v1.8.28 (261006)
+
+- `manuwright guide`·`rules` 가 인용된 가이드를 빠짐없이 찾는다: 가이드 이름 바로 뒤에 한국어가 붙으면(`writing_guide.md에`) `\b` 가 한글을 단어 문자로 봐서 놓쳤다. `./docs/x.md`, `engine/docs/x.md`, Windows 경로, 같은 가이드 폴더 안의 파일도 본문과 인자 모두에서 인식한다.
+- `manuwright guide a b c` 에서 이름 하나가 틀려도 맞는 가이드는 출력하고, 틀린 이름은 후보와 함께 알린 뒤 0 이 아닌 코드로 끝난다.
+- CLI 가 실행하는 스크립트·훅도 UTF-8 로 출력한다(`PYTHONIOENCODING`, 이미 설정돼 있으면 유지). 한국어 Windows 의 cp949 파이프에서 실패하지 않는다.
+- docs/workflow_reference.md 에 `manuwright rules`·`manuwright guide` 추가. 테스트는 규칙 끝 가이드 목록을 WORKFLOW.md 가 인용하는 가이드와 첫 항목까지 한 줄씩 대조한다.
+
 ### v1.8.27 (261005)
 
 - 새 명령 `manuwright guide [name ...]`: 규칙은 가이드를 `docs/<name>.md` 로 인용하지만, 논문 폴더에는 `docs/` 가 없다(가이드는 설치된 엔진에 있음). `manuwright guide` 는 목록을, `manuwright guide writing_guide qc_guide` 는 하나 이상을 전체 출력한다(`docs/…md` 경로도 되고, 오타는 후보를 제안). 출력된 가이드 끝에는 그 가이드가 인용하는 다른 가이드를 표시한다.

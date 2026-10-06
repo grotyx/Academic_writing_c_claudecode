@@ -1,5 +1,12 @@
 # 変更履歴
 
+### v1.8.28 (261006)
+
+- `manuwright guide`・`rules` が引用されたガイドを漏れなく見つける：ガイド名の直後に韓国語が続く場合（`writing_guide.md에`）、`\b` がハングルを単語文字とみなすため見落としていた。`./docs/x.md`、`engine/docs/x.md`、Windows パス、同じガイドフォルダ内のファイルも、本文と引数の両方で認識する。
+- `manuwright guide a b c` で 1 つの名前が誤っていても有効なガイドは表示し、誤った名前は候補とともに報告して非ゼロで終了する。
+- CLI が起動するスクリプト・フックも UTF-8 で出力する（`PYTHONIOENCODING`、設定済みならそのまま）。韓国語 Windows の cp949 パイプで失敗しない。
+- docs/workflow_reference.md に `manuwright rules`・`manuwright guide` を追加。テストは規則末尾のガイド一覧を、WORKFLOW.md が引用するガイドと先頭まで 1 行ずつ照合する。
+
 ### v1.8.27 (261005)
 
 - 新コマンド `manuwright guide [name ...]`：規則はガイドを `docs/<name>.md` として引用するが、論文フォルダには `docs/` がない（ガイドはインストール済みエンジンにある）。`manuwright guide` で一覧、`manuwright guide writing_guide qc_guide` で 1 つ以上を全文表示（`docs/…md` のパスも可、誤字には候補を提示）。表示したガイドの末尾に、そのガイドが引用する他のガイドを示す。

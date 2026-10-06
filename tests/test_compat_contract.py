@@ -111,8 +111,8 @@ def test_installed_guides_are_readable_from_a_paper_folder(tmp_path):
     listing = manuwright('guide', cwd=tmp_path)
     assert listing.returncode == 0 and 'writing_guide' in listing.stdout, listing
     rules = manuwright('rules', cwd=tmp_path).stdout
-    cited = rules.split('--- Guides cited above')[1].split('\n')[2:]
-    names = [line.strip() for line in cited if line.strip()]
+    cited = rules.split('--- Guides cited above')[1].split('\n')[1:]  # [0] is the rest of the header line
+    names = [line.strip() for line in cited if line.startswith('  ') and line.strip()]
     assert len(names) >= 15, names
     shown = manuwright('guide', *names, cwd=tmp_path)
     assert shown.returncode == 0 and all(f'===== docs/{n}.md =====' in shown.stdout for n in names), shown.stderr

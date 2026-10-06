@@ -1,4 +1,4 @@
-# Workflow Reference (v1.0.1)
+# Workflow Reference (v1.0.2)
 
 Reference catalogs moved out of `WORKFLOW.md` (v1.7.5) so the always-loaded rules stay short. `WORKFLOW.md` remains authoritative for rules; this file is a lookup index. Commands use `python`; on Windows substitute `py` if needed.
 
@@ -196,6 +196,8 @@ project/
 | `/search-evidence [query]` | PubMed 검색 → 선택 → evidence.md 등록 (slash command) |
 | `/import-doi [doi]` | DOI로 논문 가져와서 evidence.md 등록 (slash command) |
 | `Read writing guide for [section]` | Load section-specific guidance |
+| `manuwright rules [keyword]` | Print the workflow rules (or one section); ends with the guides that text cites |
+| `manuwright guide [name ...]` | Print engine guides cited as `docs/<name>.md` (a paper folder has no `docs/`); no name lists them |
 
 ### Knowledge Graph (medical-kag MCP)
 > evidence.md 정본 유지 — 발굴/분석/포맷 보조. 미연결 시 search_pubmed.py로 fallback. 상세: `docs/medical_kag_protocol.md`

@@ -1,5 +1,12 @@
 # 变更记录
 
+### v1.8.28 (261006)
+
+- `manuwright guide`/`rules` 无遗漏地找到被引用的指南：指南名称后紧跟韩文时（`writing_guide.md에`），`\b` 把韩文视为单词字符而漏掉。现在 `./docs/x.md`、`engine/docs/x.md`、Windows 路径以及同一指南文件夹内的文件，在正文和参数中都能识别。
+- `manuwright guide a b c` 中有一个名称错误时，仍会打印有效的指南，再报告错误名称（附候选）并以非零退出。
+- CLI 启动的脚本和钩子也以 UTF-8 输出（`PYTHONIOENCODING`，已设置则保留），在韩文 Windows 的 cp949 管道中不再失败。
+- docs/workflow_reference.md 加入 `manuwright rules` 和 `manuwright guide`；测试逐行核对规则末尾的指南列表与 WORKFLOW.md 引用的指南（包括第一项）。
+
 ### v1.8.27 (261005)
 
 - 新命令 `manuwright guide [name ...]`：规则以 `docs/<name>.md` 引用指南，但论文文件夹中没有 `docs/`（指南位于已安装的引擎中）。`manuwright guide` 列出指南，`manuwright guide writing_guide qc_guide` 完整打印一个或多个（也接受 `docs/…md` 路径，拼写错误会给出候选）。打印的指南末尾会列出它引用的其他指南。
