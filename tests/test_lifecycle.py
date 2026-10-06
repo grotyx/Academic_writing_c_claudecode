@@ -538,6 +538,16 @@ def test_check_reports_each_item_with_a_fix(project, monkeypatch, capsys):
     assert lifecycle.check(ENGINE, []) == 0 and 'All good.' in capsys.readouterr().out
 
 
+def test_check_reads_codex_version_from_a_path_with_spaces(monkeypatch):
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/codex' if name == 'codex' else None)
+    monkeypatch.setattr(lifecycle, '_same_path', lambda a, b: True)
+    out = {('codex', 'plugin', 'marketplace', 'list'): 'MARKETPLACE  ROOT\nmanuwright   C:\\Users\\John Doe\\eng\n',
+           ('codex', 'plugin', 'list'): ('PLUGIN                 STATUS              VERSION  SOURCE\n'
+                                         f'manuwright@manuwright  installed, enabled  {__version__}   C:\\Users\\John Doe\\eng\n')}
+    monkeypatch.setattr(lifecycle, '_run_text', lambda argv: out[tuple(argv)])
+    assert lifecycle.adapter_checks(ENGINE, __version__) == [(True, 'Codex', f'plugin {__version__}')]
+
+
 def test_refresh_rules_updates_only_agent_files(tmp_path, capsys):
     paper = tmp_path / 'paper'
     lifecycle.init(ENGINE, [str(paper)])

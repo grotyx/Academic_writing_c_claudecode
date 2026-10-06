@@ -865,8 +865,9 @@ def adapter_checks(engine, current):
         plugins = _run_text(['codex', 'plugin', 'list'])
         root = next((line.split(None, 1)[1].strip() for line in (markets or '').splitlines()
                      if line.split()[:1] == ['manuwright'] and len(line.split()) > 1), None)
-        version = next((line.split()[-2] for line in (plugins or '').splitlines()
-                        if line.startswith('manuwright@manuwright') and len(line.split()) >= 3), None)
+        # STATUS ("installed, enabled") and SOURCE may contain spaces, so match the version token itself.
+        version = next((m.group(1) for line in (plugins or '').splitlines() if line.startswith('manuwright@manuwright')
+                        for m in [re.search(r'\s(\d+\.\d+\.\d+)\s', line)] if m), None)
         if markets is None or plugins is None:
             rows.append((None, 'Codex', 'could not query `codex plugin`'))
         elif not root or not version:
