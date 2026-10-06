@@ -199,6 +199,16 @@ def update(engine, args):
         print('Refreshing the agent adapters: manuwright agents update', flush=True)
         if subprocess.call([shutil.which('manuwright') or 'manuwright', 'agents', 'update']):
             print('Agent refresh reported a problem above; fix it and run `manuwright agents update` again.')
+    papers = [m.parent for m in known_projects()]
+    if papers and not auto and sys.stdin.isatty():
+        print('Registered paper folders:\n' + '\n'.join(f'  {p}' for p in dict.fromkeys(papers)))
+        try:
+            answer = input('Update their agent rules now (only AGENTS/CLAUDE/GEMINI.md, .bak kept)? [Y/n] ')
+        except EOFError:
+            answer = 'n'
+        if answer.strip().lower() in ('', 'y', 'yes'):
+            subprocess.call([shutil.which('manuwright') or 'manuwright', 'init', '--refresh-rules', '--all'])
+            return 0
     print(paper_refresh_hint())
     return 0
 
@@ -208,8 +218,9 @@ def paper_refresh_hint():
     papers = [m.parent for m in known_projects()]
     if not papers:
         return 'In each existing paper folder: `manuwright init --refresh-rules` (updates only its agent rule files).'
-    return ('Update each paper\'s agent rules (only AGENTS/CLAUDE/GEMINI.md change; .bak copies kept): run '
-            '`manuwright init --refresh-rules` inside\n' + '\n'.join(f'  {p}' for p in papers))
+    return ('Update the agent rules of every registered paper at once (only AGENTS/CLAUDE/GEMINI.md change; .bak '
+            'copies kept): `manuwright init --refresh-rules --all`. Registered papers:\n'
+            + '\n'.join(f'  {p}' for p in dict.fromkeys(papers)))
 
 
 REVIEW_AGENTS = ('claude', 'codex', 'opencode', 'muse', 'agy')
@@ -440,7 +451,16 @@ def _setup_steps(data, prompt, ask, secret):
     review['reviewers'] = local + (['openrouter'] if openrouter else []) + [f'opencode:{m}' for m in opencode]
     print(f"  reviewers: {', '.join(review['reviewers']) or 'none'}")
     print('\n2. Updates')
-    prompt('auto-update')
+    if 'auto_update' in data:
+        prompt('auto-update')
+    else:  # first setup: recommend on; Enter accepts
+        while True:
+            answer = ask(f"{SETUP_HELP['auto-update']} (recommended: on; on Windows it only announces new "
+                         "releases)\n  auto-update [on]: ").strip().lower()
+            if answer in ('', 'on', 'off'):
+                data['auto_update'] = answer != 'off'
+                break
+            print('  not valid here; try again.')
     save('config.json', data)
     print(f'\nSaved to {home() / "config.json"}.')
     print('\n3. Obsidian reference library (optional, recommended)')
@@ -617,10 +637,38 @@ def refresh_rules(engine, root):
     return 0
 
 
+def stale_papers(engine):
+    """Registered paper folders whose agent rule files differ from this engine's (template checkouts excluded)."""
+    bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
+    stale = []
+    for root in dict.fromkeys(m.parent for m in known_projects()):
+        texts = [(root / n).read_text(encoding='utf-8', errors='replace') for n in BOOTSTRAP_FILES if (root / n).exists()]
+        if any('@WORKFLOW.md' in t for t in texts):
+            continue
+        if len(texts) < len(BOOTSTRAP_FILES) or any(t != bootstrap for t in texts):
+            stale.append(root)
+    return stale
+
+
+def refresh_all(engine):
+    """`manuwright init --refresh-rules --all`: refresh every registered paper folder."""
+    roots = list(dict.fromkeys(m.parent for m in known_projects()))
+    if not roots:
+        print('No registered paper folders yet (a paper registers when `manuwright verify` runs in it). '
+              'Run `manuwright init --refresh-rules` inside a paper folder instead.')
+        return 0
+    for root in roots:
+        print(f'{root}: ', end='', flush=True)
+        refresh_rules(engine, root)
+    return 0
+
+
 def init(engine, args):
-    """manuwright init [folder] [--refresh-rules]: starter paper folder; never overwrites, never approves."""
+    """manuwright init [folder] [--refresh-rules [--all]]: starter paper folder; never overwrites, never approves."""
     refresh = '--refresh-rules' in args
-    args = [a for a in args if a != '--refresh-rules']
+    if refresh and '--all' in args:
+        return refresh_all(engine)
+    args = [a for a in args if a not in ('--refresh-rules', '--all')]
     root = Path(args[0] if args else '.').resolve()
     if (root / 'project.json').exists():
         if refresh:
@@ -771,6 +819,118 @@ def guide(engine, args):
     return 0
 
 
+# --- health check ------------------------------------------------------------
+
+def _run_text(argv):
+    """Output of a quick agent CLI query, or None when it cannot run."""
+    try:
+        done = subprocess.run(native(argv), capture_output=True, text=True, encoding='utf-8', errors='replace',
+                              timeout=30, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return done.stdout if done.returncode == 0 else None
+
+
+def _same_path(a, b):
+    try:
+        return Path(str(a).removeprefix('\\\\?\\')).resolve() == Path(b).resolve()
+    except (OSError, ValueError):
+        return False
+
+
+def adapter_checks(engine, current):
+    """[(ok, label, detail)] for each installed agent: marketplace points at this engine, plugin version."""
+    rows = []
+    if shutil.which('claude'):
+        markets = _run_text(['claude', 'plugin', 'marketplace', 'list', '--json'])
+        plugins = _run_text(['claude', 'plugin', 'list', '--json'])
+        try:
+            market = next((m for m in json.loads(markets or '[]') if m.get('name') == 'manuwright'), None)
+            plugin = next((p for p in json.loads(plugins or '[]') if p.get('id') == 'manuwright@manuwright'), None)
+        except ValueError:
+            market = plugin = None
+        if markets is None or plugins is None:
+            rows.append((None, 'Claude Code', 'could not query `claude plugin`'))
+        elif not market or not plugin:
+            rows.append((False, 'Claude Code', 'manuwright plugin not installed'))
+        elif not _same_path(market.get('path', ''), engine):
+            rows.append((False, 'Claude Code', f"marketplace points at {market.get('path')}, not this engine"))
+        elif plugin.get('version') != current:
+            rows.append((False, 'Claude Code', f"plugin {plugin.get('version')} != CLI {current}"))
+        else:
+            rows.append((True, 'Claude Code', f'plugin {current}' + (' (restart Claude Code if it was open)'
+                                                                      if plugin.get('errors') else '')))
+    if shutil.which('codex'):
+        markets = _run_text(['codex', 'plugin', 'marketplace', 'list'])
+        plugins = _run_text(['codex', 'plugin', 'list'])
+        root = next((line.split(None, 1)[1].strip() for line in (markets or '').splitlines()
+                     if line.split()[:1] == ['manuwright'] and len(line.split()) > 1), None)
+        version = next((line.split()[-2] for line in (plugins or '').splitlines()
+                        if line.startswith('manuwright@manuwright') and len(line.split()) >= 3), None)
+        if markets is None or plugins is None:
+            rows.append((None, 'Codex', 'could not query `codex plugin`'))
+        elif not root or not version:
+            rows.append((False, 'Codex', 'manuwright plugin not installed'))
+        elif not _same_path(root, engine):
+            rows.append((False, 'Codex', f'marketplace points at {root}, not this engine'))
+        elif version != current:
+            rows.append((False, 'Codex', f'plugin {version} != CLI {current}'))
+        else:
+            rows.append((True, 'Codex', f'plugin {current}'))
+    if shutil.which('opencode'):
+        stale = [s.name for _, s, target in agent_steps(engine, 'opencode', 'update')
+                 if not (target / 'SKILL.md').is_file()
+                 or (target / 'SKILL.md').read_bytes() != (s / 'SKILL.md').read_bytes()]
+        rows.append((not stale, 'opencode', 'skills current' if not stale else 'skills out of date: ' + ', '.join(stale)))
+    for agent, label in (('agy', 'Antigravity'), ('muse', 'Muse')):
+        if shutil.which(agent):
+            rows.append((None, label, 'installed (version not queryable; `manuwright agents update` refreshes it)'))
+    return rows
+
+
+def check(engine, args):
+    """manuwright check: one readable report of what an update or setup should have left in place."""
+    from manuwright import models
+    current, _ = engine_api(engine)
+    data = load('config.json', {})
+    rows = []
+    latest = latest_release()
+    if latest is None:
+        rows.append((None, 'Version', f'{current} (could not reach GitHub to compare)', None))
+    else:
+        newer = tuple(map(int, latest.lstrip('v').split('.'))) > tuple(map(int, current.split('.')))
+        rows.append((not newer, 'Version', f'{current}' + (f', newer release {latest}' if newer else ' (latest)'),
+                     'manuwright update' if newer else None))
+    agents_fix = 'manuwright agents update'
+    rows += [(ok, label, detail, agents_fix if ok is False else None) for ok, label, detail in adapter_checks(engine, current)]
+    main = data.get('main_model')
+    if not main:
+        rows.append((False, 'Main model', 'not set', 'manuwright setup'))
+    elif main in models.AGENTS:
+        rows.append((False, 'Main model', f'{main!r} is an agent, not a model id', 'manuwright setup'))
+    else:
+        rows.append((True, 'Main model', main, None))
+    reviewers = data.get('review', {}).get('reviewers', [])
+    if 'openrouter' in reviewers:
+        has_key = bool(os.environ.get('OPENROUTER_API_KEY') or load('secrets.json', {}).get('openrouter_api_key'))
+        rows.append((has_key, 'OpenRouter key', 'saved' if has_key else 'missing (OpenRouter reviewers are skipped)',
+                     None if has_key else 'manuwright setup'))
+    auto = data.get('auto_update')
+    rows.append((bool(auto), 'Auto-update', 'on' + (' (announces releases; install with the printed line)'
+                                                    if on_windows() else '') if auto else 'off',
+                 None if auto else 'manuwright config set auto-update on'))
+    stale = stale_papers(engine)
+    rows.append((not stale, 'Paper agent rules', 'all registered papers current' if not stale else
+                 f'{len(stale)} out of date: ' + ', '.join(str(p) for p in stale),
+                 None if not stale else 'manuwright init --refresh-rules --all'))
+    marks = {True: '✓', False: '✗', None: '·'}
+    for ok, label, detail, fix in rows:
+        print(f'{marks[ok]} {label:<18} {detail}' + (f'\n    fix: {fix}' if fix else ''))
+    problems = sum(ok is False for ok, *_ in rows)
+    print(f'\n{problems} item(s) to fix.' if problems else '\nAll good.')
+    return 1 if problems else 0
+
+
 # --- agent adapters ---------------------------------------------------------
 
 AGENTS = ('claude', 'codex', 'agy', 'opencode', 'muse')
@@ -829,6 +989,12 @@ def agents(engine, args):
             if not dry:
                 try:
                     code = subprocess.call(native(step))
+                    if code and step[:4] == ['codex', 'plugin', 'marketplace', 'add']:
+                        # Codex refuses to re-point a marketplace whose old folder still exists
+                        # ("already added from a different source"): remove it, then add again.
+                        print(f'[{agent}] codex plugin marketplace remove manuwright (then add again)', flush=True)
+                        subprocess.call(native(['codex', 'plugin', 'marketplace', 'remove', 'manuwright']))
+                        code = subprocess.call(native(step))
                 except OSError as exc:
                     code = f'{type(exc).__name__}: {exc}'
                 if code:

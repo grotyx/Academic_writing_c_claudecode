@@ -49,7 +49,8 @@ Standalone tools (same flags as scripts/*.py; project paths default to the curre
   manuwright <tool> --help    shows that tool's own options
 Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
-  init --refresh-rules       in an existing paper: update only its agent rules (AGENTS/CLAUDE/GEMINI.md) after an update
+  init --refresh-rules [--all]   in an existing paper (or --all registered papers): update only the agent rules (AGENTS/CLAUDE/GEMINI.md)
+  check                      one report: version, agent adapters, main model, key, auto-update, papers to refresh
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)
@@ -185,7 +186,7 @@ def main(argv=None):
             sys.path.insert(0, str(HERE.parent))
         from manuwright import models
         return models.main(rest)
-    if command in {'init', 'rules', 'guide', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
+    if command in {'init', 'rules', 'guide', 'check', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
         lifecycle = load_lifecycle()
         if command in {'config', 'setup'}:
             return getattr(lifecycle, command)(rest)

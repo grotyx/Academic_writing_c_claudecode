@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.29
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` の skill | `manuwright verify` |
 | Muse | ユーザー skill | `manuwright verify` |
 
-**更新。** `manuwright update` が最新リリースをインストールし、続けてエージェントアダプターも更新する（`manuwright agents update`、省略は `--no-agents`）。続けて `manuwright init --refresh-rules` を実行する登録済み論文フォルダの一覧を表示する（その論文のエージェント規則ファイルだけを更新）。確認：`manuwright --version`、`manuwright update --check`。`manuwright config set auto-update on` で patch の自動更新を有効にできる。1 日 1 回確認し、論文の現在のレビューを無効にする更新は適用しない。Windows（uv インストール）では実行中の `manuwright.exe` を置き換えられないため、`manuwright update` は新しい PowerShell ウィンドウに貼り付ける 1 行（`uv tool install --force ...; if ($?) { manuwright agents update }`）を表示する。テンプレート利用者は `git pull`、または[移行ガイド](docs/migration_guide.md)を参照。
+**更新。** `manuwright update` が最新リリースをインストールし、続けてエージェントアダプターも更新する（`manuwright agents update`、省略は `--no-agents`）。続けて登録済みのすべての論文のエージェント規則を更新するか尋ねる（`manuwright init --refresh-rules --all`、AGENTS/CLAUDE/GEMINI.md だけを変更し .bak を保存）。`manuwright check` はバージョン、エージェントごとのプラグイン、メインモデル、OpenRouter キー、自動更新、論文の規則が最新かを 1 画面で示し、✗ ごとに直すコマンドを表示する。`manuwright config set auto-update on` で patch の自動更新を有効にできる。1 日 1 回確認し、論文の現在のレビューを無効にする更新は適用しない。Windows（uv インストール）では実行中の `manuwright.exe` を置き換えられないため、`manuwright update` は新しい PowerShell ウィンドウに貼り付ける 1 行（`uv tool install --force ...; if ($?) { manuwright agents update }`）を表示する。テンプレート利用者は `git pull`、または[移行ガイド](docs/migration_guide.md)を参照。
 
 **アンインストール。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`、最後に `uv tool uninstall manuwright`。
 
@@ -120,6 +120,7 @@ manuwright target                      # inside the paper: target journal + Word
 |---|---|
 | `manuwright init [folder]` | 論文フォルダを開始：manifest、計画テンプレート（未承認）、根拠リスト、エージェント規則 |
 | `manuwright rules [keyword]` | ワークフロー規則の全体または 1 節を表示 |
+| `manuwright check` | バージョン・エージェントプラグイン・メインモデル・キー・自動更新・更新が必要な論文をまとめて点検し、修正コマンドを表示 |
 | `manuwright guide [name ...]` | 規則が引用するエンジンのガイド（`docs/<name>.md`）の一覧または内容を表示 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | その段階のすべての検査を実行 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 1 つのファイルに 1 つのチェッカーを実行 |

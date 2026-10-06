@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.29
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` 의 skill | `manuwright verify` |
 | Muse | 사용자 skill | `manuwright verify` |
 
-**업데이트.** `manuwright update` 가 최신 릴리스를 설치한 뒤 에이전트 어댑터도 이어서 갱신한다(`manuwright agents update`; 건너뛰려면 `--no-agents`). 이어서 `manuwright init --refresh-rules` 를 실행할 등록된 논문 폴더 목록을 보여 준다(그 논문의 에이전트 규칙 파일만 갱신). 확인: `manuwright --version`, `manuwright update --check`. `manuwright config set auto-update on` 으로 patch 자동 업데이트를 켤 수 있다. 하루 한 번 확인하고, 논문의 현재 리뷰를 무효로 만들 업데이트는 적용하지 않는다. Windows(uv 설치)에서는 실행 중인 `manuwright.exe` 를 교체할 수 없어 `manuwright update` 가 새 PowerShell 창에 붙여 넣을 한 줄(`uv tool install --force ...; if ($?) { manuwright agents update }`)을 출력한다. 템플릿 사용자는 `git pull`, 또는 [이전 가이드](docs/migration_guide.md) 참고.
+**업데이트.** `manuwright update` 가 최신 릴리스를 설치한 뒤 에이전트 어댑터도 이어서 갱신한다(`manuwright agents update`; 건너뛰려면 `--no-agents`). 이어서 등록된 모든 논문의 에이전트 규칙 갱신을 묻는다(`manuwright init --refresh-rules --all`; AGENTS/CLAUDE/GEMINI.md 만 바뀌고 .bak 보관). `manuwright check` 는 버전, 에이전트별 플러그인, 메인 모델, OpenRouter 키, 자동 업데이트, 논문 규칙이 최신인지 한 화면에 보여 주고 ✗ 마다 고치는 명령을 알려 준다. `manuwright config set auto-update on` 으로 patch 자동 업데이트를 켤 수 있다. 하루 한 번 확인하고, 논문의 현재 리뷰를 무효로 만들 업데이트는 적용하지 않는다. Windows(uv 설치)에서는 실행 중인 `manuwright.exe` 를 교체할 수 없어 `manuwright update` 가 새 PowerShell 창에 붙여 넣을 한 줄(`uv tool install --force ...; if ($?) { manuwright agents update }`)을 출력한다. 템플릿 사용자는 `git pull`, 또는 [이전 가이드](docs/migration_guide.md) 참고.
 
 **삭제.** `claude plugin uninstall manuwright@manuwright`, `codex plugin remove manuwright@manuwright`, `agy plugin uninstall manuwright`, `muse skills uninstall manuwright`, 그다음 `uv tool uninstall manuwright`.
 
@@ -120,6 +120,7 @@ manuwright target                      # inside the paper: target journal + Word
 |---|---|
 | `manuwright init [folder]` | 논문 폴더 시작: manifest, 계획 템플릿(미승인), 근거 목록, 에이전트 규칙 |
 | `manuwright rules [keyword]` | 워크플로 규칙 전체 또는 한 절 출력 |
+| `manuwright check` | 버전·에이전트 플러그인·메인 모델·키·자동 업데이트·갱신할 논문을 한 번에 점검하고 고치는 명령 제시 |
 | `manuwright guide [name ...]` | 규칙이 인용하는 엔진 가이드(`docs/<name>.md`) 목록 또는 내용 출력 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 그 단계의 모든 검사 실행 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 파일 하나에 검사기 하나 실행 |

@@ -95,7 +95,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.29
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` 中的 skill | `manuwright verify` |
 | Muse | 用户 skill | `manuwright verify` |
 
-**更新。** `manuwright update` 安装最新版本后接着刷新代理适配器（`manuwright agents update`；用 `--no-agents` 跳过），随后列出需要运行 `manuwright init --refresh-rules` 的已登记论文文件夹（只更新其代理规则文件）。检查：`manuwright --version`、`manuwright update --check`。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会输出一行命令（`uv tool install --force ...; if ($?) { manuwright agents update }`），粘贴到新的 PowerShell 窗口运行。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
+**更新。** `manuwright update` 安装最新版本后接着刷新代理适配器（`manuwright agents update`；用 `--no-agents` 跳过），随后询问是否更新所有已登记论文的代理规则（`manuwright init --refresh-rules --all`；只改 AGENTS/CLAUDE/GEMINI.md，保留 .bak）。`manuwright check` 在一屏中显示版本、各代理插件、主模型、OpenRouter 密钥、自动更新和论文规则是否最新，并为每个 ✗ 给出修复命令。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会输出一行命令（`uv tool install --force ...; if ($?) { manuwright agents update }`），粘贴到新的 PowerShell 窗口运行。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
 
 **卸载。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`，最后 `uv tool uninstall manuwright`。
 
@@ -120,6 +120,7 @@ manuwright target                      # inside the paper: target journal + Word
 |---|---|
 | `manuwright init [folder]` | 创建论文文件夹：manifest、计划模板（未批准）、证据登记表、智能体规则 |
 | `manuwright rules [keyword]` | 打印全部工作流规则或其中一节 |
+| `manuwright check` | 一次检查版本、代理插件、主模型、密钥、自动更新和需刷新的论文，并给出修复命令 |
 | `manuwright guide [name ...]` | 列出或打印规则引用的引擎指南（`docs/<name>.md`） |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 运行该阶段的全部检查 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 对单个文件运行单个检查器 |

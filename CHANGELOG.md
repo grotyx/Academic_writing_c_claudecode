@@ -1,5 +1,13 @@
 # Changelog
 
+### v1.8.30 (261006)
+
+- New `manuwright check`: one screen showing whether the version is the latest, each agent's manuwright plugin (Claude Code and Codex: marketplace folder and version; opencode: skills), the main model (an agent name such as `claude` is flagged), the OpenRouter key when OpenRouter reviewers are set, auto-update, and registered papers whose agent rules are out of date, each ✗ with the command that fixes it.
+- `manuwright init --refresh-rules --all` refreshes every registered paper; `manuwright update` asks once to do this after installing (interactive terminals only).
+- `manuwright setup` recommends auto-update on the first run (Enter = on).
+- Fix: `agents update` could not re-point Codex when the folder it was registered from still existed ("already added from a different source"); it now removes the old registration and adds it again.
+- Tests no longer write the paper registry or settings to the real `~/.manuwright` (shared `MANUWRIGHT_HOME` fixture).
+
 ### v1.8.29 (261006)
 
 - `manuwright update` refreshes the agent adapters itself after a successful install: it runs `manuwright agents update` with the newly installed CLI (`--no-agents` skips it), then lists the registered paper folders that need `manuwright init --refresh-rules`.

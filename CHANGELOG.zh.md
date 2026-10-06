@@ -1,5 +1,13 @@
 # 变更记录
 
+### v1.8.30 (261006)
+
+- 新命令 `manuwright check`：在一屏中显示是否为最新版本、各代理的 manuwright 插件（Claude Code 和 Codex：登记文件夹与版本；opencode：技能）、主模型（会标出 `claude` 这类代理名称）、使用 OpenRouter 评审者时的密钥、自动更新，以及代理规则过期的已登记论文，并为每个 ✗ 给出修复命令。
+- `manuwright init --refresh-rules --all` 刷新所有已登记论文；`manuwright update` 安装后会询问一次（仅交互式终端）。
+- `manuwright setup` 首次运行时推荐开启自动更新（Enter = on）。
+- 修复：当 Codex 原登记文件夹仍存在时，`agents update` 无法重新指向（"already added from a different source"）；现在会先删除旧登记再添加。
+- 测试不再向真实的 `~/.manuwright` 写入论文登记或设置（共享 `MANUWRIGHT_HOME` fixture）。
+
 ### v1.8.29 (261006)
 
 - `manuwright update` 安装成功后会接着刷新代理适配器：用新安装的 CLI 运行 `manuwright agents update`（`--no-agents` 跳过），并列出需要运行 `manuwright init --refresh-rules` 的已登记论文文件夹。

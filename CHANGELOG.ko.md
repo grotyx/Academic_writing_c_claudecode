@@ -1,5 +1,13 @@
 # 변경 이력
 
+### v1.8.30 (261006)
+
+- 새 명령 `manuwright check`: 최신 버전인지, 에이전트별 manuwright 플러그인(Claude Code·Codex: 등록 폴더와 버전, opencode: 스킬), 메인 모델(`claude` 같은 에이전트 이름은 표시), OpenRouter 검토자를 쓸 때 키, 자동 업데이트, 에이전트 규칙이 오래된 등록 논문을 한 화면에 보여 주고 ✗ 마다 고치는 명령을 알려 준다.
+- `manuwright init --refresh-rules --all` 이 등록된 모든 논문을 갱신한다. `manuwright update` 는 설치 후 이를 한 번 묻는다(대화형 터미널에서만).
+- `manuwright setup` 첫 실행에서 자동 업데이트를 권장한다(Enter = on).
+- 수정: Codex 가 등록된 원래 폴더가 아직 있으면 `agents update` 가 다시 연결하지 못했다("already added from a different source"). 이제 기존 등록을 지우고 다시 추가한다.
+- 테스트가 실제 `~/.manuwright` 에 논문 목록·설정을 쓰지 않는다(공통 `MANUWRIGHT_HOME` fixture).
+
 ### v1.8.29 (261006)
 
 - `manuwright update` 가 설치에 성공하면 에이전트 어댑터 갱신까지 이어서 한다: 새로 설치된 CLI 로 `manuwright agents update` 를 실행하고(`--no-agents` 로 생략), `manuwright init --refresh-rules` 가 필요한 등록된 논문 폴더 목록을 보여 준다.

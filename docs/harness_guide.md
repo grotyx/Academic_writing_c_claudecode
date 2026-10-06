@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.1.4)
+# Shared manuscript engine (v1.1.5)
 
-Project release: v1.8.29. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.8.30. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -51,6 +51,8 @@ manuwright init my-paper            # starter folder: project.json, plan templat
 manuwright rules "Citation"         # print one WORKFLOW section (or all with no argument; --path for the file); ends with the guides it cites
 manuwright guide writing_guide      # print an engine guide the rules cite as docs/<name>.md (several names allowed; none = list)
 manuwright update --check           # compare with the newest vX.Y.Z tag
+manuwright check                    # version, agent plugins (path + version), main model, key, auto-update, stale paper rules; fix per item
+manuwright init --refresh-rules --all   # refresh the agent rules of every registered paper (.bak kept)
 manuwright update [--to X.Y.Z]      # reinstall that release (uv tool install --force, else pip), then `agents update` (--no-agents skips); logs to ~/.manuwright/update.log
 manuwright config set auto-update on
 manuwright update --auto            # for SessionStart hooks or shell startup: at most one check a day
