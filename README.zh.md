@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` 中的 skill | `manuwright verify` |
 | Muse | 用户 skill | `manuwright verify` |
 
-**更新。** `manuwright update` 安装最新版本后接着刷新代理适配器（`manuwright agents update`；用 `--no-agents` 跳过）。检查：`manuwright --version`、`manuwright update --check`。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会输出一行命令（`uv tool install --force ...; if ($?) { manuwright agents update }`），粘贴到新的 PowerShell 窗口运行。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
+**更新。** `manuwright update` 安装最新版本后接着刷新代理适配器（`manuwright agents update`；用 `--no-agents` 跳过），随后列出需要运行 `manuwright init --refresh-rules` 的已登记论文文件夹（只更新其代理规则文件）。检查：`manuwright --version`、`manuwright update --check`。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会输出一行命令（`uv tool install --force ...; if ($?) { manuwright agents update }`），粘贴到新的 PowerShell 窗口运行。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
 
 **卸载。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`，最后 `uv tool uninstall manuwright`。
 

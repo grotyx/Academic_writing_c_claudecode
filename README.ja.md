@@ -110,7 +110,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` の skill | `manuwright verify` |
 | Muse | ユーザー skill | `manuwright verify` |
 
-**更新。** `manuwright update` が最新リリースをインストールし、続けてエージェントアダプターも更新する（`manuwright agents update`、省略は `--no-agents`）。確認：`manuwright --version`、`manuwright update --check`。`manuwright config set auto-update on` で patch の自動更新を有効にできる。1 日 1 回確認し、論文の現在のレビューを無効にする更新は適用しない。Windows（uv インストール）では実行中の `manuwright.exe` を置き換えられないため、`manuwright update` は新しい PowerShell ウィンドウに貼り付ける 1 行（`uv tool install --force ...; if ($?) { manuwright agents update }`）を表示する。テンプレート利用者は `git pull`、または[移行ガイド](docs/migration_guide.md)を参照。
+**更新。** `manuwright update` が最新リリースをインストールし、続けてエージェントアダプターも更新する（`manuwright agents update`、省略は `--no-agents`）。続けて `manuwright init --refresh-rules` を実行する登録済み論文フォルダの一覧を表示する（その論文のエージェント規則ファイルだけを更新）。確認：`manuwright --version`、`manuwright update --check`。`manuwright config set auto-update on` で patch の自動更新を有効にできる。1 日 1 回確認し、論文の現在のレビューを無効にする更新は適用しない。Windows（uv インストール）では実行中の `manuwright.exe` を置き換えられないため、`manuwright update` は新しい PowerShell ウィンドウに貼り付ける 1 行（`uv tool install --force ...; if ($?) { manuwright agents update }`）を表示する。テンプレート利用者は `git pull`、または[移行ガイド](docs/migration_guide.md)を参照。
 
 **アンインストール。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`、最後に `uv tool uninstall manuwright`。
 
