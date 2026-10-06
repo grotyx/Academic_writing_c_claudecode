@@ -1,5 +1,10 @@
 # 변경 이력
 
+### v1.8.29 (261006)
+
+- `manuwright update` 가 설치에 성공하면 에이전트 어댑터 갱신까지 이어서 한다: 새로 설치된 CLI 로 `manuwright agents update` 를 실행하고(`--no-agents` 로 생략), `manuwright init --refresh-rules` 가 필요한 등록된 논문 폴더 목록을 보여 준다.
+- Windows(uv 설치): 출력되는 업데이트 명령이 한 번 붙여 넣기로 설치와 갱신을 함께 한다: `uv tool install --force ...; if ($?) { manuwright agents update }` (PowerShell 5·7 모두 동작).
+
 ### v1.8.28 (261006)
 
 - `manuwright guide`·`rules` 가 인용된 가이드를 빠짐없이 찾는다: 가이드 이름 바로 뒤에 한국어가 붙으면(`writing_guide.md에`) `\b` 가 한글을 단어 문자로 봐서 놓쳤다. `./docs/x.md`, `engine/docs/x.md`, Windows 경로, 같은 가이드 폴더 안의 파일도 본문과 인자 모두에서 인식한다.

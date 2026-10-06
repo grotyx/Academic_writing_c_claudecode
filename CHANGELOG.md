@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.8.29 (261006)
+
+- `manuwright update` refreshes the agent adapters itself after a successful install: it runs `manuwright agents update` with the newly installed CLI (`--no-agents` skips it), then lists the registered paper folders that need `manuwright init --refresh-rules`.
+- Windows (uv install): the printed update line installs and refreshes in one paste: `uv tool install --force ...; if ($?) { manuwright agents update }` (works in PowerShell 5 and 7).
+
 ### v1.8.28 (261006)
 
 - `manuwright guide` / `rules` find every cited guide: a guide name followed directly by Korean text (`writing_guide.md에`) was missed, because `\b` treats Hangul as a word character; path forms such as `./docs/x.md`, `engine/docs/x.md`, Windows paths and a sibling file in the same guide folder are now recognised, in the text and as arguments.

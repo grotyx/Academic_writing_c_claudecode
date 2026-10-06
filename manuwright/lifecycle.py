@@ -126,7 +126,7 @@ def install_command(tag):
 
 
 def update(engine, args):
-    """manuwright update [--check] [--auto] [--to X.Y.Z]"""
+    """manuwright update [--check] [--auto] [--to X.Y.Z] [--no-agents]"""
     current, api = engine_api(engine)
     auto = '--auto' in args
     if (engine / '.git').exists():
@@ -168,9 +168,10 @@ def update(engine, args):
         # uv deletes the tool environment before reinstalling; Windows cannot replace the running
         # manuwright.exe, so an in-process update left a half-removed install (ModuleNotFoundError).
         print(f'manuwright {current} -> {target}: Windows cannot replace manuwright while it is running.\n'
-              'Close agent sessions (Claude Code, Codex, ...) and run in a new terminal:\n'
-              f'  {" ".join(command)}\n'
-              'Then: `manuwright agents update`, and in each paper folder `manuwright init --refresh-rules`.')
+              'Close agent sessions (Claude Code, Codex, ...) and paste this line into a new PowerShell window '
+              '(it installs, then refreshes the agent adapters):\n'
+              f'  {" ".join(command)}; if ($?) {{ manuwright agents update }}\n'
+              + paper_refresh_hint())
         return 0
     log = home() / 'update.log'
     home().mkdir(parents=True, exist_ok=True)
@@ -188,11 +189,27 @@ def update(engine, args):
     with log.open('a', encoding='utf-8') as handle:
         handle.write(f'{datetime.now(timezone.utc).isoformat()} {current} -> {target} exit={code}'
                      f'{" auto" if auto else ""}\n')
-    if code == 0:
-        print(f'manuwright {current} -> {target}. Roll back: manuwright update --to {current}\n'
-              'Then: `manuwright agents update`, and in each paper folder `manuwright init --refresh-rules` '
-              '(updates only the agent rule files).')
-    return code
+    if code != 0:
+        return code
+    print(f'manuwright {current} -> {target}. Roll back: manuwright update --to {current}')
+    if '--no-agents' in args:
+        print('Agent adapters not refreshed (--no-agents): run `manuwright agents update`.')
+    else:
+        # Run the newly installed CLI, not this process: its code (and even its Python) is the old one.
+        print('Refreshing the agent adapters: manuwright agents update', flush=True)
+        if subprocess.call([shutil.which('manuwright') or 'manuwright', 'agents', 'update']):
+            print('Agent refresh reported a problem above; fix it and run `manuwright agents update` again.')
+    print(paper_refresh_hint())
+    return 0
+
+
+def paper_refresh_hint():
+    """Which paper folders still carry the old agent rules, and the command that updates them."""
+    papers = [m.parent for m in known_projects()]
+    if not papers:
+        return 'In each existing paper folder: `manuwright init --refresh-rules` (updates only its agent rule files).'
+    return ('Update each paper\'s agent rules (only AGENTS/CLAUDE/GEMINI.md change; .bak copies kept): run '
+            '`manuwright init --refresh-rules` inside\n' + '\n'.join(f'  {p}' for p in papers))
 
 
 REVIEW_AGENTS = ('claude', 'codex', 'opencode', 'muse', 'agy')

@@ -54,7 +54,7 @@ Setup and updates:
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)
   guide [name ...]           list the engine guides the rules cite as docs/<name>.md, or print them
-  update [--check|--to X.Y.Z|--auto]   install a release; --auto = daily check for hooks/shells
+  update [--check|--to X.Y.Z|--auto|--no-agents]   install a release, then refresh the agent adapters; --auto = daily check for hooks/shells
   setup                      one interactive pass: models, reviewers, updates, Obsidian
   target [--project PATH]    this paper's target journal (reference format) and Word style
   env [--project PATH]       this paper's own analysis Python (pandas, scipy, statsmodels) via uv

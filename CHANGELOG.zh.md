@@ -1,5 +1,10 @@
 # 变更记录
 
+### v1.8.29 (261006)
+
+- `manuwright update` 安装成功后会接着刷新代理适配器：用新安装的 CLI 运行 `manuwright agents update`（`--no-agents` 跳过），并列出需要运行 `manuwright init --refresh-rules` 的已登记论文文件夹。
+- Windows（uv 安装）：输出的更新命令一次粘贴即可完成安装和刷新：`uv tool install --force ...; if ($?) { manuwright agents update }`（PowerShell 5 和 7 均可）。
+
 ### v1.8.28 (261006)
 
 - `manuwright guide`/`rules` 无遗漏地找到被引用的指南：指南名称后紧跟韩文时（`writing_guide.md에`），`\b` 把韩文视为单词字符而漏掉。现在 `./docs/x.md`、`engine/docs/x.md`、Windows 路径以及同一指南文件夹内的文件，在正文和参数中都能识别。
