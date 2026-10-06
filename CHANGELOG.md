@@ -1,5 +1,12 @@
 # Changelog
 
+### v1.8.28 (261006)
+
+- `manuwright guide` / `rules` find every cited guide: a guide name followed directly by Korean text (`writing_guide.md에`) was missed, because `\b` treats Hangul as a word character; path forms such as `./docs/x.md`, `engine/docs/x.md`, Windows paths and a sibling file in the same guide folder are now recognised, in the text and as arguments.
+- `manuwright guide a b c` with one wrong name still prints the valid guides, then reports the unknown one (with suggestions) and exits non-zero.
+- Scripts and hooks the CLI starts also write UTF-8 (`PYTHONIOENCODING`, unless already set), so their output does not fail through a cp949 pipe on Korean Windows.
+- docs/workflow_reference.md lists `manuwright rules` and `manuwright guide`; tests check the rules footer line by line against the guides WORKFLOW.md cites, including the first one.
+
 ### v1.8.27 (261005)
 
 - New `manuwright guide [name ...]`: the rules cite guides as `docs/<name>.md`, but a paper folder has no `docs/` (guides live in the installed engine). `manuwright guide` lists them, `manuwright guide writing_guide qc_guide` prints one or more in full (a `docs/…md` path also works; a typo gets suggestions), and each printed guide names the other guides it cites.

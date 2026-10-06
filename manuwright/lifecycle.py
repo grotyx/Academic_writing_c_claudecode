@@ -689,16 +689,34 @@ def guide_title(path):
     return ''
 
 
-def guide_refs(engine, text):
-    """Guides that text cites (docs/<name>.md, or a bare <name>.md that is a guide), in order of first
-    mention, existing ones only."""
-    names = guide_files(engine)
-    found = re.findall(r'(?:docs/)?([A-Za-z0-9_][A-Za-z0-9_./-]*?)\.md\b', text)
-    return [n for n in dict.fromkeys(found) if n in names]
+# A guide mention ends at ".md" not followed by another identifier character. Not \b: in Python 3
+# Hangul is a word character, so "writing_guide.md에" (a Korean particle right after) must still match.
+GUIDE_MENTION = re.compile(r'([A-Za-z0-9_./\\-]+?)\.md(?![A-Za-z0-9_])')
+
+
+def guide_key(raw, files, base=''):
+    """The guide a path or name refers to, or None. Accepts docs/x.md, ./docs/x.md, an absolute engine
+    path, a bare name, any case, and (with base) a name relative to the citing guide's own folder."""
+    key = raw.replace('\\', '/')
+    key = re.sub(r'\.md$', '', key)
+    if 'docs/' in key.lower():
+        key = key[key.lower().rindex('docs/') + 5:]
+    key = key.lstrip('./').strip('/')
+    lower = {n.lower(): n for n in files}
+    for candidate in ([f'{base}/{key}'] if base else []) + [key]:
+        if candidate.lower() in lower:
+            return lower[candidate.lower()]
+    return None
+
+
+def guide_refs(files, text, base=''):
+    """Guides that text cites, in order of first mention, existing ones only."""
+    found = (guide_key(m, files, base) for m in GUIDE_MENTION.findall(text))
+    return [n for n in dict.fromkeys(found) if n]
 
 
 def guide_footer(engine, text):
-    refs = guide_refs(engine, text)
+    refs = guide_refs(guide_files(engine), text)
     if not refs:
         return ''
     return ('\n\n--- Guides cited above (they live in the engine, not in this folder). Read the one for this '
@@ -714,22 +732,25 @@ def guide(engine, args):
         for name, path in files.items():
             print(f'  {name:<32} {guide_title(path)}')
         return 0
-    wanted = []
+    wanted, missing = [], []
     for arg in args:
-        key = re.sub(r'\.md$', '', arg.replace('\\', '/')).removeprefix('docs/').strip('/')
-        match = key if key in files else next((n for n in files if n.lower() == key.lower()), None)
-        if match is None:
-            import difflib
+        match = guide_key(arg, files)
+        (wanted if match else missing).append(match or arg)
+    wanted = list(dict.fromkeys(wanted))
+    for i, name in enumerate(wanted):  # print every guide that exists, even if another name was wrong
+        text = files[name].read_text(encoding='utf-8')
+        base = name.rpartition('/')[0]
+        cited = [n for n in guide_refs(files, text, base) if n != name and n not in wanted]
+        print(('\n\n' if i else '') + f'===== docs/{name}.md =====\n' + text.rstrip()
+              + (f'\n\n--- This guide also cites: {", ".join(cited)} (manuwright guide <name>)' if cited else ''))
+    if missing:
+        import difflib
+        for arg in missing:
+            key = re.sub(r'\.md$', '', arg.replace('\\', '/')).rpartition('docs/')[2].lstrip('./')
             close = difflib.get_close_matches(key, list(files), n=3, cutoff=0.5)
             print(f'No guide {arg!r}.' + (f' Did you mean: {", ".join(close)}?' if close else '')
                   + ' List them with `manuwright guide`.', file=sys.stderr)
-            return 1
-        wanted.append(match)
-    for i, name in enumerate(dict.fromkeys(wanted)):
-        text = files[name].read_text(encoding='utf-8')
-        cited = [n for n in guide_refs(engine, text) if n != name and n not in wanted]
-        print(('\n\n' if i else '') + f'===== docs/{name}.md =====\n' + text.rstrip()
-              + (f'\n\n--- This guide also cites: {", ".join(cited)} (manuwright guide <name>)' if cited else ''))
+        return 1
     return 0
 
 

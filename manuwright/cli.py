@@ -149,6 +149,7 @@ def main(argv=None):
             stream.reconfigure(encoding='utf-8', errors='replace')
         except (AttributeError, ValueError):
             pass
+    os.environ.setdefault('PYTHONIOENCODING', 'utf-8')  # the same for the scripts and hooks run below
     if not argv or argv[0] in {'-h', '--help', 'help'}:
         print(USAGE)
         return 0

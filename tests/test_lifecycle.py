@@ -413,25 +413,41 @@ def test_openrouter_key_from_clipboard_when_paste_does_not_arrive(monkeypatch, c
     assert models.clipboard_key() == ''
 
 
+def footer_names(out):
+    lines = out.split('--- Guides cited above')[1].split('\n')[1:]
+    return [line.strip() for line in lines if line.startswith('  ') and line.strip()]
+
+
 def test_guide_lists_prints_and_points_from_rules(capsys):
     assert lifecycle.guide(ENGINE, []) == 0
     listing = capsys.readouterr().out
     assert 'writing_guide' in listing and 'verification_protocol' in listing and 'guide/overview' in listing
-    assert lifecycle.guide(ENGINE, ['docs/writing_guide.md', 'qc_guide']) == 0  # path form and name, together
-    out = capsys.readouterr().out
-    assert '===== docs/writing_guide.md =====' in out and '===== docs/qc_guide.md =====' in out
-    assert lifecycle.guide(ENGINE, ['writng_guide']) == 1
-    assert 'Did you mean: writing_guide' in capsys.readouterr().err
-    # every guide WORKFLOW.md cites (docs/x.md or a bare guide name) is listed under the rules
+    for form in ('docs/writing_guide.md', './docs/writing_guide.md', str(ENGINE / 'docs' / 'writing_guide.md'),
+                 'Writing_Guide', r'docs\writing_guide.md'):
+        assert lifecycle.guide(ENGINE, [form]) == 0, form
+        assert '===== docs/writing_guide.md =====' in capsys.readouterr().out
+    # one typo does not hide the valid guides asked for in the same call
+    assert lifecycle.guide(ENGINE, ['writing_guide', 'qc_gude', 'expert_roles']) == 1
+    captured = capsys.readouterr()
+    assert '===== docs/writing_guide.md =====' in captured.out and '===== docs/expert_roles.md =====' in captured.out
+    assert "No guide 'qc_gude'" in captured.err and 'qc_guide' in captured.err
+    # the rules footer lists exactly the guides WORKFLOW.md cites, first one included
     assert lifecycle.rules(ENGINE, []) == 0
-    footer = capsys.readouterr().out.split('--- Guides cited above')[1]
-    import re
     workflow = (ENGINE / 'WORKFLOW.md').read_text(encoding='utf-8')
-    cited = {n for n in re.findall(r'(?:docs/)?([A-Za-z0-9_][A-Za-z0-9_./-]*?)\.md', workflow)
-             if (ENGINE / 'docs' / f'{n}.md').is_file()}
-    assert cited and all(f'  {n}' in footer for n in cited), cited
+    expected = lifecycle.guide_refs(lifecycle.guide_files(ENGINE), workflow)
+    assert footer_names(capsys.readouterr().out) == expected and len(expected) >= 18
     assert lifecycle.rules(ENGINE, ['Draft Plan Mandatory']) == 0
     assert 'manuwright guide draft_plan_template' in capsys.readouterr().out
+
+
+def test_guide_mentions_are_found_in_korean_text_and_any_path_form():
+    files = lifecycle.guide_files(ENGINE)
+    refs = lifecycle.guide_refs
+    assert refs(files, '규칙은 writing_guide.md에 있고 qc_guide.md 를 따른다') == ['writing_guide', 'qc_guide']
+    assert refs(files, 'see engine/docs/docx_guide.md. Also C:\\e\\docs\\expert_roles.md에서') == [
+        'docx_guide', 'expert_roles']
+    assert refs(files, 'evidence.md, draft_plan.md and WORKFLOW.md are not guides') == []
+    assert refs(files, 'overview.ko.md', base='guide') == ['guide/overview.ko']  # sibling in a subfolder
 
 
 def test_paper_rules_say_where_the_guides_are(tmp_path):
