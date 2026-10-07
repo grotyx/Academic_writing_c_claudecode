@@ -12,6 +12,8 @@
 - `academic_style.py check` 接受文件夹。
 - 禁用术语不再匹配连字符复合词内部:禁用 "MIS" 只标记 "the MIS group",不标记 "MIS-TLIF"。
 - 上标引用的期刊:编号紧跟句号或逗号之后,前面不留空格("analyses.^1,2^")。
+- 隐去回复信的复审:名称不同的回复信("08_reply_to_reviewers.md")或逐条以 "Response: ..." 作答的文件也不会进入审阅包;审阅包生成后若有文件被修改、删除或新增,`blind-review check` 会失败。
+- p 值:除 *p* 外也接受大写 *P*(Spine、JAMA 等);遵循目标期刊并全文统一(writing_guide v0.6.1)。
 
 ### v1.9.2 (261007)
 

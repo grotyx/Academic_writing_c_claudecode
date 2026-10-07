@@ -1,4 +1,4 @@
-# Section-by-Section Writing Guide (v0.6.0)
+# Section-by-Section Writing Guide (v0.6.1)
 
 > **Academic writing mode (v1.9.0).** Targets below are now checked against 33 openly licensed high-impact papers (2019–2022; `docs/academic_style/reference_profile.json`). The always-on core card and one card per section (moves, rules, phrasebank, model paragraphs) live in `docs/academic_style/`; agents load them with `manuwright style card <section>`, and `manuwright style learn <papers>` adds the measured style of a corpus of good papers. The prose checks behind the mode (`scripts/academic_style.py`) enforce the AI-Draft De-bloat and form rules below. This guide remains the full reference.
 
@@ -92,7 +92,7 @@
 
 | Item | Format | Example |
 |------|--------|---------|
-| p-value | lowercase italic *p* | *p* = 0.382, *p* < 0.05 |
+| p-value | italic *p* or *P*, as the target journal uses it; one form throughout | *p* = 0.382, *P* < .05 |
 | Very small p | threshold notation | *p* < 0.001 (never *p* = 0.000) |
 | Exact p preferred | report exact when ≥0.001 | *p* = 0.023 (not *p* < 0.05) |
 | Percentage | no space | 83.3% |

@@ -44,7 +44,24 @@ from check_response_coverage import parse_original_comments  # noqa: E402
 VERDICTS = ('FULLY', 'PARTIALLY', 'NOT_ADDRESSED', 'MADE_WORSE', 'CANNOT_VERIFY')
 PASSING = ('FULLY', 'PARTIALLY')
 BASES = ('author_pointer', 'valid_rebuttal', 'scope_correction')
-LETTER = re.compile(r'^(?:\d+_)?(?:response|rebuttal|cover_?letter|letter)', re.IGNORECASE)  # not 06_dose_response
+# A response letter by name ("response_letter", "08_reply_to_reviewers", "author_response"; not "06_dose_response")
+LETTER = re.compile(r'^(?:\d+_)?(?:author_?)?(?:response|rebuttal|reply|answers?|cover_?letter|letter)'
+                    r'|(?:reply|response|answers?)_?to_?(?:the_?)?(?:reviewer|referee|comment|editor)', re.IGNORECASE)
+# ... or by content: reviewer comments answered point by point
+REPLIES = re.compile(r'^\W*(?:\*\*)?(?:response|reply|answer|author\'?s? response)(?:\*\*)?\s*(?:to (?:reviewer|comment)[^:]*)?[:\uff1a]',
+                     re.IGNORECASE | re.MULTILINE)
+
+
+def is_letter(path: Path) -> bool:
+    if LETTER.search(path.name):
+        return True
+    text = path.read_text(encoding='utf-8', errors='replace')
+    return bool(re.search(r'\breviewer\b', text, re.IGNORECASE)) and len(REPLIES.findall(text)) >= 2
+
+
+def digests(out: Path) -> dict:
+    return {str(p.relative_to(out)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted(out.rglob('*')) if p.is_file() and p.name not in ('verdicts.md', 'packet.json')}
 BLOCK = re.compile(r'^##\s+(R\d+-C\d+)\s*$', re.MULTILINE)
 FIELD = re.compile(r'^([a-z_]+):[ \t]*(.*)$', re.MULTILINE)
 
@@ -64,7 +81,7 @@ def packet(comments: Path, original: Path, revised: Path, out: Path) -> dict:
     originals = {section_key(p): p for p in sorted(original.glob('0[1-9]_*.md'))}
     files = []
     for new in sorted(revised.glob('0[1-9]_*.md')):
-        if LETTER.search(new.name):
+        if is_letter(new):
             continue
         key = section_key(new)
         old = originals.get(key)
@@ -96,9 +113,7 @@ def packet(comments: Path, original: Path, revised: Path, out: Path) -> dict:
     verdicts = out / 'verdicts.md'
     if not verdicts.exists():
         verdicts.write_text(template, encoding='utf-8')
-    manifest = {'comments': ids, 'revised_sections': files,
-                'sha256': {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest()
-                           for p in sorted(out.rglob('*')) if p.is_file() and p.name not in ('verdicts.md', 'packet.json')}}
+    manifest = {'comments': ids, 'revised_sections': files, 'sha256': digests(out)}
     (out / 'packet.json').write_text(json.dumps(manifest, indent=1), encoding='utf-8')
     return manifest
 
@@ -122,6 +137,16 @@ def check(verdicts: Path) -> list[str]:
     leaked = [name for name in manifest.get('sha256', {}) if LETTER.search(Path(name).name)
               and name != 'reviewer_comments.md']
     problems += [f'packet contains {name}: the blind phase must not see the response letter' for name in leaked]
+    # the verdicts are about the packet as built: a file added, changed or removed afterwards breaks that link
+    recorded, now = {k.replace('\\', '/'): v for k, v in manifest.get('sha256', {}).items()}, digests(folder)
+    problems += [f'packet file {name} changed after the packet was built; rebuild the packet' for name in recorded
+                 if name in now and now[name] != recorded[name]]
+    problems += [f'packet file {name} is missing; rebuild the packet' for name in recorded if name not in now]
+    problems += [f'{name} was added to the packet after it was built; the blind phase must see only the packet'
+                 for name in now if name not in recorded]
+    problems += [f'packet contains {name}: it reads like the response letter' for name in now
+                 if name.endswith('.md') and name != 'reviewer_comments.md' and name.startswith('revised/')
+                 and is_letter(folder / name)]
     record = parse_record(verdicts.read_text(encoding='utf-8'))
     if not manifest.get('comments'):
         problems.append('the packet has no reviewer comments, so nothing was reviewed; rebuild it with numbered comments')

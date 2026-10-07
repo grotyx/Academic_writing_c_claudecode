@@ -12,6 +12,8 @@ Fixes from a code review and a synthetic end-to-end run (new paper folder, synth
 - `academic_style.py check` accepts a folder.
 - A forbidden term no longer matches inside a hyphenated compound: forbidding "MIS" flags "the MIS group", not "MIS-TLIF".
 - Superscript journals: the marker follows the period or comma with no space before it ("analyses.^1,2^").
+- Letter-blind re-review: a response letter under another name ("08_reply_to_reviewers.md") or one that answers comments point by point ("Response: ...") stays out of the packet, and `blind-review check` fails when a packet file was changed, removed or added after the packet was built.
+- p values: capital *P* is accepted as well as *p* (Spine, JAMA and others use it); follow the target journal and use one form throughout (writing_guide v0.6.1).
 
 ### v1.9.2 (261007)
 

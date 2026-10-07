@@ -241,3 +241,44 @@ def test_superscript_citation_follows_punctuation_without_space():
     out = m.convert_text('pooled analyses [EVID:a][EVID:b]. Similar [EVID:c], and x', {'a': '1', 'b': '2', 'c': '3'},
                          'superscript')
     assert out == 'pooled analyses.^1,2^ Similar,^3^ and x'
+
+
+def _blind_packet(tmp_path):
+    m = module('blind_review')
+    orig, rev = tmp_path / 'orig', tmp_path / 'rev'
+    orig.mkdir(); rev.mkdir()
+    (tmp_path / 'comments.md').write_text('Reviewer #1:\n\nComment 1) Report the CI.\n', encoding='utf-8')
+    (orig / '05_results.md').write_text('# Results\n\nMean 4.0.\n', encoding='utf-8')
+    (rev / '05_results.md').write_text('# Results\n\nMean 4.0 (95% CI 3.5 to 4.5).\n', encoding='utf-8')
+    (rev / '08_reply_to_reviewers.md').write_text('Reviewer 1\n\nResponse: added.\n', encoding='utf-8')
+    (rev / '09_notes.md').write_text('Reviewer #1 asked for a CI.\n\n**Response:** added.\n\nResponse: see Results.\n',
+                                     encoding='utf-8')
+    out = tmp_path / 'out'
+    manifest = m.packet(tmp_path / 'comments.md', orig, rev, out)
+    verdicts = out / 'verdicts.md'
+    verdicts.write_text(verdicts.read_text(encoding='utf-8').replace('expectation: ', 'expectation: CI reported')
+                        .replace('blind_verdict: ', 'blind_verdict: FULLY')
+                        .replace('anchor: \n', 'anchor: 05_results.md: "95% CI"\n')
+                        .replace('final_verdict: ', 'final_verdict: FULLY'), encoding='utf-8')
+    return m, manifest, out, verdicts
+
+
+def test_blind_packet_withholds_a_letter_by_name_or_by_content(tmp_path):
+    m, manifest, out, verdicts = _blind_packet(tmp_path)
+    assert manifest['revised_sections'] == ['05_results.md']
+    assert m.check(verdicts) == []
+
+
+def test_blind_check_fails_when_the_packet_changed_after_it_was_built(tmp_path):
+    m, _manifest, out, verdicts = _blind_packet(tmp_path)
+    (out / 'revised' / '05_results.md').write_text('tampered', encoding='utf-8')
+    (out / 'revised' / '08_reply_to_reviewers.md').write_text('Reviewer 1\nResponse: a.\nResponse: b.\n', encoding='utf-8')
+    problems = ' | '.join(m.check(verdicts))
+    assert 'changed after the packet was built' in problems and 'added to the packet' in problems
+
+
+def test_capital_p_is_accepted(tmp_path):
+    m = module('lint_manuscript')
+    draft = tmp_path / '05_results.md'
+    draft.write_text('# Results\n\nThe difference was significant (*P* < 0.001).\n', encoding='utf-8')
+    assert not [i for i in m.lint_file(draft, {}) if i[0] == 'STAT_FORMAT']

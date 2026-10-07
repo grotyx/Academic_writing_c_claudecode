@@ -12,6 +12,8 @@
 - `academic_style.py check` 가 폴더를 받는다.
 - 금지 용어가 하이픈 합성어 안에서는 걸리지 않는다: "MIS" 금지는 "the MIS group" 만 잡고 "MIS-TLIF" 는 잡지 않는다.
 - 위첨자 인용 저널: 번호가 마침표·쉼표 뒤에, 앞 공백 없이 붙는다("analyses.^1,2^").
+- 응답서를 가린 재검토: 이름이 다른 응답서("08_reply_to_reviewers.md")나 코멘트마다 "Response: ..." 로 답한 파일도 묶음에서 빠지고, 묶음을 만든 뒤 파일이 바뀌거나 지워지거나 추가되면 `blind-review check` 가 실패한다.
+- p 값: *p* 와 함께 대문자 *P* 도 허용(Spine, JAMA 등). 목표 저널을 따르고 한 형식으로 통일(writing_guide v0.6.1).
 
 ### v1.9.2 (261007)
 
