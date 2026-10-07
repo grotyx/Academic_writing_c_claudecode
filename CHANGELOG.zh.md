@@ -11,6 +11,11 @@
 - `manuwright mode academic|strict|off`（或 `config set writing-mode`、`MANUWRIGHT_WRITING_MODE`）：默认 academic；strict 在改写之前阻止写入含高严重度问题的稿件文字；off 关闭该模式。`manuwright check` 显示模式和已学习的档案。
 - "改成学术风格" 的自动触发不再对关于工具本身的问题（程序、模式、功能、钩子、更新）作出反应。
 - 论文代理规则和 manuwright 技能会提示代理在起草前读取章节卡片。已有论文：`manuwright init --refresh-rules --all`（`manuwright update` 会询问）。
+- 量化目标：`docs/academic_style/reference_profile.json` 收录 2019–2022 年（生成式 AI 之前）JAMA Surgery、JAMA Network Open、Lancet、BMJ 和 Nature 的 33 篇开放许可原创研究的文体：各章节句长（均值、SD、第 90 和第 95 百分位）与被动语态、动词/词汇/过渡词频率、在 3 个以上期刊的 4 篇以上论文中共有的 3–4 词表达，以及来源 DOI 和许可证。仅含数字，仓库中没有论文原文。每张章节卡片都显示这些目标；没有学习语料时，第 95 百分位作为长句上限。NEJM、JAMA 和 Science 的许可不允许文本挖掘，因此未纳入。
+- 根据测量结果重写核心卡片：平实动词（"showed" 约为 "demonstrated" 的 5 倍，"used" 345 次而 "utilized" 1 次）、按章节的语态（Methods 被动 63%，Results 24%）、"we" 属正常用法、这些期刊中从未出现的词、Bad/Good 例句，以及发送前检查是否增删了事实、数字或引用。`writing_guide.md`（v0.6.0）用基于测量的 "Verb Choice" 表替换 "Verb Upgrades"，并修正 Results 语态一行。
+- 始终在上下文中（借鉴 caveman 和 ponytail）：SubagentStart 钩子把核心卡片交给子代理；在论文文件夹中每次提问附一行提醒；可用 "academic mode strict" 等在对话中切换模式。
+- `manuwright style preserve <旧> <新>`：文体改写若改变任何 `[EVID:id]`、数字、*p* 值或 Table/Figure 引用即失败；`/style-pass` 对每个章节运行（style_transform_protocol v0.3.0）。
+- 新的文字检查：夸大重要性（"marks a pivotal milestone"）、无引用的模糊归属（"many believe"）、同义词轮换、Introduction/Discussion 中单调的句子节奏。句末 "-ing" 从句仅在强调重要性时为高严重度。部分模式改编自 unslop（MIT；`THIRD_PARTY_NOTICES.md`）。
 
 ### v1.8.30 (261006)
 

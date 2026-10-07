@@ -1,6 +1,6 @@
 # Section-by-Section Writing Guide (v0.6.0)
 
-> **Academic writing mode (v1.9.0).** The always-on core card and one card per section (moves, rules, phrasebank, model paragraphs) live in `docs/academic_style/`; agents load them with `manuwright style card <section>`, and `manuwright style learn <papers>` adds the measured style of a corpus of good papers. The prose checks behind the mode (`scripts/academic_style.py`) enforce the AI-Draft De-bloat and form rules below. This guide remains the full reference.
+> **Academic writing mode (v1.9.0).** Targets below are now checked against 33 openly licensed high-impact papers (2019–2022; `docs/academic_style/reference_profile.json`). The always-on core card and one card per section (moves, rules, phrasebank, model paragraphs) live in `docs/academic_style/`; agents load them with `manuwright style card <section>`, and `manuwright style learn <papers>` adds the measured style of a corpus of good papers. The prose checks behind the mode (`scripts/academic_style.py`) enforce the AI-Draft De-bloat and form rules below. This guide remains the full reference.
 
 ## General Principles
 - Use past tense for completed actions (Methods, Results)
@@ -46,8 +46,8 @@
 |---------|-------|-------|---------|
 | Abstract | Past (methods/results), Present (conclusions) | Passive preferred | "Patients were enrolled..." |
 | Introduction | Present (facts), Past (prior studies) | Mixed, active acceptable | "LSS remains a major issue..." |
-| Methods | Past | Passive | "Patients were randomized..." |
-| Results | Past | Passive (consistent) | "No significant differences were observed..." |
+| Methods | Past | Passive (63% of sentences in high-impact journals) | "Patients were randomized..." |
+| Results | Past | Mostly active, findings as subject (24% passive in high-impact journals) | "Leg pain decreased more in group A..." / "No differences were observed..." |
 | Discussion | Present (interpretation), Past (specific findings) | Mixed | "Our findings suggest..." / "The reduction was observed..." |
 | Conclusion | Present | Active acceptable | "This technique provides..." |
 
@@ -61,16 +61,18 @@
 | therefore | Thus, Accordingly |
 | so | Hence, Therefore |
 
-### Verb Upgrades (동사 고급화)
+### Verb Choice (동사 선택: 측정 기반)
 
-| Basic | Academic |
-|-------|----------|
-| showed | demonstrated, exhibited, revealed |
-| got | obtained, achieved, acquired |
-| used | employed, utilized, applied |
-| done | performed, conducted, executed |
-| is | remains, represents, constitutes |
-| has | possesses, exhibits, maintains |
+> v0.6.0: 예전 "동사 고급화" 표(showed → demonstrated, used → utilized)를 실측 결과로 바꿨다. 2019–2022년 JAMA Surgery·JAMA Network Open·Lancet·BMJ·Nature 공개 라이선스 원저 33편(약 18만 단어, `docs/academic_style/reference_profile.json`)에서 "showed"는 "demonstrated"보다 약 5배, "used"는 345회인 데 반해 "utilized"는 1회였다. 고급 저널은 평이하고 정확한 동사를 쓴다.
+
+| 피할 표현 (부풀린 동사) | 쓸 표현 | 비고 |
+|-------|----------|------|
+| utilized, employed | used | "used" 345 : "utilized" 1 |
+| demonstrated (단순 결과 보고) | showed, found | "demonstrated"는 확실한 직접 증거일 때만 (Hedging 표 Strong) |
+| exhibited, displayed | had, showed | |
+| revealed (분석이 주어) | 결과를 주어로: "Pain decreased..." | 통계 검정이 아닌 임상 결과가 주어 |
+| conducted, performed (모든 절차에) | 동사로 직접: "We randomized...", "Patients underwent..." | Methods에서 "was performed" 반복 금지 |
+| is (상태 강조가 필요할 때) | remains, represents | 남용 금지; 사실 진술은 "is"로 충분 |
 
 ### Common Corrections (빈출 교정 패턴)
 
@@ -148,7 +150,7 @@ Discussion에서 해석·추론을 기술할 때, 근거의 강도에 비례한 
 | 일반 규칙 | 제외 이유 |
 |-----------|-----------|
 | Hedging 제거 | 근거 비례 hedging은 **필수** (과잉주장 방지) — 위 Hedging Language 표 유지. 단 중첩 과잉("might possibly could")만 정리 |
-| Copula 회피 제거 (전부 is/has로) | Verb Upgrades(is→remains/represents/constitutes)가 학술 격식 — 유지 |
+| Copula 회피 제거 (전부 is/has로) | Verb Choice 표의 remains/represents 는 상태 강조가 필요할 때만 — 유지 |
 | 수동태 제거 | Methods/Results는 수동태 선호 — 위 Voice & Tense 표 유지 |
 | "align with"를 AI어휘로 간주 | 본 가이드 권장 표현(Common Corrections) — 유지 |
 

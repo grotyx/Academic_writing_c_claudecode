@@ -13,6 +13,7 @@ args: scope
 
 1. **Style Spec 확인** — `drafts/style_spec.md`(멀티페이퍼는 서브폴더) 없으면 `AskUserQuestion`으로 bind할 exemplar 선택(`Style/own/` 또는 `Style/target_journal/`) → `docs/style_spec_template.md` 복사·작성 → 사용자 확인.
 2. **범위 확정** — 전체 vs 특정 섹션. 조용히 전부 갈아엎지 않는다.
-3. **섹션별 변환** — 각 섹션마다 Spec + 해당 exemplar 섹션 + `writing_guide` 규칙 로드 → 구조·문장 길이·hedging·claim 강도·레퍼런스 형식·voice 변환. claim·수치는 grounding 유지(날조 금지).
-4. **Style Verifier** — 각 섹션을 Spec과 대조(`docs/verifier_prompt_templates.md` Style-Conformance) → FAIL 시 자율 수정 루프(최대 2회) → 미해결은 에스컬레이션. `lint_on_edit.py` 훅이 용어·표기 잔여를 자동 표면화.
-5. **기록** — `review/gates/phase_05_style.GATE.md`에 `style` PASS 기록 → `check_gate.py --verify-hash`.
+3. **섹션별 변환** — 각 섹션마다 Spec + 해당 exemplar 섹션 + 섹션 카드(`manuwright style card <section>`: 고급 저널 실측치·표현집·모범 문단) + `writing_guide` 규칙 로드. 변환 전 원문을 임시 파일로 남겨 둔다 → 구조·문장 길이·hedging·claim 강도·레퍼런스 형식·voice 변환. claim·수치는 grounding 유지(날조 금지).
+4. **보존 검사** — `manuwright style preserve <원문> <변환본>` 이 OK 여야 한다([EVID:id]·숫자·p값·Table/Figure 참조가 하나라도 바뀌면 FAIL → 되돌린다).
+5. **Style Verifier** — 각 섹션을 Spec과 대조(`docs/verifier_prompt_templates.md` Style-Conformance) → FAIL 시 자율 수정 루프(최대 2회) → 미해결은 에스컬레이션. `lint_on_edit.py` 훅이 용어·표기 잔여를 자동 표면화.
+6. **기록** — `review/gates/phase_05_style.GATE.md`에 `style` PASS 기록 → `check_gate.py --verify-hash`.

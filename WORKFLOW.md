@@ -219,7 +219,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - **Verifier 모델:** 사용 가능한 독립 reviewer 또는 인간 검토자. 특정 모델의 우위를 가정하지 않는다.
 - **인용 grounding:** 초안에서 모든 인용은 `[EVID:author_year]` 태그로 표기 (Phase 7에서 저널 형식 변환).
 - **수치 grounding:** 원고 결과 수치는 `results/*.csv`에 존재하는 값만 사용.
-- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅(`Write/Edit/MultiEdit`)이 plan-first를 강제 — 완료·승인된 `draft_plan.md` 없이 섹션 작성, 완료·승인된 `analysis_plan.md` 없이 분석 스크립트 생성을 **차단**한다(Rule 7·8, fail-open). 미완성 템플릿/미체크 승인 plan은 plan으로 인정하지 않는다 — 승인 체크박스(`- [x] 사용자 승인 완료`)가 **없어도** 미승인. 훅은 `scripts/hooks/run.sh` 런처로 실행(`py` 있으면 py, 없으면 `python3` — macOS/Linux에서도 강제 유지). SessionStart 훅이 본 계약(+활성 Style Spec)을 매 세션 주입. PostToolUse 훅(`lint_on_edit.py`)이 draft 편집마다 용어·표기 lint를 표면화하고, UserPromptSubmit 훅(`style_intent.py`)이 "학술적으로 바꿔줘" 류 입력에 style-pass protocol을 자동 주입한다. **학술 문체 모드**(`manuwright mode academic|strict|off`, 기본 academic): SessionStart 훅이 핵심 스타일 카드를, UserPromptSubmit 훅이 "서론 써줘" 류 섹션 작성 요청에 해당 섹션 카드(`docs/academic_style/`, `manuwright style card <section>`)를 주입하고, PostToolUse 훅이 편집마다 AI 말투·축약형·긴 문장 등 학술 문장 검사 결과를 표면화한다. `strict` 는 고위험 문장이 든 원고 쓰기를 PreToolUse 에서 차단한다. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
+- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅(`Write/Edit/MultiEdit`)이 plan-first를 강제 — 완료·승인된 `draft_plan.md` 없이 섹션 작성, 완료·승인된 `analysis_plan.md` 없이 분석 스크립트 생성을 **차단**한다(Rule 7·8, fail-open). 미완성 템플릿/미체크 승인 plan은 plan으로 인정하지 않는다 — 승인 체크박스(`- [x] 사용자 승인 완료`)가 **없어도** 미승인. 훅은 `scripts/hooks/run.sh` 런처로 실행(`py` 있으면 py, 없으면 `python3` — macOS/Linux에서도 강제 유지). SessionStart 훅이 본 계약(+활성 Style Spec)을 매 세션 주입. PostToolUse 훅(`lint_on_edit.py`)이 draft 편집마다 용어·표기 lint를 표면화하고, UserPromptSubmit 훅(`style_intent.py`)이 "학술적으로 바꿔줘" 류 입력에 style-pass protocol을 자동 주입한다. **학술 문체 모드**(`manuwright mode academic|strict|off`, 기본 academic): SessionStart 훅이 핵심 스타일 카드를, UserPromptSubmit 훅이 "서론 써줘" 류 섹션 작성 요청에 해당 섹션 카드(`docs/academic_style/`, `manuwright style card <section>`)를 주입하고, PostToolUse 훅이 편집마다 AI 말투·축약형·긴 문장 등 학술 문장 검사 결과를 표면화한다. `strict` 는 고위험 문장이 든 원고 쓰기를 PreToolUse 에서 차단한다. SubagentStart 훅이 서브에이전트에도 핵심 카드를 주고, 논문 폴더에서는 매 프롬프트에 한 줄 리마인더가 붙으며, "학술 모드 꺼줘"·"academic mode strict" 로 대화 중 전환한다. 목표치는 고급 저널 공개 원저 33편의 실측값(`docs/academic_style/reference_profile.json`, 숫자만)이다. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
 
 **게이트 배치·병렬·freshness:** Phase별 게이트(3 Claim→Citation 사전검증 · 4 섹션 게이트 · 6 경량 · 8 응답 게이트), 병렬 검출, freshness 해시 규칙은 `docs/verification_protocol.md` §7/§3.1/§6 참조. PASS 시 산출물 sha256를 `provenance:`에 기록하고, 산출물이 바뀌면 stale로 보고 재검증(`check_gate.py --verify-hash`). **결정적 차원(citation/numbers/revision_claims)은 `check_gate.py --cross-check`로 원장의 `PASS`를 정본 checker 즉석 재실행과 대조** — 안 돌리고 적은 가짜 PASS나 stale PASS를 모순으로 차단(소스 미도달 시 loud FAIL).
 
@@ -272,7 +272,7 @@ Use a capable planner for design, a shell-capable analyst for reproducible analy
 | 영역 | writing_guide.md 섹션 | 주요 내용 |
 |------|----------------------|-----------|
 | 전역 규칙 | General Principles | 시제, Bold 금지, 약어 1회 정의, 임상 결과 주어, 동의어 혼용 금지, 숫자 서식, 문두 숫자 |
-| 스타일 표 | Style Reference Tables | Voice & Tense / Transition / Verb Upgrades / Common Corrections / Statistical Notation / Hedging |
+| 스타일 표 | Style Reference Tables | Voice & Tense / Transition / Verb Choice / Common Corrections / Statistical Notation / Hedging |
 | AI 군살빼기 | AI-Draft De-bloat | -ing 피상분석·AI어휘·신호어 제거; 충돌 패턴(hedging/copula/passive) 적용 제외 |
 | 작문 원칙 | Writing Principles (4 Pillars) | Clarity / Conciseness / Objectivity / Consistency |
 | 섹션별 규칙 | 01. Title ~ 10. Tables | 각 섹션 구조·구체 규칙·예시 |
@@ -355,10 +355,10 @@ Phase 4: Draft (in this order)
 
 Phase 5: Style Polish
 ├── /style-pass — 초안을 bound Style Spec/exemplar에 맞춰 섹션별 변환 + Style Verifier (docs/style_transform_protocol.md; "학술적으로 바꿔줘"에 자동 발동)
-├── Academic prose check: `manuwright lint --academic drafts` (또는 `python scripts/academic_style.py check <section>`) 0 high findings; 좋은 논문 코퍼스는 `manuwright style learn <papers>`
+├── Academic prose check: `manuwright lint --academic drafts` (또는 `python scripts/academic_style.py check <section>`) 0 high findings; 문체 수정 후 `manuwright style preserve <원문> <수정본>` OK; 좋은 논문 코퍼스는 `manuwright style learn <papers>`
 ├── Apply writing_guide.md Style Reference Tables
 │   ├── Transition Words 업그레이드 (but → nonetheless)
-│   ├── Verb Upgrades (showed → demonstrated)
+│   ├── Verb Choice (utilized → used, demonstrated → showed; 측정 기반)
 │   ├── Voice & Tense by Section 확인
 │   ├── Common Corrections 적용
 │   ├── Statistical Notation 검증 (*p* italic, en-dash 등)

@@ -102,14 +102,15 @@ def test_learn_measures_a_corpus_and_the_card_shows_it(tmp_path, monkeypatch):
     assert [c.replace('\\', '/') for c in copied] == ['Style/own/mine.md']
 
 
-def test_learned_p90_sets_the_long_sentence_limit(tmp_path):
+def test_learned_or_reference_percentile_sets_the_long_sentence_limit(tmp_path):
     folder = tmp_path / 'p'
     (folder / 'Style' / 'profile').mkdir(parents=True)
     (folder / 'Style' / 'profile' / 'style_profile.json').write_text(json.dumps(
         {'sections': {'methods': {'sentence_length': {'p90': 31}}, 'results': {'sentence_length': {'p90': 90}}}}))
     assert acad.long_limit_for('methods', folder) == 31
-    assert acad.long_limit_for('results', folder) == 50
-    assert acad.long_limit_for('discussion', folder) == 40
+    assert acad.long_limit_for('results', folder) == 55
+    # No learned discussion: the reference corpus's 95th percentile.
+    assert acad.long_limit_for('discussion', folder) == acad.reference_profile()['overall']['discussion']['p95_len']
 
 
 def test_mode_comes_from_the_environment_then_config(monkeypatch):
@@ -125,7 +126,7 @@ def test_strict_mode_blocks_high_findings_in_new_manuscript_text(monkeypatch):
     gates = load_hook('enforce_gates')
     edit = {'tool_name': 'Edit', 'cwd': '/p', 'tool_input': {
         'file_path': '/p/drafts/revision/REV1/06_discussion_REV1.md', 'old_string': 'x',
-        'new_string': 'This plays a pivotal role, highlighting the gap.'}}
+        'new_string': 'This plays a pivotal role, highlighting the importance of early care.'}}
     assert gates.decide(edit) is None  # academic mode reports after the edit; it never blocks
     monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'strict')
     reason = gates.decide(edit)
@@ -198,3 +199,61 @@ def test_a_pdf_without_a_reader_is_skipped_with_the_reason(tmp_path, monkeypatch
     monkeypatch.setattr(acad.shutil, 'which', lambda name: None)
     profile = acad.learn([tmp_path], tmp_path / 'out')
     assert profile['documents'] == 0 and 'pypdf' in profile['skipped'][0]
+
+
+def test_reference_profile_holds_numbers_and_generic_phrases_only():
+    ref = acad.reference_profile()
+    assert sum(ref['corpus'].values()) >= 30 and ref['total_words'] > 100000
+    assert all(s['doi'] and s['license'] for s in ref['sources'])
+    phrases = [p for items in ref['phrasebank'].values() for p in items]
+    assert phrases and all(len(p.split()) <= 4 for p in phrases)  # never sentences from the papers
+    text = json.dumps(ref)
+    assert len(text) < 40000
+    assert 'Measured in high-impact journals' in acad.card('methods')
+    assert ref['rates']['verbs_per_10k']['showed'] > ref['rates']['verbs_per_10k']['demonstrated']
+
+
+def test_new_prose_rules_and_their_severity():
+    def codes(text, section='discussion'):
+        return {(sev, code) for sev, code, _, _ in acad.prose_issues(text, section)}
+    assert ('high', 'ING_TAIL') in codes('Pain fell, highlighting the importance of early care.')
+    assert codes('Pain fell, highlighting a gap.') == {('medium', 'ING_TAIL')}
+    assert ('medium', 'INFLATION') in codes('This trial marks a pivotal milestone in spine care.')
+    assert ('medium', 'VAGUE_ATTRIBUTION') in codes('Many believe that fusion is overused.')
+    assert codes('Many believe that fusion is overused [EVID:a_2020].') == set()
+    assert ('medium', 'SYNONYM_CYCLING') in codes('Surgeons utilize drains, leverage navigation and employ robots.')
+    flat = ' '.join(['The cohort included older adults with stenosis today.'] * 4)
+    assert ('medium', 'FLAT_RHYTHM') in codes(flat)
+    assert ('medium', 'FLAT_RHYTHM') not in codes(flat, 'methods')
+
+
+def test_preserve_flags_changed_numbers_citations_and_references(tmp_path):
+    before = 'Pain fell (OR 2.3; 95% CI 1.2-4.5; *p* = 0.02) [EVID:a_2020] (Table 2).'
+    assert acad.preserve_problems(before, 'Pain decreased (OR 2.3; 95% CI 1.2-4.5; *p* = 0.02) [EVID:a_2020] (Table 2).') == []
+    problems = acad.preserve_problems(before, 'Pain fell (OR 2.3; 95% CI 1.2-4.6) [EVID:b_2021] (Table 3).')
+    assert {"dropped '4.5'", "added '4.6'", "dropped '[EVID:a_2020]'", "dropped 'Table2'"} <= set(problems)
+    (tmp_path / 'a.md').write_text(before, encoding='utf-8')
+    (tmp_path / 'b.md').write_text(before.replace('2.3', '2.4'), encoding='utf-8')
+    assert acad.main(['preserve', str(tmp_path / 'a.md'), str(tmp_path / 'b.md')]) == 1
+
+
+def test_chat_toggles_the_mode_and_paper_folders_get_a_per_turn_reminder(tmp_path):
+    intent = load_hook('style_intent')
+    assert "now 'off'" in intent.evaluate({'prompt': '학술 모드 꺼줘'}) and acad.mode() == 'off'
+    assert "now 'strict'" in intent.evaluate({'prompt': 'academic mode strict please'}) and acad.mode() == 'strict'
+    assert "now 'academic'" in intent.evaluate({'prompt': '학술 모드 다시 켜줘'}) and acad.mode() == 'academic'
+    (tmp_path / 'paper' / 'drafts').mkdir(parents=True)
+    assert '[academic writing mode: academic]' in intent.evaluate({'prompt': '커밋해줘', 'cwd': str(tmp_path / 'paper')})
+    assert intent.evaluate({'prompt': '커밋해줘', 'cwd': str(tmp_path)}) == ''
+    acad.set_mode('off')
+    assert intent.evaluate({'prompt': '커밋해줘', 'cwd': str(tmp_path / 'paper')}) == ''
+
+
+def test_subagents_get_the_core_card_unless_off(tmp_path, monkeypatch):
+    script = ROOT / 'scripts' / 'hooks' / 'subagent_style.py'
+    out = subprocess.run([sys.executable, str(script)], input='{"cwd": "."}', capture_output=True, text=True,
+                         encoding='utf-8').stdout
+    payload = json.loads(out)['hookSpecificOutput']
+    assert payload['hookEventName'] == 'SubagentStart' and 'ACADEMIC WRITING MODE' in payload['additionalContext']
+    monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
+    assert subprocess.run([sys.executable, str(script)], input='{}', capture_output=True, text=True).stdout == ''

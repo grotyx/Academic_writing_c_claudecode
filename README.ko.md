@@ -88,8 +88,11 @@ reason: number not found in results CSV files
 노트북에서 모델을 파인튜닝할 수는 없으므로, manuwright 는 글을 쓸 때마다 그다음으로 효과적인 일을 한다. 쓰는 쪽 눈앞에 알맞은 예문과 측정된 목표치를 놓고, 써 온 문장을 검사한다.
 
 - **섹션 카드.** 섹션마다(title, abstract, introduction, methods, results, discussion, conclusion) 수사 구조(moves), 규칙, 표현집(phrasebank), high-impact 임상 저널 문체로 쓴 모범 문단을 담은 카드가 있다. 핵심 카드는 매 세션 시작 때 들어가고, 섹션 카드는 그 섹션을 써 달라고 할 때("서론 써줘", "draft the Discussion") 또는 `manuwright style card <section>` 으로 들어간다.
+- **추측이 아니라 측정.** 카드의 목표치는 2019~2022년(생성형 AI 이전) JAMA Surgery, JAMA Network Open, Lancet, BMJ, Nature 의 공개 라이선스 원저 33편에서 측정했다: 섹션별 문장 길이와 수동태 비율, 동사·전환어 빈도, 여러 저널에 공통인 표현. 배포되는 것은 숫자뿐이며(`docs/academic_style/reference_profile.json`) 논문 원문은 GitHub 에 올리지 않는다. 예: "showed" 가 "demonstrated" 보다 약 5배 많고, "used" 는 345회, "utilized" 는 1회였다.
+- **항상 맥락 안에.** 카드는 세션 시작과 대화 압축 뒤에 다시 들어가고, 서브에이전트에도 전달되며, 논문 폴더에서는 매 프롬프트마다 한 줄로 다시 상기된다. 대화로 바꿀 수 있다: "학술 모드 꺼줘", "academic mode strict".
 - **내 코퍼스.** `manuwright style learn <논문들>` 이 좋은 논문 묶음(내 논문, 분야의 landmark 논문, 목표 저널의 최근 논문; PDF·DOCX·MD·TXT)을 섹션별로 측정한다: 문장 길이, 수동태 비율, hedging, 자주 쓰는 표현(signature phrase), 문장 시작 패턴, 모범 문단. 이후 모든 카드에 이 목표치와 문단이 함께 들어간다. 프로필은 개인 라이브러리에만 있고 논문 폴더로 복사되지 않는다.
 - **문장 검사.** 원고 섹션을 고칠 때마다 AI 말투(delve, pivotal, "it is worth noting", 끝에 붙는 ", highlighting ..."), 축약형, 본문 굵은 글씨, 너무 긴 문장, 통계 없는 "significant" 같은 문제를 줄 번호와 함께 알려 준다. `manuwright mode strict` 는 문장을 고칠 때까지 쓰기 자체를 막고, `manuwright mode off` 는 모드를 끈다.
+- **고쳐 써도 사실은 그대로.** `manuwright style preserve old.md new.md` 는 문체 수정이 `[EVID:id]`, 숫자, *p* 값, Table/Figure 참조를 하나라도 바꾸면 실패한다. `/style-pass` 가 섹션마다 실행한다.
 
 ## 설치
 

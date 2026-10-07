@@ -31,6 +31,7 @@ exclude = ["**/__pycache__", "**/*.pyc"]
 "Style/style_guide.md" = "manuwright/Style/style_guide.md"
 "profile/example_authors.md" = "manuwright/profile/example_authors.md"
 "WORKFLOW.md" = "manuwright/WORKFLOW.md"
+"THIRD_PARTY_NOTICES.md" = "manuwright/THIRD_PARTY_NOTICES.md"
 "docs" = "manuwright/docs"
 "review/gates/_TEMPLATE.GATE.md" = "manuwright/review/gates/_TEMPLATE.GATE.md"
 # Agent adapters: the installed engine folder doubles as the plugin/marketplace root.
@@ -44,6 +45,6 @@ exclude = ["**/__pycache__", "**/*.pyc"]
 
 [tool.hatch.build.targets.sdist]
 only-include = ["pyproject.toml", "README.md", "manuwright", "harness", "scripts",
-                "Style/terminology.md", "Style/style_guide.md", "profile/example_authors.md", "WORKFLOW.md", "docs", "review/gates/_TEMPLATE.GATE.md",
+                "Style/terminology.md", "Style/style_guide.md", "profile/example_authors.md", "WORKFLOW.md", "THIRD_PARTY_NOTICES.md", "docs", "review/gates/_TEMPLATE.GATE.md",
                 "skills", "hooks", ".claude-plugin", ".codex-plugin", ".agents/plugins", "gemini-extension.json", "plugin.json"]
 exclude = ["**/__pycache__", "**/*.pyc"]

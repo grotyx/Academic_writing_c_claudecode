@@ -11,6 +11,11 @@
 - `manuwright mode academic|strict|off` (또는 `config set writing-mode`, `MANUWRIGHT_WRITING_MODE`): 기본은 academic, strict 는 고위험 문장이 든 원고 쓰기를 고칠 때까지 막고, off 는 모드를 끈다. `manuwright check` 가 모드와 학습된 프로필을 보여 준다.
 - "학술적으로 바꿔줘" 자동 발동이 도구 자체에 대한 질문(프로그램, 모드, 기능, 훅, 업데이트)에는 반응하지 않는다.
 - 논문 에이전트 규칙과 manuwright 스킬이 섹션을 쓰기 전에 카드를 읽도록 안내한다. 기존 논문: `manuwright init --refresh-rules --all` (`manuwright update` 가 물어봄).
+- 측정된 목표치: `docs/academic_style/reference_profile.json` 에 2019~2022년(생성형 AI 이전) JAMA Surgery, JAMA Network Open, Lancet, BMJ, Nature 공개 라이선스 원저 33편의 문체를 담았다: 섹션별 문장 길이(평균, SD, 90·95 백분위)와 수동태, 동사·단어·전환어 빈도, 3개 이상 저널의 4편 이상에 공통인 3~4단어 표현, 출처 DOI 와 라이선스. 숫자뿐이며 논문 원문은 저장소에 없다. 모든 섹션 카드가 이 목표치를 보여 주고, 학습한 코퍼스가 없으면 95 백분위가 긴 문장 기준이 된다. NEJM·JAMA·Science 는 라이선스가 텍스트 마이닝을 허용하지 않아 제외했다.
+- 핵심 카드를 측정값으로 다시 썼다: 평이한 동사("showed" 가 "demonstrated" 의 약 5배, "used" 345회 대 "utilized" 1회), 섹션별 태(Methods 수동태 63%, Results 24%), "we" 사용은 정상, 이 저널들에 한 번도 나오지 않는 단어, Bad/Good 예문, 사실·숫자·인용을 더하거나 빼지 않았는지 보내기 전 점검. `writing_guide.md`(v0.6.0)의 "Verb Upgrades"(used → utilized, showed → demonstrated)를 측정 기반 "Verb Choice" 표로 바꾸고 Results 태 항목을 고쳤다.
+- 항상 맥락 안에(caveman·ponytail 의 아이디어): SubagentStart 훅이 서브에이전트에도 핵심 카드를 주고, 논문 폴더에서는 매 프롬프트에 한 줄 리마인더가 붙으며, "학술 모드 꺼줘", "academic mode strict", "학술 모드 켜줘" 로 대화 중에 모드를 바꾼다.
+- `manuwright style preserve <원문> <수정본>`: 문체 수정이 `[EVID:id]`, 숫자, *p* 값, Table/Figure 참조를 하나라도 바꾸면 실패한다. `/style-pass` 가 섹션마다 실행한다(style_transform_protocol v0.3.0).
+- 새 문장 검사: 중요성 부풀리기("marks a pivotal milestone"), 인용 없는 막연한 출처("many believe"), 동의어 돌려쓰기, Introduction/Discussion 의 단조로운 문장 리듬. 끝에 붙는 "-ing" 절은 중요성을 내세울 때만 고위험으로 본다. 일부 패턴은 unslop(MIT; `THIRD_PARTY_NOTICES.md`)에서 가져왔다.
 
 ### v1.8.30 (261006)
 

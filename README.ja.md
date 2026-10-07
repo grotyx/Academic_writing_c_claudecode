@@ -88,8 +88,11 @@ reason: number not found in results CSV files
 手元でモデルをファインチューニングすることはできないため、manuwright は書くたびに次善の策をとる。書き手の前に適切な例文と測定済みの目標値を置き、書かれた文章を検査する。
 
 - **セクションカード。** 各セクション（title、abstract、introduction、methods、results、discussion、conclusion）に、修辞構造（moves）、規則、表現集（phrasebank）、high-impact 臨床誌の文体で書いた模範段落をまとめたカードがある。コアカードは毎セッション開始時に読み込まれ、セクションカードはそのセクションの執筆を頼んだとき（「Discussion を書いて」など）または `manuwright style card <section>` で読み込まれる。
+- **推測ではなく測定。** カードの目標値は、2019〜2022 年（生成 AI 以前）の JAMA Surgery、JAMA Network Open、Lancet、BMJ、Nature の公開ライセンス原著 33 本から測定した：セクションごとの文長と受動態の割合、動詞・接続語の頻度、複数誌に共通する表現。配布するのは数値だけで（`docs/academic_style/reference_profile.json`）、論文本文は GitHub に置かない。例："showed" は "demonstrated" の約 5 倍、"used" は 345 回、"utilized" は 1 回だった。
+- **常に文脈の中に。** カードはセッション開始時と会話圧縮後に再注入され、サブエージェントにも渡り、論文フォルダではプロンプトごとに 1 行で再確認される。チャットで切り替えられる："academic mode strict" など。
 - **自分のコーパス。** `manuwright style learn <論文>` が良い論文の集まり（自分の論文、分野の landmark 論文、投稿先誌の最近の論文。PDF・DOCX・MD・TXT）をセクションごとに測定する：文長、受動態の割合、hedging、よく使う表現、文頭パターン、模範段落。以後すべてのカードにこの目標値と段落が加わる。プロファイルは個人ライブラリにのみ保存され、論文フォルダにはコピーされない。
 - **文章チェック。** 原稿セクションを編集するたびに、AI 的な言い回し（delve、pivotal、"it is worth noting"、文末の ", highlighting ..."）、短縮形、本文の太字、長すぎる文、統計値のない "significant" などを行番号付きで報告する。`manuwright mode strict` は書き直すまで書き込み自体をブロックし、`manuwright mode off` でモードを無効にする。
+- **書き直しても事実は不変。** `manuwright style preserve old.md new.md` は、文体の書き直しで `[EVID:id]`、数値、*p* 値、Table/Figure 参照が一つでも変わると失敗する。`/style-pass` がセクションごとに実行する。
 
 ## インストール
 

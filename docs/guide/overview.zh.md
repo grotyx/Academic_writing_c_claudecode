@@ -12,7 +12,7 @@
 - **统计分析工作流** — Python 脚本自动生成
 - **质量控制流程** — 至少3轮验证（推荐6轮）+ Revision QC 重跑工作流
 - **研究类型专用清单** — STROBE、CONSORT、PRISMA、CARE 等
-- **学术写作风格系统** — Style Reference Tables（Voice/Tense、Transition、Verb Upgrades、Common Corrections、Statistical Notation、Hedging）+ Writing Principles（Clarity/Conciseness/Objectivity/Consistency）
+- **学术写作风格系统** — Style Reference Tables（Voice/Tense、Transition、Verb Choice、Common Corrections、Statistical Notation、Hedging）+ Writing Principles（Clarity/Conciseness/Objectivity/Consistency）
 - **可靠的风格转换**（`/style-pass`）— 将粗糙初稿转换为契合的期刊风格：逐项目的 Style Spec（选定一篇范例）+ 逐章节转换 + 一个独立的 Style-Conformance verifier（自动修复循环）+ 一个可度量的 `scripts/check_style.py` 门（句长、引用密度、模糊化措辞）+ 在“make it academic”意图下自动触发（`docs/style_transform_protocol.md`）
 - **引用质量控制** — Claim→Citation Mapping（写作前将关键 claim 与证据文献对应）
 - **Style anchor library**（`Style/`）— own、landmark、target-journal anchors，用于术语、语气、论证结构和期刊 house style

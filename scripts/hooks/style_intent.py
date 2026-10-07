@@ -18,6 +18,12 @@ Discussion", "04_methods.md 작성") and the academic writing mode is on, the ma
 card (scripts/academic_style.py: moves, phrasebank, model paragraphs, learned style) is
 injected, so the section is written in that register from the first draft.
 
+Mode toggle: "학술 모드 꺼줘", "academic mode strict", "학술 모드 켜줘" set the academic writing mode
+(saved in ~/.manuwright/config.json) without leaving the conversation.
+
+Reinforcement: inside a paper folder, with the mode on, every prompt gets a one-line reminder of
+the register (as caveman does), so long sessions and compaction do not drift back to chat prose.
+
 Mechanism: prints the instruction to stdout (exit 0) -- for a UserPromptSubmit hook
 Claude adds non-empty stdout to the prompt context. It NEVER blocks the prompt and
 FAILS OPEN (exit 0) on any error.
@@ -99,8 +105,7 @@ def draft_cards(prompt: str, cwd: str | None = None) -> str:
     sections = requested_sections(prompt)
     if not sections:
         return ""
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    import academic_style
+    academic_style = _academic()
 
     if academic_style.mode() == "off":
         return ""
@@ -120,9 +125,37 @@ def detect(prompt: str) -> bool:
     return any(re.search(a, low) for a in ACTIONS)
 
 
+MODE_WORDS = r"(?:학술|academic)\s*(?:문체|writing)?\s*(?:모드|mode)\s*(?:를|을)?\s*"
+MODE_TOGGLES = (
+    ("off", re.compile(MODE_WORDS + r"(?:꺼|끄|끄기|해제|중지|off\b)", re.IGNORECASE)),
+    ("strict", re.compile(MODE_WORDS + r"(?:strict|엄격)", re.IGNORECASE)),
+    ("academic", re.compile(MODE_WORDS + r"(?:켜|켜기|다시|on\b|academic\b)", re.IGNORECASE)),
+)
+
+
+def mode_toggle(prompt: str) -> str | None:
+    """'학술 모드 꺼줘' / 'academic mode strict' / 'academic mode on' -> the mode it asks for."""
+    return next((value for value, pattern in MODE_TOGGLES if pattern.search(prompt or "")), None)
+
+
+def _academic():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import academic_style
+
+    return academic_style
+
+
 def evaluate(event: dict) -> str:
     """Return the injection text on intent, else empty string. Pure for testing."""
     prompt = event.get("prompt") or ""
+    toggle = mode_toggle(prompt)
+    if toggle:
+        try:
+            _academic().set_mode(toggle)
+            return (f"[manuwright] Academic writing mode is now '{toggle}' (saved for every session; "
+                    "`manuwright mode` shows it). Confirm this to the user in one line.")
+        except Exception:
+            return ""
     parts = [INJECTION] if detect(prompt) else []
     try:
         cards = draft_cards(prompt, event.get("cwd"))
@@ -130,6 +163,12 @@ def evaluate(event: dict) -> str:
         cards = ""  # fail open: a missing card never blocks the prompt
     if cards:
         parts.append(cards)
+    try:  # caveman-style per-turn reinforcement, only inside a paper folder and only when no card went in
+        academic = _academic()
+        if not cards and academic.mode() != "off" and academic.in_paper(Path(event["cwd"]) if event.get("cwd") else None):
+            parts.append(academic.reminder())
+    except Exception:
+        pass
     return "\n\n".join(parts)
 
 

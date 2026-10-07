@@ -12,7 +12,7 @@
 - **통계 분석 워크플로우** — Python 스크립트 자동 생성
 - **품질 관리 절차** — 최소 3라운드 검증 (6라운드 권장) + Revision QC 재수행 워크플로
 - **연구 유형별 체크리스트** — STROBE, CONSORT, PRISMA, CARE 등
-- **학술 작문 스타일 시스템** — Style Reference Tables (Voice/Tense, Transition, Verb Upgrades, Common Corrections, Statistical Notation, Hedging) + Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
+- **학술 작문 스타일 시스템** — Style Reference Tables (Voice/Tense, Transition, Verb Choice, Common Corrections, Statistical Notation, Hedging) + Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
 - **안정적인 스타일 변환** (`/style-pass`) — 거친 초안을 bound 저널 스타일로 변환: 프로젝트별 Style Spec(선택한 exemplar 1개) + 섹션별 변환 + 독립적인 Style-Conformance verifier(자동 수정 루프) + 측정 가능한 `scripts/check_style.py` 게이트(문장 길이, 인용 밀도, hedging) + "make it academic" 의도에 대한 자동 트리거 (`docs/style_transform_protocol.md`)
 - **인용 품질 관리** — Claim→Citation Mapping (작성 전 핵심 주장 ~20개와 근거 논문 매핑; write-first, cite-later 방지)
 - **스타일 앵커 라이브러리** (`Style/`) — own, landmark, target-journal 앵커로 용어·톤·논증·저널 house style 확보

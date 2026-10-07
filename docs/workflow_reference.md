@@ -201,6 +201,7 @@ project/
 | `manuwright mode academic\|strict\|off` | Academic writing mode: style cards + prose findings after each edit; strict blocks high-severity prose |
 | `manuwright style card <section>` | Section style card (moves, rules, phrasebank, model paragraphs, learned style); load before drafting a section |
 | `manuwright style learn <papers>` | Measure a corpus of good papers (own, landmark, target journal) so every card carries its style |
+| `manuwright style preserve <old> <new>` | After a style rewrite: every [EVID:id], number, p value and Table/Figure reference unchanged |
 | `manuwright guide [name ...]` | Print engine guides cited as `docs/<name>.md` (a paper folder has no `docs/`); no name lists them |
 
 ### Knowledge Graph (medical-kag MCP)

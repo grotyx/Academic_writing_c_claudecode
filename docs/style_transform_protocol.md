@@ -1,4 +1,4 @@
-# Style Transformation Protocol (v0.2.0)
+# Style Transformation Protocol (v0.3.0)
 
 > Turn a rough draft into bound academic/journal style — reliably, without repeating the
 > same style note. Triggered by `/style-pass`, or automatically when you ask to "make it
@@ -40,12 +40,15 @@ For EACH section, in drafting order (Methods → Results → Introduction → Di
 Conclusion → Abstract → Title):
 1. Load the Style Spec + the matching section of the bound exemplar + the `writing_guide`
    section rules + the section card (`manuwright style card <section>`: moves, phrasebank,
-   model paragraphs and, when learned with `manuwright style learn`, the corpus targets).
+   model paragraphs, the targets measured in 33 high-impact papers, and, when learned with
+   `manuwright style learn`, the author's corpus targets). Keep a copy of the section as it was.
 2. Rewrite the section toward the spec: structure/flow, sentence length, hedging, claim
    strength, reference format, voice/tense. Keep claims and numbers grounded — do not invent.
 
 ### Step 3 — Verify each section (auto-fix loop)
-First the **measurable layer**: `python scripts/check_style.py check <section> --spec drafts/style_spec.md`
+First **preservation**: `manuwright style preserve <before> <after>` must print OK. A style rewrite
+may not drop, add or change any `[EVID:id]`, number, *p* value or Table/Figure reference; on FAIL
+restore them before anything else. Then the **measurable layer**: `python scripts/check_style.py check <section> --spec drafts/style_spec.md`
 flags metric deviations (word count, mean sentence length, paragraphs, citation density) from
 the Spec targets. Then the **Style-Conformance Verifier** (`docs/verifier_prompt_templates.md`)
 on the section against the Style Spec + exemplar for the qualitative layer (flow, claim

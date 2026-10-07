@@ -54,6 +54,7 @@ Setup and updates:
   mode [academic|strict|off] academic writing mode: style cards + prose findings (strict also blocks)
   style learn [papers...]    measure a corpus of good papers (PDF, DOCX, MD, TXT): your style, landmark, target journal
   style card <section>       the section's style card: moves, phrasebank, model paragraphs, your measured style
+  style preserve <old> <new> a rewrite kept every [EVID:id], number, p value and table/figure reference
   style status               writing mode and learned profile (style extract|check: style metrics vs a Style Spec)
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
@@ -70,7 +71,7 @@ Setup and updates:
                                        review.openrouter-models, review.<agent>-model, docx.*
   agents install|update [--only claude,codex,agy,opencode,muse] [--dry-run]
                              install/refresh plugins and skills for each agent
-  hook session|gate|lint|style         entry point for agent plugin hooks
+  hook session|gate|lint|style|subagent   entry point for agent plugin hooks
 Obsidian (Academic Paper Citation Manager plugin):
   obsidian status | obsidian install [--vault PATH] [--enable-mcp] [--yes]
   obsidian connect [--vault PATH] [--only a,b] [--dry-run] [--yes]
@@ -98,13 +99,13 @@ def project_defaults(args, defaults, cwd):
 
 
 HOOKS = {'session': 'session_contract.py', 'gate': 'enforce_gates.py', 'lint': 'lint_on_edit.py',
-         'style': 'style_intent.py'}
+         'style': 'style_intent.py', 'subagent': 'subagent_style.py'}
 
 
 def hook(args):
-    """manuwright hook <session|gate|lint|style>: plugin hook entry (Claude Code, Codex)."""
+    """manuwright hook <session|gate|lint|style|subagent>: plugin hook entry (Claude Code, Codex)."""
     if not args or args[0] not in HOOKS:
-        print('usage: manuwright hook session|gate|lint|style', file=sys.stderr)
+        print('usage: manuwright hook session|gate|lint|style|subagent', file=sys.stderr)
         return 2
     project = Path(os.environ.get('CLAUDE_PROJECT_DIR') or Path.cwd())
     settings = project / '.claude' / 'settings.json'
@@ -190,7 +191,7 @@ def main(argv=None):
             sys.path.insert(0, str(HERE.parent))
         from manuwright import models
         return models.main(rest)
-    if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status'):
+    if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status', 'preserve'):
         return subprocess.call([sys.executable, str(ENGINE / 'scripts' / 'academic_style.py'), *rest])
     if command in {'init', 'rules', 'guide', 'check', 'mode', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
         lifecycle = load_lifecycle()

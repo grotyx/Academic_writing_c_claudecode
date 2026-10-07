@@ -11,6 +11,11 @@
 - `manuwright mode academic|strict|off`（または `config set writing-mode`、`MANUWRIGHT_WRITING_MODE`）：既定は academic。strict は高重要度の指摘を含む原稿の書き込みを書き直すまでブロックし、off はモードを無効にする。`manuwright check` がモードと学習済みプロファイルを表示する。
 - 「学術的に直して」の自動起動は、ツール自体についての質問（プログラム、モード、機能、フック、更新）には反応しない。
 - 論文のエージェント規則と manuwright スキルが、執筆前にセクションカードを読むよう指示する。既存の論文：`manuwright init --refresh-rules --all`（`manuwright update` が確認する）。
+- 測定済みの目標値：`docs/academic_style/reference_profile.json` に、2019〜2022 年（生成 AI 以前）の JAMA Surgery、JAMA Network Open、Lancet、BMJ、Nature の公開ライセンス原著 33 本の文体を収録した：セクションごとの文長（平均、SD、90・95 パーセンタイル）と受動態、動詞・単語・接続語の頻度、3 誌以上の 4 本以上に共通する 3〜4 語の表現、出典 DOI とライセンス。数値のみで、論文本文はリポジトリにない。すべてのセクションカードがこの目標値を表示し、学習済みコーパスがなければ 95 パーセンタイルが長文の上限になる。NEJM・JAMA・Science はライセンスがテキストマイニングを認めないため除外した。
+- コアカードを測定値で書き直した：平易な動詞（"showed" は "demonstrated" の約 5 倍、"used" 345 回に対し "utilized" 1 回）、セクションごとの態（Methods 受動態 63%、Results 24%）、"we" は通常、これらの誌に一度も出ない語、Bad/Good 例文、事実・数値・引用を足し引きしていないかの送信前チェック。`writing_guide.md`（v0.6.0）の "Verb Upgrades" を測定に基づく "Verb Choice" 表に置き換え、Results の態の行を修正した。
+- 常に文脈の中に（caveman・ponytail のアイデア）：SubagentStart フックがサブエージェントにもコアカードを渡し、論文フォルダではプロンプトごとに 1 行のリマインダーを付け、"academic mode strict" などでチャットからモードを切り替える。
+- `manuwright style preserve <旧> <新>`：文体の書き直しで `[EVID:id]`、数値、*p* 値、Table/Figure 参照が一つでも変わると失敗する。`/style-pass` がセクションごとに実行する（style_transform_protocol v0.3.0）。
+- 新しい文章チェック：重要性の誇張（"marks a pivotal milestone"）、引用のない曖昧な帰属（"many believe"）、同義語の言い換え、Introduction/Discussion の単調な文のリズム。文末の "-ing" 節は重要性を強調する場合のみ高重要度。一部のパターンは unslop（MIT；`THIRD_PARTY_NOTICES.md`）から採用した。
 
 ### v1.8.30 (261006)
 

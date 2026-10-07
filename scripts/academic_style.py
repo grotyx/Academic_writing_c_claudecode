@@ -17,6 +17,8 @@ that comes back.
                               Default sources: the PDFs in your manuwright writing library.
   check <file>... [--strict]  academic-prose findings (exit 1 on high-severity ones; --strict:
                               on any)
+  preserve <before> <after>   a style rewrite must keep every [EVID:id], number, p value and
+                              table/figure reference (exit 1 when one was dropped or added)
   status                      writing mode and learned profile
 
 Writing mode (`manuwright mode academic|strict|off`, or MANUWRIGHT_WRITING_MODE): academic shows
@@ -51,7 +53,7 @@ MODES = ('academic', 'strict', 'off')
 FILE_SECTIONS = {'01': 'title', '02': 'abstract', '03': 'introduction', '04': 'methods', '05': 'results',
                  '06': 'discussion', '07': 'conclusion'}
 SOURCE_SUFFIXES = ('.pdf', '.docx', '.md', '.txt')
-DEFAULT_LONG = 40
+DEFAULT_LONG = 45
 
 
 # --- settings -----------------------------------------------------------------
@@ -117,10 +119,15 @@ PHRASE_RULES = [  # (severity, code, pattern, message)
         _I), 'AI-register phrase; state the specific fact instead'),
     (HIGH, 'AI_PHRASE', re.compile(r"\bplays? an? (?:crucial|pivotal|vital|key|critical) role\b", _I),
      'say what X does to Y, with a citation'),
+    # A trailing "-ing" clause that announces importance is the AI tell; a plain participle is not
+    # (", highlighting ..." occurs 0.4 times per 10,000 words in the reference corpus).
     (HIGH, 'ING_TAIL', re.compile(
-        r",\s+(?:thereby\s+|thus\s+)?(?:highlighting|underscoring|emphasi[sz]ing|showcasing|signal(?:l)?ing|fostering"
-        r"|paving|contributing to|demonstrating the importance)\b", _I),
-     'trailing ", highlighting/underscoring ..." clause; end the sentence and state the consequence plainly'),
+        r",\s+(?:thereby\s+|thus\s+)?(?:highlighting|underscoring|emphasi[sz]ing|showcasing|demonstrating|signal(?:l)?ing"
+        r"|reinforcing|illustrating)\s+(?:the\s+|its\s+|their\s+|a\s+|an\s+)?(?:\w+\s+)?(?:importance|need|potential|role"
+        r"|value|significance|promise|relevance|necessity)\b|,\s+(?:thereby\s+)?(?:paving the way|fostering)\b", _I),
+     'trailing ", highlighting the importance ..." clause; end the sentence and state the consequence plainly'),
+    (MEDIUM, 'ING_TAIL', re.compile(r",\s+(?:thereby\s+|thus\s+)?(?:highlighting|underscoring|emphasi[sz]ing|showcasing)\b", _I),
+     'trailing ", highlighting ..." clause; consider ending the sentence and stating the point'),
     (HIGH, 'CHATBOT', re.compile(r"\bI hope this helps\b|\blet me know\b|\bas an AI\b|^(?:certainly|sure|absolutely)[!,.]"
                                  r"|\bhere is (?:a|an|the) (?:revised|draft|rewritten)", _I | re.M),
      'chat residue; delete it'),
@@ -132,6 +139,16 @@ PHRASE_RULES = [  # (severity, code, pattern, message)
         r"|seamless(?:ly)?|holistic|paramount|foster(?:s|ed|ing)?|underscor(?:e|es|ed|ing)|realm|meticulous(?:ly)?"
         r"|commendable|bolster(?:s|ed|ing)?)\b", _I),
      'AI-register word; use a plain, precise word or delete it'),
+    # Guarded patterns adapted from unslop (MIT, Copyright (c) 2026 Mohamed Abdallah; THIRD_PARTY_NOTICES.md).
+    (MEDIUM, 'INFLATION', re.compile(
+        r"\b(?:marks?|represents?|stands?\s+as)\s+(?:a|an|the)\s+(?:pivotal|defining|critical|key|watershed|seminal)"
+        r"\s+(?:moment|turning\s+point|milestone|step|advance)\b|\bserve[sd]?\s+as\s+(?:a|an|the)\s+(?:cornerstone|backbone"
+        r"|beacon|catalyst|testament|gateway)\b|\bunprecedented(?=\s+(?:opportunity|opportunities|challenge|challenges"
+        r"|growth|impact|change)\b)", _I),
+     'significance inflation; state what was found'),
+    (MEDIUM, 'VAGUE_ATTRIBUTION', re.compile(r"\b(?:experts|researchers|observers|many|some) (?:argue|believe|maintain|"
+                                             r"say|note)\b(?![^.]*\[EVID:)", _I),
+     'unattributed claim; name the studies and cite them'),
     (MEDIUM, 'BELIEF', re.compile(r"\bwe (?:believe|feel|think)\b", _I), '"we believe"; let the evidence carry the claim'),
     (MEDIUM, 'SIGNPOST', re.compile(r"(?:^|[.!?]\s+)(?:Importantly|Interestingly|Notably|Remarkably|Crucially|Significantly),"
                                     r"|\bin this section\b", _I),
@@ -143,6 +160,14 @@ STATS = re.compile(r"\*?\bp\*?\s*[<=>≤]|\bCI\b|confidence interval|\((?:Supple
 BOLD = re.compile(r"\*\*[^*\n]+\*\*|__[^_\n]+__")
 LEADING_BOLD = re.compile(r"^\s*(?:\*\*[^*\n]+\*\*|__[^_\n]+__)")
 BODY_SECTIONS = ('introduction', 'methods', 'results', 'discussion', 'conclusion')
+# Synonym cycling (unslop): 3+ members of one group in a paragraph reads as avoiding repetition.
+SYNONYM_GROUPS = (
+    frozenset({'utilize', 'utilise', 'leverage', 'employ', 'harness'}),
+    frozenset({'showcase', 'highlight', 'emphasize', 'emphasise', 'underscore'}),
+    frozenset({'pivotal', 'crucial', 'vital', 'paramount', 'essential'}),
+    frozenset({'comprehensive', 'thorough', 'exhaustive', 'holistic'}),
+)
+FLAT_SECTIONS = ('introduction', 'discussion', 'conclusion')
 
 
 def _prose_lines(text: str):
@@ -201,6 +226,16 @@ def prose_issues(text: str, section: str | None = None, long_limit: int | None =
                 found.append((MEDIUM, 'LIST', number, 'list in the body; write it as prose'))
     for paragraph, marks in _paragraphs(text):
         previous_connective = False
+        stems = {re.sub(r'(?:s|d|ed|ing)$', '', w) for w in re.findall(r'[a-z]+', paragraph.lower())}
+        for group in SYNONYM_GROUPS:
+            used = sorted(w for w in group if w in stems or re.sub(r'e$', '', w) in stems)
+            if len(used) >= 3:
+                found.append((MEDIUM, 'SYNONYM_CYCLING', marks[0][1],
+                              f'{", ".join(used)} in one paragraph; pick one plain word and repeat it'))
+        lengths = [len(x.split()) for x in split_sentences(paragraph) if x.strip()]
+        if section in FLAT_SECTIONS and len(lengths) >= 4 and statistics.pstdev(lengths) < 3.0:
+            found.append((MEDIUM, 'FLAT_RHYTHM', marks[0][1],
+                          f'{len(lengths)} sentences of nearly equal length; vary them as published prose does'))
         for sentence in split_sentences(paragraph):
             start = _line_at(paragraph, marks, sentence)
             plain = _plain(sentence)
@@ -226,10 +261,39 @@ def prose_issues(text: str, section: str | None = None, long_limit: int | None =
 
 
 def long_limit_for(section: str | None, project: Path | None = None) -> int:
-    """Sentence-length ceiling: the learned 90th percentile for this section (30-50), else 40."""
+    """Sentence-length ceiling (30-55 words): the 95th percentile of the learned corpus for this section,
+    else of the high-impact reference corpus, else DEFAULT_LONG."""
     profile, _ = load_profile(project)
-    p90 = ((profile.get('sections') or {}).get(section or '') or {}).get('sentence_length', {}).get('p90')
-    return int(min(50, max(30, round(p90)))) if p90 else DEFAULT_LONG
+    length = ((profile.get('sections') or {}).get(section or '') or {}).get('sentence_length', {})
+    value = length.get('p95') or length.get('p90')
+    if not value:
+        value = ((reference_profile().get('overall') or {}).get(section or '') or {}).get('p95_len')
+    return int(min(55, max(30, round(value)))) if value else DEFAULT_LONG
+
+
+def reference_profile() -> dict:
+    """Measured style of high-impact medical and surgical journals (numbers and generic phrases only)."""
+    try:
+        return json.loads((STYLE_DIR / 'reference_profile.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+
+
+PROTECTED = re.compile(r'\[EVID:[^\]]+\]|(?:Table|Fig(?:ure)?\.?|Supplementary (?:Table|Figure))\s*S?\d+[A-Za-z]?'
+                       r'|\*?\bp\*?\s*[<=>\u2264\u2265]\s*0?\.\d+|\d+(?:\.\d+)?\s*%?|\d+(?:\.\d+)?')
+
+
+def protected_tokens(text: str) -> Counter:
+    """Citations, table/figure references, p values and numbers: what a style rewrite must not change."""
+    return Counter(re.sub(r'\s+', '', m.group(0)) for m in PROTECTED.finditer(text))
+
+
+def preserve_problems(before: str, after: str) -> list[str]:
+    """Protected tokens a rewrite dropped or added (humanizer/unslop fact-preservation idea, made deterministic)."""
+    old, new = protected_tokens(before), protected_tokens(after)
+    lost = [f'dropped {tok!r}' + (f' x{n}' if n > 1 else '') for tok, n in (old - new).items()]
+    gained = [f'added {tok!r}' + (f' x{n}' if n > 1 else '') for tok, n in (new - old).items()]
+    return lost + gained
 
 
 # --- reading a corpus -----------------------------------------------------------------
@@ -278,7 +342,8 @@ NOISE = re.compile(r'downloaded from|©|copyright|https?://|\bdoi\b|all rights r
 def clean_text(text: str) -> str:
     text = re.sub(r'(\w)-\n(\w)', r'\1\2', text.replace('\r', ''))  # PDF line-break hyphens
     lines = [ln for ln in text.splitlines() if not NOISE.search(ln) and not re.fullmatch(r'\s*\d{1,4}\s*', ln)]
-    return '\n'.join(lines)
+    # Stripped citation numbers glue sentences together ("techniques.Postoperative"); split them again.
+    return re.sub(r'([a-z)\]])\.([A-Z][a-z])', r'\1. \2', '\n'.join(lines))
 
 
 HEADING_NAMES = {
@@ -433,7 +498,8 @@ def _measure(sentences: list[str], blocks: list[str]) -> dict:
         'sentences': len(sentences), 'words': words,
         'sentence_length': {'mean': round(statistics.mean(lengths), 1) if lengths else 0,
                             'sd': round(statistics.pstdev(lengths), 1) if lengths else 0,
-                            'p90': ordered[int(0.9 * (len(ordered) - 1))] if ordered else 0},
+                            'p90': ordered[int(0.9 * (len(ordered) - 1))] if ordered else 0,
+                            'p95': ordered[int(0.95 * (len(ordered) - 1))] if ordered else 0},
         'passive_pct': round(100 * sum(bool(PASSIVE.search(s)) for s in sentences) / (len(sentences) or 1)),
         'we_per_100w': round(100 * len(re.findall(r'\b(?:we|our)\b', low)) / words, 2),
         'hedges_per_100w': round(100 * hedges / words, 2),
@@ -511,6 +577,33 @@ def _write_exemplars(target: Path, section: str, entry: dict, per_doc) -> None:
     target.write_text('\n'.join(lines), encoding='utf-8')
 
 
+def set_mode(value: str) -> None:
+    """Save the writing mode in ~/.manuwright/config.json (what `manuwright mode` does)."""
+    path = home() / 'config.json'
+    try:
+        data = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        data = {}
+    data['writing_mode'] = value
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding='utf-8')
+
+
+def in_paper(folder: Path | None) -> bool:
+    """A manuwright paper folder (project.json or drafts/) at or above folder."""
+    if not folder:
+        return False
+    folder = Path(folder).resolve()
+    return any((p / 'project.json').is_file() or (p / 'drafts').is_dir() for p in [folder, *folder.parents])
+
+
+def reminder() -> str:
+    """One line re-injected on every prompt in a paper folder so the register does not drift."""
+    return (f'[academic writing mode: {mode()}] Manuscript prose: plain exact clinical register; plain verbs (used, '
+            'showed, found); estimate and 95% CI before p; claims sized to the design; no AI-register words or '
+            '", highlighting ..." tails. Before drafting a section: manuwright style card <section>.')
+
+
 # --- cards ----------------------------------------------------------------------
 
 def core_card(project: Path | None = None) -> str:
@@ -563,7 +656,25 @@ def card(section: str, project: Path | None = None) -> str:
     header = (f'ACADEMIC STYLE CARD: {section} (mode {mode()}). Follow the moves and rules; imitate the model '
               'paragraphs in form only. Model paragraphs are illustrative and fictional: never reuse their facts, '
               'numbers or citations.')
-    return header + '\n\n' + body + '\n' + _profile_block(section, project)
+    return header + '\n\n' + body + '\n' + _reference_block(section) + '\n' + _profile_block(section, project)
+
+
+def _reference_block(section: str) -> str:
+    ref = reference_profile()
+    entry = (ref.get('overall') or {}).get(section)
+    if not entry:
+        return ''
+    journals = ', '.join(ref.get('corpus', {}))
+    out = [f"\n## Measured in high-impact journals ({sum(ref.get('corpus', {}).values())} papers: {journals}; 2019-2022)",
+           f"- Sentence length: mean {entry['mean_len']} words (SD {entry['sd_len']}); 90% of sentences under "
+           f"{entry['p90_len']} and 95% under {entry['p95_len']} words.",
+           f"- Passive voice in {entry['passive_pct']}% of sentences; we/our {entry['we_our_per_100w']} and hedges "
+           f"{entry['hedges_per_100w']} per 100 words."]
+    phrases = (ref.get('phrasebank') or {}).get(section)
+    if phrases:
+        out.append('- Phrasing shared across these journals (4+ papers, 3+ journals): '
+                   + '; '.join(f'"{p}"' for p in phrases[:18]))
+    return '\n'.join(out)
 
 
 # --- command line -------------------------------------------------------------------
@@ -591,7 +702,19 @@ def main(argv: list[str] | None = None) -> int:
     ck.add_argument('files', nargs='+')
     ck.add_argument('--strict', action='store_true', help='fail on medium findings too')
     sub.add_parser('status', help='writing mode and learned profile')
+    pv = sub.add_parser('preserve', help='did a rewrite keep every citation, number, p value and table/figure reference?')
+    pv.add_argument('before')
+    pv.add_argument('after')
     args = parser.parse_args(argv)
+
+    if args.action == 'preserve':
+        read = lambda name: Path(name).read_text(encoding='utf-8', errors='replace')  # noqa: E731
+        problems = preserve_problems(read(args.before), read(args.after))
+        for problem in problems:
+            print(f'CHANGED: {problem}')
+        print('FAIL: the rewrite changed protected content; restore it.' if problems
+              else 'OK: every [EVID:id], number, p value and table/figure reference is unchanged.')
+        return 1 if problems else 0
 
     if args.action == 'core':
         print(core_card(Path.cwd()))

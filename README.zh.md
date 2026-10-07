@@ -88,8 +88,11 @@ reason: number not found in results CSV files
 在本机无法对模型进行微调，因此 manuwright 在每次写作时采取次优而有效的做法：把合适的范例和量化目标放在写作者面前，并检查写出的文字。
 
 - **章节卡片。** 每个章节（title、abstract、introduction、methods、results、discussion、conclusion）都有一张卡片，包含修辞结构（moves）、规则、表达库（phrasebank）以及用高影响力临床期刊文体写成的范例段落。核心卡片在每次会话开始时载入；当你要求起草某一章节（如 "draft the Discussion"）或运行 `manuwright style card <section>` 时载入该章节卡片。
+- **测量而非猜测。** 卡片上的目标值来自 2019–2022 年（生成式 AI 之前）JAMA Surgery、JAMA Network Open、Lancet、BMJ 和 Nature 的 33 篇开放许可原创研究：各章节的句长和被动语态比例、动词和过渡词频率，以及多个期刊共有的表达。只发布数字（`docs/academic_style/reference_profile.json`），论文原文不上传 GitHub。例如："showed" 约为 "demonstrated" 的 5 倍，"used" 出现 345 次，"utilized" 仅 1 次。
+- **始终在上下文中。** 卡片在会话开始和对话压缩后重新注入，也会传给子代理；在论文文件夹中每次提问都会用一行重新提醒。可在对话中切换，例如 "academic mode strict"。
 - **你的语料。** `manuwright style learn <论文>` 按章节测量一组好论文（你自己的论文、领域经典论文、目标期刊的近期论文；PDF、DOCX、MD 或 TXT）：句长、被动语态比例、hedging、常用表达、句首模式和范例段落。此后每张卡片都会带上这些目标和段落。该档案只保存在个人文献库中，不会复制到论文文件夹。
 - **文字检查。** 每次编辑稿件章节后，会按行报告 AI 腔表达（delve、pivotal、"it is worth noting"、句末的 ", highlighting ..."）、缩写形式、正文加粗、过长句子、没有统计量的 "significant" 等问题。`manuwright mode strict` 会在改写之前直接阻止写入；`manuwright mode off` 关闭该模式。
+- **改写不改事实。** 如果文体改写改变了任何 `[EVID:id]`、数字、*p* 值或 Table/Figure 引用，`manuwright style preserve old.md new.md` 会失败；`/style-pass` 对每个章节运行它。
 
 ## 安装
 
