@@ -99,7 +99,7 @@ def test_learn_measures_a_corpus_and_the_card_shows_it(tmp_path, monkeypatch):
     (library.writing() / 'own').mkdir(parents=True, exist_ok=True)
     (library.writing() / 'own' / 'mine.md').write_text('anchor', encoding='utf-8')
     _, copied = library.copy_into_paper(tmp_path / 'new_paper')
-    assert copied == ['Style/own/mine.md']
+    assert [c.replace('\\', '/') for c in copied] == ['Style/own/mine.md']
 
 
 def test_learned_p90_sets_the_long_sentence_limit(tmp_path):
