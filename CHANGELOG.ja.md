@@ -1,5 +1,14 @@
 # 変更履歴
 
+### v1.9.1 (261007)
+
+v1.9.0 に合わせてユーザーマニュアルと README を書き直した。
+
+- マニュアル（`docs/manual.md`、`docs/manual.ko.md` v2.5.0）：6 節「学術文体モード」を新設（基準の出典、カードとチェックの仕組み、チャットでの言い方、3 つのモード、コーパス学習と修正からの学習、事実の保持）。3 節に Claim Strength（値・典型的な根拠・許される表現の表）と `search audit`、8 節に `lint --academic` と `claim-strength`（実際の出力）を追加。11 節「Revision」を新設（コメントの形式、`[CHANGE]` ブロック、回答書を伏せた再査読の段階、response-coverage と revision-claims）。トラブルシューティングに計画書のブロック、strict モード、モードの環境変数、学習した文体、PubMed 接続、ブラインド packet を追加。節番号を振り直し、更新の節から執筆コマンドを外した。
+- README（4 言語）：学術文体モードの節を短い要約とチャットでの言い方の表一つにまとめ、マニュアル 6 節へリンク。
+- 文書に書いた言い方が実際に動作する："suggest titles"、"make this paragraph academic"、日本語・中国語の執筆依頼（「Introduction を書いて」「重写 Discussion」）でもセクションカードが入る。
+- `manuwright search audit` は PubMed への接続失敗を evidence.md がないと誤って報告せず、接続失敗として報告する。
+
 ### v1.9.0 (261007)
 
 学術文体モード：草稿を書くたびに適切な例文と測定済みの目標値を書き手に渡し、書かれた文章を検査する。

@@ -85,22 +85,20 @@ reason: number not found in results CSV files
 
 ## 学術文体モード
 
-**毎日の使い方（チャットで頼むだけ）：**
-1. 「Introduction を書いて」：エージェントがそのセクションのスタイルカードを読み、その文体で書きます。
-2. チェック結果が出たら「直して」。*MUST FIX* は AI 的な表現で要修正、*consider* は提案なので意図した表現ならそのままで構いません。
-3. 最初に一度：良い論文（自分の論文や投稿先誌の論文、PDF）3 本以上を一つのフォルダに入れて「このフォルダで私の文体を学んで」。
-4. 草稿を自分で直した後：「私の修正から学んで」。提案された規則はチャットで一つずつ承認します。
-5. 投稿前：「誇張表現をチェックして」「参考文献を再確認して」（撤回論文、誤った DOI）。revision 時：「ブラインド再査読をして」。
-厳格モード（"academic mode strict"）は AI 的な文を書かせず、既定モードは報告だけします。
+エージェントが最初の草稿から、チャットボットの文体ではなく医学誌の文体で書くようにする。基準は 2019〜2022 年（生成 AI 以前）の JAMA Surgery、JAMA Network Open、Lancet、BMJ、Nature の公開ライセンス原著 33 本から測定した値である。配布するのは数値だけで（`docs/academic_style/reference_profile.json`）、論文本文は GitHub に置かない。例えば "used" は 345 回、"utilized" は 1 回で、delve、underscore、"plays a crucial role" は一度も現れなかった。
 
-手元でモデルをファインチューニングすることはできないため、manuwright は書くたびに次善の策をとる。書き手の前に適切な例文と測定済みの目標値を置き、書かれた文章を検査する。
+チャットで頼むだけでよい。
 
-- **セクションカード。** 各セクション（title、abstract、introduction、methods、results、discussion、conclusion）に、修辞構造（moves）、規則、表現集（phrasebank）、high-impact 臨床誌の文体で書いた模範段落をまとめたカードがある。コアカードは毎セッション開始時に読み込まれ、セクションカードはそのセクションの執筆を頼んだとき（「Discussion を書いて」など）または `manuwright style card <section>` で読み込まれる。
-- **推測ではなく測定。** カードの目標値は、2019〜2022 年（生成 AI 以前）の JAMA Surgery、JAMA Network Open、Lancet、BMJ、Nature の公開ライセンス原著 33 本から測定した：セクションごとの文長と受動態の割合、動詞・接続語の頻度、複数誌に共通する表現。配布するのは数値だけで（`docs/academic_style/reference_profile.json`）、論文本文は GitHub に置かない。例："showed" は "demonstrated" の約 5 倍、"used" は 345 回、"utilized" は 1 回だった。
-- **常に文脈の中に。** カードはセッション開始時と会話圧縮後に再注入され、サブエージェントにも渡り、論文フォルダではプロンプトごとに 1 行で再確認される。チャットで切り替えられる："academic mode strict" など。
-- **自分のコーパス。** `manuwright style learn <論文>` が良い論文の集まり（自分の論文、分野の landmark 論文、投稿先誌の最近の論文。PDF・DOCX・MD・TXT）をセクションごとに測定する：文長、受動態の割合、hedging、よく使う表現、文頭パターン、模範段落。以後すべてのカードにこの目標値と段落が加わる。プロファイルは個人ライブラリにのみ保存され、論文フォルダにはコピーされない。
-- **文章チェック。** 原稿セクションを編集するたびに、AI 的な言い回し（delve、pivotal、"it is worth noting"、文末の ", highlighting ..."）、短縮形、本文の太字、長すぎる文、統計値のない "significant" などを行番号付きで報告する。`manuwright mode strict` は書き直すまで書き込み自体をブロックし、`manuwright mode off` でモードを無効にする。
-- **書き直しても事実は不変。** `manuwright style preserve old.md new.md` は、文体の書き直しで `[EVID:id]`、数値、*p* 値、Table/Figure 参照が一つでも変わると失敗する。`/style-pass` がセクションごとに実行する。
+| こう言うと | 起きること |
+|---|---|
+| 「Introduction を書いて」「Discussion を書き直して」 | そのセクションのカード（構成、表現集、模範段落、測定目標）を読んで書く |
+| 「直して」 | 編集のたびに文章チェックの結果が出て、エージェントが直す。*MUST FIX* は AI 的表現、*consider* は提案なのでそのままでもよい |
+| 「このフォルダで私の文体を学んで」 | 良い論文 3 本以上（自分の論文や投稿先誌の論文）を測定し、すべてのカードにその文体を加える |
+| 「私の修正から学んで」 | 草稿の直し方から規則を提案。承認した規則だけを適用 |
+| 「誇張表現をチェックして」「参考文献を再確認して」 | 根拠より強い表現、撤回論文と誤った DOI |
+| "academic mode strict" / "off" / "on" | `strict` は AI 的な文をブロック、既定の `academic` は報告のみ、`off` は両方停止 |
+
+論文フォルダの中でのみ動作する。文体を直しても事実は変わらない：引用、数値、*p* 値、Table/Figure 参照が変わると `manuwright style preserve` が失敗する。手順：[マニュアル 6 節](docs/manual.md#6-academic-writing-mode)（英語）。
 
 ## インストール
 
@@ -115,7 +113,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper

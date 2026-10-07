@@ -1,2 +1,2 @@
 """Runtime-independent medical manuscript workflow helpers."""
-__version__ = '1.9.0'
+__version__ = '1.9.1'

@@ -1,6 +1,6 @@
-# manuwright 사용자 매뉴얼 (v2.4.0)
+# manuwright 사용자 매뉴얼 (v2.5.0)
 
-빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
+빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
 스크린샷은 시험 중 터미널의 텍스트를 이미지로 렌더링한 것이다(세션에 macOS 화면 기록 권한이 없었음). 도구가 출력한 내용과 같고, 긴 출력은 줄였다고 표시했다.
 
@@ -16,19 +16,26 @@
 | 실제로 완결된 보고 체크리스트 | 공식 CONSORT/STROBE/PRISMA/CARE 체크리스트를 독립 검토자가 확인 |
 | 글쓴 모델이 아닌 다른 모델의 검토 | Codex, Antigravity, opencode, Muse, Claude, OpenRouter 모델을 원하는 대로 조합 |
 | 검토·서명한 것과 똑같은 패키지 | sha256 스냅샷. 무엇이든 바뀌면 검토와 서명이 stale 이 됨 |
+| AI 말투가 아닌 의학 학술지 말투 | 학술 문체 모드: 섹션 카드 + 편집마다 문장 검사(6절) |
+| 근거보다 센 표현이 없음 | evidence.md 의 `Claim Strength` + `manuwright claim-strength` (3절, 8절) |
+| 철회 논문·틀린 DOI 가 없음 | `manuwright search audit` (3절) |
+| 응답 편지에 끌려가지 않는 revision 재검토 | `manuwright blind-review` (11절) |
 
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
 manuwright search "연구 주제" --max 10           # 또는: manuwright evidence import-obsidian <citekey>
 #  data/analysis_plan.md 작성 -> 저자 승인 -> manuwright record-approval ...
 #  분석 스크립트 -> results/*.csv -> 표;  drafts/draft_plan.md -> 승인
-#  원하는 에이전트로 섹션 작성
+#  원하는 에이전트로 섹션 작성 ("서론 써줘": 학술 문체 카드가 자동으로 붙음)
+manuwright style learn ~/papers/good              # (선택) 좋은 논문 3편 이상으로 문체 학습
 manuwright verify --project project.json --profile draft
+manuwright claim-strength drafts                  # 근거보다 센 표현
+manuwright search audit                           # 참고문헌 재점검: 철회, DOI
 manuwright packet --project project.json        # 독립 semantic review
 manuwright critical-review --target drafts/05_results.md --out review/critical
 manuwright verify --project project.json --profile submission
@@ -38,13 +45,13 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
 ```
 
-`agents install` 은 선택 기능인 Obsidian 라이브러리도 제안한다(3b 절). plugin 을 설치·업데이트한 뒤에는 Claude Code 를 재시작한다. Codex 는 폴더에서 처음 실행할 때 plugin hook 을 신뢰할지 묻는다. manuwright hook 4개에 "Trust all" 을 고른다. 설치하지 않는 템플릿 사용자는 clone 한 저장소 안에서 같은 엔진을 `python -m harness ...`, `python scripts/<tool>.py ...` 로 쓴다.
+`agents install` 은 선택 기능인 Obsidian 라이브러리도 제안한다(3b 절). plugin 을 설치·업데이트한 뒤에는 Claude Code 를 재시작한다. Codex 는 폴더에서 처음 실행할 때 plugin hook 을 신뢰할지 묻는다. manuwright hook 5개에 "Trust all" 을 고른다. 설치하지 않는 템플릿 사용자는 clone 한 저장소 안에서 같은 엔진을 `python -m harness ...`, `python scripts/<tool>.py ...` 로 쓴다.
 
 ## 2. 논문 시작
 
@@ -69,7 +76,25 @@ manuwright search "minimally invasive versus open lumbar fusion randomized" --ma
 manuwright search fetch 31476471 34602458 --format evidence
 ```
 
-나온 항목을 `knowledge/evidence.md` 에 붙이고, 요약 칸은 실제로 읽은 내용으로 채운다. 전문을 읽기 전까지는 `Source Status: abstract-only` 로 둔다. 여기에 등록된 ID 만 `[EVID:miller_2020_pmid31476471]` 형식으로 인용할 수 있다.
+나온 항목을 `knowledge/evidence.md` 에 붙이고, 요약 칸은 실제로 읽은 내용으로 채운다. 전문을 읽기 전까지는 `Source Status: abstract-only` 로 둔다. 여기에 등록된 ID 만 `[EVID:miller_2020_pmid31476471]` 형식으로 인용할 수 있다. 새 논문의 evidence.md 에 있는 예시 항목은 주석이라 등록된 것으로 치지 않는다.
+
+**근거 강도.** 항목마다 그 논문으로 어디까지 말할 수 있는지 적는다. `manuwright search` 로 가져온 항목에는 두 칸이 들어 있다.
+
+```text
+- **Claim Strength:** observed           (speculative | observed | supported | strong)
+- **Allowed Wording:** was associated with
+```
+
+| 값 | 보통 이런 근거 | 쓸 수 있는 표현 |
+|---|---|---|
+| `speculative` | 가설, 증례, 전문가 의견 | may, suggest |
+| `observed` | 관찰 연구(코호트, 환자-대조군) | was associated with, observed, reported |
+| `supported` | 일관된 관찰 연구, 작은 RCT | showed, reduced, improved |
+| `strong` | 대규모 RCT, 메타분석 | demonstrated, prevents 까지 |
+
+어느 값을 줄지는 저자가 정한다. 8절의 `claim-strength` 검사가 이 값을 쓴다. 칸을 비워 두면 그 항목은 검사하지 않는다.
+
+**투고 전 재점검.** `manuwright search audit` 은 PMID 나 DOI 가 있는 모든 항목을 PubMed 에서 다시 가져와 제목·제1저자·연도·저널을 대조하고, 철회(retraction)·우려 표명·정정을 표시한다. 철회됐거나 다른 논문을 가리키는 항목이 있으면 실패로 끝난다. 인터넷 연결이 필요하다. 채팅으로는 "참고문헌 다시 확인해줘".
 
 ### 3b. 내 Obsidian 라이브러리 (선택, 권장)
 
@@ -138,7 +163,75 @@ manuwright record-approval drafts/draft_plan.md --kind draft --approved-by "저�
 
 계획이 엔진 용어집의 금지어를 쓰기로 했다면(시험에서는 "MIS") 논문 전용 용어집을 둔다. 엔진의 `Style/terminology.md` 를 논문 폴더 `Style/` 로 복사해 해당 행을 고치고, `project.json` 에 `"terminology": "Style/terminology.md"` 를 넣는다. 그러면 `verify` 와 편집할 때 도는 lint hook 이 모두 그 용어집을 쓴다.
 
-## 6. 여러 에이전트로 초고 쓰기
+## 6. 학술 문체 모드
+
+에이전트가 쓰는 문장을 처음부터 의학 학술지 말투로 맞추는 기능이다. 기본으로 켜져 있고, 논문 폴더(`manuwright init` 으로 만든 폴더) 안에서만 작동한다. 다른 프로젝트에서는 아무것도 하지 않는다.
+
+**기준은 어디서 왔나.** 2019~2022년(생성형 AI 이전) JAMA Surgery, JAMA Network Open, Lancet, BMJ, Nature 의 공개 라이선스 원저 33편(약 18만 단어)을 측정했다. 프로그램에 든 것은 숫자와 여러 저널에 공통인 짧은 표현뿐이고, 논문 본문은 없다(`docs/academic_style/reference_profile.json`).
+
+| 측정한 것 | 예 |
+|---|---|
+| 섹션별 평균 문장 길이 | Methods·Results 22~24 단어, Introduction·Discussion 27~28 단어 |
+| 섹션별 수동태 비율 | Methods 63%, Results 24%, Introduction·Discussion 약 30% |
+| 동사 선택 | "used" 345회 대 "utilized" 1회. "showed" 가 "demonstrated" 의 약 5배 |
+| 한 번도 나오지 않은 말 | delve, underscore, showcase, leverage, "it is worth noting", "plays a crucial role" |
+
+**작동 방식.**
+1. 세션을 시작하면 핵심 카드가 에이전트에게 들어간다. 대화가 길어져 압축된 뒤와 서브에이전트에도 다시 들어간다.
+2. "서론 써줘" 같은 요청에는 그 섹션 카드가 붙는다: 문단 구조(moves), 표현집, 모범 문단, 측정 목표치. 직접 보려면 `manuwright style card introduction` (한국어 `서론` 도 됨).
+3. 원고 섹션(`drafts/01_` ~ `07_`)을 고칠 때마다 문장 검사 결과가 줄 번호와 함께 나온다.
+
+```text
+[ACADEMIC/MUST FIX/AI_PHRASE] line 3: "plays a crucial role": say what X does to Y, with a citation
+[ACADEMIC/MUST FIX/ING_TAIL] line 3: "highlighting the importance": trailing ", highlighting the importance ..." clause; ...
+[ACADEMIC/MUST FIX/CONTRACTION] line 3: "can't": contraction; write the full form
+[ACADEMIC/consider/SIGNPOST] line 3: "Notably": signposting opener; start with the content
+```
+
+*MUST FIX* 는 측정한 논문에 없던 AI 말투, 축약형, 본문 굵은 글씨, 채팅 말투라 고친다. *consider* 는 제안이다(긴 문장, "crucial", "Notably" 등). 의도한 표현이면 그대로 둔다. 같은 내용을 쉬운 말로 쓴 정상 문단에는 아무것도 나오지 않는다.
+
+**채팅으로 쓰는 법.** 명령어를 외울 필요는 없다.
+
+| 이렇게 말하면 | 일어나는 일 |
+|---|---|
+| "서론 써줘", "고찰 다시 써줘", "제목 후보 몇 개 줘" | 그 섹션 카드를 읽고 씀 |
+| "고쳐줘" | 검사 결과대로 수정 |
+| "이 문단 학술적으로 바꿔줘" | `/style-pass` 절차로 변환한 뒤 사실이 바뀌지 않았는지 검사 |
+| "이 폴더로 내 문체 배워줘" | `manuwright style learn <폴더>` |
+| "내가 고친 거 배워줘" | `manuwright style edits` 로 규칙 제안 |
+| "과장 표현 검사해줘" | `manuwright claim-strength drafts` |
+| "학술 모드 엄격하게 해줘" / "학술 모드 꺼줘" / "학술 모드 켜줘" | 모드 전환(모든 논문에 적용) |
+
+모드 전환은 "학술 모드 …"로 시작하는 짧은 요청에만 반응한다. "학술 모드 꺼지면 어떻게 돼?" 같은 질문이나 "현재 학술 모드는 off" 같은 문장으로는 바뀌지 않는다.
+
+**세 가지 모드.** `manuwright mode` 로 지금 모드를 본다.
+
+| 모드 | 하는 일 |
+|---|---|
+| `academic` (기본) | 카드를 주고, 편집 뒤 검사 결과를 알려 줌 |
+| `strict` | *MUST FIX* 가 든 문장은 쓰기 자체를 막음. 고쳐 쓰면 통과 |
+| `off` | 카드와 문장 검사를 끔. 용어 검사는 계속 |
+
+**내 문체·목표 저널 문체 더하기 (선택).** 좋은 논문 3편 이상(내 논문, 분야의 landmark 논문, 목표 저널의 최근 논문; PDF·DOCX·MD·TXT)을 한 폴더에 넣는다.
+
+```sh
+manuwright style learn ~/papers/good
+manuwright style status
+```
+
+섹션별 문장 길이, 수동태, hedging, 자주 쓰는 표현, 모범 문단을 측정해 모든 카드에 덧붙인다. 결과는 `~/.manuwright/library/writing/profile/` 에만 저장되고 논문 폴더나 git 으로 가지 않는다. 3편 미만이면 카드에 참고로만 보이고 검사 기준은 바꾸지 않는다. 쓸 수 있는 논문이 없어 학습이 실패해도 이전에 학습한 결과는 그대로 남는다.
+
+**내가 고친 방식에서 배우기 (선택).** 에이전트 초안을 직접 고친 뒤:
+
+```sh
+manuwright style edits --git HEAD~1          # git 을 쓸 때. 아니면: manuwright style edits ai_draft.md my_edit.md
+```
+
+반복된 단어 바꾸기와 지우기가 `Style/pending_style_rules.md` 에 제안된다(P0 = 2번 이상). 저자가 체크한 규칙만 `manuwright style edits --apply` 로 `Style/terminology.md` 에 들어가고, 그다음부터 검사가 강제한다. 채팅으로 "demonstrated 규칙은 써"라고 승인하면 에이전트가 그 규칙 하나만 체크한다. 에이전트가 스스로 고르지는 않는다.
+
+**문체를 고쳐도 사실은 그대로.** `manuwright style preserve 원문.md 수정본.md` 는 `[EVID:id]`, 숫자, *p* 값, Table/Figure 참조가 하나라도 바뀌면 실패한다. `/style-pass` 가 섹션마다 실행한다.
+
+## 7. 여러 에이전트로 초고 쓰기
 
 에이전트마다 섹션 하나, 같은 규칙, 끝내기 전에 돌릴 검사를 준다. 시험에서 쓴 프롬프트:
 
@@ -162,11 +255,11 @@ manuwright numbers drafts/05_results.md and manuwright citations drafts/05_resul
 
 ![opencode 가 Discussion 작성](images/manual/13_opencode_discussion.png)
 
-Discussion 과 Introduction 에는 다른 논문의 수치가 들어간다. 이 파일들은 사유를 적어 결과 수치 검사에서 예외로 두고, semantic review 가 인용 근거와 대조하게 한다(7절).
+Discussion 과 Introduction 에는 다른 논문의 수치가 들어간다. 이 파일들은 사유를 적어 결과 수치 검사에서 예외로 두고, semantic review 가 인용 근거와 대조하게 한다(8절).
 
 승인된 계획 없이 쓰기를 막는 hook 은 Claude Code 와 Codex 에만 있다. Antigravity, opencode, Muse 에서는 `manuwright verify` 가 게이트다.
 
-## 7. 초고 검증
+## 8. 초고 검증
 
 시험의 `project.json` (요약):
 
@@ -195,7 +288,21 @@ manuwright verify --project project.json --profile draft
 
 lint 지적(en dash, `p` 표기, Discussion 의 수치 과밀, 금지어)도 실패로 친다. 본문을 고치고, 용어집을 느슨하게 만들지 않는다.
 
-## 8. 독립 semantic review
+투고 전에 두 가지를 더 돌린다.
+
+```sh
+manuwright lint --academic drafts      # 학술 문장 검사를 원고 전체에 한 번에 (6절의 검사와 같음)
+manuwright claim-strength drafts       # 인용 문장이 근거 강도(3절)보다 센지
+```
+
+```text
+[OVERCLAIM] drafts/06_discussion.md:3 causal wording for observed evidence (deyo_2010):
+"Complex fusion caused more complications than decompression [EVID:deyo_2010]."; allowed wording: was associated with
+```
+
+문장마다 가장 센 동사를 본다: hedged(may, suggest) < associative(was associated with) < directional(showed, reduced) < causal(demonstrated, caused). "차이가 없었다", "효과를 보이지 못했다" 같은 음성 결과는 센 표현으로 치지 않는다. 동사로 추정하는 검사이므로 최종 판단은 저자가 한다.
+
+## 9. 독립 semantic review
 
 결정적 검사는 숫자가 데이터에 있고 인용이 목록에 있다는 것까지만 증명한다. 문장의 의미가 맞는지는 모른다. 그래서 packet 을 만들어 다른 모델이나 사람에게 검토받는다:
 
@@ -216,7 +323,7 @@ manuwright packet --project project.json
 
 원고, 계획, CSV, 엔진 중 무엇이든 바뀌면 기존 검토는 stale 이 된다. packet 을 다시 만들어 다시 검토받는다.
 
-### 8b. 다중 모델 critical review
+### 9b. 다중 모델 critical review
 
 위의 semantic review 가 게이트다. critical review 는 여러 검토자가 한꺼번에 가하는 추가 압박이다. 에이전트와 모델을 원하는 대로 고르고, 평소 조합은 한 번 저장해 둔다:
 
@@ -233,7 +340,7 @@ manuwright critical-review --target drafts/05_results.md --out review/critical
 
 ![검토자 8명](images/manual/45_multi_reviewer_run.png)
 
-## 9. 제출
+## 10. 제출
 
 ```sh
 manuwright verify --project project.json --profile submission
@@ -264,7 +371,68 @@ manuwright verify --project project.json --profile submission
 
 ![submission PASS 와 빌드](images/manual/23_submission_pass_build.png)
 
-## 10. 업데이트
+## 11. Revision: 응답 편지를 가린 재검토
+
+리뷰어 코멘트를 받은 뒤의 순서다. 세부 규칙은 [revision_guide.md](revision_guide.md).
+
+1. 코멘트를 `review/reviewer_comments_REV1.md` 에 이 형식으로 저장한다. 번호가 있어야 아래 도구가 코멘트를 하나씩 셀 수 있다.
+
+```text
+Reviewer #1:
+Comment 1) Please report the follow-up rate.
+Comment 2) Define leg pain.
+```
+
+2. 고친 섹션만 `drafts/revision/REV1/` 에 `_REV1` 을 붙여 저장한다(예: `04_methods_REV1.md`). 응답 편지는 같은 폴더의 `response_letter_REV1.md` 다. 원고를 고쳤다고 쓰는 응답에는 `[CHANGE]` 블록을 붙인다.
+
+```text
+Comment 2) Define leg pain.
+
+[CHANGE]
+comment_id: R1-C2
+claim: defined the leg pain scale anchors
+section: 04_methods
+expected_terms: worst pain
+[/CHANGE]
+
+Response: We thank the reviewer and defined the scale.
+
+Revised text:
+"Leg pain was measured with a 0-10 numeric rating scale (0, no pain; 10, worst pain)."
+```
+
+3. **블라인드 재검토.** 검토자가 응답 편지를 먼저 읽으면 저자의 설명에 끌려간다. 그래서 편지를 빼고 먼저 판정한다.
+
+```sh
+manuwright blind-review packet --comments review/reviewer_comments_REV1.md \
+  --revised drafts/revision/REV1 --out review/blind_REV1
+```
+
+packet 에는 코멘트, 원본과 수정본 섹션, diff 가 들어가고 응답 편지는 빠진다. 검토자(다른 모델이나 사람)는 `review/blind_REV1/verdicts.md` 를 단계 순서대로 채운다.
+
+| 단계 | 보는 것 | 적는 것 |
+|---|---|---|
+| Phase 1 | 코멘트만 | 제대로 고쳤다면 원고에 무엇이 있어야 하는지(`expectation`) |
+| Phase 2A | 원본, 수정본, diff (편지 없음) | 판정(FULLY, PARTIALLY, NOT_ADDRESSED, MADE_WORSE, CANNOT_VERIFY)과 원고의 근거 위치(`anchor`) |
+| Phase 2B | 이제 편지까지 | 최종 판정. 바꾸면 이유(`author_pointer`, `valid_rebuttal`, `scope_correction`)를, 올렸으면 수정본의 위치(`final_anchor`)를 적음 |
+
+```sh
+manuwright blind-review check review/blind_REV1/verdicts.md
+```
+
+모든 코멘트가 FULLY 나 PARTIALLY 이고 기록에 빈칸이 없어야 PASS 다. 편지에만 있고 원고에는 없는 변경은 통과하지 못한다. 이 PASS 뒤에 phase 8 게이트에 `response_alignment` 를 기록한다.
+
+4. **응답서 점검과 revision 검증.**
+
+```sh
+manuwright response-coverage drafts/revision/REV1/response_letter_REV1.md --comments review/reviewer_comments_REV1.md
+manuwright revision-claims drafts/revision/REV1/response_letter_REV1.md
+manuwright verify --project project.json --profile revision
+```
+
+`response-coverage` 는 모든 코멘트에 응답이 있는지, `revision-claims` 는 `[CHANGE]` 로 고쳤다고 한 내용이 수정본에 실제로 있는지 본다. 시험에서는 둘 다 `PASS` 였다.
+
+## 12. 업데이트
 
 ```sh
 manuwright update --check
@@ -272,10 +440,9 @@ manuwright update                         # 설치 후 `manuwright agents update
 manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1회
 manuwright init --refresh-rules --all     # 등록된 모든 논문: 에이전트 규칙만 갱신 (update 가 물어봄)
 manuwright check                          # 최신 상태를 한 화면에 점검, ✗ 마다 고치는 명령
-manuwright mode strict                    # 학술 문체 모드: academic(기본), strict(AI 말투 쓰기 차단), off
-manuwright style learn ~/papers/landmark  # 좋은 논문을 측정해 모든 섹션 카드에 그 문체를 반영
-manuwright style card discussion          # 에이전트가 그 섹션을 쓰기 전에 읽는 카드
 ```
+
+`check` 는 학술 문체 모드와 학습한 문체가 있는지도 보여 준다. 에이전트 규칙(`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`)이 바뀌는 릴리스(v1.9.0 등) 뒤에는 `manuwright init --refresh-rules --all` 을 꼭 실행한다.
 
 등록된 논문이 엔진을 고정했거나(`project.json` 의 `"engine": ">=1.8,<1.9"`), 엔진이 바뀌면 무효가 될 유효한 검토가 있으면 자동 업데이트는 기다린다. 되돌리기: `manuwright update --to <버전>`.
 
@@ -356,7 +523,7 @@ manuwright format-references drafts/*.md --journal nejm --fetch   # PubMed 전�
 
 프리셋: `vancouver`, `ama`(JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`, `jbjs`, `neurospine`, `jns-spine`, `gsj`, `corr`, `asj`, `esj`. 저널별 규칙은 [harness_guide.md](harness_guide.md) 표 참고. 제출 전에 저널의 최신 투고 규정을 한 번 확인할 것.
 
-## 11. 문제 해결
+## 13. 문제 해결
 
 | 증상 | 원인과 해결 |
 |---|---|
@@ -371,3 +538,10 @@ manuwright format-references drafts/*.md --journal nejm --fetch   # PubMed 전�
 | 새 vault 에서 플러그인이 안 뜸 | Obsidian 제한 모드: 그 vault 에서 커뮤니티 플러그인을 허용 |
 | agy 가 MCP 나 검토에서 빈 출력 | headless 모드는 도구 허가를 줄 수 없음. 대화형으로 쓰거나, 글로만 답하게 하는 내장 검토 프롬프트에 맡김 |
 | 검토자가 `not_independent` | `main-model` 과 같은 모델을 씀. 그 검토자의 모델을 바꿈 |
+| `BLOCKED by workflow gate (CLAUDE.md Rule 8): ...draft_plan.md: ...` | 메시지 뒷부분이 이유를 말함: 몇 번째 줄의 빈칸이 남음, 승인 체크가 안 됨, 비어 있는 항목, 승인 뒤 계획서를 고침(바뀐 점을 보여 주고 다시 승인) |
+| 섹션 카드나 문장 검사가 안 나옴 | 논문 폴더 밖이거나 모드가 `off`. 논문 폴더에서 `manuwright mode` 확인 |
+| `BLOCKED by academic writing mode (strict)` | strict 모드에서 *MUST FIX* 문장을 씀. 고쳐 쓰거나 "학술 모드 켜줘"로 academic 으로 |
+| 모드를 바꿨는데 그대로 | 환경 변수 `MANUWRIGHT_WRITING_MODE` 가 우선함. 지우면 저장된 설정이 적용됨 |
+| 학습한 문체가 검사에 반영 안 됨 | 3편 미만이거나 섹션 제목을 못 찾음. `manuwright style status` 와 learn 출력의 skipped 줄 확인 |
+| `search audit` 이 PubMed 에 접속하지 못함 | 인터넷 연결 확인 후 같은 명령을 다시 실행 |
+| `blind-review packet` 이 코멘트가 없다고 함 | 코멘트를 `Reviewer #1:` 아래 `Comment 1) ...` 형식으로 다시 저장 |

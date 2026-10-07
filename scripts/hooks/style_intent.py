@@ -52,7 +52,7 @@ ACTIONS = [
     r"바꿔", r"바꾸", r"변경", r"수정", r"고쳐", r"고치", r"다듬", r"맞게",
     r"적용", r"써", r"쓰", r"작성", r"정리",
     r"rewrite", r"revise", r"transform", r"convert", r"polish",
-    r"make\s+it", r"apply",
+    r"make\s+(?:it|this|the)\b", r"apply",
 ]
 
 SEARCH = re.compile(r"검색|찾아|search|look\s*up|\bfind\b|병원|학회|hospital|conference", re.IGNORECASE)
@@ -75,7 +75,7 @@ META = re.compile(r"프로그램|모드|기능|스킬|플러그인|훅|업데이
                   r"|plugin|\bhooks?\b|implement", re.IGNORECASE)
 
 SECTION_WORDS = {
-    "title": r"(?<!그림 )(?<!그림)(?<!표 )(?<!표)제목|(?<!figure )(?<!table )\btitle\b",  # not a figure or table title
+    "title": r"(?<!그림 )(?<!그림)(?<!표 )(?<!표)제목|(?<!figure )(?<!table )\btitles?\b",  # not a figure or table title
     "abstract": r"초록|\babstract\b",
     "introduction": r"서론|도입부|introduction|\bintro\b",
     # bare 방법/결과 count only right before a drafting verb ("결과 써줘", "방법을 다시 써줘")
@@ -87,7 +87,9 @@ SECTION_WORDS = {
 SECTION_FILE = re.compile(r"\b0([1-7])_[a-z_]*\.md\b")
 FILE_SECTIONS = {"1": "title", "2": "abstract", "3": "introduction", "4": "methods", "5": "results",
                  "6": "discussion", "7": "conclusion"}
-DRAFT_VERBS = re.compile(r"써|쓰|작성|초안|다시|고쳐|수정|다듬|정리|만들|보완|바꿔|후보|추천|제안|draft|write|rewrite|revise|suggest", re.IGNORECASE)
+DRAFT_VERBS = re.compile(r"써|쓰|작성|초안|다시|고쳐|수정|다듬|정리|만들|보완|바꿔|후보|추천|제안|draft|write|rewrite|revise|suggest"
+                         r"|書|直し|写|改写|修改",  # Japanese and Chinese, as in README.ja/zh
+                         re.IGNORECASE)
 MAX_CARDS = 2
 
 

@@ -24,6 +24,7 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 import hashlib
 import argparse
+import os
 import re
 import time
 import unicodedata
@@ -495,13 +496,14 @@ Examples:
 
     try:
         if args.command == "audit":
-            try:
-                with open(args.evidence, encoding="utf-8") as handle:
-                    rows = audit_evidence(handle.read())
-            except OSError:
+            if not os.path.isfile(args.evidence):  # checked here: a network failure is also an OSError
                 print(f"error: {args.evidence} not found; run this in the paper folder or pass --evidence <file>.",
                       file=sys.stderr)
                 sys.exit(2)
+            with open(args.evidence, encoding="utf-8") as handle:
+                text = handle.read()
+            try:
+                rows = audit_evidence(text)
             except ValueError as exc:  # duplicate Evidence ID
                 print(f"error: {exc}", file=sys.stderr)
                 sys.exit(2)

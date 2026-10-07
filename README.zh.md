@@ -85,22 +85,20 @@ reason: number not found in results CSV files
 
 ## 学术文体模式
 
-**日常用法（在对话中直接提出即可）：**
-1. "写 Introduction"：代理会读取该章节的风格卡片并按此文体撰写。
-2. 检查结果出来后说"改一下"。*MUST FIX* 是需要修改的 AI 腔，*consider* 是建议，若为有意的表达可以保留。
-3. 第一次：把 3 篇以上的好论文（你自己的或目标期刊的，PDF）放进一个文件夹，说"用这个文件夹学习我的文体"。
-4. 自己修改草稿后："从我的修改中学习"。提出的规则在对话中逐条批准。
-5. 投稿前："检查夸大表述""重新核对参考文献"（撤稿、错误 DOI）。修订时："做盲审复核"。
-严格模式（"academic mode strict"）直接阻止 AI 腔句子，默认模式只做提示。
+让代理从初稿起就用医学期刊的文体写作，而不是聊天机器人的腔调。基准来自 2019–2022 年（生成式 AI 之前）JAMA Surgery、JAMA Network Open、Lancet、BMJ 和 Nature 的 33 篇开放许可原创研究的测量值。只发布数字（`docs/academic_style/reference_profile.json`），论文原文不上传 GitHub。例如 "used" 出现 345 次，"utilized" 仅 1 次；delve、underscore、"plays a crucial role" 一次也没有出现。
 
-在本机无法对模型进行微调，因此 manuwright 在每次写作时采取次优而有效的做法：把合适的范例和量化目标放在写作者面前，并检查写出的文字。
+在对话中直接提出即可。
 
-- **章节卡片。** 每个章节（title、abstract、introduction、methods、results、discussion、conclusion）都有一张卡片，包含修辞结构（moves）、规则、表达库（phrasebank）以及用高影响力临床期刊文体写成的范例段落。核心卡片在每次会话开始时载入；当你要求起草某一章节（如 "draft the Discussion"）或运行 `manuwright style card <section>` 时载入该章节卡片。
-- **测量而非猜测。** 卡片上的目标值来自 2019–2022 年（生成式 AI 之前）JAMA Surgery、JAMA Network Open、Lancet、BMJ 和 Nature 的 33 篇开放许可原创研究：各章节的句长和被动语态比例、动词和过渡词频率，以及多个期刊共有的表达。只发布数字（`docs/academic_style/reference_profile.json`），论文原文不上传 GitHub。例如："showed" 约为 "demonstrated" 的 5 倍，"used" 出现 345 次，"utilized" 仅 1 次。
-- **始终在上下文中。** 卡片在会话开始和对话压缩后重新注入，也会传给子代理；在论文文件夹中每次提问都会用一行重新提醒。可在对话中切换，例如 "academic mode strict"。
-- **你的语料。** `manuwright style learn <论文>` 按章节测量一组好论文（你自己的论文、领域经典论文、目标期刊的近期论文；PDF、DOCX、MD 或 TXT）：句长、被动语态比例、hedging、常用表达、句首模式和范例段落。此后每张卡片都会带上这些目标和段落。该档案只保存在个人文献库中，不会复制到论文文件夹。
-- **文字检查。** 每次编辑稿件章节后，会按行报告 AI 腔表达（delve、pivotal、"it is worth noting"、句末的 ", highlighting ..."）、缩写形式、正文加粗、过长句子、没有统计量的 "significant" 等问题。`manuwright mode strict` 会在改写之前直接阻止写入；`manuwright mode off` 关闭该模式。
-- **改写不改事实。** 如果文体改写改变了任何 `[EVID:id]`、数字、*p* 值或 Table/Figure 引用，`manuwright style preserve old.md new.md` 会失败；`/style-pass` 对每个章节运行它。
+| 这样说 | 会发生什么 |
+|---|---|
+| "写 Introduction"、"重写 Discussion" | 读取该章节卡片（结构、表达库、范例段落、测量目标）后撰写 |
+| "改一下" | 每次编辑后显示文字检查结果，由代理修改。*MUST FIX* 是 AI 腔，*consider* 是建议，可以保留 |
+| "用这个文件夹学习我的文体" | 测量 3 篇以上好论文（你自己的或目标期刊的），把其文体加入所有卡片 |
+| "从我的修改中学习" | 根据你修改草稿的方式提出规则，只执行你批准的规则 |
+| "检查夸大表述"、"重新核对参考文献" | 强于证据的表述；撤稿论文和错误 DOI |
+| "academic mode strict" / "off" / "on" | `strict` 阻止 AI 腔句子，默认 `academic` 只提示，`off` 两者都关闭 |
+
+只在论文文件夹中生效。改写不改事实：引用、数字、*p* 值或 Table/Figure 引用一旦改变，`manuwright style preserve` 就会失败。操作步骤：[手册第 6 节](docs/manual.md#6-academic-writing-mode)（英文）。
 
 ## 安装
 
@@ -115,7 +113,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper

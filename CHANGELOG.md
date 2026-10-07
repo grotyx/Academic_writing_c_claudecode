@@ -1,5 +1,14 @@
 # Changelog
 
+### v1.9.1 (261007)
+
+User manual and README rewritten for v1.9.0.
+
+- Manual (`docs/manual.md`, `docs/manual.ko.md` v2.5.0): new section 6, Academic writing mode (where the targets come from, how cards and checks work, chat phrases, the three modes, learning a corpus and learning from edits, fact preservation); section 3 adds Claim Strength (a table of values, typical evidence and allowed wording) and `search audit`; section 8 adds `lint --academic` and `claim-strength` with real output; new section 11, Revision (comment format, `[CHANGE]` blocks, the letter-blind re-review phases, response-coverage and revision-claims); troubleshooting covers blocked plans, strict mode, the mode environment variable, learned styles, PubMed access and blind-review packets. Sections renumbered; the update section no longer lists writing commands.
+- READMEs (4 languages): the academic-mode section is now a short summary and one table of chat phrases with what each does, linked to manual section 6.
+- The phrases the docs promise now work: "suggest titles", "make this paragraph academic", and Japanese and Chinese drafting requests ("Introduction を書いて", "重写 Discussion") load the section card.
+- `manuwright search audit` reports a PubMed network failure as such, not as a missing evidence.md.
+
 ### v1.9.0 (261007)
 
 Academic writing mode: the writer gets the right examples and measured targets at every draft, and the prose that comes back is checked.

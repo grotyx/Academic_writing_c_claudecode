@@ -203,6 +203,8 @@ def test_prompt_hook_injects_the_card_for_a_drafting_request_and_ignores_talk_ab
     for statement in ('I turned academic mode off', '현재 학술 모드는 off', '방금 학술 모드 꺼'):
         assert intent.mode_toggle(statement) is None
     assert intent.mode_toggle('please turn academic mode off') == 'off' and intent.mode_toggle('이제 학술 모드 꺼줘') == 'off'
+    assert intent.requested_sections('Introduction を書いて') == ['introduction'] and intent.requested_sections('重写 Discussion') == ['discussion']
+    assert intent.requested_sections('suggest titles') == ['title'] and intent.detect('make this paragraph academic')
     assert intent.requested_sections('제목 후보 몇 개 줘') == ['title'] and intent.requested_sections('결과 정리해줘') == ['results']
     monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
     assert intent.evaluate({'prompt': '서론 써줘', 'cwd': str(ROOT)}) == ''

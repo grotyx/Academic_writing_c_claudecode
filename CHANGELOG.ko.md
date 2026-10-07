@@ -1,5 +1,14 @@
 # 변경 이력
 
+### v1.9.1 (261007)
+
+v1.9.0 에 맞춰 사용자 설명서와 README 를 다시 썼다.
+
+- 설명서(`docs/manual.md`, `docs/manual.ko.md` v2.5.0): 6절 학술 문체 모드를 새로 넣었다(기준의 출처, 카드와 검사의 작동, 채팅 문구, 세 가지 모드, 코퍼스 학습과 수정에서 배우기, 사실 보존). 3절에 Claim Strength(값·보통의 근거·허용 표현 표)와 `search audit`, 8절에 `lint --academic` 과 `claim-strength`(실제 출력)를 더했다. 11절 Revision 을 새로 넣었다(코멘트 형식, `[CHANGE]` 블록, 응답 편지를 가린 재검토 단계, response-coverage 와 revision-claims). 문제 해결 표에 계획서 차단, strict 모드, 모드 환경 변수, 학습한 문체, PubMed 접속, 블라인드 packet 을 추가했다. 절 번호를 다시 매겼고 업데이트 절에서 글쓰기 명령을 뺐다.
+- README(4개 언어): 학술 문체 모드 절을 짧은 요약과 채팅 문구 표 하나로 줄이고 설명서 6절로 연결했다.
+- 문서에 적은 문구가 실제로 작동한다: "suggest titles", "make this paragraph academic", 일본어·중국어 작성 요청("Introduction を書いて", "重写 Discussion")에도 섹션 카드가 들어간다.
+- `manuwright search audit` 은 PubMed 접속 실패를 evidence.md 가 없다고 잘못 알리지 않고 접속 실패로 알린다.
+
 ### v1.9.0 (261007)
 
 학술 문체 모드: 초안을 쓸 때마다 알맞은 예문과 측정된 목표치를 쓰는 쪽에 주고, 써 온 문장을 검사한다.
