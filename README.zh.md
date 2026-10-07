@@ -135,6 +135,10 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright check` | 一次检查版本、代理插件、主模型、密钥、自动更新和需刷新的论文，并给出修复命令 |
 | `manuwright mode academic\|strict\|off` | 学术文体模式：风格卡片 + 每次编辑后的文字检查；`strict` 阻止含 AI 腔文字的写入 |
 | `manuwright style learn <论文>` / `style card <section>` | 测量好论文语料（你的文体、经典论文、目标期刊）/ 显示章节风格卡片 |
+| `manuwright claim-strength drafts` | 检查引用句的措辞是否强于证据的 `Claim Strength`（speculative、observed、supported、strong） |
+| `manuwright search audit` | 将 evidence.md 每个条目与 PubMed 重新核对：标题/作者/年份/期刊加权匹配、DOI 不一致、撤稿、关注声明、勘误 |
+| `manuwright blind-review packet` / `check` | 在记录判定之前隐藏回复信的修订复审（不受回复信说服） |
+| `manuwright style edits <ai> <edited>` / `--apply` | 从你修改 AI 草稿的方式中学习规则；只有你勾选的规则才进入 `Style/terminology.md` |
 | `manuwright guide [name ...]` | 列出或打印规则引用的引擎指南（`docs/<name>.md`） |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 运行该阶段的全部检查 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 对单个文件运行单个检查器 |

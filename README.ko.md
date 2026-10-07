@@ -135,6 +135,10 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright check` | 버전·에이전트 플러그인·메인 모델·키·자동 업데이트·갱신할 논문을 한 번에 점검하고 고치는 명령 제시 |
 | `manuwright mode academic\|strict\|off` | 학술 문체 모드: 스타일 카드 + 편집마다 문장 검사; `strict` 는 AI 말투가 든 쓰기를 차단 |
 | `manuwright style learn <논문들>` / `style card <section>` | 좋은 논문 코퍼스(내 문체, landmark, 목표 저널) 측정 / 섹션 스타일 카드 출력 |
+| `manuwright claim-strength drafts` | 인용 문장의 표현이 근거의 `Claim Strength`(speculative, observed, supported, strong)보다 센지 검사 |
+| `manuwright search audit` | evidence.md 항목을 PubMed 와 다시 대조: 제목·저자·연도·저널 가중 일치도, DOI 불일치, 철회, 우려 표명, 정정 |
+| `manuwright blind-review packet` / `check` | 응답 편지를 가린 채 먼저 판정을 기록하는 revision 재검토 (편지의 설득에 끌려가지 않음) |
+| `manuwright style edits <ai> <edited>` / `--apply` | AI 초안을 내가 고친 방식에서 규칙을 배움; 내가 체크한 규칙만 `Style/terminology.md` 에 반영 |
 | `manuwright guide [name ...]` | 규칙이 인용하는 엔진 가이드(`docs/<name>.md`) 목록 또는 내용 출력 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 그 단계의 모든 검사 실행 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 파일 하나에 검사기 하나 실행 |

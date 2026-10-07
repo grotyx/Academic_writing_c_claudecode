@@ -252,6 +252,41 @@ FAIL if:
 Return only the Common Output Schema.
 ```
 
+## Letter-Blind Re-Review Verifier
+
+Use for: Phase 8, before the Revision-Alignment verifier. Build the packet with
+`manuwright blind-review packet ...`; it holds the reviewer comments, original and revised sections
+and diffs, and never the response letter. Record the three phases in the packet's `verdicts.md`
+and validate with `manuwright blind-review check`. (Idea from academic-research-skills'
+re-review protocol, reimplemented.)
+
+Phase 1 prompt (comments only):
+
+```text
+For each reviewer comment, write one or two sentences stating what the revised manuscript would
+have to contain for the comment to be FULLY addressed, and what would count as PARTIALLY addressed.
+Do not open revised/ or diffs/. Fill only the `expectation` fields.
+```
+
+Phase 2A prompt (packet only, no response letter):
+
+```text
+Using only original/, revised/ and diffs/ and your Phase 1 expectations, give each comment a
+blind_verdict: FULLY | PARTIALLY | NOT_ADDRESSED | MADE_WORSE | CANNOT_VERIFY, and an anchor
+(revised file and a short quote of the changed text). Do not guess what the authors meant. Tag any
+new problem the revision introduced as `new_issue: regression: ...`, and any old problem you only
+now notice as `new_issue: previously_missed: ...` (it cannot change the decision).
+```
+
+Phase 2B prompt (now with the response letter):
+
+```text
+Read the response letter. For each comment set final_verdict. Keep the blind verdict unless the
+letter points to evidence in the manuscript you missed (basis: author_pointer), gives a valid
+rebuttal grounded in the sources (basis: valid_rebuttal), or shows the comment was outside the
+paper's scope (basis: scope_correction). A persuasive tone is not a basis.
+```
+
 ## Recording Results In Gate Ledger
 
 After deterministic scripts and LLM verifiers pass, record the result in

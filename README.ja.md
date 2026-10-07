@@ -135,6 +135,10 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright check` | バージョン・エージェントプラグイン・メインモデル・キー・自動更新・更新が必要な論文をまとめて点検し、修正コマンドを表示 |
 | `manuwright mode academic\|strict\|off` | 学術文体モード: スタイルカード + 編集ごとの文章チェック。`strict` は AI 的な文章の書き込みをブロック |
 | `manuwright style learn <論文>` / `style card <section>` | 良い論文のコーパス（自分の文体、landmark、投稿先誌）を測定 / セクションのスタイルカードを表示 |
+| `manuwright claim-strength drafts` | 引用文の表現が根拠の `Claim Strength`（speculative、observed、supported、strong）より強すぎないか検査 |
+| `manuwright search audit` | evidence.md の各項目を PubMed と再照合：タイトル・著者・年・誌名の加重一致度、DOI 不一致、撤回、懸念表明、訂正 |
+| `manuwright blind-review packet` / `check` | 回答書を伏せたまま先に判定を記録する revision 再査読（回答書の説得に引きずられない） |
+| `manuwright style edits <ai> <edited>` / `--apply` | AI 草稿を自分が直した方法から規則を学習；チェックした規則だけが `Style/terminology.md` に入る |
 | `manuwright guide [name ...]` | 規則が引用するエンジンのガイド（`docs/<name>.md`）の一覧または内容を表示 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | その段階のすべての検査を実行 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 1 つのファイルに 1 つのチェッカーを実行 |

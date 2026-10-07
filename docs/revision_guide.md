@@ -1,4 +1,4 @@
-# Revision & Reviewer Response Guide (v0.5.2)
+# Revision & Reviewer Response Guide (v0.6.0)
 
 > v1.7.0 update: REVn now compares each section with its latest earlier revision, falling back to the initial draft only if unchanged in all previous revisions. Keep previous submissions immutable. The shared manifest explicitly lists the effective revised manuscript in publication order; see `docs/harness_guide.md`.
 
@@ -107,7 +107,20 @@ python scripts/check_response_coverage.py drafts/revision/REV1/response_letter_R
 - `--comments`로 원본 코멘트 파일 대조 시 `COMMENT_UNANSWERED`(원본에 있는데 응답서에 없음) 실패, `COMMENT_EXTRA`·`COMMENT_GAP`은 경고
 - 원본 파일이 `Reviewer #N` + `Comment N)` 구조로 파싱 안 되면 경고 후 대조 생략 (`--strict`면 실패) — 코멘트 수신 시 이 구조로 정리해 두면 대조가 작동한다
 
-After deterministic revision-claim checking, run the Revision-Alignment verifier in `docs/verifier_prompt_templates.md` to confirm that the response directly answers the reviewer and that the manuscript is not written in response-letter style. Record `revision_claims: PASS` and `response_alignment: PASS` in `review/gates/phase_08_revision.GATE.md`, then confirm the ledger:
+**응답 편지를 가린 재검토 (letter-blind re-review, v1.9.0):** 응답 편지를 diff 와 함께 읽으면 판정이 저자의 설명 쪽으로 끌려간다. 그래서 Response-alignment 를 세 단계로 기록한다(아이디어: academic-research-skills 의 re-review protocol, 재구현).
+
+```powershell
+manuwright blind-review packet --comments review/reviewer_comments_REV1.md --original drafts --revised drafts/revision/REV1 --out review/blind_REV1
+# 1단계: review/blind_REV1/verdicts.md 의 expectation 을 revised/ 를 열기 전에 채운다 (완전 반영이면 원고가 어떻게 바뀌어야 하는가)
+# 2A단계: original/, revised/, diffs/ 만 보고 blind_verdict (FULLY | PARTIALLY | NOT_ADDRESSED | MADE_WORSE | CANNOT_VERIFY) + anchor
+# 2B단계: 그다음 응답 편지를 읽고 final_verdict. 판정이 바뀌면 basis (author_pointer | valid_rebuttal | scope_correction) 필수
+# 새 문제는 new_issue: regression: ... (수정이 만든 문제) 또는 previously_missed: ... (결정을 바꾸지 못함)
+manuwright blind-review check review/blind_REV1/verdicts.md
+```
+
+packet 에는 응답 편지가 들어가지 않으며(파일명에 response·letter·rebuttal 이 있으면 check 가 실패), 검증 서브에이전트에게는 1·2A 단계에서 이 폴더만 준다. check 가 PASS 해야 `response_alignment: PASS` 를 기록할 수 있다.
+
+After deterministic revision-claim checking and the letter-blind re-review, run the Revision-Alignment verifier in `docs/verifier_prompt_templates.md` to confirm that the response directly answers the reviewer and that the manuscript is not written in response-letter style. Record `revision_claims: PASS` and `response_alignment: PASS` in `review/gates/phase_08_revision.GATE.md`, then confirm the ledger:
 
 ```powershell
 python scripts/check_gate.py review/gates/phase_08_revision.GATE.md --require-check constraint --require-check revision_claims --require-check response_alignment --require-check citation --require-check numbers --verify-hash artifact=drafts/revision/REV1/05_results_REV1.md --verify-hash evidence=knowledge/evidence.md --verify-hash results=results/table2_outcomes.csv

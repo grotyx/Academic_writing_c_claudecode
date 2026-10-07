@@ -16,6 +16,10 @@
 - 常に文脈の中に（caveman・ponytail のアイデア）：SubagentStart フックがサブエージェントにもコアカードを渡し、論文フォルダではプロンプトごとに 1 行のリマインダーを付け、"academic mode strict" などでチャットからモードを切り替える。
 - `manuwright style preserve <旧> <新>`：文体の書き直しで `[EVID:id]`、数値、*p* 値、Table/Figure 参照が一つでも変わると失敗する。`/style-pass` がセクションごとに実行する（style_transform_protocol v0.3.0）。
 - 新しい文章チェック：重要性の誇張（"marks a pivotal milestone"）、引用のない曖昧な帰属（"many believe"）、同義語の言い換え、Introduction/Discussion の単調な文のリズム。文末の "-ing" 節は重要性を強調する場合のみ高重要度。一部のパターンは unslop（MIT；`THIRD_PARTY_NOTICES.md`）から採用した。
+- 根拠の強さ：evidence.md の項目に `Claim Strength`（speculative、observed、supported、strong）と `Allowed Wording` を記録できる。`manuwright claim-strength drafts`（編集後チェックにも含む）は、引用文の最も強い動詞（hedged、associative、directional、causal）が根拠の許す強さを超えると報告する（claude-scholar の claim schema のアイデア）。新規取り込み項目に 2 つの欄が入る。
+- 回答書を伏せた revision 再査読：`manuwright blind-review packet` が回答書なしでレビュアーコメント、元と修正後のセクション、diff をまとめ、`check` がコメントごとの期待値、根拠位置付きのブラインド判定、最終判定、回答書を読んだ後に判定を変えた根拠、新しい問題のタグ（修正による退行は失敗）を確認する。response_alignment 記録の前提となった（academic-research-skills のアイデア、再実装）。
+- 著者の修正から学習：`manuwright style edits <AI草稿> <修正版>`（または `--git REV`）が語の置換と削除を数えて `Style/pending_style_rules.md` に提案し（P0 = 2 回以上）、著者がチェックした規則だけが `--apply` で `Style/terminology.md` に入り lint が強制する。
+- 根拠の監査：`manuwright search audit` が PMID・DOI のある evidence.md 項目を PubMed から再取得して一致度を評価し（タイトル 0.4、筆頭著者 0.3、年 0.2、誌名 0.1；claude-scholar 参考）、別の論文を指す DOI を失敗とし、撤回・懸念表明・訂正を表示する。
 
 ### v1.8.30 (261006)
 

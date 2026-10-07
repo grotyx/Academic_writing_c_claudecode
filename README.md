@@ -135,6 +135,10 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright check` | One report: version, agent plugins, main model, key, auto-update, papers to refresh, each with its fix |
 | `manuwright mode academic\|strict\|off` | Academic writing mode: style cards + prose checks after each edit; `strict` blocks writes with AI-register prose |
 | `manuwright style learn <papers>` / `style card <section>` | Measure a corpus of good papers (your style, landmark, target journal) / print a section's style card |
+| `manuwright claim-strength drafts` | Flag cited sentences worded more strongly than the evidence's `Claim Strength` (speculative, observed, supported, strong) |
+| `manuwright search audit` | Re-check every evidence.md entry against PubMed: weighted title/author/year/journal match, DOI mismatch, retractions, expressions of concern, errata |
+| `manuwright blind-review packet` / `check` | Revision re-review with the response letter withheld until the verdicts are recorded (no persuasion by the letter) |
+| `manuwright style edits <ai> <edited>` / `--apply` | Learn rules from how you edited AI drafts; only the rules you tick reach `Style/terminology.md` |
 | `manuwright guide [name ...]` | List the engine guides the rules cite (`docs/<name>.md`), or print them |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | Run every check for that stage |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | Run one checker on one file |

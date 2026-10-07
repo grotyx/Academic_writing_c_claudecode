@@ -87,6 +87,23 @@ def _academic_lines(target: Path) -> list[str]:
     return lines
 
 
+def _overclaim_lines(target: Path) -> list[str]:
+    """Cited sentences worded more strongly than their evidence.md Claim Strength (advisory)."""
+    try:
+        evidence = next((p / "knowledge" / "evidence.md" for p in target.resolve().parents
+                         if (p / "knowledge" / "evidence.md").is_file()), None)
+        if evidence is None:
+            return []
+        spec = importlib.util.spec_from_file_location(
+            "check_claim_strength", ROOT / "scripts" / "check_claim_strength.py")
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(module)
+        return [f"[OVERCLAIM] line {line}: {msg}" for _p, line, msg in module.check([target], evidence)[:MAX_LINES]]
+    except Exception:
+        return []
+
+
 def _is_manuscript_md(spath: str) -> bool:
     # Force a single leading slash so "/drafts/" matches even for a relative path
     # like "drafts/05_results.md" (cwd relative/missing), consistent with enforce_gates.
@@ -141,7 +158,7 @@ def evaluate(event: dict) -> tuple[int, str]:
     term_lines = [
         f"[{code}] line {line}: {message}" for code, _p, line, message in issues[:MAX_LINES]
     ]
-    style_lines = _style_metric_lines(target) + _academic_lines(target)
+    style_lines = _style_metric_lines(target) + _overclaim_lines(target) + _academic_lines(target)
     if not term_lines and not style_lines:
         return 0, ""
 

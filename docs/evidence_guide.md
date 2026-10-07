@@ -1,4 +1,4 @@
-# Evidence 작성 가이드 (v0.3.2)
+# Evidence 작성 가이드 (v0.4.0)
 
 > v1.7.0 update: Allowed Source Status values: verified, full-text-reviewed, abstract-only. Unknown/todo/retracted states fail. Duplicate IDs fail; new imports add a PMID or DOI-hash suffix. Preserve existing unique IDs. Metadata status does not prove claim support. See `docs/harness_guide.md`.
 
@@ -111,6 +111,8 @@ PubMed 검색 등으로 논문을 찾아 등록하는 경우:
 - **PMID:** xxxxxxxx
 - **PDF:** knowledge/pdf/파일명.pdf (또는 "No PDF - abstract only")
 - **Source Status:** verified | abstract-only | full-text-reviewed | todo
+- **Claim Strength:** speculative | observed | supported | strong   (선택, 과장 검사용)
+- **Allowed Wording:** was associated with; suggests                (선택)
 
 - **Study Design:** 연구 유형, 대상 수, 추적 기간
 - **Objective:** 연구 목적 (1-2문장)
@@ -140,6 +142,19 @@ PubMed 검색 등으로 논문을 찾아 등록하는 경우:
 | `todo` | 미확인 (등록만 됨) | **인용 금지** — 게이트에서 FAIL |
 
 `todo` 상태의 문헌을 인용하면 검증 게이트가 차단한다. 인용 전 반드시 `verified` 이상으로 올린다.
+
+### Claim Strength 필드 (과장 표현 검사, v1.9.0)
+
+> 이 근거가 뒷받침하는 **주장의 세기**. 적어 두면 `manuwright claim-strength drafts --evidence knowledge/evidence.md`(편집 후 훅에서도 자동)가 이 근거를 인용한 문장의 동사가 더 센지 검사한다. 아이디어: claude-scholar 의 claim schema.
+
+| 값 | 뜻 | 인용 문장에 허용되는 표현 |
+|----|----|------------------|
+| `speculative` | 가설, 기전 추정, 전임상 | may, might, could, suggests (hedged) |
+| `observed` | 관찰 연구의 연관성, 증례, 후향 연구 | + was associated with, observed, reported (associative) |
+| `supported` | 잘 설계된 코호트, 일관된 여러 연구, 소규모 RCT | + showed, reduced, improved, was lower (directional) |
+| `strong` | 대규모 RCT, 메타분석, 확립된 사실 | + demonstrated, established, prevents (causal) |
+
+`Allowed Wording`에 허용 표현을 적어 두면 경고 메시지에 함께 보여 준다. 한 문장이 여러 근거를 인용하면 가장 센 근거를 기준으로 본다. Claim Strength 가 비어 있으면 검사하지 않는다.
 
 ### 작성 원칙
 

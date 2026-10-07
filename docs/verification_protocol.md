@@ -1,4 +1,4 @@
-# Verification Protocol (검증 하네스) (v0.3.3)
+# Verification Protocol (검증 하네스) (v0.4.0)
 
 > v1.7.0 update: Use `docs/harness_guide.md` for shared profiles. Artifact provenance and cross-check paths must resolve to the declared artifact. Missing required submission reviews are BLOCKED. Plan approvals bind exact content; checker and dependency changes invalidate reviews.
 
@@ -27,7 +27,7 @@
 
 ## 2. Verifier 헌장
 
-Draft 게이트는 네 개의 Verifier(Constraint / Citation / Data / Logic)를 투입한다. Revision 게이트는 Logic을 제외하고 Ghost-Revision(revision_claims) + Response-alignment를 더한다 — 즉 Constraint / Citation / Data / Revision-claims / Response-alignment. 모든 Verifier는 공통 규칙을 따른다:
+Draft 게이트는 네 개의 Verifier(Constraint / Citation / Data / Logic)를 투입한다. Revision 게이트는 Logic을 제외하고 Ghost-Revision(revision_claims) + Response-alignment를 더한다 — 즉 Constraint / Citation / Data / Revision-claims / Response-alignment. Response-alignment 는 응답 편지를 가린 재검토(`manuwright blind-review`, 기대치 → 편지 없이 판정 → 편지 공개 후 근거 있는 변경만 허용)를 먼저 통과해야 기록한다 (`docs/revision_guide.md`). 모든 Verifier는 공통 규칙을 따른다:
 - **외부지식 사용 금지.** 주어진 소스(소스 오브 트루스)와 산출물만으로 판정한다.
 - **불확실하면 FAIL 기본값.** 지지 여부가 모호하면 PASS로 넘기지 않는다.
 - **판정 결과를 구조화 출력**한다 (3.2 형식).
@@ -209,7 +209,7 @@ required_action: replace with 54.3 or remove
 | 4 Draft | 섹션 게이트 | Constraint + Citation + Data + Logic | 섹션 단위 (자율) |
 | 5 Style-pass | style 게이트 | Style-Conformance | 섹션 단위 (자율) |
 | 6 QC | 최종 확인 (경량) | — (인라인 게이트가 이미 수행) | 원고 전체 |
-| 8 Revision | 응답 게이트 | Constraint + Citation + Data + ghost-revision diff + Response alignment | 응답 단위 (자율) |
+| 8 Revision | 응답 게이트 | Constraint + Citation + Data + ghost-revision diff + letter-blind re-review + Response alignment | 응답 단위 (자율) |
 
 ## Submission scope (v1.7.2)
 

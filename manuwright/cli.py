@@ -23,11 +23,13 @@ TOOLS = {
     'numbers': ('check_numbers.py', {'--results': 'results'}),
     'gate': ('check_gate.py', {'--base-dir': '.'}),
     'abstract': ('check_abstract.py', {}),
+    'claim-strength': ('check_claim_strength.py', {'--evidence': 'knowledge/evidence.md'}),
     'coverage': ('check_coverage.py', {'--evidence': 'knowledge/evidence.md'}),
     'crossrefs': ('check_crossrefs.py', {}),
     'abbreviations': ('check_abbreviations.py', {}),
     'style': ('check_style.py', {}),
     'revision-claims': ('check_revision_claims.py', {}),
+    'blind-review': ('blind_review.py', {}),
     'response-coverage': ('check_response_coverage.py', {}),
     'lint': ('lint_manuscript.py', {'--terminology': 'Style/terminology.md'}),
     'verify-all': ('verify_all.py', {'--base-dir': '.'}),
@@ -55,6 +57,7 @@ Setup and updates:
   style learn [papers...]    measure a corpus of good papers (PDF, DOCX, MD, TXT): your style, landmark, target journal
   style card <section>       the section's style card: moves, phrasebank, model paragraphs, your measured style
   style preserve <old> <new> a rewrite kept every [EVID:id], number, p value and table/figure reference
+  style edits <ai> <edited>|--git REV   learn rules from your edits of AI drafts (pending until you tick them; --apply)
   style status               writing mode and learned profile (style extract|check: style metrics vs a Style Spec)
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
@@ -191,7 +194,7 @@ def main(argv=None):
             sys.path.insert(0, str(HERE.parent))
         from manuwright import models
         return models.main(rest)
-    if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status', 'preserve'):
+    if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status', 'preserve', 'edits'):
         return subprocess.call([sys.executable, str(ENGINE / 'scripts' / 'academic_style.py'), *rest])
     if command in {'init', 'rules', 'guide', 'check', 'mode', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
         lifecycle = load_lifecycle()
@@ -218,7 +221,7 @@ def main(argv=None):
         print(f'manuwright: unknown command {command!r}\n\n{USAGE}', file=sys.stderr)
         return 2
     script, defaults = TOOLS[command]
-    if command == 'search' and (not rest or rest[0] not in {'search', 'fetch', 'doi', 'related', '-h', '--help'}):
+    if command == 'search' and (not rest or rest[0] not in {'search', 'fetch', 'doi', 'related', 'audit', '-h', '--help'}):
         rest = ['search', *rest]  # `manuwright search "<query>"` as documented
     if '-h' not in rest and '--help' not in rest:
         rest += project_defaults(rest, defaults, Path.cwd())

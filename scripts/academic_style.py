@@ -19,6 +19,10 @@ that comes back.
                               on any)
   preserve <before> <after>   a style rewrite must keep every [EVID:id], number, p value and
                               table/figure reference (exit 1 when one was dropped or added)
+  edits <ai> <edited> | --git REV | --apply
+                              learn from how the author edited AI drafts: word substitutions and
+                              deletions, counted (P0 = 2+ times), written to Style/pending_style_rules.md;
+                              --apply moves the rules the author ticked into Style/terminology.md
   status                      writing mode and learned profile
 
 Writing mode (`manuwright mode academic|strict|off`, or MANUWRIGHT_WRITING_MODE): academic shows
@@ -677,6 +681,115 @@ def _reference_block(section: str) -> str:
     return '\n'.join(out)
 
 
+# --- learning from the author's edits --------------------------------------------------
+# Idea from writing-style-skill / voice-learn: the author's own corrections of an AI draft are the
+# most specific style signal there is. Reimplemented: word-level diff, counted across files, proposed
+# as pending rules that the author ticks before they reach Style/terminology.md.
+
+EDIT_TOKEN = re.compile(r"\[EVID:[^\]]+\]|[A-Za-z][A-Za-z'\-]*|\d+(?:\.\d+)?|[^\sA-Za-z\d]")
+
+
+def _words(text: str) -> list[str]:
+    return EDIT_TOKEN.findall(text)
+
+
+def edit_changes(before: str, after: str) -> tuple[Counter, Counter]:
+    """(substitutions 'old -> new', deletions) of up to 3 words, ignoring numbers and citations."""
+    import difflib
+    a, b = _words(before), _words(after)
+    subs, dels = Counter(), Counter()
+    for op, i1, i2, j1, j2 in difflib.SequenceMatcher(a=a, b=b, autojunk=False).get_opcodes():
+        old, new = ' '.join(a[i1:i2]), ' '.join(b[j1:j2])
+        if any(t[:1].isdigit() or t.startswith('[EVID') for t in a[i1:i2] + b[j1:j2]):
+            continue
+        if op == 'replace' and i2 - i1 <= 3 and j2 - j1 <= 3 and old.lower() != new.lower():
+            lo, ln = old.lower(), new.lower()
+            if lo.endswith(' ' + ln) or lo.startswith(ln + ' '):  # "notably , the" -> "the": a deletion
+                dels[(lo[:-len(ln)] if lo.endswith(' ' + ln) else lo[len(ln):]).strip(' ,;:')] += 1
+            else:
+                subs[f'{lo} -> {ln}'] += 1
+        elif op == 'delete' and i2 - i1 <= 2 and re.search('[A-Za-z]', old):
+            dels[old.lower()] += 1
+    return subs, dels
+
+
+def _section_pairs(before: Path, after: Path) -> list[tuple[str, str]]:
+    if before.is_file():
+        return [(before.read_text(encoding='utf-8', errors='replace'), after.read_text(encoding='utf-8', errors='replace'))]
+    olds = {p.name: p for p in before.rglob('*.md')}
+    return [(olds[p.name].read_text(encoding='utf-8', errors='replace'), p.read_text(encoding='utf-8', errors='replace'))
+            for p in sorted(after.rglob('*.md')) if p.name in olds]
+
+
+def _git_pairs(rev: str, folder: Path) -> list[tuple[str, str]]:
+    pairs = []
+    for path in sorted(folder.rglob('0[1-9]_*.md')):
+        try:
+            rel = path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+        except ValueError:
+            continue  # outside this repository: git cannot show it
+        done = subprocess.run(['git', 'show', f'{rev}:{rel}'], capture_output=True, text=True, encoding='utf-8',
+                              errors='replace')
+        if done.returncode == 0:
+            pairs.append((done.stdout, path.read_text(encoding='utf-8', errors='replace')))
+    return pairs
+
+
+def edit_proposals(pairs: list[tuple[str, str]]) -> list[tuple[str, str, int, str]]:
+    """[(priority, rule, count, kind)]: P0 seen 2+ times, P1 once but an AI-register word, P2 once."""
+    subs, dels = Counter(), Counter()
+    for before, after in pairs:
+        s, d = edit_changes(before, after)
+        subs.update(s)
+        dels.update(d)
+    flagged = re.compile('|'.join(p.pattern for sev, _c, p, _m in PHRASE_RULES if _c in ('AI_PHRASE', 'AI_WORD')), _I)
+    out = []
+    for kind, counter in (('replace', subs), ('delete', dels)):
+        for rule, count in counter.most_common():
+            old = rule.split(' -> ')[0]
+            ai_ish = flagged.search(old) or old.strip(' ,') in INFLATED
+            priority = 'P0' if count >= 2 else 'P1' if ai_ish else 'P2'
+            out.append((priority, rule, count, kind))
+    return sorted(out, key=lambda r: (r[0], -r[2], r[1]))
+
+
+# Signposts and inflated verbs that the reference corpus rarely uses (core card, reference_profile.json).
+INFLATED = {'notably', 'importantly', 'interestingly', 'remarkably', 'crucially', 'utilize', 'utilized', 'utilizes',
+            'utilizing', 'demonstrated', 'exhibited', 'furthermore', 'moreover', 'additionally'}
+PENDING = Path('Style') / 'pending_style_rules.md'
+LEARNED_HEADER = ('\n## Learned From Author Edits\n\nRules the author approved in Style/pending_style_rules.md '
+                  '(`manuwright style edits --apply`).\n\n| Preferred Term | Forbidden Terms | Context |\n|---|---|---|\n')
+
+
+def write_pending(proposals: list, target: Path) -> None:
+    lines = ['# Pending style rules from your edits', '',
+             'Learned from how you edited AI drafts. Tick (`[x]`) only the rules you want enforced, then run',
+             '`manuwright style edits --apply`. An agent must not tick these for you.', '',
+             'P0 = you made this change 2+ times; P1 = once, and the old wording is AI register; P2 = once.', '']
+    for priority, rule, count, kind in proposals:
+        text = f'replace "{rule.split(" -> ")[0]}" with "{rule.split(" -> ")[1]}"' if kind == 'replace' else f'delete "{rule}"'
+        lines.append(f'- [ ] {priority} {text} ({count}x)')
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
+def apply_pending(pending: Path, terminology: Path) -> list[str]:
+    """Append the ticked rules to the paper's terminology registry (lint enforces them from then on)."""
+    rows = []
+    for line in pending.read_text(encoding='utf-8').splitlines():
+        m = re.match(r'-\s*\[[xX]\]\s*P\d\s+(?:replace "(.+?)" with "(.+?)"|delete "(.+?)")', line.strip())
+        if m:
+            old, new = (m.group(1), m.group(2)) if m.group(1) else (m.group(3), '(delete)')
+            rows.append(f'| {new} | {old} | learned from author edits |')
+    if rows:
+        text = terminology.read_text(encoding='utf-8') if terminology.is_file() else '# Terminology\n'
+        if '## Learned From Author Edits' not in text:
+            text = text.rstrip('\n') + '\n' + LEARNED_HEADER
+        terminology.parent.mkdir(parents=True, exist_ok=True)
+        terminology.write_text(text.rstrip('\n') + '\n' + '\n'.join(rows) + '\n', encoding='utf-8')
+    return rows
+
+
 # --- command line -------------------------------------------------------------------
 
 def default_sources() -> list[Path]:
@@ -705,7 +818,42 @@ def main(argv: list[str] | None = None) -> int:
     pv = sub.add_parser('preserve', help='did a rewrite keep every citation, number, p value and table/figure reference?')
     pv.add_argument('before')
     pv.add_argument('after')
+    ed = sub.add_parser('edits', help="learn rules from how the author edited AI drafts")
+    ed.add_argument('before', nargs='?', help='AI draft file or folder')
+    ed.add_argument('after', nargs='?', help='author-edited file or folder')
+    ed.add_argument('--git', metavar='REV', help='compare drafts/ section files at REV with the working tree')
+    ed.add_argument('--folder', default='drafts')
+    ed.add_argument('--apply', action='store_true', help='move ticked rules from Style/pending_style_rules.md '
+                                                         'into Style/terminology.md')
     args = parser.parse_args(argv)
+
+    if args.action == 'edits':
+        if args.apply:
+            if not PENDING.is_file():
+                print(f'No {PENDING}; run `manuwright style edits` first.', file=sys.stderr)
+                return 2
+            rows = apply_pending(PENDING, Path('Style') / 'terminology.md')
+            print(f'Added {len(rows)} approved rule(s) to Style/terminology.md.' if rows
+                  else 'No ticked rules in Style/pending_style_rules.md; nothing applied.')
+            return 0
+        if args.git:
+            pairs = _git_pairs(args.git, Path(args.folder))
+        elif args.before and args.after:
+            pairs = _section_pairs(Path(args.before), Path(args.after))
+        else:
+            print('usage: manuwright style edits <ai_draft> <edited> | --git REV [--folder drafts] | --apply',
+                  file=sys.stderr)
+            return 2
+        proposals = edit_proposals(pairs)
+        if not proposals:
+            print(f'No word-level edits found in {len(pairs)} section pair(s).')
+            return 0
+        write_pending(proposals, PENDING)
+        for priority, rule, count, kind in proposals[:25]:
+            print(f'{priority} {kind:<7} {rule} ({count}x)')
+        print(f'{len(proposals)} proposal(s) written to {PENDING}. Show them to the author; they tick what to keep, '
+              'then `manuwright style edits --apply`.')
+        return 0
 
     if args.action == 'preserve':
         read = lambda name: Path(name).read_text(encoding='utf-8', errors='replace')  # noqa: E731

@@ -42,3 +42,12 @@ The academic writing mode also follows ideas from these projects; no code or tex
 - humanizer (https://github.com/blader/humanizer) and stop-slop
   (https://github.com/hardikpandya/stop-slop): a pre-send self-check that no fact, number or
   citation was added or dropped; Bad/Good example pairs.
+- claude-scholar (https://github.com/Galaxy-Dawn/claude-scholar, MIT): a claim-strength field with
+  allowed wording for each source; weighted metadata matching for citation verification (title 0.4,
+  authors 0.3, year 0.2, venue 0.1).
+- academic-research-skills (https://github.com/Imbad0202/academic-research-skills, CC BY-NC 4.0):
+  the letter-blind, three-phase re-review of a revision. Reimplemented from the idea only; no text
+  or code was copied, as that license is not compatible with this project's.
+- writing-style-skill (https://github.com/jzOcb/writing-style-skill) and the voice-learn skill:
+  learning style rules from the author's edits of AI drafts, with human approval before a rule is
+  applied.

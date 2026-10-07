@@ -296,6 +296,7 @@ Phase 1: Setup
 ├── Search references: /search-evidence [query] 또는 scripts/search_pubmed.py
 ├── (선택) medical-kag MCP: search/hybrid_search 발굴 + conflict find로 논쟁 파악 → evidence.md 등록 (docs/medical_kag_protocol.md; evidence.md 정본 유지, 미연결 시 search_pubmed.py로 fallback)
 ├── Import by DOI: /import-doi [doi]
+├── Audit evidence: `manuwright search audit` (PubMed 메타데이터 가중 대조 + 철회·우려 표명·정정 확인) + 항목마다 Claim Strength 기록
 ├── Save PDFs to knowledge/pdf/
 ├── Summarize & register in knowledge/evidence.md (docs/evidence_guide.md 참조)
 ├── 핵심 논문은 knowledge/summaries/에 상세 요약
@@ -355,7 +356,7 @@ Phase 4: Draft (in this order)
 
 Phase 5: Style Polish
 ├── /style-pass — 초안을 bound Style Spec/exemplar에 맞춰 섹션별 변환 + Style Verifier (docs/style_transform_protocol.md; "학술적으로 바꿔줘"에 자동 발동)
-├── Academic prose check: `manuwright lint --academic drafts` (또는 `python scripts/academic_style.py check <section>`) 0 high findings; 문체 수정 후 `manuwright style preserve <원문> <수정본>` OK; 좋은 논문 코퍼스는 `manuwright style learn <papers>`
+├── Academic prose check: `manuwright lint --academic drafts` (또는 `python scripts/academic_style.py check <section>`) 0 high findings; 문체 수정 후 `manuwright style preserve <원문> <수정본>` OK; 좋은 논문 코퍼스는 `manuwright style learn <papers>`; 저자가 고친 뒤 `manuwright style edits --git <rev>` → 저자가 체크한 규칙만 `--apply`
 ├── Apply writing_guide.md Style Reference Tables
 │   ├── Transition Words 업그레이드 (but → nonetheless)
 │   ├── Verb Choice (utilized → used, demonstrated → showed; 측정 기반)
@@ -379,6 +380,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 ├── Round 5: Statistical quality — Dr. Statistician (권장)
 ├── Round 6: Critical review — 내부(Dr. Editor + Dr. Statistician) + (선택) /critical-review 외부 멀티모델 (overclaiming/bias/일반화, 권장)
 ├── Round 6.5 (선택): Editorial desk-screen — /editor-review: high-impact 저널 편집장 관점 (임상 타당성·분야 scope fit·추가검증 roadmap·하위저널 추천; advisory, `docs/critical_review_protocol.md` §5)
+├── Overclaim check: `manuwright claim-strength drafts` (인용 문장의 동사가 근거의 Claim Strength 보다 센지)
 ├── Claim verification (선택): /verify-claims — 인용 문장별 SUPPORTED/PARTIAL/UNSUPPORTED 리포트 (docs/citation_assist_protocol.md; GraphRAG 주, evidence.md 보조)
 ├── Document all rounds in review/qc_log.md
 └── Run study-specific checklist (checklist_guide.md — CONSORT/STROBE/PRISMA/CARE)
@@ -401,6 +403,7 @@ Phase 8: Revision (리뷰어 코멘트 수신 후)
 ├── (선택) /paper-debate — 대응 전략을 공동 저자(Codex)와 토론 후 response 작성
 ├── Response letter 작성 → drafts/revision/REV1/response_letter_REV1.md
 ├── 🔒 GATE (각 응답마다): ghost-revision 검증 (응답 주장 ↔ 원고 diff 대조) 자율 루프
+├── Letter-blind re-review: `manuwright blind-review packet ...` → 기대치 → 편지 없이 판정 → 편지 공개 후 근거 있는 변경만 → `blind-review check` PASS 후 response_alignment 기록 (docs/revision_guide.md)
 ├── Check response coverage — 모든 리뷰어 코멘트에 응답 존재 확인 (check_response_coverage.py --comments)
 ├── QC re-run (최소 Round 1-2 재수행)
 ├── Compile revised DOCX → output/revision/REV1/

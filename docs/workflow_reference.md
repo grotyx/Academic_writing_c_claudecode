@@ -202,6 +202,10 @@ project/
 | `manuwright style card <section>` | Section style card (moves, rules, phrasebank, model paragraphs, learned style); load before drafting a section |
 | `manuwright style learn <papers>` | Measure a corpus of good papers (own, landmark, target journal) so every card carries its style |
 | `manuwright style preserve <old> <new>` | After a style rewrite: every [EVID:id], number, p value and Table/Figure reference unchanged |
+| `manuwright style edits <ai> <edited>` / `--git REV` / `--apply` | Learn rules from the author's edits; the author ticks pending rules before they reach Style/terminology.md |
+| `manuwright claim-strength drafts` | Cited sentences worded more strongly than the evidence's Claim Strength |
+| `manuwright blind-review packet ...` / `check verdicts.md` | Letter-blind re-review of a revision before recording response_alignment |
+| `manuwright search audit` | evidence.md entries vs PubMed: metadata match, DOI mismatch, retraction, expression of concern, erratum |
 | `manuwright guide [name ...]` | Print engine guides cited as `docs/<name>.md` (a paper folder has no `docs/`); no name lists them |
 
 ### Knowledge Graph (medical-kag MCP)

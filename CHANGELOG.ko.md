@@ -16,6 +16,10 @@
 - 항상 맥락 안에(caveman·ponytail 의 아이디어): SubagentStart 훅이 서브에이전트에도 핵심 카드를 주고, 논문 폴더에서는 매 프롬프트에 한 줄 리마인더가 붙으며, "학술 모드 꺼줘", "academic mode strict", "학술 모드 켜줘" 로 대화 중에 모드를 바꾼다.
 - `manuwright style preserve <원문> <수정본>`: 문체 수정이 `[EVID:id]`, 숫자, *p* 값, Table/Figure 참조를 하나라도 바꾸면 실패한다. `/style-pass` 가 섹션마다 실행한다(style_transform_protocol v0.3.0).
 - 새 문장 검사: 중요성 부풀리기("marks a pivotal milestone"), 인용 없는 막연한 출처("many believe"), 동의어 돌려쓰기, Introduction/Discussion 의 단조로운 문장 리듬. 끝에 붙는 "-ing" 절은 중요성을 내세울 때만 고위험으로 본다. 일부 패턴은 unslop(MIT; `THIRD_PARTY_NOTICES.md`)에서 가져왔다.
+- 근거 강도: evidence.md 항목에 `Claim Strength`(speculative, observed, supported, strong)와 `Allowed Wording`을 적을 수 있다. `manuwright claim-strength drafts`(편집 후 검사에도 포함)는 인용 문장의 가장 센 동사(hedged, associative, directional, causal)가 근거가 허용하는 세기를 넘으면 알려 준다(claude-scholar 의 claim schema 아이디어). 새로 가져오는 항목에 두 필드가 들어간다.
+- 응답 편지를 가린 revision 재검토: `manuwright blind-review packet` 이 응답 편지 없이 리뷰어 코멘트, 원본·수정 섹션, diff 로 묶음을 만들고, `check` 가 코멘트별 기대치, 근거 위치가 있는 블라인드 판정, 최종 판정, 편지를 읽은 뒤 판정을 바꾼 근거, 새 문제 태그(수정이 만든 문제는 실패)를 확인한다. 이제 response_alignment 기록의 전제 조건이다(academic-research-skills 아이디어, 재구현).
+- 저자 수정에서 학습: `manuwright style edits <AI초안> <수정본>`(또는 `--git REV`)이 단어 치환과 삭제를 세어 `Style/pending_style_rules.md` 에 제안하고(P0 = 2회 이상), 저자가 체크한 규칙만 `--apply` 로 `Style/terminology.md` 에 들어가 lint 가 강제한다.
+- 근거 감사: `manuwright search audit` 이 PMID·DOI 가 있는 evidence.md 항목을 PubMed 에서 다시 가져와 일치도를 매기고(제목 0.4, 제1저자 0.3, 연도 0.2, 저널 0.1; claude-scholar 참고), PubMed 가 다른 논문으로 연결하는 DOI 는 실패로, 철회·우려 표명·정정은 표시한다.
 
 ### v1.8.30 (261006)
 

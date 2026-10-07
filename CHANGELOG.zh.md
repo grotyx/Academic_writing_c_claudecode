@@ -16,6 +16,10 @@
 - 始终在上下文中（借鉴 caveman 和 ponytail）：SubagentStart 钩子把核心卡片交给子代理；在论文文件夹中每次提问附一行提醒；可用 "academic mode strict" 等在对话中切换模式。
 - `manuwright style preserve <旧> <新>`：文体改写若改变任何 `[EVID:id]`、数字、*p* 值或 Table/Figure 引用即失败；`/style-pass` 对每个章节运行（style_transform_protocol v0.3.0）。
 - 新的文字检查：夸大重要性（"marks a pivotal milestone"）、无引用的模糊归属（"many believe"）、同义词轮换、Introduction/Discussion 中单调的句子节奏。句末 "-ing" 从句仅在强调重要性时为高严重度。部分模式改编自 unslop（MIT；`THIRD_PARTY_NOTICES.md`）。
+- 证据强度：evidence.md 条目可记录 `Claim Strength`（speculative、observed、supported、strong）和 `Allowed Wording`。`manuwright claim-strength drafts`（编辑后检查也包含）在引用句最强的动词（hedged、associative、directional、causal）超出证据允许的强度时报告（借鉴 claude-scholar 的 claim schema）。新导入的条目包含这两个字段。
+- 隐藏回复信的修订复审：`manuwright blind-review packet` 在不含回复信的情况下打包审稿意见、原始与修订章节及 diff；`check` 要求每条意见的预期、带定位的盲审判定、最终判定、阅读回复信后改变判定的依据，以及标记的新问题（修订引入的退化即失败）。现为记录 response_alignment 的前提（借鉴 academic-research-skills，重新实现）。
+- 从作者修改中学习：`manuwright style edits <AI草稿> <修改稿>`（或 `--git REV`）统计词语替换和删除，写入 `Style/pending_style_rules.md`（P0 = 2 次以上）；只有作者勾选的规则才会通过 `--apply` 进入 `Style/terminology.md` 并由 lint 强制执行。
+- 证据审核：`manuwright search audit` 重新从 PubMed 获取带 PMID 或 DOI 的 evidence.md 条目并评分（标题 0.4、第一作者 0.3、年份 0.2、期刊 0.1；参考 claude-scholar），DOI 指向其他记录时判为失败，并标记撤稿、关注声明和勘误。
 
 ### v1.8.30 (261006)
 
