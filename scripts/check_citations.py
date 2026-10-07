@@ -104,6 +104,8 @@ def derive_id_from_heading_or_citation(heading: str, fields: dict[str, str]) -> 
 
 
 def parse_evidence_entries(evidence_text: str) -> dict[str, EvidenceEntry]:
+    # A commented-out entry (the starter example in a new paper) is not registered evidence.
+    evidence_text = re.sub(r"<!--.*?-->", "", evidence_text, flags=re.S)
     matches = list(HEADING_RE.finditer(evidence_text))
     entries: dict[str, EvidenceEntry] = {}
 

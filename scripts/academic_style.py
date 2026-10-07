@@ -135,14 +135,21 @@ PHRASE_RULES = [  # (severity, code, pattern, message)
         r"|\bpav(?:e|es|ed|ing) the way\b|\bgame[- ]changer\b|\bunlock(?:s|ed|ing)? the (?:potential|power)\b"
         r"|\b(?:evolving|complex) landscape\b|\bnavigat(?:e|es|ed|ing) the (?:complex|challenges|landscape)",
         _I), 'AI-register phrase; state the specific fact instead'),
-    (HIGH, 'AI_PHRASE', re.compile(r"\bplays? an? (?:crucial|pivotal|vital|key|critical) role\b", _I),
+    (HIGH, 'AI_PHRASE', re.compile(r"\bplay(?:s|ed|ing)? an? (?:crucial|pivotal|vital) role\b", _I),
      'say what X does to Y, with a citation'),
+    # "plays a key/critical role" also occurs in pre-AI papers: a suggestion, never a strict-mode block.
+    (MEDIUM, 'AI_PHRASE', re.compile(r"\bplay(?:s|ed|ing)? an? (?:key|critical|central|significant) role\b", _I),
+     'say what X does to Y, with a citation'),
+    (MEDIUM, 'AI_PHRASE', re.compile(r"\b(?:promising avenues?|valuable insights?|transformative|"
+                                     r"foster(?:s|ed|ing)?|(?:highlight|underscore|emphasi[sz]e)s? the (?:critical|crucial|vital) "
+                                     r"(?:importance|need|role))\b", _I),
+     'AI-register phrase; state the specific finding instead'),
     # A trailing "-ing" clause that announces importance is the AI tell; a plain participle is not
     # (", highlighting ..." occurs 0.4 times per 10,000 words in the reference corpus).
     (HIGH, 'ING_TAIL', re.compile(
         r",\s+(?:thereby\s+|thus\s+)?(?:highlighting|underscoring|emphasi[sz]ing|showcasing|demonstrating|signal(?:l)?ing"
         r"|reinforcing|illustrating)\s+(?:the\s+|its\s+|their\s+|a\s+|an\s+)?(?:\w+\s+)?(?:importance|need|potential|role"
-        r"|value|significance|promise|relevance|necessity)\b|,\s+(?:thereby\s+)?(?:paving the way|fostering)\b", _I),
+        r"|value|significance|promise|relevance|necessity)\b", _I),
      'trailing ", highlighting the importance ..." clause; end the sentence and state the consequence plainly'),
     (MEDIUM, 'ING_TAIL', re.compile(r",\s+(?:thereby\s+|thus\s+)?(?:highlighting|underscoring|emphasi[sz]ing|showcasing)\b", _I),
      'trailing ", highlighting ..." clause; consider ending the sentence and stating the point'),
@@ -268,7 +275,7 @@ def prose_issues(text: str, section: str | None = None, long_limit: int | None =
             if words > limit:
                 found.append((MEDIUM, 'LONG_SENTENCE', start, f'{words}-word sentence (limit {limit}); split it: '
                                                               f'"{plain[:60]}..."'))
-            if re.match(r'^\d', plain):
+            if re.match(r'^\d', plain) and section != 'title' and not re.match(r'^\d+[.)]\s', plain):  # not a list item
                 found.append((MEDIUM, 'NUMERAL_START', start, f'sentence starts with a numeral: "{plain[:40]}"'))
             if plain.endswith('?'):
                 found.append((MEDIUM, 'QUESTION', start, f'rhetorical question: "{plain[:60]}"'))
@@ -567,6 +574,8 @@ def learn(paths: list[Path], out: Path) -> dict:
             skipped.append(f'{path.name} (no Introduction/Methods/Results/Discussion headings found)')
     profile = {'version': 1, 'learned': date.today().isoformat(), 'documents': len(docs),
                'sources': [p.name for p, _ in docs], 'skipped': skipped, 'sections': {}}
+    if not docs:
+        return profile  # nothing usable: keep the style learned earlier instead of overwriting it with nothing
     out.mkdir(parents=True, exist_ok=True)
     (out / 'exemplars').mkdir(exist_ok=True)
     for section in SECTIONS[1:]:
@@ -787,6 +796,11 @@ def _git_pairs(rev: str, folder: Path) -> list[tuple[str, str]]:
     if top.returncode != 0:
         raise RuntimeError(f'{folder} is not inside a git repository; compare two files or folders instead')
     root = Path(top.stdout.strip()).resolve()
+    known = subprocess.run(['git', 'rev-parse', '--verify', '--quiet', f'{rev}^{{commit}}'], capture_output=True,
+                           text=True, encoding='utf-8', errors='replace', cwd=str(root))
+    if known.returncode != 0:
+        raise RuntimeError(f'"{rev}" is not a commit in this repository (try HEAD~1, a commit id from `git log`, '
+                           'or compare two files instead)')
     pairs = []
     for path in sorted(folder.rglob('0[1-9]_*.md')):
         try:
@@ -841,9 +855,18 @@ def write_pending(proposals: list, target: Path) -> None:
 def approve_pending(pending: Path, rules: list[str], approved_by: str, quote: str) -> list[str]:
     """Tick the rules the author approved in chat (like `manuwright approve` for plans); returns the lines ticked."""
     lines, ticked = pending.read_text(encoding='utf-8').splitlines(), []
-    wanted = [r.strip().lower() for r in rules]
+    wanted = {re.sub(r'\s+', ' ', r.strip().strip('"').lower()) for r in rules} - {''}
     for i, line in enumerate(lines):
-        if line.lstrip().startswith('- [ ]') and any(w and w in line.lower() for w in wanted):
+        if not line.lstrip().startswith('- [ ]'):
+            continue
+        # Exact match only: the old wording ("demonstrated"), "old -> new", or the rule as written.
+        # A substring match would let "used" tick 'replace "caused by" ...'.
+        terms = re.findall(r'"([^"]+)"', line)
+        rule = re.sub(r'^\s*-\s*\[ \]\s*P\d\s*|\s*\(\d+x\)\s*$', '', line).lower()
+        names = {t.lower() for t in terms[:1]} | {rule}
+        if len(terms) >= 2:
+            names.add(f'{terms[0]} -> {terms[1]}'.lower())
+        if wanted & names:
             lines[i] = line.replace('- [ ]', '- [x]', 1) + f'  <!-- approved by {approved_by} in chat: "{quote}" -->'
             ticked.append(lines[i])
     pending.write_text('\n'.join(lines) + '\n', encoding='utf-8')
@@ -880,7 +903,7 @@ def default_sources() -> list[Path]:
     return [pdf] if pdf.is_dir() else []
 
 
-def main(argv: list[str] | None = None) -> int:
+def _main(argv: list[str] | None = None) -> int:
     try:
         sys.stdout.reconfigure(encoding='utf-8')
     except Exception:
@@ -1024,6 +1047,17 @@ def main(argv: list[str] | None = None) -> int:
         failed += sum(1 for s, *_ in issues if s == HIGH or args.strict)
     print('FAIL' if failed else 'OK', f'({failed} blocking finding(s))' if failed else '')
     return 1 if failed else 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    try:
+        return _main(argv)
+    except FileNotFoundError as exc:  # a mistyped path: a one-line message, not a traceback
+        print(f'error: file not found: {exc.filename}', file=sys.stderr)
+        return 2
+    except ValueError as exc:  # e.g. a duplicate Evidence ID in evidence.md
+        print(f'error: {exc}', file=sys.stderr)
+        return 2
 
 
 if __name__ == '__main__':

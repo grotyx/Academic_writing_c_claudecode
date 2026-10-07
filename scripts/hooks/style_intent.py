@@ -55,6 +55,9 @@ ACTIONS = [
     r"make\s+it", r"apply",
 ]
 
+SEARCH = re.compile(r"검색|찾아|search|look\s*up|\bfind\b|병원|학회|hospital|conference", re.IGNORECASE)
+STYLE_ADVERB = re.compile(r"학술\s*적|학술\s*체|academically|academic\s+(?:style|tone|register|english)", re.IGNORECASE)
+
 INJECTION = (
     "[style-pass auto-trigger] The user is asking to transform text toward academic/"
     "journal style. Do NOT free-hand 'academic style'. Follow the style-pass protocol "
@@ -72,7 +75,7 @@ META = re.compile(r"프로그램|모드|기능|스킬|플러그인|훅|업데이
                   r"|plugin|\bhooks?\b|implement", re.IGNORECASE)
 
 SECTION_WORDS = {
-    "title": r"제목|\btitle\b",
+    "title": r"(?<!그림 )(?<!그림)(?<!표 )(?<!표)제목|(?<!figure )(?<!table )\btitle\b",  # not a figure or table title
     "abstract": r"초록|\babstract\b",
     "introduction": r"서론|도입부|introduction|\bintro\b",
     # bare 방법/결과 count only right before a drafting verb ("결과 써줘", "방법을 다시 써줘")
@@ -123,10 +126,16 @@ def detect(prompt: str) -> bool:
     has_style = any(re.search(p, low) for p in TRIGGERS)
     if not has_style:
         return False
+    # "학술 검색해서 정리해줘" asks for a literature search, not for a rewrite.
+    if SEARCH.search(low) and not STYLE_ADVERB.search(low):
+        return False
     return any(re.search(a, low) for a in ACTIONS)
 
 
-MODE_WORDS = r"(?:학술|academic)\s*(?:문체|writing)?\s*(?:모드|mode)\s*(?:를|을|는)?\s*"
+# Anchored at the start: "학술 모드 꺼줘", "please turn academic mode off"; a statement such as
+# "I turned academic mode off" or "현재 학술 모드는 off" is not a request.
+MODE_WORDS = (r"^(?:(?:이제|그럼|다시|please|now|turn|set|switch)\s+)*(?:학술|academic)\s*(?:문체|writing)?\s*(?:모드|mode)"
+              r"\s*(?:를|을)?\s*(?:to\s+)?")
 END = r"\s*(?:요|please)?[.!\s]*$"
 MODE_TOGGLES = (
     ("off", re.compile(MODE_WORDS + r"(?:꺼\s*줘|꺼\s*주세요|꺼|끄기|끄자|해제(?:해\s*줘|해)?|중지(?:해\s*줘|해)?|off)" + END,
@@ -163,7 +172,13 @@ def evaluate(event: dict) -> str:
     toggle = mode_toggle(prompt)
     if toggle:
         try:
-            _academic().set_mode(toggle)
+            academic = _academic()
+            academic.set_mode(toggle)
+            effective = academic.mode()
+            if effective != toggle:  # MANUWRIGHT_WRITING_MODE in the environment wins over the saved setting
+                return (f"[manuwright] Saved academic writing mode '{toggle}', but the environment variable "
+                        f"MANUWRIGHT_WRITING_MODE={effective} overrides it, so '{effective}' stays in effect. Tell the "
+                        "user in one line, and that removing that variable makes the saved setting apply.")
             return (f"[manuwright] Academic writing mode is now '{toggle}' for every paper and session "
                     "(`manuwright mode` shows it). Confirm this to the user in one line.")
         except Exception:

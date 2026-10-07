@@ -684,6 +684,14 @@ EVIDENCE_STARTER = """# Evidence
 """
 
 
+PAPER_GITIGNORE = """# manuwright: copyright-protected or private material stays on this computer
+knowledge/pdf/
+Style/PDF/
+Style/profile/
+**/Style/profile/
+"""
+
+
 def init(engine, args):
     """manuwright init [folder] [--refresh-rules [--all]]: starter paper folder; never overwrites, never approves."""
     refresh = '--refresh-rules' in args
@@ -708,6 +716,7 @@ def init(engine, args):
         'data/analysis_plan.md': ANALYSIS_PLAN,
         'data/requirements.txt': analysis_env.DEFAULT_REQUIREMENTS,
         'knowledge/evidence.md': EVIDENCE_STARTER,
+        '.gitignore': PAPER_GITIGNORE,
         'AGENTS.md': bootstrap,
         'CLAUDE.md': bootstrap,
         'GEMINI.md': bootstrap,

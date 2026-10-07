@@ -42,9 +42,9 @@ _I = re.IGNORECASE
 ADJ = r"(?<!\ba )(?<!\ban )(?<!with )(?<!of )(?<!\bthe )"  # "an increased risk", "with reduced pain": adjectives
 VERBS = {
     3: re.compile(r"\b(?:demonstrat(?:e|es|ed|ing)|prov(?:e|es|ed|en)\b(?! to be)|establish(?:es|ed)? that|(?:has|have) established"
-                  r"|confirm(?:s|ed)?|caus(?:es|ed)\b|prevent(?:s|ed)\b|eliminat(?:es|ed)\b|leads? to|led to"
+                  r"|confirm(?:s|ed)?|(?<!\bthe )(?<!\bmain )(?<!\bcommon )caus(?:es|ed)\b(?! of\b)|prevent(?:s|ed)\b|eliminat(?:es|ed)\b|leads? to|led to"
                   r"|is (?:effective|superior|safe and effective)|definitive(?:ly)?|clearly (?:show|shows|showed))", _I),
-    2: re.compile(r"\b(?:shows|showed|show that|" + ADJ + r"(?:reduc(?:es|ed)|improv(?:es|ed)|increas(?:es|ed)|decreas(?:es|ed)"
+    2: re.compile(r"\b(?:shows|showed|show that|(?:has|have|had) (?:been )?shown|" + ADJ + r"(?:reduc(?:es|ed)|improv(?:es|ed)|increas(?:es|ed)|decreas(?:es|ed)"
                   r"|lowered|enhanc(?:es|ed))\b|outperform(?:s|ed)?|(?:was|were|is|are) (?:higher|lower|better|worse|"
                   r"greater|shorter|longer))", _I),
     1: re.compile(r"\b(?:associated with|association|observ(?:e|es|ed)|report(?:s|ed)?|correlat(?:e|es|ed|ion)|found|noted"
@@ -55,6 +55,12 @@ HEDGE = re.compile(r"\b(?:may|might|could|possibl[ey]|potential(?:ly)?|suggest(?
                    r"|seem(?:s|ed)? to|perhaps)\b", _I)
 
 
+# A negative finding ("did not show", "failed to demonstrate", "no difference") claims no effect:
+# grade it as a report, not as a directional or causal claim.
+NEGATED = re.compile(r"\b(?:not|no|failed to|neither|nor|without)\s+(?:\w+\s+){0,2}?(?:demonstrat\w*|prov\w*|show\w*|"
+                     r"confirm\w*|establish\w*|reduc\w*|improv\w*|increas\w*|decreas\w*|caus\w*|prevent\w*|"
+                     r"lead|led|differ\w*|effect\w*|benefit\w*|associat\w*)\b|\bno (?:significant |statistically significant )?"
+                     r"(?:difference|differences|effect|benefit|association)\b", _I)
 ASSOCIATION = re.compile(r"\b(?:associated with|association (?:between|with)|correlated with|linked to)\b", _I)
 
 
@@ -63,6 +69,13 @@ def sentence_level(sentence: str) -> int:
     ("was associated with lower rates"), caps the claim at associative."""
     sentence = NOT_A_CLAIM.sub('', sentence)  # "estimates are shown in Table 2" reports, it does not claim
     level = next((lvl for lvl in (3, 2, 1) if VERBS[lvl].search(sentence)), 0)
+    if level > 1 and NEGATED.search(sentence):
+        rest = NEGATED.sub('', sentence)
+        null_result = re.search(r"\bno (?:significant |statistically significant )?(?:difference|effect|benefit|association)",
+                                sentence, _I)
+        # the only strong verb is negated, or "showed no difference" reports a null result
+        if not VERBS[3].search(rest) and (null_result or not VERBS[2].search(rest)):
+            level = 1
     if HEDGE.search(sentence) or (ASSOCIATION.search(sentence) and level < 3):
         return min(level, 1)
     return level
@@ -101,7 +114,7 @@ def check(paths: list[Path], evidence: Path) -> list[tuple[Path, int, str]]:
     return findings
 
 
-def main(argv: list[str] | None = None) -> int:
+def _main(argv: list[str] | None = None) -> int:
     try:
         sys.stdout.reconfigure(encoding='utf-8')
     except Exception:
@@ -117,6 +130,17 @@ def main(argv: list[str] | None = None) -> int:
         print(f'[OVERCLAIM] {path}:{line} {message}')
     print(f'{len(findings)} overclaim(s).' if findings else 'OK: every cited sentence is within its evidence strength.')
     return 1 if findings else 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    try:
+        return _main(argv)
+    except FileNotFoundError as exc:  # a mistyped path: a one-line message, not a traceback
+        print(f'error: file not found: {exc.filename}', file=sys.stderr)
+        return 2
+    except ValueError as exc:  # e.g. a duplicate Evidence ID in evidence.md
+        print(f'error: {exc}', file=sys.stderr)
+        return 2
 
 
 if __name__ == '__main__':

@@ -36,6 +36,12 @@ knowledge/pdf/
 Style/PDF/**/*.pdf
 Style/PDF/**/*.PDF
 
+# Learned style profiles hold measured numbers and model paragraphs quoted from the learned papers
+# (copyright-protected, local only); pending rules hold wording from the author's drafts.
+Style/profile/
+**/Style/profile/
+Style/pending_style_rules.md
+
 # Style anchor markdown files may contain private/local analysis context
 Style/own/*.md
 !Style/own/example_*.md

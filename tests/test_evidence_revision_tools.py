@@ -226,3 +226,39 @@ def test_review_regressions_mode_toggle_only_on_requests():
                    'A report quoting "학술 모드 꺼줘" as an example of a phrase that toggles the mode by mistake'):
         assert intent.mode_toggle(prompt) is None, prompt
     assert intent.mode_toggle('학술 모드 꺼줘') == 'off' and intent.mode_toggle('학술 모드 엄격하게 해줘') == 'strict'
+
+
+def test_second_review_regressions(tmp_path, capsys):
+    # A failed learn keeps the style learned earlier.
+    out = tmp_path / 'prof'
+    out.mkdir()
+    (out / 'style_profile.json').write_text('{"documents": 3}', encoding='utf-8')
+    (tmp_path / 'empty.txt').write_text('no headings here', encoding='utf-8')
+    assert acad.learn([tmp_path / 'empty.txt'], out)['documents'] == 0
+    assert (out / 'style_profile.json').read_text(encoding='utf-8') == '{"documents": 3}'
+
+    # Approving "used" must not tick 'replace "caused by" ...'.
+    pending = tmp_path / 'pending.md'
+    pending.write_text('- [ ] P0 replace "demonstrated" with "showed" (2x)\n'
+                       '- [ ] P2 replace "caused by" with "due to" (1x)\n- [ ] P1 delete "notably" (1x)\n', encoding='utf-8')
+    assert acad.approve_pending(pending, ['used'], 'K', 'ok') == []
+    assert len(acad.approve_pending(pending, ['demonstrated', 'caused by -> due to'], 'K', 'ok')) == 2
+
+    # The commented starter example in a new paper's evidence.md is not an entry.
+    from check_citations import parse_evidence_entries
+    from manuwright.lifecycle import EVIDENCE_STARTER, PAPER_GITIGNORE
+    assert parse_evidence_entries(EVIDENCE_STARTER) == {}
+    assert 'Style/profile/' in PAPER_GITIGNORE and 'knowledge/pdf/' in PAPER_GITIGNORE
+
+    # Claim grading: negation, null results, the noun "causes", "have shown".
+    level = lambda text: strength.LEVELS[strength.sentence_level(text)]  # noqa: E731
+    assert level('Surgery failed to demonstrate benefit [EVID:a].') == 'associative'
+    assert level('Kim et al. showed no difference in pain [EVID:a].') == 'associative'
+    assert level('The causes of low back pain are many [EVID:a].') == 'hedged'
+    assert level('Previous studies have shown that fusion reduced pain [EVID:a].') == 'directional'
+    assert level('Fusion did not reduce pain but caused infections [EVID:a].') == 'causal'
+
+    # Missing files give a one-line error, not a traceback.
+    assert acad.main(['check', str(tmp_path / 'missing.md')]) == 2
+    assert strength.main([str(tmp_path / 'x.md'), '--evidence', str(tmp_path / 'none.md')]) == 2
+    assert 'file not found' in capsys.readouterr().err

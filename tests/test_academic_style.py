@@ -48,6 +48,18 @@ def test_prose_checks_flag_ai_register_and_form():
     assert acad.prose_issues('Age did not differ significantly between groups (Table 1).', 'results') == []
 
 
+def test_strict_blocks_only_what_pre_ai_papers_never_wrote():
+    def codes(text):
+        return [(i[0], i[1]) for i in acad.prose_issues(text, 'discussion', 40)]
+    assert codes('Collagen plays a key role in disc degeneration.') == [('medium', 'AI_PHRASE')]
+    assert codes('This improves care, paving the way for trials.') == [('high', 'AI_PHRASE')]  # reported once
+    assert codes('These findings offer valuable insights.') == [('medium', 'AI_PHRASE')]
+    assert acad.prose_issues('1. Department of Orthopaedic Surgery, Seoul.', 'title', 40) == []
+    from check_style import split_sentences
+    assert split_sentences('Pain fell (Fig. 2) at 6 mo. after surgery. It was a demo. Next.') == [
+        'Pain fell (Fig. 2) at 6 mo. after surgery.', 'It was a demo.', 'Next.']
+
+
 def test_words_the_card_calls_never_are_must_fix_but_statistical_leverage_is_not():
     def codes(text):
         return [(i[0], i[1]) for i in acad.prose_issues(text, 'methods', 40)]
@@ -187,6 +199,10 @@ def test_prompt_hook_injects_the_card_for_a_drafting_request_and_ignores_talk_ab
     assert intent.evaluate({'prompt': 'Write a unit test for the abstract class', 'cwd': '/tmp'}) == ''
     assert intent.requested_sections('drafts/06_discussion.md 다시 써줘, 결론도 작성') == ['discussion', 'conclusion']
     assert intent.requested_sections('결과 나오면 알려줘') == []
+    assert intent.requested_sections('그림 제목 수정해줘') == [] and not intent.detect('학술 검색해서 정리해줘')
+    for statement in ('I turned academic mode off', '현재 학술 모드는 off', '방금 학술 모드 꺼'):
+        assert intent.mode_toggle(statement) is None
+    assert intent.mode_toggle('please turn academic mode off') == 'off' and intent.mode_toggle('이제 학술 모드 꺼줘') == 'off'
     assert intent.requested_sections('제목 후보 몇 개 줘') == ['title'] and intent.requested_sections('결과 정리해줘') == ['results']
     monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
     assert intent.evaluate({'prompt': '서론 써줘', 'cwd': str(ROOT)}) == ''

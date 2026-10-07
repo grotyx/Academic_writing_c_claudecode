@@ -495,8 +495,16 @@ Examples:
 
     try:
         if args.command == "audit":
-            with open(args.evidence, encoding="utf-8") as handle:
-                rows = audit_evidence(handle.read())
+            try:
+                with open(args.evidence, encoding="utf-8") as handle:
+                    rows = audit_evidence(handle.read())
+            except OSError:
+                print(f"error: {args.evidence} not found; run this in the paper folder or pass --evidence <file>.",
+                      file=sys.stderr)
+                sys.exit(2)
+            except ValueError as exc:  # duplicate Evidence ID
+                print(f"error: {exc}", file=sys.stderr)
+                sys.exit(2)
             for eid, status, score, notes in rows:
                 print(f"{status.upper():<10} {score:4.2f}  {eid}" + (f"  ({notes})" if notes else ""))
             bad = [r for r in rows if r[1] in ("failed", "retracted")]
