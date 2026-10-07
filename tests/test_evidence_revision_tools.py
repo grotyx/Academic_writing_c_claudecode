@@ -83,7 +83,9 @@ def test_blind_packet_withholds_the_letter_and_the_record_needs_every_phase(tmp_
               'final_verdict: FULLY\nbasis:\nnew_issue: none')
     assert record(good, good) == []
     assert any('without a basis' in p for p in record(good, swayed))
-    assert record(good, swayed.replace('basis:', 'basis: author_pointer: Discussion para 5')) == []
+    pointed = swayed.replace('basis:', 'basis: author_pointer: Discussion para 5')
+    assert any('ghost revision' in p for p in record(good, pointed))  # the letter alone is not enough
+    assert record(good, pointed + '\nfinal_anchor: 06_discussion_REV1.md: "selection bias"') == []
     assert any('regression' in p for p in record(good, good.replace('new_issue: none', 'new_issue: regression: CI wrong')))
     assert any('must be none' in p for p in record(good, good.replace('new_issue: none', 'new_issue: typo')))
 
@@ -156,3 +158,71 @@ def test_cli_routes_the_new_tools():
     assert 'manuwright search audit' in run('search', 'audit', '--help')
     assert 'packet' in run('blind-review', '--help') and '--evidence' in run('claim-strength', '--help')
     assert '--apply' in run('style', 'edits', '--help')
+
+
+def test_blind_packet_refuses_unnumbered_comments_and_keeps_section_files_named_response(tmp_path):
+    comments = make_revision(tmp_path)
+    (tmp_path / 'drafts' / '06_dose_response.md').write_text('Old.\n', encoding='utf-8')
+    (tmp_path / 'drafts' / 'revision' / 'REV1' / '06_dose_response_REV1.md').write_text('New.\n', encoding='utf-8')
+    manifest = blind_review.packet(comments, tmp_path / 'drafts', tmp_path / 'drafts' / 'revision' / 'REV1',
+                                   tmp_path / 'out')
+    assert '06_dose_response_REV1.md' in manifest['revised_sections']
+    assert 'response_letter_REV1.md' not in manifest['revised_sections']
+    comments.write_text('The reviewers asked for more detail on the CI and the limitations.\n', encoding='utf-8')
+    try:
+        blind_review.packet(comments, tmp_path / 'drafts', tmp_path / 'drafts' / 'revision' / 'REV1', tmp_path / 'o2')
+        raise AssertionError('packet should refuse comments it cannot number')
+    except ValueError as exc:
+        assert 'Comment 1)' in str(exc)
+
+
+def test_review_regressions_claim_grading_ignores_nouns_and_adjectives():
+    for sentence in ('Low back pain is the leading cause of disability.', 'Lower extremity weakness was common.',
+                     'Estimates are shown in Table 2.', 'Smoking is an established risk factor.',
+                     'Patients with reduced pain returned earlier.',
+                     'Facet preservation was associated with lower rates of instability.'):
+        assert strength.sentence_level(sentence) <= 1, sentence
+    assert strength.sentence_level('Fusion caused instability.') == 3
+    assert strength.sentence_level('X demonstrated that Y is associated with Z.') == 3
+
+
+def test_review_regressions_edits_apply_once_and_chat_approval(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / 'ai.md').write_text('The cohort demonstrated benefit. Results demonstrated gains.\n', encoding='utf-8')
+    (tmp_path / 'me.md').write_text('The cohort showed benefit. Results showed gains.\n', encoding='utf-8')
+    assert acad.main(['edits', 'ai.md', 'me.md']) == 0
+    assert acad.main(['edits', '--approve', 'demonstrated']) == 2  # approval needs who and their words
+    assert acad.main(['edits', '--approve', 'demonstrated', '--approved-by', 'Park', '--quote', 'showed 로 바꿔',
+                      '--apply']) == 0
+    assert acad.main(['edits', '--apply']) == 0
+    text = (tmp_path / 'Style' / 'terminology.md').read_text(encoding='utf-8')
+    assert text.count('| showed | demonstrated |') == 1
+    assert 'approved by Park in chat' in (tmp_path / 'Style' / 'pending_style_rules.md').read_text(encoding='utf-8')
+
+
+def test_review_regressions_audit_parsing():
+    evidence = ('### [1] Müller 2020\n- **Evidence ID:** muller_2020\n- **Citation:** Müller A. Lin study. Spine. 2020.\n'
+                '- **DOI:** doi:10.1/X\n- **PMID:** 12345678 (PMCID: PMC7654321)\n')
+    record = {'pmid': '12345678', 'title': 'Lin study', 'first_author': 'Müller', 'year': '2020',
+              'journal_abbr': 'Spine', 'doi': '10.1/x'}
+    assert search_pubmed.audit_evidence(evidence, fetch=lambda ids: [record] if ids == ['12345678'] else []) == [
+        ('muller_2020', 'verified', 1.0, '')]
+    assert search_pubmed.match_score('Lin A. 2020', {'title': 'x', 'first_author': 'Li', 'year': '2020'})[1]['author'] == 0
+
+
+def test_review_regressions_preserve_and_bmc_sections():
+    assert acad.preserve_problems('p = 0.04 [EVID:a_2020]', '*p* = 0.04 [EVID:a_2020]') == []
+    text = ('Abstract\nBackground\nb.\nMethods\nm.\nResults\nr.\nConclusions\nc.\n'
+            'Background\nReal intro.\nMethods\nReal methods.\nDiscussion\nReal discussion.')
+    parts = acad.split_sections(text)
+    assert parts['introduction'] == 'Real intro.' and parts['methods'] == 'Real methods.'
+
+
+def test_review_regressions_mode_toggle_only_on_requests():
+    spec = importlib.util.spec_from_file_location('style_intent', ROOT / 'scripts' / 'hooks' / 'style_intent.py')
+    intent = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(intent)
+    for prompt in ('학술 모드 꺼지면 어떻게 돼?', '학술 모드 끄지 마', '학술 모드 다시 켜지 말고 그냥 둬', '학술 모드가 뭐야?',
+                   'A report quoting "학술 모드 꺼줘" as an example of a phrase that toggles the mode by mistake'):
+        assert intent.mode_toggle(prompt) is None, prompt
+    assert intent.mode_toggle('학술 모드 꺼줘') == 'off' and intent.mode_toggle('학술 모드 엄격하게 해줘') == 'strict'

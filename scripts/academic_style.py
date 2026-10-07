@@ -315,7 +315,9 @@ PROTECTED = re.compile(r'\[EVID:[^\]]+\]|(?:Table|Fig(?:ure)?\.?|Supplementary (
 
 def protected_tokens(text: str) -> Counter:
     """Citations, table/figure references, p values and numbers: what a style rewrite must not change."""
-    return Counter(re.sub(r'\s+', '', m.group(0)) for m in PROTECTED.finditer(text))
+    # italics are formatting, not content: "p = 0.04" and "*p* = 0.04" are the same value
+    return Counter(m.group(0) if m.group(0).startswith('[EVID:') else re.sub(r'[\s*_]+', '', m.group(0))
+                   for m in PROTECTED.finditer(text))
 
 
 def preserve_problems(before: str, after: str) -> list[str]:
@@ -408,7 +410,7 @@ def _heading(line: str) -> tuple[str, str] | None:
 def split_sections(text: str) -> dict:
     """{section: text} from a paper's headings; structured-abstract labels stay in the abstract."""
     parts: dict = {}
-    current, abstract_words = None, 0
+    current, abstract_words, labels = None, 0, set()
     for line in text.splitlines():
         heading = _heading(line)
         if heading:
@@ -417,9 +419,13 @@ def split_sections(text: str) -> dict:
                 if current not in (None, 'abstract'):
                     break
                 continue
+            # A structured-abstract label (Background:, Methods:) stays in the abstract; the same label a second
+            # time is the body's real heading (BMC-style papers open the body with "Background").
             label = (current == 'abstract' and abstract_words < ABSTRACT_MAX_WORDS and name != 'introduction'
-                     and section in ('introduction', 'methods', 'results', 'conclusion'))
-            if not label:  # a structured-abstract label (Background:, Methods:) stays in the abstract
+                     and section in ('introduction', 'methods', 'results', 'conclusion') and section not in labels)
+            if label:
+                labels.add(section)
+            else:
                 current = section
             continue
         if current == 'abstract':
@@ -772,14 +778,19 @@ def _section_pairs(before: Path, after: Path) -> list[tuple[str, str]]:
 
 
 def _git_pairs(rev: str, folder: Path) -> list[tuple[str, str]]:
+    top = subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=True, text=True, encoding='utf-8',
+                         errors='replace', cwd=str(folder if folder.is_dir() else Path.cwd()))
+    if top.returncode != 0:
+        raise RuntimeError(f'{folder} is not inside a git repository; compare two files or folders instead')
+    root = Path(top.stdout.strip()).resolve()
     pairs = []
     for path in sorted(folder.rglob('0[1-9]_*.md')):
         try:
-            rel = path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+            rel = path.resolve().relative_to(root).as_posix()  # git show wants a path from the repository root
         except ValueError:
-            continue  # outside this repository: git cannot show it
+            continue
         done = subprocess.run(['git', 'show', f'{rev}:{rel}'], capture_output=True, text=True, encoding='utf-8',
-                              errors='replace')
+                              errors='replace', cwd=str(root))
         if done.returncode == 0:
             pairs.append((done.stdout, path.read_text(encoding='utf-8', errors='replace')))
     return pairs
@@ -813,8 +824,8 @@ LEARNED_HEADER = ('\n## Learned From Author Edits\n\nRules the author approved i
 
 def write_pending(proposals: list, target: Path) -> None:
     lines = ['# Pending style rules from your edits', '',
-             'Learned from how you edited AI drafts. Tick (`[x]`) only the rules you want enforced, then run',
-             '`manuwright style edits --apply`. An agent must not tick these for you.', '',
+             'Learned from how you edited AI drafts. Tick (`[x]`) only the rules you want enforced, or tell your',
+             'agent in chat which ones to keep; then `manuwright style edits --apply`. An agent never decides for you.', '',
              'P0 = you made this change 2+ times; P1 = once, and the old wording is AI register; P2 = once.', '']
     for priority, rule, count, kind in proposals:
         text = f'replace "{rule.split(" -> ")[0]}" with "{rule.split(" -> ")[1]}"' if kind == 'replace' else f'delete "{rule}"'
@@ -823,16 +834,34 @@ def write_pending(proposals: list, target: Path) -> None:
     target.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
 
+def approve_pending(pending: Path, rules: list[str], approved_by: str, quote: str) -> list[str]:
+    """Tick the rules the author approved in chat (like `manuwright approve` for plans); returns the lines ticked."""
+    lines, ticked = pending.read_text(encoding='utf-8').splitlines(), []
+    wanted = [r.strip().lower() for r in rules]
+    for i, line in enumerate(lines):
+        if line.lstrip().startswith('- [ ]') and any(w and w in line.lower() for w in wanted):
+            lines[i] = line.replace('- [ ]', '- [x]', 1) + f'  <!-- approved by {approved_by} in chat: "{quote}" -->'
+            ticked.append(lines[i])
+    pending.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    return ticked
+
+
 def apply_pending(pending: Path, terminology: Path) -> list[str]:
-    """Append the ticked rules to the paper's terminology registry (lint enforces them from then on)."""
+    """Append the ticked rules to the paper's terminology registry (lint enforces them from then on).
+    Rules already in the registry are skipped, and applied lines are marked so a rerun adds nothing."""
     rows = []
-    for line in pending.read_text(encoding='utf-8').splitlines():
+    text = terminology.read_text(encoding='utf-8') if terminology.is_file() else '# Terminology\n'
+    lines = pending.read_text(encoding='utf-8').splitlines()
+    for i, line in enumerate(lines):
         m = re.match(r'-\s*\[[xX]\]\s*P\d\s+(?:replace "(.+?)" with "(.+?)"|delete "(.+?)")', line.strip())
-        if m:
+        if m and '(applied)' not in line:
             old, new = (m.group(1), m.group(2)) if m.group(1) else (m.group(3), '(delete)')
-            rows.append(f'| {new} | {old} | learned from author edits |')
+            row = f'| {new} | {old} | learned from author edits |'
+            if row not in text and row not in rows:
+                rows.append(row)
+            lines[i] = line + ' (applied)'
+    pending.write_text('\n'.join(lines) + '\n', encoding='utf-8')
     if rows:
-        text = terminology.read_text(encoding='utf-8') if terminology.is_file() else '# Terminology\n'
         if '## Learned From Author Edits' not in text:
             text = text.rstrip('\n') + '\n' + LEARNED_HEADER
         terminology.parent.mkdir(parents=True, exist_ok=True)
@@ -875,19 +904,36 @@ def main(argv: list[str] | None = None) -> int:
     ed.add_argument('--folder', default='drafts')
     ed.add_argument('--apply', action='store_true', help='move ticked rules from Style/pending_style_rules.md '
                                                          'into Style/terminology.md')
+    ed.add_argument('--approve', action='append', default=[], metavar='RULE',
+                    help='tick a rule the author approved in chat (e.g. "demonstrated"); needs --approved-by and --quote')
+    ed.add_argument('--approved-by')
+    ed.add_argument('--quote', help="the author's exact words")
     args = parser.parse_args(argv)
 
     if args.action == 'edits':
+        if args.approve:
+            if not (args.approved_by and args.quote) or not PENDING.is_file():
+                print('usage: manuwright style edits --approve RULE --approved-by NAME --quote "their words" '
+                      '(after `manuwright style edits` wrote Style/pending_style_rules.md)', file=sys.stderr)
+                return 2
+            ticked = approve_pending(PENDING, args.approve, args.approved_by, args.quote)
+            print(f'Ticked {len(ticked)} rule(s) the author approved; run `manuwright style edits --apply`.')
+            if not args.apply:
+                return 0
         if args.apply:
             if not PENDING.is_file():
                 print(f'No {PENDING}; run `manuwright style edits` first.', file=sys.stderr)
                 return 2
             rows = apply_pending(PENDING, Path('Style') / 'terminology.md')
             print(f'Added {len(rows)} approved rule(s) to Style/terminology.md.' if rows
-                  else 'No ticked rules in Style/pending_style_rules.md; nothing applied.')
+                  else 'Nothing new to apply: no ticked rules, or they are already in Style/terminology.md.')
             return 0
         if args.git:
-            pairs = _git_pairs(args.git, Path(args.folder))
+            try:
+                pairs = _git_pairs(args.git, Path(args.folder))
+            except RuntimeError as exc:
+                print(f'error: {exc}', file=sys.stderr)
+                return 1
         elif args.before and args.after:
             pairs = _section_pairs(Path(args.before), Path(args.after))
         else:
@@ -901,8 +947,9 @@ def main(argv: list[str] | None = None) -> int:
         write_pending(proposals, PENDING)
         for priority, rule, count, kind in proposals[:25]:
             print(f'{priority} {kind:<7} {rule} ({count}x)')
-        print(f'{len(proposals)} proposal(s) written to {PENDING}. Show them to the author; they tick what to keep, '
-              'then `manuwright style edits --apply`.')
+        print(f'{len(proposals)} proposal(s) written to {PENDING}. Show them to the author. They tick what to keep, '
+              'or approve in chat and you run `manuwright style edits --approve "<rule>" --approved-by "<name>" '
+              '--quote "<their words>" --apply`.')
         return 0
 
     if args.action == 'preserve':

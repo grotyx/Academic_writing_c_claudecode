@@ -44,7 +44,7 @@ from check_response_coverage import parse_original_comments  # noqa: E402
 VERDICTS = ('FULLY', 'PARTIALLY', 'NOT_ADDRESSED', 'MADE_WORSE', 'CANNOT_VERIFY')
 PASSING = ('FULLY', 'PARTIALLY')
 BASES = ('author_pointer', 'valid_rebuttal', 'scope_correction')
-LETTER = re.compile(r'response|rebuttal|letter', re.IGNORECASE)
+LETTER = re.compile(r'^(?:\d+_)?(?:response|rebuttal|cover_?letter|letter)', re.IGNORECASE)  # not 06_dose_response
 BLOCK = re.compile(r'^##\s+(R\d+-C\d+)\s*$', re.MULTILINE)
 FIELD = re.compile(r'^([a-z_]+):[ \t]*(.*)$', re.MULTILINE)
 
@@ -80,14 +80,18 @@ def packet(comments: Path, original: Path, revised: Path, out: Path) -> dict:
             (out / 'diffs' / f'{key}.diff').write_text('\n'.join(diff) + '\n', encoding='utf-8')
         files.append(new.name)
     ids = comment_ids(comments)
-    blocks = [f'## {cid}\nexpectation: \nblind_verdict: \nanchor: \nfinal_verdict: \nbasis: \nnew_issue: none\n'
+    if not ids:
+        raise ValueError(f'no reviewer comments found in {comments}. Write them as "Reviewer #1:" followed by '
+                         '"Comment 1) ...", "Comment 2) ..." (docs/revision_guide.md), then build the packet again.')
+    blocks = [f'## {cid}\nexpectation: \nblind_verdict: \nanchor: \nfinal_verdict: \nfinal_anchor: \nbasis: \nnew_issue: none\n'
               for cid in ids]
     template = ('# Letter-blind re-review record\n\n'
                 'Phase 1: fill every `expectation` before opening revised/ or diffs/.\n'
                 'Phase 2A: fill `blind_verdict` (' + ' | '.join(VERDICTS) + ') and `anchor` (file: "quoted text") '
                 'from original/, revised/ and diffs/ only.\n'
                 'Phase 2B: then read the response letter and fill `final_verdict`; if it differs from the blind '
-                'verdict, `basis` must be one of ' + ', '.join(BASES) + '.\n'
+                'verdict, `basis` must be one of ' + ', '.join(BASES) + ', and an upgraded verdict needs `final_anchor` '
+                '(where in the revised text the change is).\n'
                 '`new_issue`: none, or "regression: ..." / "previously_missed: ...".\n\n' + '\n'.join(blocks))
     verdicts = out / 'verdicts.md'
     if not verdicts.exists():
@@ -119,6 +123,8 @@ def check(verdicts: Path) -> list[str]:
               and name != 'reviewer_comments.md']
     problems += [f'packet contains {name}: the blind phase must not see the response letter' for name in leaked]
     record = parse_record(verdicts.read_text(encoding='utf-8'))
+    if not manifest.get('comments'):
+        problems.append('the packet has no reviewer comments, so nothing was reviewed; rebuild it with numbered comments')
     for cid in manifest.get('comments', []):
         entry = record.get(cid)
         if entry is None:
@@ -138,6 +144,10 @@ def check(verdicts: Path) -> list[str]:
                             f'({", ".join(BASES)})')
         elif final not in PASSING:
             problems.append(f'{cid}: final verdict {final}')
+        elif blind in VERDICTS and blind not in PASSING and not entry.get('final_anchor'):
+            # the letter convinced the reviewer: the change must still be visible in the revised text
+            problems.append(f'{cid}: upgraded {blind} -> {final} after the letter needs final_anchor (revised file and '
+                            'quoted text); a change that is only in the letter is a ghost revision')
         issue = entry.get('new_issue', 'none').strip().lower()
         if issue not in ('', 'none') and not issue.startswith(('regression:', 'previously_missed:')):
             problems.append(f'{cid}: new_issue must be none, "regression: ..." or "previously_missed: ..."')
@@ -162,7 +172,11 @@ def main(argv: list[str] | None = None) -> int:
     ck.add_argument('verdicts')
     args = parser.parse_args(argv)
     if args.action == 'packet':
-        manifest = packet(Path(args.comments), Path(args.original), Path(args.revised), Path(args.out))
+        try:
+            manifest = packet(Path(args.comments), Path(args.original), Path(args.revised), Path(args.out))
+        except ValueError as exc:
+            print(f'error: {exc}', file=sys.stderr)
+            return 1
         print(f"Blind packet: {args.out} ({len(manifest['comments'])} comments, "
               f"{len(manifest['revised_sections'])} revised sections; response letter withheld).")
         print(f'Fill {Path(args.out) / "verdicts.md"} phase by phase, then: manuwright blind-review check '

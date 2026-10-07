@@ -349,20 +349,31 @@ def _itertext(elem):
 WEIGHTS = {"title": 0.4, "author": 0.3, "year": 0.2, "journal": 0.1}
 
 
+def _plain(text):
+    """Lower case without accents: "Müller" -> "muller"."""
+    decomposed = unicodedata.normalize("NFKD", text or "")
+    return "".join(c for c in decomposed if not unicodedata.combining(c)).lower()
+
+
 def _norm_words(text):
-    return {w for w in re.findall(r"[a-z0-9]+", unicodedata.normalize("NFKD", text or "").lower()) if len(w) > 3}
+    return {w for w in re.findall(r"[a-z0-9]+", _plain(text)) if len(w) > 3}
+
+
+def _clean_doi(value):
+    return re.sub(r"^(?:doi:\s*|https?://(?:dx\.)?doi\.org/)", "", (value or "").strip(), flags=re.I).lower()
 
 
 def match_score(entry_text, article):
     """(score 0-1, per-field scores) for how well an evidence entry's text matches the PubMed record."""
-    text = unicodedata.normalize("NFKD", entry_text or "").lower()
+    text = _plain(entry_text)
     words = _norm_words(entry_text)
     title = _norm_words(article.get("title", ""))
     title_score = len(title & words) / len(title) if title else 0.0
     title_score = 1.0 if title_score >= 0.85 else title_score
-    author = unicodedata.normalize("NFKD", article.get("first_author", "")).lower()
-    author_score = 1.0 if author and author != "unknown" and author in text else 0.0
+    author = _plain(article.get("first_author", ""))
+    author_score = 1.0 if author and author != "unknown" and re.search(r"\b" + re.escape(author) + r"\b", text) else 0.0
     year = article.get("year", "")
+    year = year if str(year).isdigit() else ""
     years = {int(y) for y in re.findall(r"\b(?:19|20)\d{2}\b", text)}
     year_score = 1.0 if year and int(year) in years else 0.5 if year and {int(year) - 1, int(year) + 1} & years else 0.0
     journals = [j.lower() for j in (article.get("journal_abbr"), article.get("medline_ta"), article.get("journal")) if j]
@@ -385,13 +396,17 @@ def audit_evidence(evidence_text, fetch=None, resolve=None):
     entries = parse_evidence_entries(evidence_text)
     wanted = {}
     for eid, entry in entries.items():
-        pmid = re.sub(r"\D", "", entry.fields.get("pmid", ""))
-        doi = entry.fields.get("doi", "").strip().lower().removeprefix("https://doi.org/")
+        found = re.search(r"\d{4,9}", entry.fields.get("pmid", ""))  # "12345678 (PMCID: PMC765...)" -> first number
+        pmid = found.group(0) if found else ""
+        doi = _clean_doi(entry.fields.get("doi", ""))
         if not pmid and doi:
             pmid = resolve(doi) or ""
         if pmid:
             wanted[eid] = (pmid, doi)
-    articles = {a["pmid"]: a for a in fetch(sorted({p for p, _ in wanted.values()}))} if wanted else {}
+    ids = sorted({p for p, _ in wanted.values()})
+    articles = {}
+    for start in range(0, len(ids), 200):  # efetch URLs stay short; NCBI asks for batches
+        articles.update({a["pmid"]: a for a in fetch(ids[start:start + 200])})
     rows = []
     for eid, (pmid, doi) in wanted.items():
         article = articles.get(pmid)
@@ -403,7 +418,7 @@ def audit_evidence(evidence_text, fetch=None, resolve=None):
         score, fields = match_score(text, article)
         status = audit_status(score)
         notes = [f"{k} {v:.2f}" for k, v in fields.items() if v < 1]
-        if doi and article.get("doi") and doi != article["doi"].lower():
+        if doi and article.get("doi") and doi != _clean_doi(article["doi"]):
             status, notes = "failed", notes + [f"DOI {doi} != PubMed {article['doi']}"]
         if article.get("retracted"):
             status, notes = "retracted", notes + ["RETRACTED: do not cite; set Source Status: retracted"]

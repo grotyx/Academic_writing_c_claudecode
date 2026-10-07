@@ -39,16 +39,18 @@ from check_style import split_sentences  # noqa: E402
 LEVELS = ('hedged', 'associative', 'directional', 'causal')
 ALLOWED = {'speculative': 0, 'observed': 1, 'supported': 2, 'strong': 3}
 _I = re.IGNORECASE
+ADJ = r"(?<!\ba )(?<!\ban )(?<!with )(?<!of )(?<!\bthe )"  # "an increased risk", "with reduced pain": adjectives
 VERBS = {
-    3: re.compile(r"\b(?:demonstrat(?:e|es|ed|ing)|prov(?:e|es|ed|en)|establish(?:es|ed)?|confirm(?:s|ed)?|caus(?:e|es|ed)"
-                  r"|prevent(?:s|ed)?|eliminat(?:e|es|ed)|leads? to|led to|results? in|is (?:effective|superior|safe and effective)"
-                  r"|definitive(?:ly)?|clearly (?:show|shows|showed))\b", _I),
-    2: re.compile(r"\b(?:show(?:s|ed|n)?|reduc(?:e|es|ed)|improv(?:e|es|ed)|increas(?:e|es|ed)|decreas(?:e|es|ed)|lower(?:s|ed)?"
-                  r"|rais(?:e|es|ed)|enhanc(?:e|es|ed)|outperform(?:s|ed)?|(?:was|were|is|are) (?:higher|lower|better|worse|"
-                  r"greater|shorter|longer))\b", _I),
+    3: re.compile(r"\b(?:demonstrat(?:e|es|ed|ing)|prov(?:e|es|ed|en)\b(?! to be)|establish(?:es|ed)? that|(?:has|have) established"
+                  r"|confirm(?:s|ed)?|caus(?:es|ed)\b|prevent(?:s|ed)\b|eliminat(?:es|ed)\b|leads? to|led to"
+                  r"|is (?:effective|superior|safe and effective)|definitive(?:ly)?|clearly (?:show|shows|showed))", _I),
+    2: re.compile(r"\b(?:shows|showed|show that|" + ADJ + r"(?:reduc(?:es|ed)|improv(?:es|ed)|increas(?:es|ed)|decreas(?:es|ed)"
+                  r"|lowered|enhanc(?:es|ed))\b|outperform(?:s|ed)?|(?:was|were|is|are) (?:higher|lower|better|worse|"
+                  r"greater|shorter|longer))", _I),
     1: re.compile(r"\b(?:associated with|association|observ(?:e|es|ed)|report(?:s|ed)?|correlat(?:e|es|ed|ion)|found|noted"
                   r"|linked to|related to)\b", _I),
 }
+NOT_A_CLAIM = re.compile(r"\b(?:as )?shown in (?:Table|Fig(?:ure)?|Supplementary)\b[^.;,]*", _I)
 HEDGE = re.compile(r"\b(?:may|might|could|possibl[ey]|potential(?:ly)?|suggest(?:s|ed|ing)?|hypothes\w+|appear(?:s|ed)? to"
                    r"|seem(?:s|ed)? to|perhaps)\b", _I)
 
@@ -59,6 +61,7 @@ ASSOCIATION = re.compile(r"\b(?:associated with|association (?:between|with)|cor
 def sentence_level(sentence: str) -> int:
     """0 hedged .. 3 causal: the strongest verb in the sentence. A hedge, or an explicit association
     ("was associated with lower rates"), caps the claim at associative."""
+    sentence = NOT_A_CLAIM.sub('', sentence)  # "estimates are shown in Table 2" reports, it does not claim
     level = next((lvl for lvl in (3, 2, 1) if VERBS[lvl].search(sentence)), 0)
     if HEDGE.search(sentence) or (ASSOCIATION.search(sentence) and level < 3):
         return min(level, 1)
