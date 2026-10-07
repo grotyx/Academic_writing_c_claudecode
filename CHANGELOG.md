@@ -1,6 +1,6 @@
 # Changelog
 
-### Unreleased
+### v1.9.3 (261007)
 
 Fixes from a code review and a synthetic end-to-end run (new paper folder, synthetic data, real PubMed search, every stage up to the DOCX build).
 

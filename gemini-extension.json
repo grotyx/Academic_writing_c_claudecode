@@ -1,6 +1,6 @@
 {
   "name": "manuwright",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "Evidence-bound medical manuscript workflow. Requires the manuwright CLI of the same version.",
   "contextFileName": "docs/agent_bootstrap.md"
 }
