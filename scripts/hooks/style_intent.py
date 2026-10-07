@@ -73,12 +73,13 @@ META = re.compile(r"프로그램|모드|기능|스킬|플러그인|훅|업데이
 
 SECTION_WORDS = {
     "title": r"제목|\btitle\b",
-    "abstract": r"초록|abstract",
+    "abstract": r"초록|\babstract\b",
     "introduction": r"서론|도입부|introduction|\bintro\b",
-    "methods": r"방법\s*(?:섹션|파트|부분|론)|재료\s*(?:및|와)\s*방법|\bmethods?\b",
-    "results": r"결과\s*(?:섹션|파트|부분)|\bresults\b",
-    "discussion": r"고찰|discussion",
-    "conclusion": r"결론|conclusion",
+    # bare 방법/결과 count only right before a drafting verb ("결과 써줘", "방법을 다시 써줘")
+    "methods": r"방법\s*(?:섹션|파트|부분|론)|재료\s*(?:및|와)\s*방법|방법\s*(?:을|를)?\s*(?:다시\s*)?(?:써|작성)|\bmethods?\b",
+    "results": r"결과\s*(?:섹션|파트|부분)|결과\s*(?:를|을)?\s*(?:다시\s*)?(?:써|작성)|\bresults\b",
+    "discussion": r"고찰|\bdiscussion\b",
+    "conclusion": r"결론|\bconclusions?\b",
 }
 SECTION_FILE = re.compile(r"\b0([1-7])_[a-z_]*\.md\b")
 FILE_SECTIONS = {"1": "title", "2": "abstract", "3": "introduction", "4": "methods", "5": "results",
@@ -106,10 +107,10 @@ def draft_cards(prompt: str, cwd: str | None = None) -> str:
     if not sections:
         return ""
     academic_style = _academic()
-
-    if academic_style.mode() == "off":
-        return ""
     project = Path(cwd) if cwd else None
+    # Only inside a paper folder: in other projects "write the results parser" is not a manuscript.
+    if academic_style.mode() == "off" or not academic_style.in_paper(project):
+        return ""
     return "\n\n".join(academic_style.card(section, project) for section in sections)
 
 

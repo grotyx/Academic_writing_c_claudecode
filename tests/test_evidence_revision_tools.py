@@ -153,6 +153,6 @@ def test_cli_routes_the_new_tools():
     import subprocess
     run = lambda *args: subprocess.run([sys.executable, '-m', 'manuwright.cli', *args], capture_output=True,  # noqa: E731
                                        text=True, encoding='utf-8', cwd=str(ROOT)).stdout
-    assert 'search_pubmed.py audit' in run('search', 'audit', '--help')
+    assert 'manuwright search audit' in run('search', 'audit', '--help')
     assert 'packet' in run('blind-review', '--help') and '--evidence' in run('claim-strength', '--help')
     assert '--apply' in run('style', 'edits', '--help')

@@ -53,12 +53,16 @@ Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
   init --refresh-rules [--all]   in an existing paper (or --all registered papers): update only the agent rules (AGENTS/CLAUDE/GEMINI.md)
   check                      one report: version, agent adapters, main model, key, auto-update, writing mode, papers
-  mode [academic|strict|off] academic writing mode: style cards + prose findings (strict also blocks)
-  style learn [papers...]    measure a corpus of good papers (PDF, DOCX, MD, TXT): your style, landmark, target journal
-  style card <section>       the section's style card: moves, phrasebank, model paragraphs, your measured style
-  style preserve <old> <new> a rewrite kept every [EVID:id], number, p value and table/figure reference
-  style edits <ai> <edited>|--git REV   learn rules from your edits of AI drafts (pending until you tick them; --apply)
-  style status               writing mode and learned profile (style extract|check: style metrics vs a Style Spec)
+Writing and review (in chat you can simply ask: "서론 써줘", "과장 표현 검사해줘", "근거 다시 확인해줘"):
+  mode [academic|strict|off] academic writing mode (default academic; strict blocks AI-style prose; or say "학술 모드 꺼줘")
+  style card <section>       style card for a section (title, abstract, introduction, ... or 서론, 방법, 결과, 고찰 ...)
+  style learn <folder>       learn the style of 3+ good papers (yours, landmark, target journal; PDF/DOCX/MD/TXT)
+  style edits <ai> <edited>  learn rules from how you edited AI drafts (--git REV; you approve each rule; --apply)
+  style preserve <old> <new> check a style rewrite kept every citation, number, p value and table/figure reference
+  style status               writing mode and learned style (style extract|check: metrics against a Style Spec)
+  claim-strength drafts      cited sentences worded more strongly than their evidence (Claim Strength in evidence.md)
+  search audit               check every evidence.md entry against PubMed: details match, retracted, corrected
+  blind-review packet|check  revision re-review that hides the response letter until the verdicts are written
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)

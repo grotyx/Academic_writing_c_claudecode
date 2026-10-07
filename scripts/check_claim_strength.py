@@ -103,7 +103,8 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding='utf-8')
     except Exception:
         pass
-    parser = argparse.ArgumentParser(description='Flag cited sentences worded more strongly than their evidence.')
+    parser = argparse.ArgumentParser(prog='manuwright claim-strength',
+                                     description='Flag cited sentences worded more strongly than their evidence.')
     parser.add_argument('files', nargs='+')
     parser.add_argument('--evidence', default='knowledge/evidence.md')
     args = parser.parse_args(argv)

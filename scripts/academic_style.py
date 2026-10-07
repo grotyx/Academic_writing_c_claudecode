@@ -99,6 +99,20 @@ def load_profile(project: Path | None = None) -> tuple[dict, Path | None]:
         return {}, None
 
 
+KOREAN_SECTIONS = {'제목': 'title', '초록': 'abstract', '서론': 'introduction', '방법': 'methods', '재료및방법': 'methods',
+                   '결과': 'results', '고찰': 'discussion', '논의': 'discussion', '결론': 'conclusion'}
+
+
+def section_name(value: str) -> str:
+    """'discussion', 'Discussion', '고찰', 'method' -> canonical section name (argparse type)."""
+    key = re.sub(r'\s+', '', value).lower()
+    name = KOREAN_SECTIONS.get(key) or next((s for s in SECTIONS if key in (s, s.rstrip('s'))), None)
+    if not name:
+        raise argparse.ArgumentTypeError(f'unknown section {value!r}; use one of: {", ".join(SECTIONS)} '
+                                         '(or 제목, 초록, 서론, 방법, 결과, 고찰, 결론)')
+    return name
+
+
 def section_of(path) -> str | None:
     """Section of a manuscript file: 03_introduction.md -> introduction (number prefix or name)."""
     name = Path(str(path)).name.lower()
@@ -842,7 +856,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest='action', required=True)
     sub.add_parser('core', help='the always-on card')
     c = sub.add_parser('card', help='the card for one section')
-    c.add_argument('section', choices=SECTIONS)
+    c.add_argument('section', type=section_name, help=', '.join(SECTIONS) + ' (or 제목, 초록, 서론, 방법, 결과, 고찰, 결론)')
     c.add_argument('--project', default='.')
     lr = sub.add_parser('learn', help='measure a corpus of good papers (PDF, DOCX, MD, TXT)')
     lr.add_argument('paths', nargs='*')
@@ -918,9 +932,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.action == 'learn':
         paths = [Path(p).expanduser() for p in args.paths] or default_sources()
         if not paths:
-            print('Give the papers to learn from: manuwright style learn <folder or files> (PDF, DOCX, MD, TXT).\n'
-                  'Good corpora: your own published papers, landmark papers in your field, and recent papers from '
-                  'the target journal. Or add them to your library first (manuwright library writing add ...).',
+            print('No papers given, and your manuwright library has no PDFs yet.\n'
+                  'Put 3 or more papers (PDF, DOCX, MD or TXT) in one folder and run:\n'
+                  '  manuwright style learn <that folder>\n'
+                  'Good choices: your own published papers, landmark papers in your field, recent papers from the '
+                  'target journal. Or add them to your library once: manuwright library writing add <files>.',
                   file=sys.stderr)
             return 2
         out = Path(args.out).expanduser() if args.out else library_profile_dir()

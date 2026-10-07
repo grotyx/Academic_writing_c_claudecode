@@ -419,16 +419,17 @@ def audit_evidence(evidence_text, fetch=None, resolve=None):
 
 def main():
     parser = argparse.ArgumentParser(
+        prog="manuwright search",
         description="PubMed Search & Evidence Registry Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s search "endoscopic spine surgery outcomes"
-  %(prog)s search "ACDF vs arthroplasty" --max 10 --sort pub_date
+  %(prog)s "endoscopic spine surgery outcomes"
+  %(prog)s "ACDF vs arthroplasty" --max 10 --sort pub_date
   %(prog)s fetch 35486828 33264437
   %(prog)s doi 10.1016/j.spinee.2023.01.005
   %(prog)s related 35486828 --max 5
-  %(prog)s audit --evidence knowledge/evidence.md
+  %(prog)s audit                      (check every evidence.md entry against PubMed)
         """,
     )
     sub = parser.add_subparsers(dest="command", required=True)
@@ -531,7 +532,8 @@ Examples:
             _output(articles, args.fmt, args.start_num)
 
     except urllib.error.URLError as e:
-        print(f"Network error: {e}", file=sys.stderr)
+        print("Could not reach PubMed (no internet, or a proxy/firewall blocked it); nothing was checked or "
+              f"fetched. Connect to the internet and run the same command again. ({e})", file=sys.stderr)
         sys.exit(1)
     except ET.ParseError as e:
         print(f"XML parse error: {e}", file=sys.stderr)

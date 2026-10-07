@@ -113,7 +113,7 @@ def check(verdicts: Path) -> list[str]:
     problems = []
     manifest_path = folder / 'packet.json'
     if not manifest_path.is_file():
-        return [f'{manifest_path} missing: build the packet with `blind_review.py packet` first']
+        return [f'{manifest_path} missing: build the packet with `manuwright blind-review packet` first']
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
     leaked = [name for name in manifest.get('sha256', {}) if LETTER.search(Path(name).name)
               and name != 'reviewer_comments.md']
@@ -151,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding='utf-8')
     except Exception:
         pass
-    parser = argparse.ArgumentParser(description='Letter-blind re-review packet and record check')
+    parser = argparse.ArgumentParser(prog='manuwright blind-review', description='Letter-blind re-review packet and record check')
     sub = parser.add_subparsers(dest='action', required=True)
     pk = sub.add_parser('packet')
     pk.add_argument('--comments', required=True)
@@ -165,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
         manifest = packet(Path(args.comments), Path(args.original), Path(args.revised), Path(args.out))
         print(f"Blind packet: {args.out} ({len(manifest['comments'])} comments, "
               f"{len(manifest['revised_sections'])} revised sections; response letter withheld).")
-        print(f'Fill {Path(args.out) / "verdicts.md"} phase by phase, then: blind_review.py check '
+        print(f'Fill {Path(args.out) / "verdicts.md"} phase by phase, then: manuwright blind-review check '
               f'{Path(args.out) / "verdicts.md"}')
         return 0
     problems = check(Path(args.verdicts))

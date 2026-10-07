@@ -171,12 +171,15 @@ def test_prompt_hook_injects_the_card_for_a_drafting_request_and_ignores_talk_ab
     question = ('이 프로그램도 학술적으로 글을 쓰는 모드 같은 거를 개선할 수 있는 방법이 있을까? '
                 '글 자체를 학술적으로 쓸 수 있도록 바꿀 수 있는 방법')
     assert intent.evaluate({'prompt': question}) == ''
-    out = intent.evaluate({'prompt': '서론 써줘'})
+    assert intent.evaluate({'prompt': '서론 써줘'}) == ''  # not in a paper folder: no card
+    out = intent.evaluate({'prompt': '서론 써줘', 'cwd': str(ROOT)})  # the template checkout is a paper folder
     assert 'ACADEMIC STYLE CARD: introduction' in out
+    assert intent.requested_sections('결과 써줘') == ['results'] and intent.requested_sections('방법을 다시 써줘') == ['methods']
+    assert intent.evaluate({'prompt': 'Write a unit test for the abstract class', 'cwd': '/tmp'}) == ''
     assert intent.requested_sections('drafts/06_discussion.md 다시 써줘, 결론도 작성') == ['discussion', 'conclusion']
     assert intent.requested_sections('결과 나오면 알려줘') == []
     monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
-    assert intent.evaluate({'prompt': '서론 써줘'}) == ''
+    assert intent.evaluate({'prompt': '서론 써줘', 'cwd': str(ROOT)}) == ''
 
 
 def test_session_start_injects_the_core_card_unless_off(tmp_path, monkeypatch):

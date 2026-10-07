@@ -665,6 +665,25 @@ def refresh_all(engine):
     return 0
 
 
+EVIDENCE_STARTER = """# Evidence
+
+<!-- One entry per source; cite it in drafts as [EVID:<Evidence ID>]. `manuwright search "<query>"` and
+`manuwright search doi <doi>` print ready-made entries. Example (delete it when you add your own):
+
+### [1] Kim et al., 2020
+- **Evidence ID:** kim_2020_pmid12345678
+- **Citation:** Kim A, Lee B. Title of the paper. Spine J. 2020;20:100-110.
+- **DOI:** 10.xxxx/xxxxx
+- **PMID:** 12345678
+- **Source Status:** verified            (verified | full-text-reviewed | abstract-only | todo)
+- **Claim Strength:** observed           (speculative | observed | supported | strong)
+- **Allowed Wording:** was associated with
+- **Study Design:** retrospective cohort, n = 412
+- **Main Findings:** ...
+-->
+"""
+
+
 def init(engine, args):
     """manuwright init [folder] [--refresh-rules [--all]]: starter paper folder; never overwrites, never approves."""
     refresh = '--refresh-rules' in args
@@ -688,7 +707,7 @@ def init(engine, args):
         'drafts/draft_plan.md': (engine / 'docs' / 'draft_plan_template.md').read_text(encoding='utf-8'),
         'data/analysis_plan.md': ANALYSIS_PLAN,
         'data/requirements.txt': analysis_env.DEFAULT_REQUIREMENTS,
-        'knowledge/evidence.md': '# Evidence\n',
+        'knowledge/evidence.md': EVIDENCE_STARTER,
         'AGENTS.md': bootstrap,
         'CLAUDE.md': bootstrap,
         'GEMINI.md': bootstrap,
@@ -956,7 +975,9 @@ def check(engine, args):
                  writing_mode if writing_mode != 'off' else 'off (manuwright mode academic turns it on)', None))
     try:
         profile = json.loads((home() / 'library' / 'writing' / 'profile' / 'style_profile.json').read_text(encoding='utf-8'))
-        rows.append((True, 'Learned style', f"{profile.get('documents', 0)} document(s), {profile.get('learned', '')}", None))
+        docs = profile.get('documents', 0)
+        rows.append((True if docs >= 3 else None, 'Learned style', f"{docs} document(s), {profile.get('learned', '')}"
+                     + ('' if docs >= 3 else ' (too few to change any check: learn from 3 or more papers)'), None))
     except (OSError, ValueError):
         rows.append((None, 'Learned style', 'none yet (optional: manuwright style learn <your or landmark papers>)', None))
     stale = stale_papers(engine)

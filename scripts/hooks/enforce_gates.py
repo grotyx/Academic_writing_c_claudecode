@@ -188,8 +188,8 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
             return (
                 "BLOCKED by workflow gate (CLAUDE.md Rule 8): "
                 f"{detail}\n"
-                "Create the draft plan first: copy docs/draft_plan_template.md into "
-                "the drafts folder, complete the 10 items, get the author's approval (they tick the box, or approve in chat and you run "
+                "Fill drafts/draft_plan.md first (`manuwright init` created it; the template is "
+                "`manuwright guide draft_plan_template`): complete the 10 items, get the author's approval (they tick the box, or approve in chat and you run "
                 "`manuwright approve <plan> --kind draft --approved-by <author> --quote <their words>`), then draft sections."
             )
 
