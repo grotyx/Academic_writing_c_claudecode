@@ -284,7 +284,8 @@ Phase 2B prompt (now with the response letter):
 Read the response letter. For each comment set final_verdict. Keep the blind verdict unless the
 letter points to evidence in the manuscript you missed (basis: author_pointer), gives a valid
 rebuttal grounded in the sources (basis: valid_rebuttal), or shows the comment was outside the
-paper's scope (basis: scope_correction). A persuasive tone is not a basis.
+paper's scope (basis: scope_correction). A persuasive tone is not a basis. When a verdict goes up, also
+fill final_anchor with the revised file and quoted text; a change that exists only in the letter fails.
 ```
 
 ## Recording Results In Gate Ledger

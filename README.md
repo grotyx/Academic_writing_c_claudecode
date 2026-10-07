@@ -85,6 +85,14 @@ The engine never invents approvals or reviews. It records decisions that humans 
 
 ## Academic writing mode
 
+**Day to day (just ask in chat):**
+1. "Write the Introduction" / "서론 써줘": the agent loads the section's style card and drafts in that register.
+2. When a check reports something, say "fix it". *must fix* items are AI-register slips; *consider* items are suggestions you may keep.
+3. Once: put 3 or more good papers (yours or the target journal's, PDF) in a folder and say "learn my style from this folder".
+4. After you edit a draft yourself: "learn from my edits". You approve each proposed rule in chat.
+5. Before submission: "check for overclaiming" and "re-check the references" (retractions, wrong DOIs). For a revision: "do the blind re-review".
+`strict` mode ("academic mode strict") refuses AI-style sentences outright; the default only reports them.
+
 A model cannot be fine-tuned from your laptop, so manuwright does the next best thing at every write: it puts the right examples and measured targets in front of the writer and checks what comes back.
 
 - **Section cards.** For each section (title, abstract, introduction, methods, results, discussion, conclusion) a card gives the rhetorical moves, rules, a phrasebank and model paragraphs written in the register of high-impact clinical journals. The core card loads at every session; the section card loads when you ask to draft that section ("서론 써줘", "draft the Discussion") or with `manuwright style card <section>`.

@@ -85,6 +85,14 @@ reason: number not found in results CSV files
 
 ## 学术文体模式
 
+**日常用法（在对话中直接提出即可）：**
+1. "写 Introduction"：代理会读取该章节的风格卡片并按此文体撰写。
+2. 检查结果出来后说"改一下"。*MUST FIX* 是需要修改的 AI 腔，*consider* 是建议，若为有意的表达可以保留。
+3. 第一次：把 3 篇以上的好论文（你自己的或目标期刊的，PDF）放进一个文件夹，说"用这个文件夹学习我的文体"。
+4. 自己修改草稿后："从我的修改中学习"。提出的规则在对话中逐条批准。
+5. 投稿前："检查夸大表述""重新核对参考文献"（撤稿、错误 DOI）。修订时："做盲审复核"。
+严格模式（"academic mode strict"）直接阻止 AI 腔句子，默认模式只做提示。
+
 在本机无法对模型进行微调，因此 manuwright 在每次写作时采取次优而有效的做法：把合适的范例和量化目标放在写作者面前，并检查写出的文字。
 
 - **章节卡片。** 每个章节（title、abstract、introduction、methods、results、discussion、conclusion）都有一张卡片，包含修辞结构（moves）、规则、表达库（phrasebank）以及用高影响力临床期刊文体写成的范例段落。核心卡片在每次会话开始时载入；当你要求起草某一章节（如 "draft the Discussion"）或运行 `manuwright style card <section>` 时载入该章节卡片。

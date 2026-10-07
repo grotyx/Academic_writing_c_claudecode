@@ -20,6 +20,7 @@
 - 응답 편지를 가린 revision 재검토: `manuwright blind-review packet` 이 응답 편지 없이 리뷰어 코멘트, 원본·수정 섹션, diff 로 묶음을 만들고, `check` 가 코멘트별 기대치, 근거 위치가 있는 블라인드 판정, 최종 판정, 편지를 읽은 뒤 판정을 바꾼 근거, 새 문제 태그(수정이 만든 문제는 실패)를 확인한다. 이제 response_alignment 기록의 전제 조건이다(academic-research-skills 아이디어, 재구현).
 - 저자 수정에서 학습: `manuwright style edits <AI초안> <수정본>`(또는 `--git REV`)이 단어 치환과 삭제를 세어 `Style/pending_style_rules.md` 에 제안하고(P0 = 2회 이상), 저자가 체크한 규칙만 `--apply` 로 `Style/terminology.md` 에 들어가 lint 가 강제한다.
 - 근거 감사: `manuwright search audit` 이 PMID·DOI 가 있는 evidence.md 항목을 PubMed 에서 다시 가져와 일치도를 매기고(제목 0.4, 제1저자 0.3, 연도 0.2, 저널 0.1; claude-scholar 참고), PubMed 가 다른 논문으로 연결하는 DOI 는 실패로, 철회·우려 표명·정정은 표시한다.
+- 리뷰 반영(코드 리뷰와 비개발자 사용 시험): 카드·리마인더·서브에이전트 카드는 논문 폴더에서만 나온다. 대화 중 모드 전환은 짧은 명령에만 반응한다("학술 모드 꺼지면?" 같은 질문으로 꺼지지 않음). 한 문단의 AI 말투는 모두 보고하고 *MUST FIX* 와 *consider* 로 구분한다. 학습한 문체는 3편 이상일 때만 검사에 반영한다. 학술 문장 검사와 strict 는 원고 섹션에만 적용한다(참고문헌·편지·메모 제외). 오탐을 줄였다(굵은 소제목, HR/OR/Table/P value, 근거 강도 판정의 명사·형용사). `style preserve` 는 기울임 표기를 무시한다. 계획서 검사는 체크한 선택지를 인정하고 빠진 항목을 이름으로 알려 준다. `style card` 가 한국어 섹션 이름을 받는다. 도움말에 글쓰기 도구를 채팅 예시와 함께 묶었다. 오류 메시지를 쉽게 바꿨다. README 학술 문체 모드 첫머리에 "매일 이렇게 쓰세요" 5단계를 넣었다.
 
 ### v1.8.30 (261006)
 
