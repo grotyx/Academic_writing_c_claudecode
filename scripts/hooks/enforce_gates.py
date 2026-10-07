@@ -112,10 +112,14 @@ def decide(event: dict) -> str | None:
 
 
 def is_prose_file(raw_path: str) -> bool:
+    """A manuscript section under drafts/ (01_title ... 07_conclusion, incl. revision copies); not references,
+    figure legends, response letters, notes or plans."""
+    import academic_style
+
     spath = "/" + _norm(raw_path).lstrip("/")
     name = spath.rsplit("/", 1)[-1].lower()
     return ("/drafts/" in spath and name.endswith(".md") and "/figures/" not in spath
-            and name not in ("draft_plan.md", "style_spec.md") and not name.startswith("table"))
+            and academic_style.section_of(name) is not None and "letter" not in name and "plan" not in name)
 
 
 def new_text(event: dict, raw_path: str) -> str:

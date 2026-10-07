@@ -112,7 +112,9 @@ def iter_markdown_files(paths: list[Path]) -> list[Path]:
     files: list[Path] = []
     for path in paths:
         if path.is_dir():
-            files.extend(sorted(path.rglob("*.md")))
+            # walking a folder: plans, style specs and pending rule lists are not manuscript text
+            files.extend(p for p in sorted(path.rglob("*.md"))
+                         if not p.name.endswith(("_plan.md", "style_spec.md", "pending_style_rules.md")))
         elif path.is_file() and path.suffix.lower() == ".md":
             files.append(path)
     return files
@@ -244,9 +246,13 @@ def academic_issues(path: Path) -> list[tuple[str, Path, int, str]]:
     import academic_style
 
     section = academic_style.section_of(path)
+    if section is None:
+        return []  # references, letters and notes are not manuscript prose
     text = path.read_text(encoding="utf-8", errors="replace")
-    return [(f"ACADEMIC_{code}", path, line, f"[{severity}] {message}")
-            for severity, code, line, message in academic_style.prose_issues(text, section)]
+    project = next((p for p in path.resolve().parents if (p / "project.json").is_file()), None)
+    limit = academic_style.long_limit_for(section, project)
+    return [(f"ACADEMIC_{code}" if severity == "high" else f"ACADEMIC_ADVICE_{code}", path, line, f"[{severity}] {message}")
+            for severity, code, line, message in academic_style.prose_issues(text, section, limit)]
 
 
 def main() -> int:
@@ -273,8 +279,11 @@ def main() -> int:
         for code, path, line, message in all_issues:
             print(f"[{code}] {display_path(path)}:{line} {message}")
 
-    print(f"Checked {len(files)} markdown file(s); found {len(all_issues)} issue(s).")
-    return 1 if all_issues else 0
+    blocking = [i for i in all_issues if not i[0].startswith("ACADEMIC_ADVICE_")]
+    advice = len(all_issues) - len(blocking)
+    print(f"Checked {len(files)} markdown file(s); found {len(blocking)} issue(s)"
+          + (f" and {advice} academic suggestion(s)." if advice else "."))
+    return 1 if blocking else 0
 
 
 if __name__ == "__main__":

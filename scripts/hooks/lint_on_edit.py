@@ -71,9 +71,9 @@ def _academic_lines(target: Path) -> list[str]:
     """Academic-prose findings (writing mode academic/strict), plus a pointer to the section card."""
     try:
         acad = _load_academic()
-        if acad.mode() == "off" or target.name.lower() == "style_spec.md":
-            return []
         section = acad.section_of(target)
+        if acad.mode() == "off" or section is None:
+            return []  # manuscript sections only: not references, letters, notes or plans
         project = next((p for p in target.resolve().parents if (p / "project.json").is_file()), None)
         issues = acad.prose_issues(
             target.read_text(encoding="utf-8", errors="replace"), section,
@@ -81,7 +81,11 @@ def _academic_lines(target: Path) -> list[str]:
         )
     except Exception:
         return []
-    lines = [f"[ACADEMIC/{sev.upper()}/{code}] line {line}: {msg}" for sev, code, line, msg in issues[:MAX_LINES]]
+    issues = sorted(issues, key=lambda i: i[0] != "high")  # must-fix first
+    lines = [f"[ACADEMIC/{'MUST FIX' if sev == 'high' else 'consider'}/{code}] line {line}: {msg}"
+             for sev, code, line, msg in issues[:MAX_LINES]]
+    if any(sev != "high" for sev, *_ in issues):
+        lines.append("('consider' items are suggestions: keep the author's wording when it is deliberate)")
     if lines and section:
         lines.append(f"(section card with moves, phrasebank and model paragraphs: `manuwright style card {section}`)")
     return lines

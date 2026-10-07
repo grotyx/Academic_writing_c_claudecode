@@ -140,7 +140,7 @@ PHRASE_RULES = [  # (severity, code, pattern, message)
      'contraction; write the full form'),
     (MEDIUM, 'AI_WORD', re.compile(
         r"\b(?:crucial|pivotal|intricate|multifaceted|nuanced|showcas(?:e|es|ed|ing)|leverag(?:e|es|ed|ing)"
-        r"|seamless(?:ly)?|holistic|paramount|foster(?:s|ed|ing)?|underscor(?:e|es|ed|ing)|realm|meticulous(?:ly)?"
+        r"|seamless(?:ly)?|holistic|paramount|underscor(?:e|es|ed|ing)|realm|meticulous(?:ly)?"
         r"|commendable|bolster(?:s|ed|ing)?)\b", _I),
      'AI-register word; use a plain, precise word or delete it'),
     # Guarded patterns adapted from unslop (MIT, Copyright (c) 2026 Mohamed Abdallah; THIRD_PARTY_NOTICES.md).
@@ -160,9 +160,10 @@ PHRASE_RULES = [  # (severity, code, pattern, message)
 ]
 CONNECTIVES = re.compile(r"^(?:Furthermore|Moreover|Additionally|In addition)\b", _I)
 SIGNIFICANT = re.compile(r"\bsignificant(?:ly)?\b", _I)
-STATS = re.compile(r"\*?\bp\*?\s*[<=>≤]|\bCI\b|confidence interval|\((?:Supplementary )?(?:Table|Fig)", _I)
+STATS = re.compile(r"\*?\bp\*?\s*[<=>≤]|\bp[ -]values?\b|\bCI\b|confidence interval|\b(?:Supplementary )?(?:Table|Fig(?:ure)?\.?)\s*S?\d"
+                   r"|\b(?:OR|HR|RR|aOR|aHR|IRR|odds ratio|hazard ratio|risk ratio|relative risk|mean difference)\b[^.]*\d", _I)
 BOLD = re.compile(r"\*\*[^*\n]+\*\*|__[^_\n]+__")
-LEADING_BOLD = re.compile(r"^\s*(?:\*\*[^*\n]+\*\*|__[^_\n]+__)")
+LEADING_BOLD = re.compile(r"^\s*(?:\*\*[^*\n]+\*\*|__[^_\n]+__)\s*[:.]?")
 BODY_SECTIONS = ('introduction', 'methods', 'results', 'discussion', 'conclusion')
 # Synonym cycling (unslop): 3+ members of one group in a paragraph reads as avoiding repetition.
 SYNONYM_GROUPS = (
@@ -218,12 +219,14 @@ def prose_issues(text: str, section: str | None = None, long_limit: int | None =
     for number, line in _prose_lines(text):
         spans = []
         for severity, code, pattern, message in PHRASE_RULES:
-            match = pattern.search(line)
-            if match and not any(a <= match.start() and match.end() <= b for a, b in spans):
-                spans.append(match.span())
-                found.append((severity, code, number, f'"{match.group(0).strip(" ,.")}": {message}'))
+            for match in pattern.finditer(line):  # every hit: one paragraph is one line in markdown
+                if not any(a <= match.start() and match.end() <= b for a, b in spans):
+                    spans.append(match.span())
+                    found.append((severity, code, number, f'"{match.group(0).strip(" ,.")}": {message}'))
         if section in BODY_SECTIONS:
-            body = LEADING_BOLD.sub('', line, count=1) if re.match(r'^\s*(?:\*\*|__)[^*_\n]+[:.]', line) else line
+            # a run-in heading ("**Study design.** We ...", "**Study design**: We ...") is journal style, not emphasis
+            run_in = re.match(r'^\s*(?:\*\*|__)[^*_\n]+(?:[:.](?:\*\*|__)|(?:\*\*|__)\s*[:.])', line)
+            body = LEADING_BOLD.sub('', line, count=1) if run_in else line
             if line.strip() and not LEADING_BOLD.fullmatch(line.strip()) and BOLD.search(body):
                 found.append((HIGH, 'BOLD', number, 'bold in running text; carry emphasis with sentence structure'))
             if section in ('introduction', 'discussion', 'conclusion') and re.match(r'^\s*(?:[-*+]|\d+[.)])\s+', line):
@@ -237,7 +240,7 @@ def prose_issues(text: str, section: str | None = None, long_limit: int | None =
                 found.append((MEDIUM, 'SYNONYM_CYCLING', marks[0][1],
                               f'{", ".join(used)} in one paragraph; pick one plain word and repeat it'))
         lengths = [len(x.split()) for x in split_sentences(paragraph) if x.strip()]
-        if section in FLAT_SECTIONS and len(lengths) >= 4 and statistics.pstdev(lengths) < 3.0:
+        if section in FLAT_SECTIONS and len(lengths) >= 5 and statistics.pstdev(lengths) < 2.5:
             found.append((MEDIUM, 'FLAT_RHYTHM', marks[0][1],
                           f'{len(lengths)} sentences of nearly equal length; vary them as published prose does'))
         for sentence in split_sentences(paragraph):
@@ -264,15 +267,24 @@ def prose_issues(text: str, section: str | None = None, long_limit: int | None =
     return found
 
 
+MIN_DOCUMENTS, MIN_SENTENCES = 3, 30  # a learned section below this is shown, never enforced
+
+
+def enough(entry: dict | None) -> bool:
+    return bool(entry) and entry.get('documents', 0) >= MIN_DOCUMENTS and entry.get('sentences', 0) >= MIN_SENTENCES
+
+
 def long_limit_for(section: str | None, project: Path | None = None) -> int:
-    """Sentence-length ceiling (30-55 words): the 95th percentile of the learned corpus for this section,
-    else of the high-impact reference corpus, else DEFAULT_LONG."""
+    """Sentence-length ceiling (30-55 words): the 95th percentile of a large enough learned corpus for this
+    section, else of the high-impact reference corpus; never below the reference 90th percentile."""
     profile, _ = load_profile(project)
-    length = ((profile.get('sections') or {}).get(section or '') or {}).get('sentence_length', {})
-    value = length.get('p95') or length.get('p90')
+    entry = (profile.get('sections') or {}).get(section or '')
+    reference = (reference_profile().get('overall') or {}).get(section or '') or {}
+    length = entry.get('sentence_length', {}) if enough(entry) else {}
+    value = length.get('p95') or length.get('p90') or reference.get('p95_len')
     if not value:
-        value = ((reference_profile().get('overall') or {}).get(section or '') or {}).get('p95_len')
-    return int(min(55, max(30, round(value)))) if value else DEFAULT_LONG
+        return DEFAULT_LONG
+    return int(min(55, max(30, reference.get('p90_len', 0), round(value))))
 
 
 def reference_profile() -> dict:
@@ -522,7 +534,9 @@ def learn(paths: list[Path], out: Path) -> dict:
         except Exception as exc:  # unreadable or unsupported file: report it, keep going
             skipped.append(f'{path.name} ({exc})')
             continue
-        sections = {s: t for s, t in sections.items() if len(t.split()) >= 80}
+        short = {s: len(t.split()) for s, t in sections.items() if len(t.split()) < 80}
+        skipped += [f'{path.name}: {s} ({n} words, needs 80 or more)' for s, n in short.items()]
+        sections = {s: t for s, t in sections.items() if s not in short}
         if sections:
             docs.append((path, sections))
         else:
@@ -652,7 +666,9 @@ def _profile_block(section: str, project: Path | None) -> str:
         return ('\n## Your corpus\nNot learned yet. `manuwright style learn <papers>` (PDF, DOCX, MD or TXT of your own, '
                 'landmark or target-journal papers) adds their measured style and model paragraphs here.')
     length = entry['sentence_length']
-    out = [f"\n## Your corpus (learned from {entry.get('documents', 0)} document(s), {profile.get('learned', '')})",
+    note = '' if enough(entry) else (f' -- too small to enforce (needs {MIN_DOCUMENTS}+ papers and {MIN_SENTENCES}+ '
+                                     'sentences); the journal targets above still apply')
+    out = [f"\n## Your corpus (learned from {entry.get('documents', 0)} document(s), {profile.get('learned', '')}){note}",
            f"- Sentence length: mean {length['mean']} words (SD {length['sd']}); keep under {length['p90']}.",
            f"- Passive voice in {entry['passive_pct']}% of sentences; we/our {entry['we_per_100w']} and hedges "
            f"{entry['hedges_per_100w']} per 100 words." + (f" Paragraphs about {entry['paragraph_words']} words."
@@ -692,7 +708,9 @@ def _reference_block(section: str) -> str:
            f"{entry['p90_len']} and 95% under {entry['p95_len']} words.",
            f"- Passive voice in {entry['passive_pct']}% of sentences; we/our {entry['we_our_per_100w']} and hedges "
            f"{entry['hedges_per_100w']} per 100 words."]
-    phrases = (ref.get('phrasebank') or {}).get(section)
+    # Only phrases with 2+ content words: "the primary outcome", not filler such as "as well as".
+    phrases = [p for p in (ref.get('phrasebank') or {}).get(section) or []
+               if sum(w not in STOP for w in p.split()) >= 2]
     if phrases:
         out.append('- Phrasing shared across these journals (4+ papers, 3+ journals): '
                    + '; '.join(f'"{p}"' for p in phrases[:18]))
@@ -921,7 +939,11 @@ def main(argv: list[str] | None = None) -> int:
         for section, entry in profile['sections'].items():
             length = entry['sentence_length']
             print(f"  {section:<13} {entry['sentences']:>4} sentences, mean {length['mean']} words, "
-                  f"passive {entry['passive_pct']}%, {len(entry.get('phrases', []))} signature phrases")
+                  f"passive {entry['passive_pct']}%, {len(entry.get('phrases', []))} signature phrases"
+                  + ('' if enough(entry) else '  (too few to enforce; shown on cards only)'))
+        if profile['documents'] < MIN_DOCUMENTS:
+            print(f'Note: {MIN_DOCUMENTS} or more papers are needed before your style changes any check; '
+                  'until then the journal targets apply.')
         print('Every section card now includes this measured style (manuwright style card <section>).')
         return 0
     failed = 0

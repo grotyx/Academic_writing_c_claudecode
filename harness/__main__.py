@@ -79,7 +79,7 @@ def approve_in_chat(plan,kind,by,quote):
     m=checker('plan_validation');text=plan.read_text(encoding='utf-8')
     missing=m.validate_plan_content(text,kind)
     if missing:
-        raise ValueError('plan incomplete; fill it before approval: '+', '.join(missing))
+        raise ValueError('plan incomplete; fill these sections before approval: '+m.describe_missing(missing))
     if not by.strip() or not quote.strip():
         raise ValueError('approved-by and quote cannot be blank')
     when=datetime.now(timezone.utc)

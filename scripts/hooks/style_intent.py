@@ -125,17 +125,28 @@ def detect(prompt: str) -> bool:
     return any(re.search(a, low) for a in ACTIONS)
 
 
-MODE_WORDS = r"(?:학술|academic)\s*(?:문체|writing)?\s*(?:모드|mode)\s*(?:를|을)?\s*"
+MODE_WORDS = r"(?:학술|academic)\s*(?:문체|writing)?\s*(?:모드|mode)\s*(?:를|을|는)?\s*"
+END = r"\s*(?:요|please)?[.!\s]*$"
 MODE_TOGGLES = (
-    ("off", re.compile(MODE_WORDS + r"(?:꺼|끄|끄기|해제|중지|off\b)", re.IGNORECASE)),
-    ("strict", re.compile(MODE_WORDS + r"(?:strict|엄격)", re.IGNORECASE)),
-    ("academic", re.compile(MODE_WORDS + r"(?:켜|켜기|다시|on\b|academic\b)", re.IGNORECASE)),
+    ("off", re.compile(MODE_WORDS + r"(?:꺼\s*줘|꺼\s*주세요|꺼|끄기|끄자|해제(?:해\s*줘|해)?|중지(?:해\s*줘|해)?|off)" + END,
+                       re.IGNORECASE)),
+    ("strict", re.compile(MODE_WORDS + r"(?:strict|엄격(?:하게)?(?:\s*해\s*줘|\s*해|\s*모드로(?:\s*해\s*줘)?)?)" + END,
+                          re.IGNORECASE)),
+    ("academic", re.compile(MODE_WORDS + r"(?:(?:다시\s*)?켜\s*줘|(?:다시\s*)?켜\s*주세요|켜|켜기|on|academic)" + END,
+                            re.IGNORECASE)),
 )
+# A question, a negation, a condition or a long pasted text is never a switch request
+# ("학술 모드 꺼지면 어떻게 돼?", "학술 모드 끄지 마", a log that quotes the phrase).
+NOT_A_REQUEST = re.compile(r"\?|뭐|어떻게|왜|무엇|지\s*마|말고|않|면(?:\s|$|,)|\bnot\b|\bdon'?t\b|\bwhat\b|\bhow\b",
+                           re.IGNORECASE)
 
 
 def mode_toggle(prompt: str) -> str | None:
-    """'학술 모드 꺼줘' / 'academic mode strict' / 'academic mode on' -> the mode it asks for."""
-    return next((value for value, pattern in MODE_TOGGLES if pattern.search(prompt or "")), None)
+    """'학술 모드 꺼줘' / 'academic mode strict' / '학술 모드 켜줘' -> the mode; anything else -> None."""
+    text = (prompt or "").strip()
+    if not text or len(text) > 60 or NOT_A_REQUEST.search(text):
+        return None
+    return next((value for value, pattern in MODE_TOGGLES if pattern.search(text)), None)
 
 
 def _academic():
@@ -152,8 +163,8 @@ def evaluate(event: dict) -> str:
     if toggle:
         try:
             _academic().set_mode(toggle)
-            return (f"[manuwright] Academic writing mode is now '{toggle}' (saved for every session; "
-                    "`manuwright mode` shows it). Confirm this to the user in one line.")
+            return (f"[manuwright] Academic writing mode is now '{toggle}' for every paper and session "
+                    "(`manuwright mode` shows it). Confirm this to the user in one line.")
         except Exception:
             return ""
     parts = [INJECTION] if detect(prompt) else []

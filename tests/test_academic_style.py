@@ -105,12 +105,19 @@ def test_learn_measures_a_corpus_and_the_card_shows_it(tmp_path, monkeypatch):
 def test_learned_or_reference_percentile_sets_the_long_sentence_limit(tmp_path):
     folder = tmp_path / 'p'
     (folder / 'Style' / 'profile').mkdir(parents=True)
-    (folder / 'Style' / 'profile' / 'style_profile.json').write_text(json.dumps(
-        {'sections': {'methods': {'sentence_length': {'p90': 31}}, 'results': {'sentence_length': {'p90': 90}}}}))
-    assert acad.long_limit_for('methods', folder) == 31
+    big = {'documents': 3, 'sentences': 40}
+    (folder / 'Style' / 'profile' / 'style_profile.json').write_text(json.dumps({'sections': {
+        'methods': {**big, 'sentence_length': {'p95': 31}},
+        'results': {**big, 'sentence_length': {'p95': 90}},
+        'discussion': {'documents': 1, 'sentences': 5, 'passive_pct': 20, 'we_per_100w': 1.0, 'hedges_per_100w': 1.0,
+                       'sentence_length': {'mean': 15.0, 'sd': 2.0, 'p90': 17, 'p95': 17}}}}))
+    ref = acad.reference_profile()['overall']
+    # A learned limit never drops below the journals' 90th percentile ...
+    assert acad.long_limit_for('methods', folder) == ref['methods']['p90_len']
     assert acad.long_limit_for('results', folder) == 55
-    # No learned discussion: the reference corpus's 95th percentile.
-    assert acad.long_limit_for('discussion', folder) == acad.reference_profile()['overall']['discussion']['p95_len']
+    # ... and a corpus of one paper is shown on the card but never enforced.
+    assert acad.long_limit_for('discussion', folder) == ref['discussion']['p95_len']
+    assert 'too small to enforce' in acad.card('discussion', folder)
 
 
 def test_mode_comes_from_the_environment_then_config(monkeypatch):
@@ -136,7 +143,12 @@ def test_strict_mode_blocks_high_findings_in_new_manuscript_text(monkeypatch):
     assert gates.decide(edit) is None
     patch = ('*** Begin Patch\n*** Update File: drafts/revision/notes.md\n+We don\'t know.\n'
              '*** Update File: drafts/revision/06_discussion.md\n@@\n-old\n+Fine text here.\n*** End Patch')
+    assert gates.decide({'tool_name': 'apply_patch', 'cwd': '/p', 'tool_input': {'command': patch}}) is None  # notes: not prose
+    patch = patch.replace("+We don\'t know.", '+Fine.').replace('+Fine text here.', "+We don\'t know.")
     assert gates.decide({'tool_name': 'apply_patch', 'cwd': '/p', 'tool_input': {'command': patch}}).count('CONTRACTION') == 1
+    for name in ('08_references.md', 'revision/REV1/response_letter_REV1.md', 'notes.md'):
+        ref = {'tool_name': 'Write', 'cwd': '/p', 'tool_input': {'file_path': f'/p/drafts/{name}', 'content': "It's key."}}
+        assert gates.strict_style(ref, f'/p/drafts/{name}') is None  # strict covers sections only
     plan = {'tool_name': 'Write', 'cwd': '/p', 'tool_input': {'file_path': '/p/drafts/draft_plan.md',
                                                             'content': "We don't block plans."}}
     assert gates.decide(plan) is None
@@ -149,7 +161,7 @@ def test_lint_after_edit_reports_academic_findings(tmp_path, monkeypatch):
     target.write_text('This plays a pivotal role in care.\n', encoding='utf-8')
     event = {'tool_name': 'Write', 'cwd': str(tmp_path), 'tool_input': {'file_path': str(target)}}
     code, message = lint.evaluate(event)
-    assert code == 2 and '[ACADEMIC/HIGH/AI_PHRASE]' in message and 'manuwright style card discussion' in message
+    assert code == 2 and '[ACADEMIC/MUST FIX/AI_PHRASE]' in message and 'manuwright style card discussion' in message
     monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
     assert 'ACADEMIC' not in lint.evaluate(event)[1]
 
@@ -226,7 +238,7 @@ def test_new_prose_rules_and_their_severity():
     assert ('medium', 'VAGUE_ATTRIBUTION') in codes('Many believe that fusion is overused.')
     assert codes('Many believe that fusion is overused [EVID:a_2020].') == set()
     assert ('medium', 'SYNONYM_CYCLING') in codes('Surgeons utilize drains, leverage navigation and employ robots.')
-    flat = ' '.join(['The cohort included older adults with stenosis today.'] * 4)
+    flat = ' '.join(['The cohort included older adults with stenosis today.'] * 5)
     assert ('medium', 'FLAT_RHYTHM') in codes(flat)
     assert ('medium', 'FLAT_RHYTHM') not in codes(flat, 'methods')
 

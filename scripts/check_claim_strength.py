@@ -53,10 +53,16 @@ HEDGE = re.compile(r"\b(?:may|might|could|possibl[ey]|potential(?:ly)?|suggest(?
                    r"|seem(?:s|ed)? to|perhaps)\b", _I)
 
 
+ASSOCIATION = re.compile(r"\b(?:associated with|association (?:between|with)|correlated with|linked to)\b", _I)
+
+
 def sentence_level(sentence: str) -> int:
-    """0 hedged .. 3 causal: the strongest verb in the sentence; a hedge caps a claim at associative."""
+    """0 hedged .. 3 causal: the strongest verb in the sentence. A hedge, or an explicit association
+    ("was associated with lower rates"), caps the claim at associative."""
     level = next((lvl for lvl in (3, 2, 1) if VERBS[lvl].search(sentence)), 0)
-    return min(level, 1) if HEDGE.search(sentence) else level
+    if HEDGE.search(sentence) or (ASSOCIATION.search(sentence) and level < 3):
+        return min(level, 1)
+    return level
 
 
 def strength_of(entry) -> int | None:
@@ -78,6 +84,10 @@ def check(paths: list[Path], evidence: Path) -> list[tuple[Path, int, str]]:
                 if not strengths:
                     continue
                 allowed, level = max(strengths), sentence_level(sentence)
+                wordings = [w.strip().lower() for i in ids if i in entries
+                            for w in re.split(r'[;,]', entries[i].fields.get('allowed_wording', '')) if w.strip()]
+                if any(w in sentence.lower() for w in wordings) and level < 3:
+                    continue  # written with the entry's own allowed wording
                 if level > allowed:
                     names = {v: k for k, v in ALLOWED.items()}
                     wording = '; '.join(entries[i].fields.get('allowed_wording', '') for i in ids if i in entries
