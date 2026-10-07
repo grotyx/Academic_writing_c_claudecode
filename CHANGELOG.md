@@ -1,5 +1,9 @@
 # Changelog
 
+### Unreleased
+
+- `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
+
 ### v1.9.3 (261007)
 
 Fixes from a code review and a synthetic end-to-end run (new paper folder, synthetic data, real PubMed search, every stage up to the DOCX build).
