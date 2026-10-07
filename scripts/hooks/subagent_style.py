@@ -30,9 +30,9 @@ def main() -> int:
     try:
         import academic_style
 
-        if academic_style.mode() == "off":
-            return 0
-        cwd = Path(event["cwd"]) if event.get("cwd") else None
+        cwd = Path(event["cwd"]) if event.get("cwd") else Path.cwd()
+        if academic_style.mode() == "off" or not academic_style.in_paper(cwd):
+            return 0  # only inside a paper folder
         context = academic_style.core_card(cwd)
     except Exception:
         return 0

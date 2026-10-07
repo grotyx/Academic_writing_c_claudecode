@@ -169,12 +169,16 @@ def test_prompt_hook_injects_the_card_for_a_drafting_request_and_ignores_talk_ab
 
 def test_session_start_injects_the_core_card_unless_off(tmp_path, monkeypatch):
     script = ROOT / 'scripts' / 'hooks' / 'session_contract.py'
-    out = subprocess.run([sys.executable, str(script), str(tmp_path)], capture_output=True, text=True,
-                         encoding='utf-8').stdout
+    run = lambda folder: subprocess.run([sys.executable, str(script), str(folder)], capture_output=True,  # noqa: E731
+                                        text=True, encoding='utf-8').stdout
+    paper = tmp_path / 'paper'
+    paper.mkdir()
+    (paper / 'project.json').write_text('{"artifacts": []}', encoding='utf-8')
+    out = run(paper)
     assert 'ACADEMIC WRITING MODE' in out and 'manuwright style card' in out
+    assert 'ACADEMIC WRITING MODE' not in run(tmp_path)  # another project: the plugin hook stays quiet
     monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
-    out = subprocess.run([sys.executable, str(script), str(tmp_path)], capture_output=True, text=True,
-                         encoding='utf-8').stdout
+    out = run(paper)
     assert 'WORKFLOW CONTRACT' in out and 'ACADEMIC WRITING MODE' not in out
 
 
@@ -243,6 +247,8 @@ def test_chat_toggles_the_mode_and_paper_folders_get_a_per_turn_reminder(tmp_pat
     assert "now 'strict'" in intent.evaluate({'prompt': 'academic mode strict please'}) and acad.mode() == 'strict'
     assert "now 'academic'" in intent.evaluate({'prompt': '학술 모드 다시 켜줘'}) and acad.mode() == 'academic'
     (tmp_path / 'paper' / 'drafts').mkdir(parents=True)
+    assert intent.evaluate({'prompt': '커밋해줘', 'cwd': str(tmp_path / 'paper')}) == ''  # a bare drafts/ is not a paper
+    (tmp_path / 'paper' / 'project.json').write_text('{"artifacts": []}', encoding='utf-8')
     assert '[academic writing mode: academic]' in intent.evaluate({'prompt': '커밋해줘', 'cwd': str(tmp_path / 'paper')})
     assert intent.evaluate({'prompt': '커밋해줘', 'cwd': str(tmp_path)}) == ''
     acad.set_mode('off')
@@ -251,8 +257,10 @@ def test_chat_toggles_the_mode_and_paper_folders_get_a_per_turn_reminder(tmp_pat
 
 def test_subagents_get_the_core_card_unless_off(tmp_path, monkeypatch):
     script = ROOT / 'scripts' / 'hooks' / 'subagent_style.py'
-    out = subprocess.run([sys.executable, str(script)], input='{"cwd": "."}', capture_output=True, text=True,
-                         encoding='utf-8').stdout
+    out = subprocess.run([sys.executable, str(script)], input=json.dumps({'cwd': str(ROOT)}), capture_output=True,
+                         text=True, encoding='utf-8').stdout  # the template checkout counts as a paper folder
+    assert subprocess.run([sys.executable, str(script)], input=json.dumps({'cwd': str(tmp_path)}),
+                          capture_output=True, text=True).stdout == ''
     payload = json.loads(out)['hookSpecificOutput']
     assert payload['hookEventName'] == 'SubagentStart' and 'ACADEMIC WRITING MODE' in payload['additionalContext']
     monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')

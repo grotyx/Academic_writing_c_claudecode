@@ -593,12 +593,30 @@ def set_mode(value: str) -> None:
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding='utf-8')
 
 
+def _is_paper_root(folder: Path) -> bool:
+    """A manuwright manifest, or the template layout (drafts/ next to knowledge/evidence.md or WORKFLOW.md).
+    A bare drafts/ folder (say ~/drafts) is not enough."""
+    manifest = folder / 'project.json'
+    if manifest.is_file():
+        try:
+            data = json.loads(manifest.read_text(encoding='utf-8'))
+            if isinstance(data, dict) and ('artifacts' in data or 'evidence' in data):
+                return True
+        except (OSError, ValueError):
+            pass
+    return (folder / 'drafts').is_dir() and ((folder / 'knowledge' / 'evidence.md').is_file()
+                                             or (folder / 'WORKFLOW.md').is_file())
+
+
 def in_paper(folder: Path | None) -> bool:
-    """A manuwright paper folder (project.json or drafts/) at or above folder."""
+    """Inside a manuwright paper folder (or the template checkout)."""
     if not folder:
         return False
-    folder = Path(folder).resolve()
-    return any((p / 'project.json').is_file() or (p / 'drafts').is_dir() for p in [folder, *folder.parents])
+    try:
+        folder = Path(folder).resolve()
+    except OSError:
+        return False
+    return any(_is_paper_root(p) for p in [folder, *folder.parents])
 
 
 def reminder() -> str:

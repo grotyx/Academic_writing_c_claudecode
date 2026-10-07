@@ -52,7 +52,10 @@ def academic_card(root: Path) -> str:
         sys.path.insert(0, str(ROOT / "scripts"))
         import academic_style
 
-        return "" if academic_style.mode() == "off" else academic_style.core_card(root)
+        # Only in a paper folder: the plugin hook runs in every project the user opens.
+        if academic_style.mode() == "off" or not academic_style.in_paper(root):
+            return ""
+        return academic_style.core_card(root)
     except Exception:
         return ""
 
