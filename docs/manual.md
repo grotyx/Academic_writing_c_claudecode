@@ -1,8 +1,8 @@
-# manuwright user manual (v2.5.0)
+# manuwright user manual (v2.5.1)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
-Screenshots are renders of the terminals' text captured during that run (the session had no macOS screen-recording permission), so they show what the tools printed; a few long outputs are abridged and say so.
+Screenshots are renders of the terminals' text captured during that run (the session had no macOS screen-recording permission), so they show what the tools printed; a few long outputs are abridged and say so. The images in section 6, the claim-strength image in section 8 and the images in section 11 come from a second run with v1.9.1 in a new paper folder (2026-10-07); grey `#` lines are annotations added for the reader.
 
 ![manuwright pipeline](images/manual/01_pipeline_overview.png)
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.2
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.2
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -176,12 +176,10 @@ This makes the agent write in the register of medical journals from the first dr
 2. A drafting request ("write the Introduction") brings that section's card: moves, phrasebank, model paragraphs, measured targets. To read one yourself: `manuwright style card introduction`.
 3. After every edit to a manuscript section (`drafts/01_` to `07_`) the prose findings appear with line numbers.
 
-```text
-[ACADEMIC/MUST FIX/AI_PHRASE] line 3: "plays a crucial role": say what X does to Y, with a citation
-[ACADEMIC/MUST FIX/ING_TAIL] line 3: "highlighting the importance": trailing ", highlighting the importance ..." clause; ...
-[ACADEMIC/MUST FIX/CONTRACTION] line 3: "can't": contraction; write the full form
-[ACADEMIC/consider/SIGNPOST] line 3: "Notably": signposting opener; start with the content
-```
+![The section card that "write the Introduction" brings](images/manual/60_section_card.png)
+
+![The academic prose check after each edit](images/manual/61_prose_check.png)
+
 
 *MUST FIX* items are AI register absent from the measured papers, contractions, bold in running text and chat residue: fix them. *consider* items are suggestions (long sentences, "crucial", "Notably" and the like); keep the wording when it is deliberate. A plain paragraph saying the same thing gets no findings.
 
@@ -206,6 +204,8 @@ The switch reacts only to a short request that starts with "academic mode" (or "
 | `academic` (default) | Cards, and findings reported after each edit |
 | `strict` | A write whose new text has a *MUST FIX* finding is blocked until it is rewritten |
 | `off` | No cards or prose findings; the terminology check still runs |
+
+![Strict mode blocks the write](images/manual/62_strict_block.png)
 
 **Adding your style or your target journal's (optional).** Put 3 or more good papers (your own, landmark papers in your field, recent papers from the target journal; PDF, DOCX, MD or TXT) in one folder.
 
@@ -290,10 +290,7 @@ manuwright lint --academic drafts      # the academic prose check over the whole
 manuwright claim-strength drafts       # is a cited sentence stronger than its evidence (section 3)?
 ```
 
-```text
-[OVERCLAIM] drafts/06_discussion.md:3 causal wording for observed evidence (deyo_2010):
-"Complex fusion caused more complications than decompression [EVID:deyo_2010]."; allowed wording: was associated with
-```
+![The overclaim check](images/manual/63_claim_strength.png)
 
 Each sentence is graded by its strongest verb: hedged (may, suggest) < associative (was associated with) < directional (showed, reduced) < causal (demonstrated, caused). Negative findings ("showed no difference", "failed to demonstrate benefit") do not count as strong claims. The check reads verbs, so the author makes the final call.
 
@@ -415,6 +412,8 @@ manuwright blind-review check review/blind_REV1/verdicts.md
 
 PASS needs every comment at FULLY or PARTIALLY and no empty field. A change that exists only in the letter, not in the manuscript, does not pass. Record `response_alignment` in the phase 8 gate after this PASS.
 
+![Letter-blind re-review: a verdict raised only by the letter fails](images/manual/64_blind_review.png)
+
 4. **Response and revision checks.**
 
 ```sh
@@ -424,6 +423,8 @@ manuwright verify --project project.json --profile revision
 ```
 
 `response-coverage` checks that every comment has a response; `revision-claims` checks that each change claimed in a `[CHANGE]` block is really in the revised section. Both returned `PASS` in testing.
+
+![Response checks](images/manual/65_revision_checks.png)
 
 ## 12. Updates
 

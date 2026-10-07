@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.9.2 (261007)
+
+- Manual (v2.5.1, ko and en): six new terminal images from a second run with v1.9.1 in a new paper folder: the section card that "서론 써줘" brings, the prose check after an edit, the strict-mode block, the overclaim check, the letter-blind re-review (a verdict raised only because of the letter fails, then PASS) and the response checks. They replace the matching text blocks.
+- Fix: a must-fix word inside a "consider" tail clause (", showcasing the realm ...") was hidden by the weaker finding, so strict mode did not block it. Must-fix rules now match first, and overlapping text is reported once at the higher severity.
+
 ### v1.9.1 (261007)
 
 User manual and README rewritten for v1.9.0.

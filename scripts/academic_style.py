@@ -243,10 +243,13 @@ def prose_issues(text: str, section: str | None = None, long_limit: int | None =
     found = []
     for number, line in _prose_lines(text):
         spans = []
-        for severity, code, pattern, message in PHRASE_RULES:
+        # must-fix rules first, so a "consider" match never hides a must-fix word inside it
+        # (", showcasing the ..." is both a tail clause and a never-used word, reported once as must-fix)
+        for severity, code, pattern, message in sorted(PHRASE_RULES, key=lambda rule: rule[0] != HIGH):
             for match in pattern.finditer(line):  # every hit: one paragraph is one line in markdown
-                if not any(a <= match.start() and match.end() <= b for a, b in spans):
-                    spans.append(match.span())
+                if not any((a <= match.start() and match.end() <= b)
+                           or (sev != severity and match.start() < b and a < match.end()) for sev, a, b in spans):
+                    spans.append((severity, *match.span()))
                     found.append((severity, code, number, f'"{match.group(0).strip(" ,.")}": {message}'))
         if section in BODY_SECTIONS:
             # a run-in heading ("**Study design.** We ...", "**Study design**: We ...") is journal style, not emphasis
