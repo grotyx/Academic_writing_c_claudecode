@@ -67,6 +67,8 @@ def test_words_the_card_calls_never_are_must_fix_but_statistical_leverage_is_not
     assert codes('Observations with high leverage and high-leverage points were examined.') == []
     assert codes('Leverage values were inspected.') == []
     assert codes('Early care is crucial.') == [('medium', 'AI_WORD')]
+    # a must-fix word inside a 'consider' tail clause is still must-fix, and reported once
+    assert codes('We used a registry, showcasing the realm of surgery.') == [('high', 'AI_WORD'), ('high', 'AI_WORD')]
 
 
 def test_split_sections_keeps_structured_abstract_labels_and_stops_at_references():

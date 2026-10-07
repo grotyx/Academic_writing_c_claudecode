@@ -1,8 +1,8 @@
-# manuwright 사용자 매뉴얼 (v2.5.0)
+# manuwright 사용자 매뉴얼 (v2.5.1)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
-스크린샷은 시험 중 터미널의 텍스트를 이미지로 렌더링한 것이다(세션에 macOS 화면 기록 권한이 없었음). 도구가 출력한 내용과 같고, 긴 출력은 줄였다고 표시했다.
+스크린샷은 시험 중 터미널의 텍스트를 이미지로 렌더링한 것이다(세션에 macOS 화면 기록 권한이 없었음). 도구가 출력한 내용과 같고, 긴 출력은 줄였다고 표시했다. 6절, 8절의 claim-strength, 11절 그림은 v1.9.1 로 새 논문 폴더에서 다시 돌린 시험(2026-10-07)의 출력이다. 회색 `#` 줄은 설명을 위해 붙인 주석이다.
 
 ![manuwright 파이프라인](images/manual/01_pipeline_overview.png)
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.2
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.2
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -181,12 +181,10 @@ manuwright record-approval drafts/draft_plan.md --kind draft --approved-by "저�
 2. "서론 써줘" 같은 요청에는 그 섹션 카드가 붙는다: 문단 구조(moves), 표현집, 모범 문단, 측정 목표치. 직접 보려면 `manuwright style card introduction` (한국어 `서론` 도 됨).
 3. 원고 섹션(`drafts/01_` ~ `07_`)을 고칠 때마다 문장 검사 결과가 줄 번호와 함께 나온다.
 
-```text
-[ACADEMIC/MUST FIX/AI_PHRASE] line 3: "plays a crucial role": say what X does to Y, with a citation
-[ACADEMIC/MUST FIX/ING_TAIL] line 3: "highlighting the importance": trailing ", highlighting the importance ..." clause; ...
-[ACADEMIC/MUST FIX/CONTRACTION] line 3: "can't": contraction; write the full form
-[ACADEMIC/consider/SIGNPOST] line 3: "Notably": signposting opener; start with the content
-```
+![서론 써줘 에 붙는 섹션 카드](images/manual/60_section_card.png)
+
+![편집마다 나오는 학술 문장 검사](images/manual/61_prose_check.png)
+
 
 *MUST FIX* 는 측정한 논문에 없던 AI 말투, 축약형, 본문 굵은 글씨, 채팅 말투라 고친다. *consider* 는 제안이다(긴 문장, "crucial", "Notably" 등). 의도한 표현이면 그대로 둔다. 같은 내용을 쉬운 말로 쓴 정상 문단에는 아무것도 나오지 않는다.
 
@@ -211,6 +209,8 @@ manuwright record-approval drafts/draft_plan.md --kind draft --approved-by "저�
 | `academic` (기본) | 카드를 주고, 편집 뒤 검사 결과를 알려 줌 |
 | `strict` | *MUST FIX* 가 든 문장은 쓰기 자체를 막음. 고쳐 쓰면 통과 |
 | `off` | 카드와 문장 검사를 끔. 용어 검사는 계속 |
+
+![strict 모드의 차단](images/manual/62_strict_block.png)
 
 **내 문체·목표 저널 문체 더하기 (선택).** 좋은 논문 3편 이상(내 논문, 분야의 landmark 논문, 목표 저널의 최근 논문; PDF·DOCX·MD·TXT)을 한 폴더에 넣는다.
 
@@ -295,10 +295,7 @@ manuwright lint --academic drafts      # 학술 문장 검사를 원고 전체�
 manuwright claim-strength drafts       # 인용 문장이 근거 강도(3절)보다 센지
 ```
 
-```text
-[OVERCLAIM] drafts/06_discussion.md:3 causal wording for observed evidence (deyo_2010):
-"Complex fusion caused more complications than decompression [EVID:deyo_2010]."; allowed wording: was associated with
-```
+![과장 표현 검사](images/manual/63_claim_strength.png)
 
 문장마다 가장 센 동사를 본다: hedged(may, suggest) < associative(was associated with) < directional(showed, reduced) < causal(demonstrated, caused). "차이가 없었다", "효과를 보이지 못했다" 같은 음성 결과는 센 표현으로 치지 않는다. 동사로 추정하는 검사이므로 최종 판단은 저자가 한다.
 
@@ -422,6 +419,8 @@ manuwright blind-review check review/blind_REV1/verdicts.md
 
 모든 코멘트가 FULLY 나 PARTIALLY 이고 기록에 빈칸이 없어야 PASS 다. 편지에만 있고 원고에는 없는 변경은 통과하지 못한다. 이 PASS 뒤에 phase 8 게이트에 `response_alignment` 를 기록한다.
 
+![블라인드 재검토: 편지 때문에만 올린 판정은 실패](images/manual/64_blind_review.png)
+
 4. **응답서 점검과 revision 검증.**
 
 ```sh
@@ -431,6 +430,8 @@ manuwright verify --project project.json --profile revision
 ```
 
 `response-coverage` 는 모든 코멘트에 응답이 있는지, `revision-claims` 는 `[CHANGE]` 로 고쳤다고 한 내용이 수정본에 실제로 있는지 본다. 시험에서는 둘 다 `PASS` 였다.
+
+![응답서 점검](images/manual/65_revision_checks.png)
 
 ## 12. 업데이트
 
