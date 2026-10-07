@@ -85,22 +85,20 @@ The engine never invents approvals or reviews. It records decisions that humans 
 
 ## Academic writing mode
 
-**Day to day (just ask in chat):**
-1. "Write the Introduction" / "서론 써줘": the agent loads the section's style card and drafts in that register.
-2. When a check reports something, say "fix it". *must fix* items are AI-register slips; *consider* items are suggestions you may keep.
-3. Once: put 3 or more good papers (yours or the target journal's, PDF) in a folder and say "learn my style from this folder".
-4. After you edit a draft yourself: "learn from my edits". You approve each proposed rule in chat.
-5. Before submission: "check for overclaiming" and "re-check the references" (retractions, wrong DOIs). For a revision: "do the blind re-review".
-`strict` mode ("academic mode strict") refuses AI-style sentences outright; the default only reports them.
+The agent writes in the register of medical journals from the first draft, not in chatbot prose. The targets were measured from 33 openly licensed original articles in JAMA Surgery, JAMA Network Open, Lancet, BMJ and Nature, published 2019 to 2022, before generative AI. Only the numbers ship (`docs/academic_style/reference_profile.json`); the papers stay off GitHub. For example, "used" appeared 345 times against "utilized" once, and delve, underscore and "plays a crucial role" never appeared.
 
-A model cannot be fine-tuned from your laptop, so manuwright does the next best thing at every write: it puts the right examples and measured targets in front of the writer and checks what comes back.
+You use it from the chat:
 
-- **Section cards.** For each section (title, abstract, introduction, methods, results, discussion, conclusion) a card gives the rhetorical moves, rules, a phrasebank and model paragraphs written in the register of high-impact clinical journals. The core card loads at every session; the section card loads when you ask to draft that section ("서론 써줘", "draft the Discussion") or with `manuwright style card <section>`.
-- **Measured, not guessed.** The targets on every card come from 33 openly licensed original-research papers in JAMA Surgery, JAMA Network Open, Lancet, BMJ and Nature, published 2019-2022 (before generative-AI drafting): sentence length and passive voice per section, how often each verb and transition appears, and phrasing shared across the journals. Only the numbers ship (`docs/academic_style/reference_profile.json`); the papers stay off GitHub. One finding: "showed" outnumbers "demonstrated" about 5 to 1, and "used" appeared 345 times against "utilized" once.
-- **Always in context.** The card is re-injected at session start and after compaction, given to subagents, and restated in one line on every prompt inside a paper folder. Switch it from the chat: "학술 모드 꺼줘", "academic mode strict".
-- **Your corpus.** `manuwright style learn <papers>` measures a set of good papers (your own, landmark papers, recent papers from the target journal; PDF, DOCX, MD or TXT): sentence length, passive voice, hedging, signature phrases, typical openers, and model paragraphs per section. Every card then carries those targets and paragraphs. The profile stays in your personal library and is never copied into a paper.
-- **Prose checks.** After each edit to a manuscript section, AI-register phrases (delve, pivotal, "it is worth noting", a trailing ", highlighting ..."), contractions, bold in running text, overlong sentences, "significant" without statistics and similar slips are reported with the line. `manuwright mode strict` blocks the write instead until the sentences are rewritten; `manuwright mode off` turns the mode off.
-- **Rewrites keep the facts.** `manuwright style preserve old.md new.md` fails when a style rewrite changed any `[EVID:id]`, number, *p* value or Table/Figure reference; `/style-pass` runs it on every section.
+| Say | What happens |
+|---|---|
+| "write the Introduction", "rewrite the Discussion" | The agent loads that section's card (moves, phrasebank, model paragraphs, measured targets) and writes |
+| "fix them" | After every edit the prose findings appear; the agent fixes them. *MUST FIX* is AI register; *consider* is a suggestion you may keep |
+| "learn my style from this folder" | Measures 3 or more good papers (yours or the target journal's) and adds their style to every card |
+| "learn from my edits" | Proposes rules from how you edited the drafts; only the rules you approve are enforced |
+| "check for overclaiming", "recheck my references" | Wording stronger than the evidence; retracted papers and wrong DOIs |
+| "academic mode strict" / "off" / "on" | `strict` blocks AI-register sentences; the default `academic` reports them; `off` stops both |
+
+It works only inside a paper folder. Rewrites never change the facts: `manuwright style preserve` fails if a citation, number, *p* value or Table/Figure reference moved. Walkthrough: [manual, section 6](docs/manual.md#6-academic-writing-mode).
 
 ## Install
 
@@ -115,7 +113,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper

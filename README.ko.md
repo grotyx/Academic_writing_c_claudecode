@@ -85,22 +85,20 @@ reason: number not found in results CSV files
 
 ## 학술 문체 모드
 
-**매일 이렇게 쓰세요 (채팅으로 말하면 됩니다):**
-1. "서론 써줘", "고찰 다시 써줘": 에이전트가 그 섹션의 문체 카드를 읽고 그 문체로 씁니다.
-2. 검사 결과가 나오면 "고쳐줘". *MUST FIX* 는 AI 말투라 고쳐야 하고, *consider* 는 제안이라 의도한 표현이면 그대로 둬도 됩니다.
-3. 처음 한 번: 좋은 논문(내 논문이나 목표 저널 논문, PDF) 3편 이상을 한 폴더에 넣고 "이 폴더로 내 문체 배워줘".
-4. 초안을 직접 고친 뒤: "내가 고친 거 배워줘". 제안된 규칙은 채팅으로 하나씩 승인합니다.
-5. 투고 전: "과장 표현 검사해줘", "참고문헌 다시 확인해줘"(철회 논문, 틀린 DOI). Revision 때: "블라인드 재검토 해줘".
-엄격 모드("학술 모드 엄격하게 해줘")는 AI 말투 문장을 아예 쓰지 못하게 하고, 기본 모드는 알려 주기만 합니다.
+에이전트가 초고부터 챗봇 말투가 아닌 의학 학술지 말투로 쓰게 한다. 기준은 2019~2022년(생성형 AI 이전) JAMA Surgery, JAMA Network Open, Lancet, BMJ, Nature 의 공개 라이선스 원저 33편에서 측정한 값이다. 배포되는 것은 숫자뿐이며(`docs/academic_style/reference_profile.json`) 논문 원문은 GitHub 에 올리지 않는다. 예를 들어 "used" 는 345회, "utilized" 는 1회였고, delve, underscore, "plays a crucial role" 은 한 번도 나오지 않았다.
 
-노트북에서 모델을 파인튜닝할 수는 없으므로, manuwright 는 글을 쓸 때마다 그다음으로 효과적인 일을 한다. 쓰는 쪽 눈앞에 알맞은 예문과 측정된 목표치를 놓고, 써 온 문장을 검사한다.
+채팅으로 쓰면 된다.
 
-- **섹션 카드.** 섹션마다(title, abstract, introduction, methods, results, discussion, conclusion) 수사 구조(moves), 규칙, 표현집(phrasebank), high-impact 임상 저널 문체로 쓴 모범 문단을 담은 카드가 있다. 핵심 카드는 매 세션 시작 때 들어가고, 섹션 카드는 그 섹션을 써 달라고 할 때("서론 써줘", "draft the Discussion") 또는 `manuwright style card <section>` 으로 들어간다.
-- **추측이 아니라 측정.** 카드의 목표치는 2019~2022년(생성형 AI 이전) JAMA Surgery, JAMA Network Open, Lancet, BMJ, Nature 의 공개 라이선스 원저 33편에서 측정했다: 섹션별 문장 길이와 수동태 비율, 동사·전환어 빈도, 여러 저널에 공통인 표현. 배포되는 것은 숫자뿐이며(`docs/academic_style/reference_profile.json`) 논문 원문은 GitHub 에 올리지 않는다. 예: "showed" 가 "demonstrated" 보다 약 5배 많고, "used" 는 345회, "utilized" 는 1회였다.
-- **항상 맥락 안에.** 카드는 세션 시작과 대화 압축 뒤에 다시 들어가고, 서브에이전트에도 전달되며, 논문 폴더에서는 매 프롬프트마다 한 줄로 다시 상기된다. 대화로 바꿀 수 있다: "학술 모드 꺼줘", "academic mode strict".
-- **내 코퍼스.** `manuwright style learn <논문들>` 이 좋은 논문 묶음(내 논문, 분야의 landmark 논문, 목표 저널의 최근 논문; PDF·DOCX·MD·TXT)을 섹션별로 측정한다: 문장 길이, 수동태 비율, hedging, 자주 쓰는 표현(signature phrase), 문장 시작 패턴, 모범 문단. 이후 모든 카드에 이 목표치와 문단이 함께 들어간다. 프로필은 개인 라이브러리에만 있고 논문 폴더로 복사되지 않는다.
-- **문장 검사.** 원고 섹션을 고칠 때마다 AI 말투(delve, pivotal, "it is worth noting", 끝에 붙는 ", highlighting ..."), 축약형, 본문 굵은 글씨, 너무 긴 문장, 통계 없는 "significant" 같은 문제를 줄 번호와 함께 알려 준다. `manuwright mode strict` 는 문장을 고칠 때까지 쓰기 자체를 막고, `manuwright mode off` 는 모드를 끈다.
-- **고쳐 써도 사실은 그대로.** `manuwright style preserve old.md new.md` 는 문체 수정이 `[EVID:id]`, 숫자, *p* 값, Table/Figure 참조를 하나라도 바꾸면 실패한다. `/style-pass` 가 섹션마다 실행한다.
+| 이렇게 말하면 | 일어나는 일 |
+|---|---|
+| "서론 써줘", "고찰 다시 써줘" | 그 섹션 카드(문단 구조, 표현집, 모범 문단, 측정 목표치)를 읽고 씀 |
+| "고쳐줘" | 편집할 때마다 문장 검사 결과가 나오고, 에이전트가 고침. *MUST FIX* 는 AI 말투, *consider* 는 제안이라 그대로 둬도 됨 |
+| "이 폴더로 내 문체 배워줘" | 좋은 논문 3편 이상(내 논문이나 목표 저널 논문)을 측정해 모든 카드에 그 문체를 더함 |
+| "내가 고친 거 배워줘" | 내가 초안을 고친 방식에서 규칙을 제안. 내가 승인한 규칙만 적용 |
+| "과장 표현 검사해줘", "참고문헌 다시 확인해줘" | 근거보다 센 표현, 철회 논문과 틀린 DOI |
+| "학술 모드 엄격하게 해줘" / "꺼줘" / "켜줘" | `strict` 는 AI 말투 문장을 막고, 기본 `academic` 은 알려 주고, `off` 는 둘 다 끔 |
+
+논문 폴더 안에서만 작동한다. 문체를 고쳐도 사실은 바뀌지 않는다: 인용, 숫자, *p* 값, Table/Figure 참조가 바뀌면 `manuwright style preserve` 가 실패한다. 따라 하기: [설명서 6절](docs/manual.ko.md#6-학술-문체-모드).
 
 ## 설치
 
@@ -115,7 +113,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper

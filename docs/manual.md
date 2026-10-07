@@ -1,6 +1,6 @@
-# manuwright user manual (v2.4.0)
+# manuwright user manual (v2.5.0)
 
-This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
+This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
 Screenshots are renders of the terminals' text captured during that run (the session had no macOS screen-recording permission), so they show what the tools printed; a few long outputs are abridged and say so.
 
@@ -16,19 +16,26 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 | A reporting checklist that is really complete | Official CONSORT/STROBE/PRISMA/CARE checklist, checked by an independent reviewer |
 | Review by other models, never only by the writer | Any mix of Codex, Antigravity, opencode, Muse, Claude and OpenRouter models |
 | A package that matches what was reviewed and signed | sha256 snapshots; any change makes reviews and sign-off stale |
+| Prose in medical-journal register, not chatbot register | Academic writing mode: section cards + a prose check after every edit (section 6) |
+| No wording stronger than the evidence | `Claim Strength` in evidence.md + `manuwright claim-strength` (sections 3 and 8) |
+| No retracted papers or wrong DOIs | `manuwright search audit` (section 3) |
+| A revision re-review the response letter cannot steer | `manuwright blind-review` (section 11) |
 
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
 manuwright search "your topic" --max 10         # or: manuwright evidence import-obsidian <citekey>
 #  write data/analysis_plan.md -> author approves -> manuwright record-approval ...
 #  analysis scripts -> results/*.csv -> tables;  drafts/draft_plan.md -> approval
-#  draft sections with any agent
+#  draft sections with any agent ("write the Introduction": the academic style card comes with it)
+manuwright style learn ~/papers/good              # (optional) learn the style of 3+ good papers
 manuwright verify --project project.json --profile draft
+manuwright claim-strength drafts                  # wording stronger than the evidence
+manuwright search audit                           # recheck references: retractions, DOIs
 manuwright packet --project project.json        # independent semantic review
 manuwright critical-review --target drafts/05_results.md --out review/critical
 manuwright verify --project project.json --profile submission
@@ -38,13 +45,13 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.1
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
 ```
 
-`agents install` also offers the optional Obsidian library (section 3b). Restart Claude Code after installing or updating the plugin. The first Codex session in a folder asks you to trust the plugin hooks: choose "Trust all" for the four manuwright hooks. Template users (no install) run the same engine as `python -m harness ...` and `python scripts/<tool>.py ...` inside the cloned repository.
+`agents install` also offers the optional Obsidian library (section 3b). Restart Claude Code after installing or updating the plugin. The first Codex session in a folder asks you to trust the plugin hooks: choose "Trust all" for the five manuwright hooks. Template users (no install) run the same engine as `python -m harness ...` and `python scripts/<tool>.py ...` inside the cloned repository.
 
 ## 2. Start a paper
 
@@ -64,7 +71,25 @@ manuwright search "minimally invasive versus open lumbar fusion randomized" --ma
 manuwright search fetch 31476471 34602458 --format evidence
 ```
 
-Copy the entries into `knowledge/evidence.md` and fill the summary fields from what you actually read. Mark `Source Status: abstract-only` until you have read the full text. Only IDs registered here can be cited, as `[EVID:miller_2020_pmid31476471]`.
+Copy the entries into `knowledge/evidence.md` and fill the summary fields from what you actually read. Mark `Source Status: abstract-only` until you have read the full text. Only IDs registered here can be cited, as `[EVID:miller_2020_pmid31476471]`. The example entry in a new paper's evidence.md is a comment and does not count as registered.
+
+**Evidence strength.** For each entry, record how far that paper lets you go. Entries printed by `manuwright search` carry both fields.
+
+```text
+- **Claim Strength:** observed           (speculative | observed | supported | strong)
+- **Allowed Wording:** was associated with
+```
+
+| Value | Typical evidence | Wording it allows |
+|---|---|---|
+| `speculative` | Hypotheses, case reports, expert opinion | may, suggest |
+| `observed` | Observational studies (cohort, case-control) | was associated with, observed, reported |
+| `supported` | Consistent observational studies, small RCTs | showed, reduced, improved |
+| `strong` | Large RCTs, meta-analyses | up to demonstrated, prevents |
+
+The author decides the value. The `claim-strength` check in section 8 uses it; an entry left blank is not checked.
+
+**Recheck before submission.** `manuwright search audit` re-fetches every entry with a PMID or DOI from PubMed, compares title, first author, year and journal, and flags retractions, expressions of concern and errata. It fails when an entry is retracted or points to a different paper. It needs an internet connection. In chat: "recheck my references".
 
 ### 3b. Your Obsidian library (optional, recommended)
 
@@ -133,7 +158,75 @@ manuwright record-approval drafts/draft_plan.md --kind draft --approved-by "Auth
 
 If the plan chooses a term that the engine registry forbids (the demo used "MIS"), give the paper its own registry: copy the engine's `Style/terminology.md` into the paper's `Style/`, edit the row, and set `"terminology": "Style/terminology.md"` in `project.json`. Both `verify` and the edit-time lint hook then use it.
 
-## 6. Drafting with several agents
+## 6. Academic writing mode
+
+This makes the agent write in the register of medical journals from the first draft. It is on by default and works only inside a paper folder (one made by `manuwright init`); in other projects it does nothing.
+
+**Where the targets come from.** 33 openly licensed original articles from JAMA Surgery, JAMA Network Open, Lancet, BMJ and Nature, published 2019 to 2022 (before generative AI, about 179,000 words), were measured. The engine ships only numbers and short phrases shared across journals, never paper text (`docs/academic_style/reference_profile.json`).
+
+| Measured | Example |
+|---|---|
+| Mean sentence length by section | 22 to 24 words in Methods and Results, 27 to 28 in Introduction and Discussion |
+| Passive voice by section | Methods 63%, Results 24%, Introduction and Discussion about 30% |
+| Verb choice | "used" 345 times against "utilized" once; "showed" about 5 times as often as "demonstrated" |
+| Never used | delve, underscore, showcase, leverage, "it is worth noting", "plays a crucial role" |
+
+**How it works.**
+1. At session start the core card goes to the agent; it goes in again after the conversation is compacted, and to subagents.
+2. A drafting request ("write the Introduction") brings that section's card: moves, phrasebank, model paragraphs, measured targets. To read one yourself: `manuwright style card introduction`.
+3. After every edit to a manuscript section (`drafts/01_` to `07_`) the prose findings appear with line numbers.
+
+```text
+[ACADEMIC/MUST FIX/AI_PHRASE] line 3: "plays a crucial role": say what X does to Y, with a citation
+[ACADEMIC/MUST FIX/ING_TAIL] line 3: "highlighting the importance": trailing ", highlighting the importance ..." clause; ...
+[ACADEMIC/MUST FIX/CONTRACTION] line 3: "can't": contraction; write the full form
+[ACADEMIC/consider/SIGNPOST] line 3: "Notably": signposting opener; start with the content
+```
+
+*MUST FIX* items are AI register absent from the measured papers, contractions, bold in running text and chat residue: fix them. *consider* items are suggestions (long sentences, "crucial", "Notably" and the like); keep the wording when it is deliberate. A plain paragraph saying the same thing gets no findings.
+
+**Using it from chat.** No commands to memorise.
+
+| Say | What happens |
+|---|---|
+| "write the Introduction", "rewrite the Discussion", "suggest titles" | The agent reads that section's card and writes |
+| "fix them" | The findings are fixed |
+| "make this paragraph academic" | `/style-pass` rewrites it, then checks that no fact changed |
+| "learn my style from this folder" | `manuwright style learn <folder>` |
+| "learn from my edits" | `manuwright style edits` proposes rules |
+| "check for overclaiming" | `manuwright claim-strength drafts` |
+| "academic mode strict" / "academic mode off" / "academic mode on" | Switches the mode (for every paper) |
+
+The switch reacts only to a short request that starts with "academic mode" (or "학술 모드"). A question ("what happens if academic mode is off?") or a statement ("I turned academic mode off") changes nothing.
+
+**Three modes.** `manuwright mode` shows the current one.
+
+| Mode | What it does |
+|---|---|
+| `academic` (default) | Cards, and findings reported after each edit |
+| `strict` | A write whose new text has a *MUST FIX* finding is blocked until it is rewritten |
+| `off` | No cards or prose findings; the terminology check still runs |
+
+**Adding your style or your target journal's (optional).** Put 3 or more good papers (your own, landmark papers in your field, recent papers from the target journal; PDF, DOCX, MD or TXT) in one folder.
+
+```sh
+manuwright style learn ~/papers/good
+manuwright style status
+```
+
+Sentence length, passive voice, hedging, signature phrases and model paragraphs are measured per section and added to every card. The result lives only in `~/.manuwright/library/writing/profile/` and never goes into a paper folder or git. With fewer than 3 papers it is shown on the cards for reference but does not change the checks. A run that finds no usable paper keeps what was learned before.
+
+**Learning from your edits (optional).** After you edit an agent's draft:
+
+```sh
+manuwright style edits --git HEAD~1          # with git; otherwise: manuwright style edits ai_draft.md my_edit.md
+```
+
+Repeated word substitutions and deletions are proposed in `Style/pending_style_rules.md` (P0 = 2 or more times). Only the rules you tick move into `Style/terminology.md` with `manuwright style edits --apply`, and the checks enforce them from then on. Approve one in chat ("keep the demonstrated rule") and the agent ticks exactly that rule; it never picks on its own.
+
+**Rewriting keeps the facts.** `manuwright style preserve original.md rewritten.md` fails if any `[EVID:id]`, number, *p* value or Table/Figure reference changed. `/style-pass` runs it for every section.
+
+## 7. Drafting with several agents
 
 Each agent gets one section, the same rules, and the checks to run before it finishes. The prompt used in the demo:
 
@@ -157,11 +250,11 @@ manuwright numbers drafts/05_results.md and manuwright citations drafts/05_resul
 
 ![opencode writing Discussion](images/manual/13_opencode_discussion.png)
 
-Discussion and Introduction contain numbers from other papers. Exempt those files from result-number checking with a reason, and let the semantic review check them against the cited evidence (section 7).
+Discussion and Introduction contain numbers from other papers. Exempt those files from result-number checking with a reason, and let the semantic review check them against the cited evidence (section 8).
 
 Only Claude Code and Codex have hooks that block a write without an approved plan. In Antigravity, opencode and Muse, `manuwright verify` is the gate.
 
-## 7. Verify the draft
+## 8. Verify the draft
 
 `project.json` for the demo (abridged):
 
@@ -190,7 +283,21 @@ manuwright verify --project project.json --profile draft
 
 Lint findings count as failures (en dashes, `p` formatting, too many numbers in the Discussion, forbidden terms). Fix them in the text; do not weaken the registry.
 
-## 8. Independent semantic review
+Before submission, run two more checks.
+
+```sh
+manuwright lint --academic drafts      # the academic prose check over the whole manuscript (same as section 6)
+manuwright claim-strength drafts       # is a cited sentence stronger than its evidence (section 3)?
+```
+
+```text
+[OVERCLAIM] drafts/06_discussion.md:3 causal wording for observed evidence (deyo_2010):
+"Complex fusion caused more complications than decompression [EVID:deyo_2010]."; allowed wording: was associated with
+```
+
+Each sentence is graded by its strongest verb: hedged (may, suggest) < associative (was associated with) < directional (showed, reduced) < causal (demonstrated, caused). Negative findings ("showed no difference", "failed to demonstrate benefit") do not count as strong claims. The check reads verbs, so the author makes the final call.
+
+## 9. Independent semantic review
 
 Deterministic checks prove that a number exists in your data and that a citation exists in your registry. They cannot tell whether the sentence means the right thing. For that, build a packet and give it to a different model or a human:
 
@@ -208,7 +315,7 @@ Fix, rebuild the packet, review again. Rule 9 allows two automatic rounds; after
 
 Any change to a manuscript file, plan, CSV or the engine makes an existing review stale; rebuild the packet and review again.
 
-### 8b. Multi-model critical review
+### 9b. Multi-model critical review
 
 The semantic review above is the gate. A critical review is extra pressure from several reviewers at once. Choose any agents and any models; set your usual mix once:
 
@@ -225,7 +332,7 @@ Local reviewers run in an empty temporary folder in read-only or plan modes, so 
 
 ![Eight reviewers](images/manual/45_multi_reviewer_run.png)
 
-## 9. Submission
+## 10. Submission
 
 ```sh
 manuwright verify --project project.json --profile submission
@@ -257,7 +364,68 @@ Then `manuwright build --project project.json` writes the DOCX package (manuscri
 
 ![Submission PASS and build](images/manual/23_submission_pass_build.png)
 
-## 10. Updates
+## 11. Revision: letter-blind re-review
+
+The steps after reviewer comments arrive. Rules in detail: [revision_guide.md](revision_guide.md).
+
+1. Save the comments as `review/reviewer_comments_REV1.md` in this form; the numbers let the tools count every comment.
+
+```text
+Reviewer #1:
+Comment 1) Please report the follow-up rate.
+Comment 2) Define leg pain.
+```
+
+2. Save only the changed sections in `drafts/revision/REV1/` with `_REV1` (for example `04_methods_REV1.md`); the response letter is `response_letter_REV1.md` in the same folder. Every response that claims a manuscript change carries a `[CHANGE]` block.
+
+```text
+Comment 2) Define leg pain.
+
+[CHANGE]
+comment_id: R1-C2
+claim: defined the leg pain scale anchors
+section: 04_methods
+expected_terms: worst pain
+[/CHANGE]
+
+Response: We thank the reviewer and defined the scale.
+
+Revised text:
+"Leg pain was measured with a 0-10 numeric rating scale (0, no pain; 10, worst pain)."
+```
+
+3. **Letter-blind re-review.** A reviewer who reads the response letter first is pulled toward the authors' account, so the verdict is recorded before the letter is seen.
+
+```sh
+manuwright blind-review packet --comments review/reviewer_comments_REV1.md \
+  --revised drafts/revision/REV1 --out review/blind_REV1
+```
+
+The packet holds the comments, the original and revised sections and their diffs, and no response letter. The reviewer (another model or a person) fills `review/blind_REV1/verdicts.md` phase by phase.
+
+| Phase | Sees | Records |
+|---|---|---|
+| Phase 1 | The comments only | What the manuscript must show if the comment is fully addressed (`expectation`) |
+| Phase 2A | Original, revised, diffs (no letter) | A verdict (FULLY, PARTIALLY, NOT_ADDRESSED, MADE_WORSE, CANNOT_VERIFY) and where in the manuscript (`anchor`) |
+| Phase 2B | Now the letter too | The final verdict; a changed verdict needs a basis (`author_pointer`, `valid_rebuttal`, `scope_correction`) and a raised one the place in the revised text (`final_anchor`) |
+
+```sh
+manuwright blind-review check review/blind_REV1/verdicts.md
+```
+
+PASS needs every comment at FULLY or PARTIALLY and no empty field. A change that exists only in the letter, not in the manuscript, does not pass. Record `response_alignment` in the phase 8 gate after this PASS.
+
+4. **Response and revision checks.**
+
+```sh
+manuwright response-coverage drafts/revision/REV1/response_letter_REV1.md --comments review/reviewer_comments_REV1.md
+manuwright revision-claims drafts/revision/REV1/response_letter_REV1.md
+manuwright verify --project project.json --profile revision
+```
+
+`response-coverage` checks that every comment has a response; `revision-claims` checks that each change claimed in a `[CHANGE]` block is really in the revised section. Both returned `PASS` in testing.
+
+## 12. Updates
 
 ```sh
 manuwright update --check
@@ -265,10 +433,9 @@ manuwright update                         # installs, then runs `manuwright agen
 manuwright config set auto-update on      # patch releases only, at most daily
 manuwright init --refresh-rules --all     # every registered paper: update its agent rules (update offers this)
 manuwright check                          # one report of what is current, with the fix for each ✗
-manuwright mode strict                    # academic writing mode: academic (default), strict (blocks AI-register prose), off
-manuwright style learn ~/papers/landmark  # measure good papers so every section card carries their style
-manuwright style card discussion          # the card the agent loads before drafting that section
 ```
+
+`check` also shows the writing mode and whether a learned style exists. After a release that changes the agent rules (`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`), such as v1.9.0, run `manuwright init --refresh-rules --all`.
 
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
 
@@ -349,7 +516,7 @@ With `--fetch`, JBJS (every author listed) gets all 11 authors of Nakarai 2022, 
 
 Presets: `vancouver`, `ama` (JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`, `jbjs`, `neurospine`, `jns-spine`, `gsj`, `corr`, `asj`, `esj`. The rules of each are listed in [harness_guide.md](harness_guide.md). Check the journal's current instructions before submitting.
 
-## 11. Troubleshooting
+## 13. Troubleshooting
 
 | Symptom | Cause and fix |
 |---|---|
@@ -364,3 +531,10 @@ Presets: `vancouver`, `ama` (JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`,
 | New vault does not load the plugin | Obsidian's restricted mode: allow community plugins for that vault. |
 | agy returns nothing for MCP or review | Headless mode cannot grant tool permission; use agy interactively, or rely on the text-only review prompt (built in). |
 | A reviewer is `not_independent` | It uses the same model as `main-model`; pick another model for that reviewer. |
+| `BLOCKED by workflow gate (CLAUDE.md Rule 8): ...draft_plan.md: ...` | The end of the message names the reason: a placeholder left on a given line, approval not ticked, empty items, or the plan was edited after approval (show the change and approve again). |
+| No section card or prose findings | Outside a paper folder, or the mode is `off`. Run `manuwright mode` in the paper folder. |
+| `BLOCKED by academic writing mode (strict)` | A *MUST FIX* sentence in strict mode. Rewrite it, or say "academic mode on" to return to academic. |
+| The mode does not change | The environment variable `MANUWRIGHT_WRITING_MODE` wins; remove it and the saved setting applies. |
+| A learned style does not affect the checks | Fewer than 3 papers, or no section headings found. See `manuwright style status` and the skipped lines of learn. |
+| `search audit` cannot reach PubMed | Check the internet connection and run the same command again. |
+| `blind-review packet` finds no comments | Save the comments as `Reviewer #1:` followed by `Comment 1) ...`. |

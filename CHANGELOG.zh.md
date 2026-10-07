@@ -1,5 +1,14 @@
 # 变更记录
 
+### v1.9.1 (261007)
+
+按 v1.9.0 重写用户手册和 README。
+
+- 手册（`docs/manual.md`、`docs/manual.ko.md` v2.5.0）：新增第 6 节"学术文体模式"（基准来源、卡片与检查的工作方式、对话用语、三种模式、语料学习与从修改中学习、事实保持）；第 3 节增加 Claim Strength（取值、典型证据和允许表述的表格）与 `search audit`；第 8 节增加 `lint --academic` 和 `claim-strength`（真实输出）；新增第 11 节"Revision"（意见格式、`[CHANGE]` 块、隐藏回复信的复审阶段、response-coverage 和 revision-claims）；故障排除增加计划被阻止、strict 模式、模式环境变量、学习的文体、PubMed 连接和盲审 packet。重新编号各节，更新一节不再列出写作命令。
+- README（4 种语言）：学术文体模式一节精简为简短摘要和一张对话用语表，并链接到手册第 6 节。
+- 文档中给出的用语现已生效："suggest titles"、"make this paragraph academic"，以及日文和中文的写作请求（"Introduction を書いて"、"重写 Discussion"）都会载入章节卡片。
+- `manuwright search audit` 将 PubMed 连接失败报告为连接失败，而不是误报 evidence.md 不存在。
+
 ### v1.9.0 (261007)
 
 学术文体模式：每次起草时都把合适的范例和量化目标交给写作者，并检查写出的文字。
