@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from plan_validation import validate_plan_content, approval_problem
+from plan_validation import validate_plan_content, approval_problem, describe_missing
 
 # Tools that can create or modify files in Claude Code.
 WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "apply_patch")  # apply_patch = Codex
@@ -74,19 +74,24 @@ def plan_problem(plan: Path) -> str | None:
         text = plan.read_text(encoding="utf-8")
     except Exception:
         return "unreadable"
-    if (
-        PLACEHOLDER_RE.search(text)
-        or SAMPLE_SIZE_PLACEHOLDER_RE.search(text)
-        or PERCENT_PLACEHOLDER_RE.search(text)
-        or UNCHECKED_APPROVAL_RE.search(text)
-    ):
-        return "unresolved template or not approved"
-    if not CHECKED_APPROVAL_RE.search(text):
-        return "not approved"
+    placeholder = next((m for r in (PLACEHOLDER_RE, SAMPLE_SIZE_PLACEHOLDER_RE, PERCENT_PLACEHOLDER_RE)
+                        for m in [r.search(text)] if m), None)
+    if placeholder:
+        line = text.count("\n", 0, placeholder.start()) + 1
+        return (f"unresolved template: line {line} still has the placeholder "
+                f"\"{placeholder.group(0).strip()[:60]}\"; replace every [...] placeholder with this paper's content")
+    if UNCHECKED_APPROVAL_RE.search(text) or not CHECKED_APPROVAL_RE.search(text):
+        return ("not approved yet: the author has not ticked `- [x] 사용자 승인 완료` "
+                "(or approved it in chat for `manuwright approve`)")
     kind = "analysis" if plan.name == "analysis_plan.md" else "draft"
-    if validate_plan_content(text, kind):
-        return "incomplete plan: required sections are absent or empty"
-    return approval_problem(plan)
+    missing = validate_plan_content(text, kind)
+    if missing:
+        return f"incomplete plan: these items are missing or empty: {describe_missing(missing)}"
+    receipt = approval_problem(plan)
+    if receipt and receipt.startswith("stale"):
+        return ("the plan was edited after it was approved; show the author the change and record a new approval "
+                "(`manuwright approve`)")
+    return receipt
 
 
 PATCH_PATH_RE = re.compile(r"^\*\*\* (?:Add File|Update File|Move to): (.+?)\s*$", re.M)
@@ -184,7 +189,9 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
             if problem == "missing":
                 detail = f"{plan} does not exist."
             else:
-                detail = f"{plan} is an unresolved template or has not been approved."
+                detail = f"{plan}: {problem}."
+            if problem.startswith("the plan was edited"):
+                return f"BLOCKED by workflow gate (CLAUDE.md Rule 8): {detail}"
             return (
                 "BLOCKED by workflow gate (CLAUDE.md Rule 8): "
                 f"{detail}\n"
@@ -201,7 +208,7 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
             if problem == "missing":
                 detail = f"{plan} does not exist."
             else:
-                detail = f"{plan} is an unresolved template or has not been approved."
+                detail = f"{plan}: {problem}."
             return (
                 "BLOCKED by workflow gate (CLAUDE.md Rule 7): "
                 f"{detail}\n"

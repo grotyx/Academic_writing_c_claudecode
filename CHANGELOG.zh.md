@@ -21,6 +21,7 @@
 - 从作者修改中学习：`manuwright style edits <AI草稿> <修改稿>`（或 `--git REV`）统计词语替换和删除，写入 `Style/pending_style_rules.md`（P0 = 2 次以上）；只有作者勾选的规则才会通过 `--apply` 进入 `Style/terminology.md` 并由 lint 强制执行。
 - 证据审核：`manuwright search audit` 重新从 PubMed 获取带 PMID 或 DOI 的 evidence.md 条目并评分（标题 0.4、第一作者 0.3、年份 0.2、期刊 0.1；参考 claude-scholar），DOI 指向其他记录时判为失败，并标记撤稿、关注声明和勘误。
 - 审查修复（代码审查和非开发者试用）：卡片、提醒和子代理卡片仅在论文文件夹中出现；对话中的模式切换只响应简短的命令（提问不会关闭模式）；段落中的 AI 腔全部报告，并区分 *MUST FIX* 与 *consider*；学习的文体需 3 篇以上论文才影响检查；学术文字检查和 strict 只作用于稿件章节（不含参考文献、回复信和笔记）；减少误报（加粗小标题、HR/OR/Table/P value、证据强度判定中的名词和形容词）；`style preserve` 忽略斜体；计划检查认可已勾选的选项并按名称指出缺失项；`style card` 接受韩文章节名；帮助中将写作工具与对话示例归为一组；错误信息更易懂；README 增加五步日常用法。
+- 第二轮审查修复："정리"、"후보"、"추천"、"보완" 请求也会显示章节卡片；起草被阻止时给出确切原因（哪一行的哪个占位符、未勾选批准、哪些项目为空、批准后计划被修改）；核心卡片称为从不使用的 9 个词（leverage、showcase、realm、underscore、intricate、paramount、seamless、holistic、meticulous）改为必须修改，strict 模式会阻止；统计术语 "high leverage" 除外。
 
 ### v1.8.30 (261006)
 

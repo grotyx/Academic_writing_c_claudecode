@@ -76,15 +76,15 @@ SECTION_WORDS = {
     "abstract": r"초록|\babstract\b",
     "introduction": r"서론|도입부|introduction|\bintro\b",
     # bare 방법/결과 count only right before a drafting verb ("결과 써줘", "방법을 다시 써줘")
-    "methods": r"방법\s*(?:섹션|파트|부분|론)|재료\s*(?:및|와)\s*방법|방법\s*(?:을|를)?\s*(?:다시\s*)?(?:써|작성)|\bmethods?\b",
-    "results": r"결과\s*(?:섹션|파트|부분)|결과\s*(?:를|을)?\s*(?:다시\s*)?(?:써|작성)|\bresults\b",
+    "methods": r"방법\s*(?:섹션|파트|부분|론)|재료\s*(?:및|와)\s*방법|방법\s*(?:을|를)?\s*(?:다시\s*)?(?:써|작성|정리)|\bmethods?\b",
+    "results": r"결과\s*(?:섹션|파트|부분)|결과\s*(?:를|을)?\s*(?:다시\s*)?(?:써|작성|정리)|\bresults\b",
     "discussion": r"고찰|\bdiscussion\b",
     "conclusion": r"결론|\bconclusions?\b",
 }
 SECTION_FILE = re.compile(r"\b0([1-7])_[a-z_]*\.md\b")
 FILE_SECTIONS = {"1": "title", "2": "abstract", "3": "introduction", "4": "methods", "5": "results",
                  "6": "discussion", "7": "conclusion"}
-DRAFT_VERBS = re.compile(r"써|쓰|작성|초안|다시|고쳐|수정|다듬|draft|write|rewrite|revise", re.IGNORECASE)
+DRAFT_VERBS = re.compile(r"써|쓰|작성|초안|다시|고쳐|수정|다듬|정리|만들|보완|바꿔|후보|추천|제안|draft|write|rewrite|revise|suggest", re.IGNORECASE)
 MAX_CARDS = 2
 
 

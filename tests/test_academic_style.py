@@ -48,6 +48,15 @@ def test_prose_checks_flag_ai_register_and_form():
     assert acad.prose_issues('Age did not differ significantly between groups (Table 1).', 'results') == []
 
 
+def test_words_the_card_calls_never_are_must_fix_but_statistical_leverage_is_not():
+    def codes(text):
+        return [(i[0], i[1]) for i in acad.prose_issues(text, 'methods', 40)]
+    assert codes('We leveraged a registry to study the realm of surgery.') == [('high', 'AI_WORD'), ('high', 'AI_WORD')]
+    assert codes('Observations with high leverage and high-leverage points were examined.') == []
+    assert codes('Leverage values were inspected.') == []
+    assert codes('Early care is crucial.') == [('medium', 'AI_WORD')]
+
+
 def test_split_sections_keeps_structured_abstract_labels_and_stops_at_references():
     text = ('Title\nAbstract\nBackground\nStenosis is common.\nMethods\nWe did it.\nIntroduction\nIntro.\n'
             '2. Materials and Methods\nMethod text.\nResults\nResult text.\nDiscussion\nDiscussion text.\n'
@@ -178,6 +187,7 @@ def test_prompt_hook_injects_the_card_for_a_drafting_request_and_ignores_talk_ab
     assert intent.evaluate({'prompt': 'Write a unit test for the abstract class', 'cwd': '/tmp'}) == ''
     assert intent.requested_sections('drafts/06_discussion.md 다시 써줘, 결론도 작성') == ['discussion', 'conclusion']
     assert intent.requested_sections('결과 나오면 알려줘') == []
+    assert intent.requested_sections('제목 후보 몇 개 줘') == ['title'] and intent.requested_sections('결과 정리해줘') == ['results']
     monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
     assert intent.evaluate({'prompt': '서론 써줘', 'cwd': str(ROOT)}) == ''
 

@@ -152,10 +152,14 @@ PHRASE_RULES = [  # (severity, code, pattern, message)
     (HIGH, 'CONTRACTION', re.compile(r"\b(?:do|does|did|is|are|was|were|has|have|had|could|would|should|ca|wo)n['’]t\b"
                                      r"|\b(?:it|that|there|what|let)['’]s\b|\b(?:we|they|you)['’](?:re|ve|ll|d)\b", _I),
      'contraction; write the full form'),
+    # 0 occurrences in the 179,000-word reference corpus: the core card says "never", so these are must-fix.
+    (HIGH, 'AI_WORD', re.compile(
+        r"\b(?:intricate|showcas(?:e|es|ed|ing)|leverag(?:es|ed|ing)|(?<!high[- ])(?<!low[- ])leverage(?!\s+(?:points?|values?|statistics?|plots?|observations?))|seamless(?:ly)?|holistic|paramount"
+        r"|underscor(?:e|es|ed|ing)|realm|meticulous(?:ly)?)\b", _I),
+     'never used in the reference journals; use a plain, precise word or delete it'),
+    # Rare but present in the reference corpus: a suggestion.
     (MEDIUM, 'AI_WORD', re.compile(
-        r"\b(?:crucial|pivotal|intricate|multifaceted|nuanced|showcas(?:e|es|ed|ing)|leverag(?:e|es|ed|ing)"
-        r"|seamless(?:ly)?|holistic|paramount|underscor(?:e|es|ed|ing)|realm|meticulous(?:ly)?"
-        r"|commendable|bolster(?:s|ed|ing)?)\b", _I),
+        r"\b(?:crucial|pivotal|multifaceted|nuanced|commendable|bolster(?:s|ed|ing)?)\b", _I),
      'AI-register word; use a plain, precise word or delete it'),
     # Guarded patterns adapted from unslop (MIT, Copyright (c) 2026 Mohamed Abdallah; THIRD_PARTY_NOTICES.md).
     (MEDIUM, 'INFLATION', re.compile(
