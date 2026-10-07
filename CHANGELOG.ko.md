@@ -1,5 +1,18 @@
 # 변경 이력
 
+### Unreleased
+
+코드 리뷰와 가상 데이터 종단 테스트(새 논문 폴더, 합성 데이터, 실제 PubMed 검색, DOCX 빌드까지 전 단계)에서 나온 수정.
+
+- `style preserve` 가 부호(-1.2 -> 1.2), 비교 기호(>=65 -> <65), 대문자 P 의 p 값(P < .001 -> P > .001) 변경을 잡는다. 기울임, P/p, 마이너스 글자 모양은 여전히 서식으로 본다.
+- `claim-strength`: 줄바꿈된 문장을 한 문장으로 판정하고, 한 절의 hedge 가 다른 절의 주장을 약하게 만들지 않으며("could not be shown to cause harm, but it prevented fractures" 는 인과), 폴더를 주면 계획 파일은 건너뛴다.
+- `search audit`: PubMed 에 없는 DOI 항목은 실패로 표시(지어낸 DOI 가 조용히 통과하지 않음), PMID·DOI 둘 다 없으면 unchecked 로 표시.
+- `style edits` 를 다시 돌려도 `Style/pending_style_rules.md` 에서 이미 체크했거나 채팅으로 승인한 규칙이 남는다.
+- `init --refresh-rules` 가 템플릿 저장소 폴더는 건드리지 않는다(AGENTS.md·GEMINI.md 가 바뀌던 문제).
+- `academic_style.py check` 가 폴더를 받는다.
+- 금지 용어가 하이픈 합성어 안에서는 걸리지 않는다: "MIS" 금지는 "the MIS group" 만 잡고 "MIS-TLIF" 는 잡지 않는다.
+- 위첨자 인용 저널: 번호가 마침표·쉼표 뒤에, 앞 공백 없이 붙는다("analyses.^1,2^").
+
 ### v1.9.2 (261007)
 
 - 설명서(v2.5.1, 한국어·영어): v1.9.1 로 새 논문 폴더에서 다시 돌린 시험의 터미널 그림 6장을 넣었다. "서론 써줘"에 붙는 섹션 카드, 편집 뒤 문장 검사, strict 모드 차단, 과장 표현 검사, 블라인드 재검토(편지 때문에만 올린 판정은 실패, 이어서 PASS), 응답서 점검이다. 같은 내용의 텍스트 블록을 대신한다.

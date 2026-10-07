@@ -324,14 +324,18 @@ def reference_profile() -> dict:
 
 
 PROTECTED = re.compile(r'\[EVID:[^\]]+\]|(?:Table|Fig(?:ure)?\.?|Supplementary (?:Table|Figure))\s*S?\d+[A-Za-z]?'
-                       r'|\*?\bp\*?\s*[<=>\u2264\u2265]\s*0?\.\d+|\d+(?:\.\d+)?\s*%?|\d+(?:\.\d+)?')
+                       r'|\*?\b[pP]\*?\s*[<=>\u2264\u2265]\s*0?\.\d+'
+                       # a number keeps its sign and comparator: "-1.2" -> "1.2" or "\u226565" -> "<65" is a new fact
+                       r'|(?:[<>\u2264\u2265]\s*)?(?:(?<![\w.])[-\u2212\u2013])?\d+(?:\.\d+)?\s*%?')
 
 
 def protected_tokens(text: str) -> Counter:
     """Citations, table/figure references, p values and numbers: what a style rewrite must not change."""
-    # italics are formatting, not content: "p = 0.04" and "*p* = 0.04" are the same value
-    return Counter(m.group(0) if m.group(0).startswith('[EVID:') else re.sub(r'[\s*_]+', '', m.group(0))
-                   for m in PROTECTED.finditer(text))
+    # italics, P/p and the minus glyph are formatting, not content: "P = 0.04" and "*p* = 0.04" are the same value
+    def norm(tok: str) -> str:
+        tok = re.sub(r'[\s*_]+', '', tok).replace('\u2212', '-').replace('\u2013', '-')
+        return 'p' + tok[1:] if tok[:1] == 'P' else tok
+    return Counter(m.group(0) if m.group(0).startswith('[EVID:') else norm(m.group(0)) for m in PROTECTED.finditer(text))
 
 
 def preserve_problems(before: str, after: str) -> list[str]:
@@ -843,14 +847,27 @@ LEARNED_HEADER = ('\n## Learned From Author Edits\n\nRules the author approved i
                   '(`manuwright style edits --apply`).\n\n| Preferred Term | Forbidden Terms | Context |\n|---|---|---|\n')
 
 
+def _rule_key(line: str) -> str:
+    """'replace "a" with "b"' or 'delete "a"' from a pending-rule line, lowercased."""
+    m = re.search(r'(replace ".+?" with ".+?"|delete ".+?")', line)
+    return m.group(1).lower() if m else line.strip().lower()
+
+
 def write_pending(proposals: list, target: Path) -> None:
     lines = ['# Pending style rules from your edits', '',
              'Learned from how you edited AI drafts. Tick (`[x]`) only the rules you want enforced, or tell your',
              'agent in chat which ones to keep; then `manuwright style edits --apply`. An agent never decides for you.', '',
              'P0 = you made this change 2+ times; P1 = once, and the old wording is AI register; P2 = once.', '']
+    # A rerun merges: rules already listed keep their tick and chat-approval note, so nothing the author
+    # approved is lost before `--apply`; only rules not yet listed are added.
+    kept = [ln for ln in (target.read_text(encoding='utf-8').splitlines() if target.is_file() else [])
+            if re.match(r'\s*-\s*\[[ xX]\]', ln)]
+    listed = {_rule_key(ln) for ln in kept}
+    lines += kept
     for priority, rule, count, kind in proposals:
         text = f'replace "{rule.split(" -> ")[0]}" with "{rule.split(" -> ")[1]}"' if kind == 'replace' else f'delete "{rule}"'
-        lines.append(f'- [ ] {priority} {text} ({count}x)')
+        if text.lower() not in listed:
+            lines.append(f'- [ ] {priority} {text} ({count}x)')
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
@@ -1040,8 +1057,10 @@ def _main(argv: list[str] | None = None) -> int:
         print('Every section card now includes this measured style (manuwright style card <section>).')
         return 0
     failed = 0
-    for name in args.files:
-        path = Path(name)
+    # a folder means its manuscript files (plans are not prose to check)
+    paths = [q for f in args.files for q in (sorted(x for x in Path(f).rglob('*.md') if not x.name.endswith('_plan.md'))
+                                             if Path(f).is_dir() else [Path(f)])]
+    for path in paths:
         section = section_of(path)
         issues = prose_issues(path.read_text(encoding='utf-8', errors='replace'), section,
                               long_limit_for(section, Path.cwd()))

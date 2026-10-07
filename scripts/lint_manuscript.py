@@ -207,7 +207,8 @@ def lint_file(path: Path, forbidden_terms: dict[str, str]) -> list[tuple[str, Pa
         for term, preferred in forbidden_terms.items():
             if not term:
                 continue
-            if re.search(r"\b" + re.escape(term.lower()) + r"\b", lower):
+            # a hyphenated compound is its own term: forbidding "MIS" must not flag "MIS-TLIF"
+            if re.search(r"(?<![\w-])" + re.escape(term.lower()) + r"(?![\w-])", lower):
                 add_issue(issues, "TERMINOLOGY", path, line_no, f'Forbidden term "{term}"; prefer "{preferred}".')
 
         for term in OVERCLAIM_TERMS:

@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.5.1)
+# manuwright 사용자 매뉴얼 (v2.5.2)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -94,7 +94,7 @@ manuwright search fetch 31476471 34602458 --format evidence
 
 어느 값을 줄지는 저자가 정한다. 8절의 `claim-strength` 검사가 이 값을 쓴다. 칸을 비워 두면 그 항목은 검사하지 않는다.
 
-**투고 전 재점검.** `manuwright search audit` 은 PMID 나 DOI 가 있는 모든 항목을 PubMed 에서 다시 가져와 제목·제1저자·연도·저널을 대조하고, 철회(retraction)·우려 표명·정정을 표시한다. 철회됐거나 다른 논문을 가리키는 항목이 있으면 실패로 끝난다. 인터넷 연결이 필요하다. 채팅으로는 "참고문헌 다시 확인해줘".
+**투고 전 재점검.** `manuwright search audit` 은 PMID 나 DOI 가 있는 모든 항목을 PubMed 에서 다시 가져와 제목·제1저자·연도·저널을 대조하고, 철회(retraction)·우려 표명·정정을 표시한다. 철회됐거나, 다른 논문을 가리키거나, PubMed 에 없는 DOI 인 항목이 있으면 실패로 끝난다(그 DOI 는 doi.org 에서 직접 확인; PubMed 밖 저널도 여기 걸린다). PMID 도 DOI 도 없는 항목은 unchecked 로 표시된다. 인터넷 연결이 필요하다. 채팅으로는 "참고문헌 다시 확인해줘".
 
 ### 3b. 내 Obsidian 라이브러리 (선택, 권장)
 

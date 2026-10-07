@@ -1,4 +1,4 @@
-# manuwright user manual (v2.5.1)
+# manuwright user manual (v2.5.2)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -89,7 +89,7 @@ Copy the entries into `knowledge/evidence.md` and fill the summary fields from w
 
 The author decides the value. The `claim-strength` check in section 8 uses it; an entry left blank is not checked.
 
-**Recheck before submission.** `manuwright search audit` re-fetches every entry with a PMID or DOI from PubMed, compares title, first author, year and journal, and flags retractions, expressions of concern and errata. It fails when an entry is retracted or points to a different paper. It needs an internet connection. In chat: "recheck my references".
+**Recheck before submission.** `manuwright search audit` re-fetches every entry with a PMID or DOI from PubMed, compares title, first author, year and journal, and flags retractions, expressions of concern and errata. It fails when an entry is retracted, points to a different paper, or has a DOI that PubMed does not know (check that one at doi.org; journals outside PubMed land here too). Entries with neither PMID nor DOI are listed as unchecked. It needs an internet connection. In chat: "recheck my references".
 
 ### 3b. Your Obsidian library (optional, recommended)
 

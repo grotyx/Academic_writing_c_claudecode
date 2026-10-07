@@ -1,5 +1,18 @@
 # Changelog
 
+### Unreleased
+
+Fixes from a code review and a synthetic end-to-end run (new paper folder, synthetic data, real PubMed search, every stage up to the DOCX build).
+
+- `style preserve` now catches a changed sign (-1.2 -> 1.2), comparator (>=65 -> <65) and a capital-P p value (P < .001 -> P > .001); italics, P/p and the minus glyph still count as formatting.
+- `claim-strength` grades a hard-wrapped sentence as one sentence, a hedge in one clause no longer softens a claim in another ("could not be shown to cause harm, but it prevented fractures" is causal), and a folder skips the plan files.
+- `search audit` fails an entry whose DOI PubMed does not know (a made-up DOI no longer passes silently) and lists entries with neither PMID nor DOI as unchecked.
+- `style edits` run again keeps the rules already ticked or approved in chat in `Style/pending_style_rules.md`.
+- `init --refresh-rules` leaves a template checkout alone (its AGENTS.md and GEMINI.md were replaced).
+- `academic_style.py check` accepts a folder.
+- A forbidden term no longer matches inside a hyphenated compound: forbidding "MIS" flags "the MIS group", not "MIS-TLIF".
+- Superscript journals: the marker follows the period or comma with no space before it ("analyses.^1,2^").
+
 ### v1.9.2 (261007)
 
 - Manual (v2.5.1, ko and en): six new terminal images from a second run with v1.9.1 in a new paper folder: the section card that "서론 써줘" brings, the prose check after an edit, the strict-mode block, the overclaim check, the letter-blind re-review (a verdict raised only because of the letter fails, then PASS) and the response checks. They replace the matching text blocks.

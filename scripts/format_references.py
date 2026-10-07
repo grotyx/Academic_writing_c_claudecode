@@ -203,7 +203,13 @@ def convert_text(text: str, labels: dict[str, str], in_text: str | None = None) 
             if not all(i in labels for i in ids):
                 return match.group(0)
             return _js.group_label([int(labels[i]) for i in ids], in_text)
-        return GROUP_RE.sub(group, text)
+        out = GROUP_RE.sub(group, text)
+        if in_text == 'superscript':
+            # "analyses [EVID:a]." -> "analyses.^1^": no space before a superscript, and it follows
+            # a period or comma (AMA, NEJM, Lancet, Spine and the other superscript journals)
+            out = re.sub(r'[ \t]+(\^[^^\s]+\^)', r'\1', out)
+            out = re.sub(r'(\^[^^\s]+\^)([.,])', r'\2\1', out)
+        return out
 
     def repl(match: re.Match) -> str:
         evidence_id = match.group(1)

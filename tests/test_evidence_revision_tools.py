@@ -137,7 +137,7 @@ def test_evidence_audit_scores_metadata_and_flags_retractions():
     by_id = {eid: (status, score, notes) for eid, status, score, notes in rows}
     assert by_id['hamilton_2022'][:2] == ('verified', 1.0)
     assert by_id['smith_2021'][0] == 'retracted' and 'DOI 10.1000/wrong != PubMed 10.1000/right' in by_id['smith_2021'][2]
-    assert 'none_2020' not in by_id
+    assert by_id['none_2020'][0] == 'unchecked'  # listed, not silently skipped
     assert search_pubmed.audit_status(0.75) == 'partial' and search_pubmed.audit_status(0.4) == 'failed'
 
 

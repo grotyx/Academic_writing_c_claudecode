@@ -563,3 +563,14 @@ def test_refresh_rules_updates_only_agent_files(tmp_path, capsys):
     (paper / 'GEMINI.md').write_text('# x\n@WORKFLOW.md\n', encoding='utf-8')
     lifecycle.init(ENGINE, [str(paper), '--refresh-rules'])
     assert '@WORKFLOW.md' in (paper / 'GEMINI.md').read_text(encoding='utf-8')
+
+
+def test_refresh_leaves_a_template_checkout_alone(tmp_path, capsys):
+    # The template imports WORKFLOW.md from CLAUDE.md only; AGENTS.md and GEMINI.md must not be replaced either.
+    for name in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'):
+        (tmp_path / name).write_text((ENGINE / name).read_text(encoding='utf-8'), encoding='utf-8')
+    assert lifecycle.refresh_rules(ENGINE, tmp_path) == 0
+    for name in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'):
+        assert (tmp_path / name).read_text(encoding='utf-8') == (ENGINE / name).read_text(encoding='utf-8')
+        assert not (tmp_path / (name + '.bak')).exists()
+    assert 'template checkout' in capsys.readouterr().out

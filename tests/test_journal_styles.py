@@ -72,7 +72,7 @@ def test_build_groups_markers_orders_and_flags(tmp_path):
     draft = tmp_path / 'intro.md'
     draft.write_text('Claim [EVID:zed_2020] [EVID:adams_2019].\n', encoding='utf-8')
     nejm = fr.build([draft], evidence_path=evidence, style='numbered', journal='nejm')
-    assert fr.convert_text(draft.read_text(), nejm.labels, nejm.in_text) == 'Claim ^1,2^.\n'
+    assert fr.convert_text(draft.read_text(), nejm.labels, nejm.in_text) == 'Claim.^1,2^\n'
     assert nejm.incomplete_authors == []  # NEJM cuts at 3 anyway
     corr = fr.build([draft], evidence_path=evidence, style='numbered', journal='corr')
     assert corr.order == ['adams_2019', 'zed_2020'] and fr.convert_text('[EVID:adams_2019]', corr.labels, 'bracket') == '[1]'

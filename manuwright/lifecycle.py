@@ -623,12 +623,15 @@ def refresh_rules(engine, root):
     """Bring an existing paper's agent rule files up to this engine version (old copies kept as .bak)."""
     bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
     changed = []
+    # A template checkout imports WORKFLOW.md from CLAUDE.md only; its AGENTS.md and GEMINI.md are the
+    # template's own, so the whole folder is left alone when any rule file does.
+    if any('@WORKFLOW.md' in (root / n).read_text(encoding='utf-8', errors='replace')
+           for n in BOOTSTRAP_FILES if (root / n).exists()):
+        print('kept the agent rules: this folder is a template checkout; update it with `git pull` instead.')
+        return 0
     for name in BOOTSTRAP_FILES:
         target = root / name
         if target.exists() and target.read_text(encoding='utf-8') == bootstrap:
-            continue
-        if target.exists() and '@WORKFLOW.md' in target.read_text(encoding='utf-8'):
-            print(f'kept {name}: this folder is a template checkout; update it with `git pull` instead.')
             continue
         if target.exists():
             shutil.copyfile(target, target.with_name(name + '.bak'))

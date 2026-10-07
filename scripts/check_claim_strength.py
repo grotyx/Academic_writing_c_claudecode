@@ -64,21 +64,30 @@ NEGATED = re.compile(r"\b(?:not|no|failed to|neither|nor|without)\s+(?:\w+\s+){0
 ASSOCIATION = re.compile(r"\b(?:associated with|association (?:between|with)|correlated with|linked to)\b", _I)
 
 
-def sentence_level(sentence: str) -> int:
-    """0 hedged .. 3 causal: the strongest verb in the sentence. A hedge, or an explicit association
-    ("was associated with lower rates"), caps the claim at associative."""
-    sentence = NOT_A_CLAIM.sub('', sentence)  # "estimates are shown in Table 2" reports, it does not claim
-    level = next((lvl for lvl in (3, 2, 1) if VERBS[lvl].search(sentence)), 0)
-    if level > 1 and NEGATED.search(sentence):
-        rest = NEGATED.sub('', sentence)
+CLAUSE = re.compile(r"[;:]|,\s*(?=(?:but|whereas|while|although|though|yet|and)\b)|\s(?=(?:but|whereas|although)\s)", _I)
+
+
+def clause_level(clause: str) -> int:
+    """0 hedged .. 3 causal: the strongest verb in one clause. A hedge, or an explicit association
+    ("was associated with lower rates"), caps the clause at associative."""
+    level = next((lvl for lvl in (3, 2, 1) if VERBS[lvl].search(clause)), 0)
+    if level > 1 and NEGATED.search(clause):
+        rest = NEGATED.sub('', clause)
         null_result = re.search(r"\bno (?:significant |statistically significant )?(?:difference|effect|benefit|association)",
-                                sentence, _I)
+                                clause, _I)
         # the only strong verb is negated, or "showed no difference" reports a null result
         if not VERBS[3].search(rest) and (null_result or not VERBS[2].search(rest)):
             level = 1
-    if HEDGE.search(sentence) or (ASSOCIATION.search(sentence) and level < 3):
+    if HEDGE.search(clause) or (ASSOCIATION.search(clause) and level < 3):
         return min(level, 1)
     return level
+
+
+def sentence_level(sentence: str) -> int:
+    """The strongest claim among the sentence's clauses: a hedge in one clause ("X could not be shown to
+    cause harm") does not soften a claim in another ("but it prevented fractures")."""
+    sentence = NOT_A_CLAIM.sub('', sentence)  # "estimates are shown in Table 2" reports, it does not claim
+    return max(clause_level(c) for c in CLAUSE.split(sentence))
 
 
 def strength_of(entry) -> int | None:
@@ -86,31 +95,59 @@ def strength_of(entry) -> int | None:
     return ALLOWED.get(value[0]) if value else None
 
 
+def cited_sentences(text: str):
+    """(line, sentence) for every sentence that cites [EVID:...]. Sentences are split per paragraph, so a
+    hard-wrapped sentence is graded whole; the line is where its first citation sits."""
+    paragraph: list[tuple[int, str]] = []
+    for number, line in enumerate(text.splitlines() + [''], start=1):
+        if line.strip() and not line.lstrip().startswith(('#', '|')):
+            paragraph.append((number, line.strip()))
+            continue
+        if line.strip():  # a heading or table row stands alone
+            yield from _sentences_of([(number, line.strip())])
+        yield from _sentences_of(paragraph)
+        paragraph = []
+
+
+def _sentences_of(lines: list[tuple[int, str]]):
+    if not any('[EVID:' in text for _, text in lines):
+        return
+    joined, starts = '', []
+    for number, text in lines:
+        starts.append((len(joined), number))
+        joined += text + ' '
+    cursor = 0
+    for sentence in split_sentences(joined):
+        at = joined.find(sentence, cursor)
+        cursor = max(at, cursor)
+        if '[EVID:' not in sentence:
+            continue
+        cite = at + sentence.index('[EVID:') if at >= 0 else 0
+        yield max(n for start, n in starts if start <= cite), sentence
+
+
 def check(paths: list[Path], evidence: Path) -> list[tuple[Path, int, str]]:
     entries = parse_evidence_entries(evidence.read_text(encoding='utf-8'))
     findings = []
     for path in paths:
         text = strip_code_fences(path.read_text(encoding='utf-8', errors='replace'))
-        for number, line in enumerate(text.splitlines(), start=1):
-            if '[EVID:' not in line:
+        for number, sentence in cited_sentences(text):
+            ids = EVID_RE.findall(sentence)
+            strengths = [s for s in (strength_of(entries[i]) for i in ids if i in entries) if s is not None]
+            if not strengths:
                 continue
-            for sentence in split_sentences(line):
-                ids = EVID_RE.findall(sentence)
-                strengths = [s for s in (strength_of(entries[i]) for i in ids if i in entries) if s is not None]
-                if not strengths:
-                    continue
-                allowed, level = max(strengths), sentence_level(sentence)
-                wordings = [w.strip().lower() for i in ids if i in entries
-                            for w in re.split(r'[;,]', entries[i].fields.get('allowed_wording', '')) if w.strip()]
-                if any(w in sentence.lower() for w in wordings) and level < 3:
-                    continue  # written with the entry's own allowed wording
-                if level > allowed:
-                    names = {v: k for k, v in ALLOWED.items()}
-                    wording = '; '.join(entries[i].fields.get('allowed_wording', '') for i in ids if i in entries
-                                        and entries[i].fields.get('allowed_wording'))
-                    findings.append((path, number, (
-                        f'{LEVELS[level]} wording for {names[allowed]} evidence ({", ".join(ids)}): '
-                        f'"{sentence.strip()[:90]}"' + (f'; allowed wording: {wording}' if wording else ''))))
+            allowed, level = max(strengths), sentence_level(sentence)
+            wordings = [w.strip().lower() for i in ids if i in entries
+                        for w in re.split(r'[;,]', entries[i].fields.get('allowed_wording', '')) if w.strip()]
+            if any(w in sentence.lower() for w in wordings) and level < 3:
+                continue  # written with the entry's own allowed wording
+            if level > allowed:
+                names = {v: k for k, v in ALLOWED.items()}
+                wording = '; '.join(entries[i].fields.get('allowed_wording', '') for i in ids if i in entries
+                                    and entries[i].fields.get('allowed_wording'))
+                findings.append((path, number, (
+                    f'{LEVELS[level]} wording for {names[allowed]} evidence ({", ".join(ids)}): '
+                    f'"{sentence.strip()[:90]}"' + (f'; allowed wording: {wording}' if wording else ''))))
     return findings
 
 
@@ -124,7 +161,9 @@ def _main(argv: list[str] | None = None) -> int:
     parser.add_argument('files', nargs='+')
     parser.add_argument('--evidence', default='knowledge/evidence.md')
     args = parser.parse_args(argv)
-    paths = [p for f in args.files for p in (sorted(Path(f).rglob('*.md')) if Path(f).is_dir() else [Path(f)])]
+    # a folder means its manuscript files: plans map claims to sources, they do not make them
+    paths = [p for f in args.files for p in (sorted(q for q in Path(f).rglob('*.md') if not q.name.endswith('_plan.md'))
+                                             if Path(f).is_dir() else [Path(f)])]
     findings = check(paths, Path(args.evidence))
     for path, line, message in findings:
         print(f'[OVERCLAIM] {path}:{line} {message}')

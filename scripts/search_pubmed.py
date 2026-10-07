@@ -388,27 +388,34 @@ def audit_status(score):
 
 
 def audit_evidence(evidence_text, fetch=None, resolve=None):
-    """[(evidence_id, status, score, notes)] for every entry with a PMID or DOI."""
+    """[(evidence_id, status, score, notes)] for every entry. An entry that cannot be found in PubMed fails,
+    so a made-up DOI does not pass silently; one with neither PMID nor DOI is listed as unchecked."""
     sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
     from check_citations import parse_evidence_entries
 
     fetch = fetch or fetch_articles
     resolve = resolve or doi_to_pmid
     entries = parse_evidence_entries(evidence_text)
-    wanted = {}
+    wanted, missing = {}, []
     for eid, entry in entries.items():
         found = re.search(r"\d{4,9}", entry.fields.get("pmid", ""))  # "12345678 (PMCID: PMC765...)" -> first number
         pmid = found.group(0) if found else ""
         doi = _clean_doi(entry.fields.get("doi", ""))
         if not pmid and doi:
             pmid = resolve(doi) or ""
+            if not pmid:
+                missing.append((eid, "failed", 0.0, f"DOI {doi} not found in PubMed; check it at https://doi.org/{doi}"
+                                                    " (a journal outside PubMed also lands here)"))
+                continue
         if pmid:
             wanted[eid] = (pmid, doi)
+        else:
+            missing.append((eid, "unchecked", 0.0, "no PMID or DOI to check"))
     ids = sorted({p for p, _ in wanted.values()})
     articles = {}
     for start in range(0, len(ids), 200):  # efetch URLs stay short; NCBI asks for batches
         articles.update({a["pmid"]: a for a in fetch(ids[start:start + 200])})
-    rows = []
+    rows = missing
     for eid, (pmid, doi) in wanted.items():
         article = articles.get(pmid)
         if not article:
@@ -511,7 +518,7 @@ Examples:
                 print(f"{status.upper():<10} {score:4.2f}  {eid}" + (f"  ({notes})" if notes else ""))
             bad = [r for r in rows if r[1] in ("failed", "retracted")]
             print(f"\n{len(rows)} entr(y/ies) checked; {len(bad)} need attention (failed or retracted)."
-                  if rows else "No entries with a PMID or DOI to check.")
+                  if rows else "No evidence entries to check.")
             sys.exit(1 if bad else 0)
 
         if args.command == "search":
