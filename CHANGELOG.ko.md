@@ -1,5 +1,28 @@
 # 변경 이력
 
+### v1.9.0 (261007)
+
+학술 문체 모드: 초안을 쓸 때마다 알맞은 예문과 측정된 목표치를 쓰는 쪽에 주고, 써 온 문장을 검사한다.
+
+- 섹션 스타일 카드(`docs/academic_style/`): 항상 켜지는 핵심 카드와 섹션별 카드(title, abstract, introduction, methods, results, discussion, conclusion). 수사 구조(moves), 규칙, 표현집(phrasebank), 피할 표현→바꿀 표현, high-impact 임상 저널 문체의 모범 문단을 담았다. `manuwright style card <section>` 으로 출력한다.
+- SessionStart 훅이 핵심 카드를, UserPromptSubmit 훅이 섹션 작성·수정 요청("서론 써줘", "draft the Discussion", "06_discussion.md 다시 써줘")에 해당 섹션 카드를 넣는다.
+- `manuwright style learn [논문들]` 이 좋은 논문 코퍼스(내 논문, landmark, 목표 저널; PDF·DOCX·MD·TXT; 기본값은 라이브러리의 PDF)를 섹션별로 측정한다: 문장 길이(평균·SD·90 백분위), 수동태, 100단어당 we/our·hedging, 문단 길이, 여러 논문에 공통인 표현, 문장 시작 패턴, 전환어, 모범 문단. 이후 모든 카드에 들어가며, 90 백분위가 긴 문장 기준이 된다. 프로필은 `~/.manuwright/library/writing/profile/` 에만 있고 논문 폴더로 복사되지 않는다. PDF 는 `pypdf`(새 의존성) 또는 `pdftotext` 로 읽는다.
+- 문장 검사(`scripts/academic_style.py`): AI 말투 표현·단어(delve, pivotal, "it is worth noting", "plays a crucial role" 등), 끝에 붙는 ", highlighting/underscoring ..." 절, 축약형, 챗봇 잔재, 본문 굵은 글씨, Introduction/Discussion 의 목록, 너무 긴 문장, 숫자로 시작하는 문장, 수사 의문문, Furthermore/Moreover 연속, Results·Abstract 에서 추정치나 *p* 없는 "significant". 원고를 고칠 때마다 알려 주고, `manuwright lint --academic`·`python scripts/academic_style.py check` 로 직접 돌릴 수 있다.
+- `manuwright mode academic|strict|off` (또는 `config set writing-mode`, `MANUWRIGHT_WRITING_MODE`): 기본은 academic, strict 는 고위험 문장이 든 원고 쓰기를 고칠 때까지 막고, off 는 모드를 끈다. `manuwright check` 가 모드와 학습된 프로필을 보여 준다.
+- "학술적으로 바꿔줘" 자동 발동이 도구 자체에 대한 질문(프로그램, 모드, 기능, 훅, 업데이트)에는 반응하지 않는다.
+- 논문 에이전트 규칙과 manuwright 스킬이 섹션을 쓰기 전에 카드를 읽도록 안내한다. 기존 논문: `manuwright init --refresh-rules --all` (`manuwright update` 가 물어봄).
+- 측정된 목표치: `docs/academic_style/reference_profile.json` 에 2019~2022년(생성형 AI 이전) JAMA Surgery, JAMA Network Open, Lancet, BMJ, Nature 공개 라이선스 원저 33편의 문체를 담았다: 섹션별 문장 길이(평균, SD, 90·95 백분위)와 수동태, 동사·단어·전환어 빈도, 3개 이상 저널의 4편 이상에 공통인 3~4단어 표현, 출처 DOI 와 라이선스. 숫자뿐이며 논문 원문은 저장소에 없다. 모든 섹션 카드가 이 목표치를 보여 주고, 학습한 코퍼스가 없으면 95 백분위가 긴 문장 기준이 된다. NEJM·JAMA·Science 는 라이선스가 텍스트 마이닝을 허용하지 않아 제외했다.
+- 핵심 카드를 측정값으로 다시 썼다: 평이한 동사("showed" 가 "demonstrated" 의 약 5배, "used" 345회 대 "utilized" 1회), 섹션별 태(Methods 수동태 63%, Results 24%), "we" 사용은 정상, 이 저널들에 한 번도 나오지 않는 단어, Bad/Good 예문, 사실·숫자·인용을 더하거나 빼지 않았는지 보내기 전 점검. `writing_guide.md`(v0.6.0)의 "Verb Upgrades"(used → utilized, showed → demonstrated)를 측정 기반 "Verb Choice" 표로 바꾸고 Results 태 항목을 고쳤다.
+- 항상 맥락 안에(caveman·ponytail 의 아이디어): SubagentStart 훅이 서브에이전트에도 핵심 카드를 주고, 논문 폴더에서는 매 프롬프트에 한 줄 리마인더가 붙으며, "학술 모드 꺼줘", "academic mode strict", "학술 모드 켜줘" 로 대화 중에 모드를 바꾼다.
+- `manuwright style preserve <원문> <수정본>`: 문체 수정이 `[EVID:id]`, 숫자, *p* 값, Table/Figure 참조를 하나라도 바꾸면 실패한다. `/style-pass` 가 섹션마다 실행한다(style_transform_protocol v0.3.0).
+- 새 문장 검사: 중요성 부풀리기("marks a pivotal milestone"), 인용 없는 막연한 출처("many believe"), 동의어 돌려쓰기, Introduction/Discussion 의 단조로운 문장 리듬. 끝에 붙는 "-ing" 절은 중요성을 내세울 때만 고위험으로 본다. 일부 패턴은 unslop(MIT; `THIRD_PARTY_NOTICES.md`)에서 가져왔다.
+- 근거 강도: evidence.md 항목에 `Claim Strength`(speculative, observed, supported, strong)와 `Allowed Wording`을 적을 수 있다. `manuwright claim-strength drafts`(편집 후 검사에도 포함)는 인용 문장의 가장 센 동사(hedged, associative, directional, causal)가 근거가 허용하는 세기를 넘으면 알려 준다(claude-scholar 의 claim schema 아이디어). 새로 가져오는 항목에 두 필드가 들어간다.
+- 응답 편지를 가린 revision 재검토: `manuwright blind-review packet` 이 응답 편지 없이 리뷰어 코멘트, 원본·수정 섹션, diff 로 묶음을 만들고, `check` 가 코멘트별 기대치, 근거 위치가 있는 블라인드 판정, 최종 판정, 편지를 읽은 뒤 판정을 바꾼 근거, 새 문제 태그(수정이 만든 문제는 실패)를 확인한다. 이제 response_alignment 기록의 전제 조건이다(academic-research-skills 아이디어, 재구현).
+- 저자 수정에서 학습: `manuwright style edits <AI초안> <수정본>`(또는 `--git REV`)이 단어 치환과 삭제를 세어 `Style/pending_style_rules.md` 에 제안하고(P0 = 2회 이상), 저자가 체크한 규칙만 `--apply` 로 `Style/terminology.md` 에 들어가 lint 가 강제한다.
+- 근거 감사: `manuwright search audit` 이 PMID·DOI 가 있는 evidence.md 항목을 PubMed 에서 다시 가져와 일치도를 매기고(제목 0.4, 제1저자 0.3, 연도 0.2, 저널 0.1; claude-scholar 참고), PubMed 가 다른 논문으로 연결하는 DOI 는 실패로, 철회·우려 표명·정정은 표시한다.
+- 리뷰 반영(코드 리뷰와 비개발자 사용 시험): 카드·리마인더·서브에이전트 카드는 논문 폴더에서만 나온다. 대화 중 모드 전환은 짧은 명령에만 반응한다("학술 모드 꺼지면?" 같은 질문으로 꺼지지 않음). 한 문단의 AI 말투는 모두 보고하고 *MUST FIX* 와 *consider* 로 구분한다. 학습한 문체는 3편 이상일 때만 검사에 반영한다. 학술 문장 검사와 strict 는 원고 섹션에만 적용한다(참고문헌·편지·메모 제외). 오탐을 줄였다(굵은 소제목, HR/OR/Table/P value, 근거 강도 판정의 명사·형용사). `style preserve` 는 기울임 표기를 무시한다. 계획서 검사는 체크한 선택지를 인정하고 빠진 항목을 이름으로 알려 준다. `style card` 가 한국어 섹션 이름을 받는다. 도움말에 글쓰기 도구를 채팅 예시와 함께 묶었다. 오류 메시지를 쉽게 바꿨다. README 학술 문체 모드 첫머리에 "매일 이렇게 쓰세요" 5단계를 넣었다.
+- 2차 리뷰 반영: "정리", "후보", "추천", "보완" 요청에도 섹션 카드가 나온다("제목 후보 몇 개 줘"). 원고 작성이 막히면 정확한 이유를 알려 준다(몇 번째 줄의 어떤 빈칸, 승인 체크 안 됨, 비어 있는 항목, 승인 뒤 계획서 수정). 핵심 카드가 '쓰지 않는다'고 한 9개 단어(leverage, showcase, realm, underscore, intricate, paramount, seamless, holistic, meticulous)는 반드시 고칠 항목이 되어 strict 모드가 막는다. 통계 용어 "high leverage"는 예외. 독립 코드 리뷰: 쓸 수 있는 논문이 없는 학습 실행이 기존에 학습한 문체를 지우지 않는다. 수정 규칙 승인은 정확히 일치할 때만 체크한다("used" 승인이 "caused by"를 체크하지 않음). 새 논문 evidence.md 의 주석 예시를 실제 항목으로 읽지 않는다. 학습한 `Style/profile/` 폴더를 git 에서 제외하고 `init` 이 PDF·학습 프로필용 `.gitignore` 를 만든다. 근거 강도 판정이 부정문·무차이 결과("showed no difference"는 보고), 명사 "causes", "have shown"을 바르게 읽는다. 대화 중 모드 전환은 문장이 요청으로 시작할 때만 반응하고 MANUWRIGHT_WRITING_MODE 가 우선할 때 알려 준다. 문헌 검색 요청("학술 검색")과 그림·표 제목은 스타일 카드를 부르지 않는다. 없는 파일과 중복 Evidence ID 는 한 줄 오류로 알린다. "plays a key role"은 제안, "plays a crucial role"은 반드시 고칠 항목이다. "valuable insights", "promising avenue", "transformative", "foster"를 보고한다. "Fig.", "ref.", "mo."에서 문장을 자르지 않는다. 번호 붙은 소속은 숫자 시작 지적에서 뺀다. `style edits --git` 은 없는 리비전을 알려 준다.
+
 ### v1.8.30 (261006)
 
 - 새 명령 `manuwright check`: 최신 버전인지, 에이전트별 manuwright 플러그인(Claude Code·Codex: 등록 폴더와 버전, opencode: 스킬), 메인 모델(`claude` 같은 에이전트 이름은 표시), OpenRouter 검토자를 쓸 때 키, 자동 업데이트, 에이전트 규칙이 오래된 등록 논문을 한 화면에 보여 주고 ✗ 마다 고치는 명령을 알려 준다.

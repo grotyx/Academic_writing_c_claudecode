@@ -86,7 +86,7 @@ Use these exact keys so `check_gate.py --require-check <name>` can verify them:
 | `numbers` | `scripts/check_numbers.py` |
 | `logic` | Logic/redundancy verifier |
 | `revision_claims` | `scripts/check_revision_claims.py` |
-| `response_alignment` | reviewer response vs manuscript alignment verifier |
+| `response_alignment` | letter-blind re-review (`manuwright blind-review check`) passed, then the reviewer response vs manuscript alignment verifier |
 
 ## Cross-Check (the ledger must match reality)
 

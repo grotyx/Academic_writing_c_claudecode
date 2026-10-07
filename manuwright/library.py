@@ -4,7 +4,8 @@
   profile/authors.md                 team: authors, affiliations, ORCID, funding and boilerplate text
   writing/                           your writing style, same layout as a paper's Style/ folder:
                                      own/ landmark/ target_journal/ extracts, terminology.md, style_spec.md,
-                                     PDF/<kind>/ sources (never copied into papers)
+                                     PDF/<kind>/ sources and profile/ (the style learned from them by
+                                     `manuwright style learn`); neither is copied into papers
 
 `manuwright init` copies profile and writing style into each new paper; `manuwright target` offers the
 saved Word styles. Extracting a writing style from your papers is LLM work: your agent does it with the
@@ -263,8 +264,8 @@ def copy_into_paper(paper):
     if writing().is_dir():
         for path in writing().rglob('*.md'):
             relative = path.relative_to(writing())
-            if relative.parts[0] == 'PDF':
-                continue  # sources stay in the library (copyright, size)
+            if relative.parts[0] in ('PDF', 'profile'):
+                continue  # sources and the learned profile (it quotes them) stay in the library
             target = paper / 'Style' / relative
             if not target.exists():
                 target.parent.mkdir(parents=True, exist_ok=True)

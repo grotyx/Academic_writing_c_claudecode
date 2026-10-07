@@ -1,5 +1,28 @@
 # 变更记录
 
+### v1.9.0 (261007)
+
+学术文体模式：每次起草时都把合适的范例和量化目标交给写作者，并检查写出的文字。
+
+- 章节风格卡片（`docs/academic_style/`）：一张始终启用的核心卡片，以及每个章节一张卡片（title、abstract、introduction、methods、results、discussion、conclusion），包含修辞结构（moves）、规则、表达库、应避免→建议的表达，以及以高影响力临床期刊文体写成的范例段落。用 `manuwright style card <section>` 显示。
+- SessionStart 钩子注入核心卡片；当你要求起草或改写某一章节（如 "draft the Discussion"）时，UserPromptSubmit 钩子注入该章节卡片。
+- `manuwright style learn [论文]` 按章节测量一组好论文（你自己的、经典论文、目标期刊；PDF、DOCX、MD、TXT；默认是文献库中的 PDF）：句长（均值、SD、第 90 百分位）、被动语态、每 100 词的 we/our 与 hedging、段落长度、多篇论文共有的表达、句首模式、过渡词和范例段落。此后每张卡片都包含这些内容，第 90 百分位作为长句上限。该档案只保存在 `~/.manuwright/library/writing/profile/`，不会复制到论文文件夹。读取 PDF 需要 `pypdf`（新依赖）或 `pdftotext`。
+- 文字检查（`scripts/academic_style.py`）：AI 腔表达和词汇（delve、pivotal、"it is worth noting"、"plays a crucial role" 等）、句末的 ", highlighting/underscoring ..." 从句、缩写形式、聊天残留、正文加粗、Introduction/Discussion 中的列表、过长句子、以数字开头的句子、反问句、连续使用 Furthermore/Moreover，以及 Results 和 Abstract 中没有估计值或 *p* 的 "significant"。每次编辑稿件后报告，也可用 `manuwright lint --academic` 和 `python scripts/academic_style.py check` 直接运行。
+- `manuwright mode academic|strict|off`（或 `config set writing-mode`、`MANUWRIGHT_WRITING_MODE`）：默认 academic；strict 在改写之前阻止写入含高严重度问题的稿件文字；off 关闭该模式。`manuwright check` 显示模式和已学习的档案。
+- "改成学术风格" 的自动触发不再对关于工具本身的问题（程序、模式、功能、钩子、更新）作出反应。
+- 论文代理规则和 manuwright 技能会提示代理在起草前读取章节卡片。已有论文：`manuwright init --refresh-rules --all`（`manuwright update` 会询问）。
+- 量化目标：`docs/academic_style/reference_profile.json` 收录 2019–2022 年（生成式 AI 之前）JAMA Surgery、JAMA Network Open、Lancet、BMJ 和 Nature 的 33 篇开放许可原创研究的文体：各章节句长（均值、SD、第 90 和第 95 百分位）与被动语态、动词/词汇/过渡词频率、在 3 个以上期刊的 4 篇以上论文中共有的 3–4 词表达，以及来源 DOI 和许可证。仅含数字，仓库中没有论文原文。每张章节卡片都显示这些目标；没有学习语料时，第 95 百分位作为长句上限。NEJM、JAMA 和 Science 的许可不允许文本挖掘，因此未纳入。
+- 根据测量结果重写核心卡片：平实动词（"showed" 约为 "demonstrated" 的 5 倍，"used" 345 次而 "utilized" 1 次）、按章节的语态（Methods 被动 63%，Results 24%）、"we" 属正常用法、这些期刊中从未出现的词、Bad/Good 例句，以及发送前检查是否增删了事实、数字或引用。`writing_guide.md`（v0.6.0）用基于测量的 "Verb Choice" 表替换 "Verb Upgrades"，并修正 Results 语态一行。
+- 始终在上下文中（借鉴 caveman 和 ponytail）：SubagentStart 钩子把核心卡片交给子代理；在论文文件夹中每次提问附一行提醒；可用 "academic mode strict" 等在对话中切换模式。
+- `manuwright style preserve <旧> <新>`：文体改写若改变任何 `[EVID:id]`、数字、*p* 值或 Table/Figure 引用即失败；`/style-pass` 对每个章节运行（style_transform_protocol v0.3.0）。
+- 新的文字检查：夸大重要性（"marks a pivotal milestone"）、无引用的模糊归属（"many believe"）、同义词轮换、Introduction/Discussion 中单调的句子节奏。句末 "-ing" 从句仅在强调重要性时为高严重度。部分模式改编自 unslop（MIT；`THIRD_PARTY_NOTICES.md`）。
+- 证据强度：evidence.md 条目可记录 `Claim Strength`（speculative、observed、supported、strong）和 `Allowed Wording`。`manuwright claim-strength drafts`（编辑后检查也包含）在引用句最强的动词（hedged、associative、directional、causal）超出证据允许的强度时报告（借鉴 claude-scholar 的 claim schema）。新导入的条目包含这两个字段。
+- 隐藏回复信的修订复审：`manuwright blind-review packet` 在不含回复信的情况下打包审稿意见、原始与修订章节及 diff；`check` 要求每条意见的预期、带定位的盲审判定、最终判定、阅读回复信后改变判定的依据，以及标记的新问题（修订引入的退化即失败）。现为记录 response_alignment 的前提（借鉴 academic-research-skills，重新实现）。
+- 从作者修改中学习：`manuwright style edits <AI草稿> <修改稿>`（或 `--git REV`）统计词语替换和删除，写入 `Style/pending_style_rules.md`（P0 = 2 次以上）；只有作者勾选的规则才会通过 `--apply` 进入 `Style/terminology.md` 并由 lint 强制执行。
+- 证据审核：`manuwright search audit` 重新从 PubMed 获取带 PMID 或 DOI 的 evidence.md 条目并评分（标题 0.4、第一作者 0.3、年份 0.2、期刊 0.1；参考 claude-scholar），DOI 指向其他记录时判为失败，并标记撤稿、关注声明和勘误。
+- 审查修复（代码审查和非开发者试用）：卡片、提醒和子代理卡片仅在论文文件夹中出现；对话中的模式切换只响应简短的命令（提问不会关闭模式）；段落中的 AI 腔全部报告，并区分 *MUST FIX* 与 *consider*；学习的文体需 3 篇以上论文才影响检查；学术文字检查和 strict 只作用于稿件章节（不含参考文献、回复信和笔记）；减少误报（加粗小标题、HR/OR/Table/P value、证据强度判定中的名词和形容词）；`style preserve` 忽略斜体；计划检查认可已勾选的选项并按名称指出缺失项；`style card` 接受韩文章节名；帮助中将写作工具与对话示例归为一组；错误信息更易懂；README 增加五步日常用法。
+- 第二轮审查修复："정리"、"후보"、"추천"、"보완" 请求也会显示章节卡片；起草被阻止时给出确切原因（哪一行的哪个占位符、未勾选批准、哪些项目为空、批准后计划被修改）；核心卡片称为从不使用的 9 个词（leverage、showcase、realm、underscore、intricate、paramount、seamless、holistic、meticulous）改为必须修改，strict 模式会阻止；统计术语 "high leverage" 除外。 独立代码审查：找不到可用论文的学习不再覆盖之前学到的文体；批准修改规则需精确匹配（批准 "used" 不再勾选 "caused by"）；新论文 evidence.md 中注释掉的示例不再被读作条目；学习得到的 `Style/profile/` 不纳入 git，`init` 会为 PDF 和学习档案写入 `.gitignore`；证据强度判定正确处理否定句和无差异结果（"showed no difference" 视为报告）、名词 "causes" 和 "have shown"；对话中的模式切换仅在句首即为请求时生效，并在 MANUWRIGHT_WRITING_MODE 优先时说明；文献检索请求（"학술 검색"）和图表标题不再触发风格卡片；缺失文件和重复 Evidence ID 给出一行错误；"plays a key role" 为建议，"plays a crucial role" 为必须修改；报告 "valuable insights"、"promising avenue"、"transformative"、"foster"；"Fig."、"ref."、"mo." 不再断句；带编号的单位不再算数字开头；`style edits --git` 会指出不存在的修订版本。
+
 ### v1.8.30 (261006)
 
 - 新命令 `manuwright check`：在一屏中显示是否为最新版本、各代理的 manuwright 插件（Claude Code 和 Codex：登记文件夹与版本；opencode：技能）、主模型（会标出 `claude` 这类代理名称）、使用 OpenRouter 评审者时的密钥、自动更新，以及代理规则过期的已登记论文，并为每个 ✗ 给出修复命令。

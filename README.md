@@ -79,8 +79,28 @@ reason: number not found in results CSV files
 | Every reported number exists in `results/*.csv` | `manuwright numbers` and result bindings |
 | Reviews go stale when a source, plan or the engine changes | sha256 snapshots in every receipt |
 | Submission needs human signoff, AI-use disclosure and a completed checklist | `manuwright verify --profile submission` |
+| Prose reads like a high-impact clinical journal, not like a chatbot | Academic writing mode: style cards at every draft, prose checks after every edit (`strict` blocks) |
 
 The engine never invents approvals or reviews. It records decisions that humans made.
+
+## Academic writing mode
+
+**Day to day (just ask in chat):**
+1. "Write the Introduction" / "서론 써줘": the agent loads the section's style card and drafts in that register.
+2. When a check reports something, say "fix it". *must fix* items are AI-register slips; *consider* items are suggestions you may keep.
+3. Once: put 3 or more good papers (yours or the target journal's, PDF) in a folder and say "learn my style from this folder".
+4. After you edit a draft yourself: "learn from my edits". You approve each proposed rule in chat.
+5. Before submission: "check for overclaiming" and "re-check the references" (retractions, wrong DOIs). For a revision: "do the blind re-review".
+`strict` mode ("academic mode strict") refuses AI-style sentences outright; the default only reports them.
+
+A model cannot be fine-tuned from your laptop, so manuwright does the next best thing at every write: it puts the right examples and measured targets in front of the writer and checks what comes back.
+
+- **Section cards.** For each section (title, abstract, introduction, methods, results, discussion, conclusion) a card gives the rhetorical moves, rules, a phrasebank and model paragraphs written in the register of high-impact clinical journals. The core card loads at every session; the section card loads when you ask to draft that section ("서론 써줘", "draft the Discussion") or with `manuwright style card <section>`.
+- **Measured, not guessed.** The targets on every card come from 33 openly licensed original-research papers in JAMA Surgery, JAMA Network Open, Lancet, BMJ and Nature, published 2019-2022 (before generative-AI drafting): sentence length and passive voice per section, how often each verb and transition appears, and phrasing shared across the journals. Only the numbers ship (`docs/academic_style/reference_profile.json`); the papers stay off GitHub. One finding: "showed" outnumbers "demonstrated" about 5 to 1, and "used" appeared 345 times against "utilized" once.
+- **Always in context.** The card is re-injected at session start and after compaction, given to subagents, and restated in one line on every prompt inside a paper folder. Switch it from the chat: "학술 모드 꺼줘", "academic mode strict".
+- **Your corpus.** `manuwright style learn <papers>` measures a set of good papers (your own, landmark papers, recent papers from the target journal; PDF, DOCX, MD or TXT): sentence length, passive voice, hedging, signature phrases, typical openers, and model paragraphs per section. Every card then carries those targets and paragraphs. The profile stays in your personal library and is never copied into a paper.
+- **Prose checks.** After each edit to a manuscript section, AI-register phrases (delve, pivotal, "it is worth noting", a trailing ", highlighting ..."), contractions, bold in running text, overlong sentences, "significant" without statistics and similar slips are reported with the line. `manuwright mode strict` blocks the write instead until the sentences are rewritten; `manuwright mode off` turns the mode off.
+- **Rewrites keep the facts.** `manuwright style preserve old.md new.md` fails when a style rewrite changed any `[EVID:id]`, number, *p* value or Table/Figure reference; `/style-pass` runs it on every section.
 
 ## Install
 
@@ -95,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -121,6 +141,12 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright init [folder]` | Start a paper folder: manifest, plan templates (unapproved), evidence registry, agent rules |
 | `manuwright rules [keyword]` | Print the workflow rules, or one section |
 | `manuwright check` | One report: version, agent plugins, main model, key, auto-update, papers to refresh, each with its fix |
+| `manuwright mode academic\|strict\|off` | Academic writing mode: style cards + prose checks after each edit; `strict` blocks writes with AI-register prose |
+| `manuwright style learn <papers>` / `style card <section>` | Measure a corpus of good papers (your style, landmark, target journal) / print a section's style card |
+| `manuwright claim-strength drafts` | Flag cited sentences worded more strongly than the evidence's `Claim Strength` (speculative, observed, supported, strong) |
+| `manuwright search audit` | Re-check every evidence.md entry against PubMed: weighted title/author/year/journal match, DOI mismatch, retractions, expressions of concern, errata |
+| `manuwright blind-review packet` / `check` | Revision re-review with the response letter withheld until the verdicts are recorded (no persuasion by the letter) |
+| `manuwright style edits <ai> <edited>` / `--apply` | Learn rules from how you edited AI drafts; only the rules you tick reach `Style/terminology.md` |
 | `manuwright guide [name ...]` | List the engine guides the rules cite (`docs/<name>.md`), or print them |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | Run every check for that stage |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | Run one checker on one file |

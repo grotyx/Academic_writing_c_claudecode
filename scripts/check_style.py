@@ -27,7 +27,8 @@ HEDGES = [
     "relatively", "somewhat", "tend to", "tends to", "probable",
 ]
 SECTIONS = ["abstract", "introduction", "methods", "results", "discussion", "conclusion"]
-ABBREV = ["vs.", "dr.", "fig.", "no.", "i.e.", "e.g.", "et al.", "cf.", "approx."]
+ABBREV = ["vs.", "dr.", "fig.", "figs.", "no.", "i.e.", "e.g.", "et al.", "cf.", "approx.", "ref.", "refs.",
+          "yr.", "yrs.", "mo.", "mos.", "wk.", "wks."]
 
 WORD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9'\-]*")
 CITATION_RE = re.compile(r"\[EVID:[^\]]+\]|\[\d+(?:[-,]\s*\d+)*\]")
@@ -49,7 +50,8 @@ def _strip_markup(text: str) -> str:
 def split_sentences(text: str) -> list[str]:
     protected = re.sub(r"(\d)\.(\d)", r"\1<dot>\2", text)
     for ab in ABBREV:
-        protected = re.sub(re.escape(ab), ab.replace(".", "<dot>"), protected, flags=re.I)
+        # keep the writer's case ("Fig." stays "Fig.") and match whole words only ("mo." is not "demo.")
+        protected = re.sub(r"\b" + re.escape(ab), lambda m: m.group(0).replace(".", "<dot>"), protected, flags=re.I)
     parts = re.split(r"(?<=[.!?])\s+", protected)
     return [p.replace("<dot>", ".").strip() for p in parts if p.strip()]
 

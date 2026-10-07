@@ -12,7 +12,7 @@
 - **統計分析ワークフロー** — Python スクリプトの自動生成
 - **品質管理手順** — 最低3ラウンドの検証（6ラウンド推奨）＋ Revision QC 再実行ワークフロー
 - **研究タイプ別チェックリスト** — STROBE、CONSORT、PRISMA、CARE 等
-- **学術執筆スタイルシステム** — Style Reference Tables（Voice/Tense、Transition、Verb Upgrades、Common Corrections、Statistical Notation、Hedging）＋ Writing Principles（Clarity/Conciseness/Objectivity/Consistency）
+- **学術執筆スタイルシステム** — Style Reference Tables（Voice/Tense、Transition、Verb Choice、Common Corrections、Statistical Notation、Hedging）＋ Writing Principles（Clarity/Conciseness/Objectivity/Consistency）
 - **確実なスタイル変換**（`/style-pass`）— 粗削りの草稿を、束ねられたジャーナルスタイルへ変換する：プロジェクトごとの Style Spec（選んだ手本 1 つ）＋セクション単位の変換＋独立した Style-Conformance verifier（auto-fix ループ）＋計測可能な `scripts/check_style.py` ゲート（文長、引用密度、hedging）＋「make it academic」意図での自動トリガー（`docs/style_transform_protocol.md`）
 - **引用品質管理** — Claim→Citation Mapping（執筆前に主要 claim と根拠文献を対応付け）
 - **Style アンカーライブラリ**（`Style/`）— own、landmark、target-journal アンカーで用語・トーン・論証構造を管理

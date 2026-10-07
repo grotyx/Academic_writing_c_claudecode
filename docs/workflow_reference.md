@@ -1,4 +1,4 @@
-# Workflow Reference (v1.0.3)
+# Workflow Reference (v1.1.0)
 
 Reference catalogs moved out of `WORKFLOW.md` (v1.7.5) so the always-loaded rules stay short. `WORKFLOW.md` remains authoritative for rules; this file is a lookup index. Commands use `python`; on Windows substitute `py` if needed.
 
@@ -198,6 +198,14 @@ project/
 | `Read writing guide for [section]` | Load section-specific guidance |
 | `manuwright rules [keyword]` | Print the workflow rules (or one section); ends with the guides that text cites |
 | `manuwright check` | Health report after an update or setup: what is current, and the fix for each ✗ |
+| `manuwright mode academic\|strict\|off` | Academic writing mode: style cards + prose findings after each edit; strict blocks high-severity prose |
+| `manuwright style card <section>` | Section style card (moves, rules, phrasebank, model paragraphs, learned style); load before drafting a section |
+| `manuwright style learn <papers>` | Measure a corpus of good papers (own, landmark, target journal) so every card carries its style |
+| `manuwright style preserve <old> <new>` | After a style rewrite: every [EVID:id], number, p value and Table/Figure reference unchanged |
+| `manuwright style edits <ai> <edited>` / `--git REV` / `--apply` | Learn rules from the author's edits; the author ticks pending rules before they reach Style/terminology.md |
+| `manuwright claim-strength drafts` | Cited sentences worded more strongly than the evidence's Claim Strength |
+| `manuwright blind-review packet ...` / `check verdicts.md` | Letter-blind re-review of a revision before recording response_alignment |
+| `manuwright search audit` | evidence.md entries vs PubMed: metadata match, DOI mismatch, retraction, expression of concern, erratum |
 | `manuwright guide [name ...]` | Print engine guides cited as `docs/<name>.md` (a paper folder has no `docs/`); no name lists them |
 
 ### Knowledge Graph (medical-kag MCP)
@@ -259,6 +267,7 @@ project/
 | `Check number consistency` | `python scripts/check_numbers.py drafts/05_results.md drafts/table_1.md --results results` 실행 |
 | `Check abstract` | `python scripts/check_abstract.py drafts/04_methods.md drafts/05_results.md drafts/table_1.md drafts/table_2.md --abstract drafts/02_abstract.md` 실행 (abstract 수치가 본문에 다 있는지; Rule 3 일관성) |
 | `Check style` | `python scripts/check_style.py check drafts/05_results.md --spec drafts/style_spec.md` 실행 (Style Spec 대비 측정형 게이트) |
+| `Check academic prose` | `python scripts/academic_style.py check drafts/06_discussion.md` 또는 `manuwright lint --academic drafts` 실행 (AI 말투·축약형·긴 문장 등) |
 | `Verify references` | `python scripts/check_citations.py drafts/03_introduction.md --evidence knowledge/evidence.md` 실행 |
 | `Check coverage` | `python scripts/check_coverage.py drafts/03_introduction.md drafts/06_discussion.md --evidence knowledge/evidence.md --draft-plan drafts/draft_plan.md` 실행 (과잉인용·미등록인용·인용밀도 리포트; uncited는 중립. 기본 advisory, `--fail-on-over-citation`·`--fail-on-unknown`로 게이트화, `--max-citations-per-sentence N`로 임계 조정) |
 | `Check phase gate` | `python scripts/check_gate.py review/gates/phase_04_draft.GATE.md --artifact drafts/05_results.md --require-check constraint --require-check citation --require-check numbers --require-check logic --verify-hash artifact=drafts/05_results.md --cross-check citation=drafts/05_results.md --cross-check numbers=drafts/05_results.md --results results` 실행 (freshness + ledger↔live cross-check 포함) |

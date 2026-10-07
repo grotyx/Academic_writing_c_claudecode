@@ -1,5 +1,28 @@
 # 変更履歴
 
+### v1.9.0 (261007)
+
+学術文体モード：草稿を書くたびに適切な例文と測定済みの目標値を書き手に渡し、書かれた文章を検査する。
+
+- セクションスタイルカード（`docs/academic_style/`）：常時有効なコアカードと、セクションごとのカード（title、abstract、introduction、methods、results、discussion、conclusion）。修辞構造（moves）、規則、表現集、避ける表現→推奨表現、high-impact 臨床誌の文体による模範段落を収録。`manuwright style card <section>` で表示する。
+- SessionStart フックがコアカードを、UserPromptSubmit フックがセクションの執筆・書き直しの依頼（「Discussion を書いて」、"draft the Discussion"）に対応するセクションカードを注入する。
+- `manuwright style learn [論文]` が良い論文のコーパス（自分の論文、landmark、投稿先誌。PDF・DOCX・MD・TXT。既定はライブラリの PDF）をセクションごとに測定する：文長（平均・SD・90 パーセンタイル）、受動態、100 語あたりの we/our と hedging、段落長、複数の論文に共通する表現、文頭パターン、接続語、模範段落。以後すべてのカードに含まれ、90 パーセンタイルが長文の上限になる。プロファイルは `~/.manuwright/library/writing/profile/` にのみ保存され、論文フォルダにはコピーされない。PDF は `pypdf`（新しい依存関係）または `pdftotext` で読む。
+- 文章チェック（`scripts/academic_style.py`）：AI 的な表現と単語（delve、pivotal、"it is worth noting"、"plays a crucial role" など）、文末の ", highlighting/underscoring ..." 節、短縮形、チャットの残骸、本文の太字、Introduction/Discussion の箇条書き、長すぎる文、数字で始まる文、修辞疑問、Furthermore/Moreover の連続、Results と Abstract で推定値や *p* のない "significant"。原稿の編集ごとに報告し、`manuwright lint --academic` と `python scripts/academic_style.py check` で直接実行できる。
+- `manuwright mode academic|strict|off`（または `config set writing-mode`、`MANUWRIGHT_WRITING_MODE`）：既定は academic。strict は高重要度の指摘を含む原稿の書き込みを書き直すまでブロックし、off はモードを無効にする。`manuwright check` がモードと学習済みプロファイルを表示する。
+- 「学術的に直して」の自動起動は、ツール自体についての質問（プログラム、モード、機能、フック、更新）には反応しない。
+- 論文のエージェント規則と manuwright スキルが、執筆前にセクションカードを読むよう指示する。既存の論文：`manuwright init --refresh-rules --all`（`manuwright update` が確認する）。
+- 測定済みの目標値：`docs/academic_style/reference_profile.json` に、2019〜2022 年（生成 AI 以前）の JAMA Surgery、JAMA Network Open、Lancet、BMJ、Nature の公開ライセンス原著 33 本の文体を収録した：セクションごとの文長（平均、SD、90・95 パーセンタイル）と受動態、動詞・単語・接続語の頻度、3 誌以上の 4 本以上に共通する 3〜4 語の表現、出典 DOI とライセンス。数値のみで、論文本文はリポジトリにない。すべてのセクションカードがこの目標値を表示し、学習済みコーパスがなければ 95 パーセンタイルが長文の上限になる。NEJM・JAMA・Science はライセンスがテキストマイニングを認めないため除外した。
+- コアカードを測定値で書き直した：平易な動詞（"showed" は "demonstrated" の約 5 倍、"used" 345 回に対し "utilized" 1 回）、セクションごとの態（Methods 受動態 63%、Results 24%）、"we" は通常、これらの誌に一度も出ない語、Bad/Good 例文、事実・数値・引用を足し引きしていないかの送信前チェック。`writing_guide.md`（v0.6.0）の "Verb Upgrades" を測定に基づく "Verb Choice" 表に置き換え、Results の態の行を修正した。
+- 常に文脈の中に（caveman・ponytail のアイデア）：SubagentStart フックがサブエージェントにもコアカードを渡し、論文フォルダではプロンプトごとに 1 行のリマインダーを付け、"academic mode strict" などでチャットからモードを切り替える。
+- `manuwright style preserve <旧> <新>`：文体の書き直しで `[EVID:id]`、数値、*p* 値、Table/Figure 参照が一つでも変わると失敗する。`/style-pass` がセクションごとに実行する（style_transform_protocol v0.3.0）。
+- 新しい文章チェック：重要性の誇張（"marks a pivotal milestone"）、引用のない曖昧な帰属（"many believe"）、同義語の言い換え、Introduction/Discussion の単調な文のリズム。文末の "-ing" 節は重要性を強調する場合のみ高重要度。一部のパターンは unslop（MIT；`THIRD_PARTY_NOTICES.md`）から採用した。
+- 根拠の強さ：evidence.md の項目に `Claim Strength`（speculative、observed、supported、strong）と `Allowed Wording` を記録できる。`manuwright claim-strength drafts`（編集後チェックにも含む）は、引用文の最も強い動詞（hedged、associative、directional、causal）が根拠の許す強さを超えると報告する（claude-scholar の claim schema のアイデア）。新規取り込み項目に 2 つの欄が入る。
+- 回答書を伏せた revision 再査読：`manuwright blind-review packet` が回答書なしでレビュアーコメント、元と修正後のセクション、diff をまとめ、`check` がコメントごとの期待値、根拠位置付きのブラインド判定、最終判定、回答書を読んだ後に判定を変えた根拠、新しい問題のタグ（修正による退行は失敗）を確認する。response_alignment 記録の前提となった（academic-research-skills のアイデア、再実装）。
+- 著者の修正から学習：`manuwright style edits <AI草稿> <修正版>`（または `--git REV`）が語の置換と削除を数えて `Style/pending_style_rules.md` に提案し（P0 = 2 回以上）、著者がチェックした規則だけが `--apply` で `Style/terminology.md` に入り lint が強制する。
+- 根拠の監査：`manuwright search audit` が PMID・DOI のある evidence.md 項目を PubMed から再取得して一致度を評価し（タイトル 0.4、筆頭著者 0.3、年 0.2、誌名 0.1；claude-scholar 参考）、別の論文を指す DOI を失敗とし、撤回・懸念表明・訂正を表示する。
+- レビュー反映（コードレビューと非開発者による試用）：カード・リマインダー・サブエージェントカードは論文フォルダ内でのみ表示。チャットでのモード切替は短い命令にのみ反応（質問では切り替わらない）。段落内の AI 的表現をすべて報告し *MUST FIX* と *consider* に区別。学習した文体は 3 本以上で初めてチェックに反映。学術文チェックと strict は原稿セクションのみ（参考文献・回答書・メモは対象外）。誤検出を削減（太字の小見出し、HR/OR/Table/P value、根拠の強さ判定の名詞・形容詞）。`style preserve` は斜体を無視。計画書チェックはチェック済みの選択肢を認め、不足項目を名前で表示。`style card` が韓国語のセクション名も受け付ける。ヘルプに執筆ツールをチャット例と共にまとめた。エラーメッセージを平易に。README に日常の使い方 5 ステップを追加。
+- 2 回目のレビュー反映："정리"、"후보"、"추천"、"보완" の依頼でもセクションカードを表示。原稿作成がブロックされたとき正確な理由を表示（何行目のどのプレースホルダー、承認未チェック、空の項目、承認後の計画書変更）。コアカードが「使わない」とする 9 語（leverage、showcase、realm、underscore、intricate、paramount、seamless、holistic、meticulous）は必須修正となり strict モードでブロック。統計用語 "high leverage" は除外。 独立コードレビュー：使える論文がない学習実行は以前に学習した文体を上書きしない。修正規則の承認は完全一致のみ（"used" の承認で "caused by" がチェックされない）。新しい論文の evidence.md のコメント例を項目として読まない。学習した `Style/profile/` を git 対象外にし、`init` が PDF と学習プロファイル用の `.gitignore` を作る。根拠の強さ判定が否定文・差なしの結果（"showed no difference" は報告）、名詞 "causes"、"have shown" を正しく扱う。チャットのモード切替は文頭が依頼のときのみ反応し、MANUWRIGHT_WRITING_MODE が優先される場合は伝える。文献検索の依頼（"학술 검색"）と図表のタイトルはスタイルカードを呼ばない。存在しないファイルと重複 Evidence ID は 1 行のエラー。"plays a key role" は提案、"plays a crucial role" は必須修正。"valuable insights"、"promising avenue"、"transformative"、"foster" を報告。"Fig."、"ref."、"mo." で文を区切らない。番号付き所属は数字始まりの指摘から除外。`style edits --git` は存在しないリビジョンを知らせる。
+
 ### v1.8.30 (261006)
 
 - 新コマンド `manuwright check`：最新バージョンか、エージェントごとの manuwright プラグイン（Claude Code・Codex：登録フォルダとバージョン、opencode：スキル）、メインモデル（`claude` のようなエージェント名は指摘）、OpenRouter レビュアー使用時のキー、自動更新、エージェント規則が古い登録済み論文を 1 画面に表示し、✗ ごとに直すコマンドを示す。

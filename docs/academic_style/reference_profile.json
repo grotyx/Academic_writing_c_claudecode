@@ -1,0 +1,825 @@
+{
+ "description": "Measured style of openly licensed original research in high-impact medical and surgical journals, published 2019-2022 (before generative-AI drafting). Aggregate numbers and generic multi-paper phrases only; no text from the papers is stored.",
+ "corpus": {
+  "JAMA Surgery": 6,
+  "Nature": 5,
+  "Lancet": 8,
+  "BMJ": 6,
+  "JAMA Network Open": 8
+ },
+ "total_words": 179342,
+ "overall": {
+  "abstract": {
+   "documents": 33,
+   "sentences": 590,
+   "mean_len": 24.4,
+   "sd_len": 11.7,
+   "p90_len": 40,
+   "p95_len": 45,
+   "over40_pct": 9.8,
+   "passive_pct": 37,
+   "we_our_per_100w": 0.3,
+   "hedges_per_100w": 0.33
+  },
+  "introduction": {
+   "documents": 33,
+   "sentences": 1034,
+   "mean_len": 26.9,
+   "sd_len": 12.5,
+   "p90_len": 43,
+   "p95_len": 49,
+   "over40_pct": 12.2,
+   "passive_pct": 31,
+   "we_our_per_100w": 0.74,
+   "hedges_per_100w": 0.4
+  },
+  "methods": {
+   "documents": 33,
+   "sentences": 2802,
+   "mean_len": 23.2,
+   "sd_len": 12.8,
+   "p90_len": 40,
+   "p95_len": 48,
+   "over40_pct": 9.7,
+   "passive_pct": 63,
+   "we_our_per_100w": 0.45,
+   "hedges_per_100w": 0.12
+  },
+  "results": {
+   "documents": 28,
+   "sentences": 1574,
+   "mean_len": 21.8,
+   "sd_len": 14.4,
+   "p90_len": 42,
+   "p95_len": 49,
+   "over40_pct": 11.1,
+   "passive_pct": 24,
+   "we_our_per_100w": 0.14,
+   "hedges_per_100w": 0.22
+  },
+  "discussion": {
+   "documents": 32,
+   "sentences": 1293,
+   "mean_len": 27.9,
+   "sd_len": 12.6,
+   "p90_len": 44,
+   "p95_len": 51,
+   "over40_pct": 13.7,
+   "passive_pct": 30,
+   "we_our_per_100w": 0.84,
+   "hedges_per_100w": 0.86
+  },
+  "conclusion": {
+   "documents": 11,
+   "sentences": 65,
+   "mean_len": 26.7,
+   "sd_len": 12.4,
+   "p90_len": 42,
+   "p95_len": 49,
+   "over40_pct": 13.8,
+   "passive_pct": 40,
+   "we_our_per_100w": 0.4,
+   "hedges_per_100w": 0.92
+  }
+ },
+ "families": {
+  "JAMA Surgery": {
+   "abstract": {
+    "documents": 6,
+    "sentences": 116,
+    "mean_len": 25.1,
+    "sd_len": 12.4,
+    "p90_len": 41,
+    "p95_len": 48,
+    "over40_pct": 11.2,
+    "passive_pct": 31,
+    "we_our_per_100w": 0.07,
+    "hedges_per_100w": 0.24
+   },
+   "introduction": {
+    "documents": 6,
+    "sentences": 81,
+    "mean_len": 26.0,
+    "sd_len": 10.8,
+    "p90_len": 41,
+    "p95_len": 46,
+    "over40_pct": 12.3,
+    "passive_pct": 40,
+    "we_our_per_100w": 0.43,
+    "hedges_per_100w": 0.24
+   },
+   "methods": {
+    "documents": 6,
+    "sentences": 361,
+    "mean_len": 20.5,
+    "sd_len": 11.5,
+    "p90_len": 34,
+    "p95_len": 41,
+    "over40_pct": 5.5,
+    "passive_pct": 49,
+    "we_our_per_100w": 0.43,
+    "hedges_per_100w": 0.05
+   },
+   "results": {
+    "documents": 6,
+    "sentences": 353,
+    "mean_len": 21.1,
+    "sd_len": 13.6,
+    "p90_len": 39,
+    "p95_len": 48,
+    "over40_pct": 9.9,
+    "passive_pct": 30,
+    "we_our_per_100w": 0.16,
+    "hedges_per_100w": 0.23
+   },
+   "discussion": {
+    "documents": 6,
+    "sentences": 216,
+    "mean_len": 27.1,
+    "sd_len": 12.7,
+    "p90_len": 42,
+    "p95_len": 53,
+    "over40_pct": 11.6,
+    "passive_pct": 29,
+    "we_our_per_100w": 0.86,
+    "hedges_per_100w": 0.87
+   }
+  },
+  "Nature": {
+   "abstract": {
+    "documents": 5,
+    "sentences": 93,
+    "mean_len": 23.8,
+    "sd_len": 9.6,
+    "p90_len": 37,
+    "p95_len": 40,
+    "over40_pct": 5.4,
+    "passive_pct": 28,
+    "we_our_per_100w": 0.72,
+    "hedges_per_100w": 0.5
+   },
+   "introduction": {
+    "documents": 5,
+    "sentences": 558,
+    "mean_len": 25.6,
+    "sd_len": 10.4,
+    "p90_len": 39,
+    "p95_len": 43,
+    "over40_pct": 7.7,
+    "passive_pct": 29,
+    "we_our_per_100w": 0.84,
+    "hedges_per_100w": 0.38
+   },
+   "methods": {
+    "documents": 5,
+    "sentences": 1092,
+    "mean_len": 22.1,
+    "sd_len": 12.0,
+    "p90_len": 38,
+    "p95_len": 45,
+    "over40_pct": 8.2,
+    "passive_pct": 71,
+    "we_our_per_100w": 0.34,
+    "hedges_per_100w": 0.05
+   },
+   "discussion": {
+    "documents": 4,
+    "sentences": 96,
+    "mean_len": 28.4,
+    "sd_len": 11.2,
+    "p90_len": 43,
+    "p95_len": 47,
+    "over40_pct": 14.6,
+    "passive_pct": 30,
+    "we_our_per_100w": 1.14,
+    "hedges_per_100w": 0.59
+   }
+  },
+  "Lancet": {
+   "abstract": {
+    "documents": 8,
+    "sentences": 147,
+    "mean_len": 24.1,
+    "sd_len": 11.8,
+    "p90_len": 42,
+    "p95_len": 45,
+    "over40_pct": 10.9,
+    "passive_pct": 48,
+    "we_our_per_100w": 0.42,
+    "hedges_per_100w": 0.11
+   },
+   "introduction": {
+    "documents": 8,
+    "sentences": 203,
+    "mean_len": 28.0,
+    "sd_len": 16.2,
+    "p90_len": 51,
+    "p95_len": 62,
+    "over40_pct": 19.7,
+    "passive_pct": 29,
+    "we_our_per_100w": 0.67,
+    "hedges_per_100w": 0.39
+   },
+   "methods": {
+    "documents": 8,
+    "sentences": 556,
+    "mean_len": 24.0,
+    "sd_len": 13.1,
+    "p90_len": 42,
+    "p95_len": 49,
+    "over40_pct": 11.0,
+    "passive_pct": 61,
+    "we_our_per_100w": 0.38,
+    "hedges_per_100w": 0.16
+   },
+   "results": {
+    "documents": 8,
+    "sentences": 371,
+    "mean_len": 28.0,
+    "sd_len": 14.4,
+    "p90_len": 47,
+    "p95_len": 54,
+    "over40_pct": 17.5,
+    "passive_pct": 32,
+    "we_our_per_100w": 0.21,
+    "hedges_per_100w": 0.12
+   },
+   "discussion": {
+    "documents": 8,
+    "sentences": 391,
+    "mean_len": 28.8,
+    "sd_len": 14.0,
+    "p90_len": 48,
+    "p95_len": 56,
+    "over40_pct": 16.6,
+    "passive_pct": 28,
+    "we_our_per_100w": 0.61,
+    "hedges_per_100w": 0.75
+   }
+  },
+  "BMJ": {
+   "abstract": {
+    "documents": 6,
+    "sentences": 89,
+    "mean_len": 24.1,
+    "sd_len": 11.6,
+    "p90_len": 40,
+    "p95_len": 42,
+    "over40_pct": 9.0,
+    "passive_pct": 36,
+    "we_our_per_100w": 0.05,
+    "hedges_per_100w": 0.14
+   },
+   "introduction": {
+    "documents": 6,
+    "sentences": 81,
+    "mean_len": 32.1,
+    "sd_len": 14.0,
+    "p90_len": 49,
+    "p95_len": 57,
+    "over40_pct": 23.5,
+    "passive_pct": 35,
+    "we_our_per_100w": 0.65,
+    "hedges_per_100w": 0.58
+   },
+   "methods": {
+    "documents": 6,
+    "sentences": 436,
+    "mean_len": 26.3,
+    "sd_len": 13.5,
+    "p90_len": 46,
+    "p95_len": 54,
+    "over40_pct": 13.8,
+    "passive_pct": 59,
+    "we_our_per_100w": 0.71,
+    "hedges_per_100w": 0.22
+   },
+   "results": {
+    "documents": 6,
+    "sentences": 454,
+    "mean_len": 19.0,
+    "sd_len": 14.6,
+    "p90_len": 39,
+    "p95_len": 48,
+    "over40_pct": 9.5,
+    "passive_pct": 19,
+    "we_our_per_100w": 0.06,
+    "hedges_per_100w": 0.37
+   },
+   "discussion": {
+    "documents": 6,
+    "sentences": 304,
+    "mean_len": 29.3,
+    "sd_len": 12.1,
+    "p90_len": 45,
+    "p95_len": 50,
+    "over40_pct": 15.8,
+    "passive_pct": 36,
+    "we_our_per_100w": 0.91,
+    "hedges_per_100w": 0.68
+   },
+   "conclusion": {
+    "documents": 4,
+    "sentences": 37,
+    "mean_len": 26.9,
+    "sd_len": 12.8,
+    "p90_len": 49,
+    "p95_len": 52,
+    "over40_pct": 13.5,
+    "passive_pct": 41,
+    "we_our_per_100w": 0.4,
+    "hedges_per_100w": 0.4
+   }
+  },
+  "JAMA Network Open": {
+   "abstract": {
+    "documents": 8,
+    "sentences": 145,
+    "mean_len": 24.8,
+    "sd_len": 12.1,
+    "p90_len": 41,
+    "p95_len": 45,
+    "over40_pct": 11.0,
+    "passive_pct": 37,
+    "we_our_per_100w": 0.25,
+    "hedges_per_100w": 0.61
+   },
+   "introduction": {
+    "documents": 8,
+    "sentences": 111,
+    "mean_len": 28.1,
+    "sd_len": 13.0,
+    "p90_len": 42,
+    "p95_len": 53,
+    "over40_pct": 12.6,
+    "passive_pct": 37,
+    "we_our_per_100w": 0.7,
+    "hedges_per_100w": 0.51
+   },
+   "methods": {
+    "documents": 8,
+    "sentences": 357,
+    "mean_len": 24.3,
+    "sd_len": 14.0,
+    "p90_len": 42,
+    "p95_len": 53,
+    "over40_pct": 12.0,
+    "passive_pct": 61,
+    "we_our_per_100w": 0.55,
+    "hedges_per_100w": 0.16
+   },
+   "results": {
+    "documents": 8,
+    "sentences": 396,
+    "mean_len": 19.9,
+    "sd_len": 13.3,
+    "p90_len": 37,
+    "p95_len": 45,
+    "over40_pct": 8.1,
+    "passive_pct": 18,
+    "we_our_per_100w": 0.1,
+    "hedges_per_100w": 0.2
+   },
+   "discussion": {
+    "documents": 8,
+    "sentences": 286,
+    "mean_len": 25.6,
+    "sd_len": 11.0,
+    "p90_len": 38,
+    "p95_len": 46,
+    "over40_pct": 8.7,
+    "passive_pct": 29,
+    "we_our_per_100w": 0.96,
+    "hedges_per_100w": 1.34
+   },
+   "conclusion": {
+    "documents": 5,
+    "sentences": 21,
+    "mean_len": 28.5,
+    "sd_len": 12.7,
+    "p90_len": 42,
+    "p95_len": 48,
+    "over40_pct": 19.0,
+    "passive_pct": 38,
+    "we_our_per_100w": 0.5,
+    "hedges_per_100w": 1.67
+   }
+  }
+ },
+ "rates": {
+  "verbs_per_10k": {
+   "showed": 12.4,
+   "demonstrated": 2.2,
+   "found": 9.4,
+   "observed": 7.7,
+   "revealed": 0.8,
+   "exhibited": 0.4,
+   "used": 61.6,
+   "utilized": 0.1,
+   "employed": 0.4,
+   "performed": 8.5,
+   "conducted": 5.4,
+   "associated with": 11.5,
+   "suggest": 6.2,
+   "indicate": 5.4
+  },
+  "words_per_10k": {
+   "delve": 0.0,
+   "delves": 0.0,
+   "crucial": 0.11,
+   "pivotal": 0.17,
+   "notably": 0.72,
+   "intricate": 0.0,
+   "multifaceted": 0.28,
+   "nuanced": 0.0,
+   "underscore": 0.0,
+   "underscores": 0.0,
+   "showcase": 0.0,
+   "leverage": 0.0,
+   "robust": 1.17,
+   "comprehensive": 0.56,
+   "novel": 0.61,
+   "landscape": 0.11,
+   "realm": 0.0,
+   "foster": 0.06,
+   "paramount": 0.0,
+   "seamless": 0.0,
+   "holistic": 0.0,
+   "meticulous": 0.0,
+   "notable": 0.22,
+   "importantly": 0.17,
+   "interestingly": 0.06,
+   "remarkably": 0.06,
+   "significant": 9.03,
+   "significantly": 6.02,
+   "substantial": 1.23,
+   "substantially": 0.78,
+   "potential": 5.46,
+   "potentially": 1.73,
+   "enhance": 0.17,
+   "facilitate": 0.5,
+   "highlight": 0.56,
+   "highlights": 0.33,
+   "highlighted": 0.17,
+   "emphasize": 0.0,
+   "valuable": 0.17,
+   "insights": 0.17,
+   "key": 1.34,
+   "vital": 0.5,
+   "essential": 0.45,
+   "critical": 1.06,
+   "additionally": 2.34,
+   "furthermore": 1.78,
+   "moreover": 1.45
+  },
+  "openers_per_1k_sentences": {
+   "However": 14.5,
+   "In addition": 5.0,
+   "Additionally": 4.1,
+   "Furthermore": 4.1,
+   "Moreover": 3.4,
+   "Therefore": 3.5,
+   "Thus": 2.0,
+   "Notably": 1.5,
+   "Importantly": 0.0,
+   "Interestingly": 0.1,
+   "Overall": 4.9,
+   "In contrast": 0.8,
+   "Similarly": 2.3,
+   "Finally": 2.9,
+   "First": 2.4,
+   "Second": 1.8,
+   "Although": 8.4,
+   "Because": 2.2,
+   "In this": 6.1,
+   "These": 14.3,
+   "This": 34.5,
+   "We": 39.4,
+   "Our": 8.7,
+   "The": 140.1
+  },
+  "contractions": 0
+ },
+ "phrasebank": {
+  "abstract": [
+   "was associated with",
+   "the primary outcome",
+   "in patients with",
+   "to evaluate the",
+   "included in the",
+   "randomly assigned to",
+   "adverse events were",
+   "compared with the",
+   "to examine the",
+   "the addition of",
+   "the effectiveness of",
+   "the efficacy and",
+   "who did not"
+  ],
+  "introduction": [
+   "in patients with",
+   "the use of",
+   "is associated with",
+   "the effectiveness of",
+   "increased risk of",
+   "randomized clinical trial",
+   "for use in",
+   "the efficacy of",
+   "to evaluate the",
+   "we sought to",
+   "food and drug administration",
+   "at the time",
+   "been shown to",
+   "in addition to",
+   "one of the",
+   "quality of life",
+   "the number of",
+   "the presence of",
+   "to our knowledge",
+   "in combination with",
+   "morbidity and mortality",
+   "we aimed to"
+  ],
+  "methods": [
+   "according to the",
+   "the primary outcome",
+   "of the study",
+   "was used to",
+   "written informed consent",
+   "analyses were performed",
+   "approved by the",
+   "as well as",
+   "the number of",
+   "was defined as",
+   "institutional review board",
+   "analysis was performed",
+   "based on the",
+   "in accordance with",
+   "at least one",
+   "was obtained from",
+   "consolidated standards of reporting",
+   "at the time",
+   "if they were",
+   "to assess the",
+   "were eligible for",
+   "were randomly assigned",
+   "a total of",
+   "in this study",
+   "included in the"
+  ],
+  "results": [
+   "a total of",
+   "included in the",
+   "body mass index",
+   "adverse events were",
+   "at the time",
+   "compared with the",
+   "the number of",
+   "no significant difference",
+   "was associated with",
+   "of the study",
+   "baseline characteristics of",
+   "of patients with",
+   "patients who were",
+   "the end of",
+   "the proportion of",
+   "were similar in",
+   "age of participants",
+   "are shown in",
+   "the control group",
+   "the exception of",
+   "the results of",
+   "was significantly lower in",
+   "after adjusting for",
+   "are presented in",
+   "did not receive"
+  ],
+  "discussion": [
+   "in this study",
+   "of the study",
+   "the use of",
+   "compared with the",
+   "the current study",
+   "to our knowledge",
+   "the effect of",
+   "was associated with",
+   "as well as",
+   "in patients with",
+   "need to be",
+   "the results of",
+   "are consistent with",
+   "based on the",
+   "in our study",
+   "the effectiveness of",
+   "the number of",
+   "the risk of",
+   "we did not",
+   "we found that",
+   "the need for",
+   "the primary outcome",
+   "due to the",
+   "higher rates of",
+   "is needed to"
+  ]
+ },
+ "sources": [
+  {
+   "pmcid": "PMC9382450",
+   "doi": "10.1136/bmj-2021-069288",
+   "journal": "BMJ",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9527635",
+   "doi": "10.1136/bmj-2022-070717",
+   "journal": "BMJ",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9667468",
+   "doi": "10.1136/bmj-2022-071932",
+   "journal": "BMJ",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9682494",
+   "doi": "10.1136/bmj-2022-072623",
+   "journal": "BMJ",
+   "license": "CC BY-NC 4.0"
+  },
+  {
+   "pmcid": "PMC9710248",
+   "doi": "10.1136/bmj-2022-070941",
+   "journal": "BMJ",
+   "license": "CC BY-NC 4.0"
+  },
+  {
+   "pmcid": "PMC9762423",
+   "doi": "10.1136/bmj-2022-072807",
+   "journal": "BMJ",
+   "license": "CC BY-NC 4.0"
+  },
+  {
+   "pmcid": "PMC9713603",
+   "doi": "10.1001/jamanetworkopen.2022.44357",
+   "journal": "JAMA Network Open",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9856830",
+   "doi": "10.1001/jamanetworkopen.2022.48817",
+   "journal": "JAMA Network Open",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9856898",
+   "doi": "10.1001/jamanetworkopen.2022.47431",
+   "journal": "JAMA Network Open",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9856967",
+   "doi": "10.1001/jamanetworkopen.2022.48826",
+   "journal": "JAMA Network Open",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9857028",
+   "doi": "10.1001/jamanetworkopen.2022.48147",
+   "journal": "JAMA Network Open",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9857043",
+   "doi": "10.1001/jamanetworkopen.2022.48836",
+   "journal": "JAMA Network Open",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9857508",
+   "doi": "10.1001/jamanetworkopen.2022.48332",
+   "journal": "JAMA Network Open",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9857560",
+   "doi": "10.1001/jamanetworkopen.2022.48320",
+   "journal": "JAMA Network Open",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC8674802",
+   "doi": "10.1001/jamasurg.2021.6370",
+   "journal": "JAMA Surgery",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC8733869",
+   "doi": "10.1001/jamasurg.2021.6781",
+   "journal": "JAMA Surgery",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC8908225",
+   "doi": "10.1001/jamasurg.2022.0143",
+   "journal": "JAMA Surgery",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC8928091",
+   "doi": "10.1001/jamasurg.2022.0269",
+   "journal": "JAMA Surgery",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC8988023",
+   "doi": "10.1001/jamasurg.2022.0713",
+   "journal": "JAMA Surgery",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9096689",
+   "doi": "10.1001/jamasurg.2022.1075",
+   "journal": "JAMA Surgery",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC7614824",
+   "doi": "10.1016/S0140-6736(22)02078-5",
+   "journal": "Lancet",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC8819271",
+   "doi": "10.1016/S0140-6736(21)02175-9",
+   "journal": "Lancet",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC8830904",
+   "doi": "10.1016/S0140-6736(22)00163-5",
+   "journal": "Lancet",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC8971961",
+   "doi": "10.1016/S0140-6736(21)02499-5",
+   "journal": "Lancet",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9077443",
+   "doi": "10.1016/S0140-6736(22)00538-4",
+   "journal": "Lancet",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9418415",
+   "doi": "10.1016/S0140-6736(22)01472-6",
+   "journal": "Lancet",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9631239",
+   "doi": "10.1016/S0140-6736(22)01786-X",
+   "journal": "Lancet",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9779781",
+   "doi": "10.1016/S0140-6736(22)02597-1",
+   "journal": "Lancet",
+   "license": "CC BY 4.0"
+  },
+  {
+   "pmcid": "PMC9477747",
+   "doi": "10.1038/s41586-022-05181-3",
+   "journal": "Nature",
+   "license": "open access, (c) The Author(s)"
+  },
+  {
+   "pmcid": "PMC9607737",
+   "doi": "10.1038/s41586-022-05368-8",
+   "journal": "Nature",
+   "license": "open access, (c) The Author(s)"
+  },
+  {
+   "pmcid": "PMC9646485",
+   "doi": "10.1038/s41586-022-05374-w",
+   "journal": "Nature",
+   "license": "open access, (c) The Author(s)"
+  },
+  {
+   "pmcid": "PMC9768791",
+   "doi": "10.1038/s41586-022-05531-1",
+   "journal": "Nature",
+   "license": "open access, (c) The Author(s)"
+  },
+  {
+   "pmcid": "PMC9771812",
+   "doi": "10.1038/s41586-022-05496-1",
+   "journal": "Nature",
+   "license": "open access, (c) The Author(s)"
+  }
+ ]
+}

@@ -79,8 +79,28 @@ reason: number not found in results CSV files
 | 報告するすべての数値が `results/*.csv` に存在する | `manuwright numbers` と result binding |
 | 出典・計画・エンジンが変わるとレビューは stale になる | すべての記録に sha256 スナップショット |
 | 投稿には人の署名、AI 使用の開示、完了したチェックリストが必要 | `manuwright verify --profile submission` |
+| 文章がチャットボットではなく high-impact 臨床誌のように読める | 学術文体モード: 草稿ごとのスタイルカード、編集ごとの文章チェック（`strict` はブロック） |
 
 エンジンは承認やレビューを作り出さない。人が下した判断を記録するだけである。
+
+## 学術文体モード
+
+**毎日の使い方（チャットで頼むだけ）：**
+1. 「Introduction を書いて」：エージェントがそのセクションのスタイルカードを読み、その文体で書きます。
+2. チェック結果が出たら「直して」。*MUST FIX* は AI 的な表現で要修正、*consider* は提案なので意図した表現ならそのままで構いません。
+3. 最初に一度：良い論文（自分の論文や投稿先誌の論文、PDF）3 本以上を一つのフォルダに入れて「このフォルダで私の文体を学んで」。
+4. 草稿を自分で直した後：「私の修正から学んで」。提案された規則はチャットで一つずつ承認します。
+5. 投稿前：「誇張表現をチェックして」「参考文献を再確認して」（撤回論文、誤った DOI）。revision 時：「ブラインド再査読をして」。
+厳格モード（"academic mode strict"）は AI 的な文を書かせず、既定モードは報告だけします。
+
+手元でモデルをファインチューニングすることはできないため、manuwright は書くたびに次善の策をとる。書き手の前に適切な例文と測定済みの目標値を置き、書かれた文章を検査する。
+
+- **セクションカード。** 各セクション（title、abstract、introduction、methods、results、discussion、conclusion）に、修辞構造（moves）、規則、表現集（phrasebank）、high-impact 臨床誌の文体で書いた模範段落をまとめたカードがある。コアカードは毎セッション開始時に読み込まれ、セクションカードはそのセクションの執筆を頼んだとき（「Discussion を書いて」など）または `manuwright style card <section>` で読み込まれる。
+- **推測ではなく測定。** カードの目標値は、2019〜2022 年（生成 AI 以前）の JAMA Surgery、JAMA Network Open、Lancet、BMJ、Nature の公開ライセンス原著 33 本から測定した：セクションごとの文長と受動態の割合、動詞・接続語の頻度、複数誌に共通する表現。配布するのは数値だけで（`docs/academic_style/reference_profile.json`）、論文本文は GitHub に置かない。例："showed" は "demonstrated" の約 5 倍、"used" は 345 回、"utilized" は 1 回だった。
+- **常に文脈の中に。** カードはセッション開始時と会話圧縮後に再注入され、サブエージェントにも渡り、論文フォルダではプロンプトごとに 1 行で再確認される。チャットで切り替えられる："academic mode strict" など。
+- **自分のコーパス。** `manuwright style learn <論文>` が良い論文の集まり（自分の論文、分野の landmark 論文、投稿先誌の最近の論文。PDF・DOCX・MD・TXT）をセクションごとに測定する：文長、受動態の割合、hedging、よく使う表現、文頭パターン、模範段落。以後すべてのカードにこの目標値と段落が加わる。プロファイルは個人ライブラリにのみ保存され、論文フォルダにはコピーされない。
+- **文章チェック。** 原稿セクションを編集するたびに、AI 的な言い回し（delve、pivotal、"it is worth noting"、文末の ", highlighting ..."）、短縮形、本文の太字、長すぎる文、統計値のない "significant" などを行番号付きで報告する。`manuwright mode strict` は書き直すまで書き込み自体をブロックし、`manuwright mode off` でモードを無効にする。
+- **書き直しても事実は不変。** `manuwright style preserve old.md new.md` は、文体の書き直しで `[EVID:id]`、数値、*p* 値、Table/Figure 参照が一つでも変わると失敗する。`/style-pass` がセクションごとに実行する。
 
 ## インストール
 
@@ -95,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -121,6 +141,12 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright init [folder]` | 論文フォルダを開始：manifest、計画テンプレート（未承認）、根拠リスト、エージェント規則 |
 | `manuwright rules [keyword]` | ワークフロー規則の全体または 1 節を表示 |
 | `manuwright check` | バージョン・エージェントプラグイン・メインモデル・キー・自動更新・更新が必要な論文をまとめて点検し、修正コマンドを表示 |
+| `manuwright mode academic\|strict\|off` | 学術文体モード: スタイルカード + 編集ごとの文章チェック。`strict` は AI 的な文章の書き込みをブロック |
+| `manuwright style learn <論文>` / `style card <section>` | 良い論文のコーパス（自分の文体、landmark、投稿先誌）を測定 / セクションのスタイルカードを表示 |
+| `manuwright claim-strength drafts` | 引用文の表現が根拠の `Claim Strength`（speculative、observed、supported、strong）より強すぎないか検査 |
+| `manuwright search audit` | evidence.md の各項目を PubMed と再照合：タイトル・著者・年・誌名の加重一致度、DOI 不一致、撤回、懸念表明、訂正 |
+| `manuwright blind-review packet` / `check` | 回答書を伏せたまま先に判定を記録する revision 再査読（回答書の説得に引きずられない） |
+| `manuwright style edits <ai> <edited>` / `--apply` | AI 草稿を自分が直した方法から規則を学習；チェックした規則だけが `Style/terminology.md` に入る |
 | `manuwright guide [name ...]` | 規則が引用するエンジンのガイド（`docs/<name>.md`）の一覧または内容を表示 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | その段階のすべての検査を実行 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 1 つのファイルに 1 つのチェッカーを実行 |

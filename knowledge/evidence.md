@@ -14,6 +14,8 @@
 - **PMID:**
 - **PDF:** knowledge/pdf/
 - **Source Status:** todo
+- **Claim Strength:**
+- **Allowed Wording:**
 
 - **Study Design:**
 - **Objective:**

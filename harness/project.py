@@ -300,7 +300,7 @@ def verify(path, profile='draft'):
             plan = inside(root, config[key]); text = plan.read_text(encoding='utf-8')
             missing = plan_module.validate_plan_content(text, kind)
             if missing:
-                return 'missing/empty sections: ' + ', '.join(missing)
+                return 'missing/empty sections: ' + plan_module.describe_missing(missing)
             if not __import__('re').search(r'-\s*\[[xX]\]\s*(?:\*\*)?사용자 승인 완료', text):
                 return 'missing checked approval line'
             return plan_module.approval_problem(plan, required=profile != 'draft')

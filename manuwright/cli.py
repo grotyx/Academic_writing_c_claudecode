@@ -23,11 +23,13 @@ TOOLS = {
     'numbers': ('check_numbers.py', {'--results': 'results'}),
     'gate': ('check_gate.py', {'--base-dir': '.'}),
     'abstract': ('check_abstract.py', {}),
+    'claim-strength': ('check_claim_strength.py', {'--evidence': 'knowledge/evidence.md'}),
     'coverage': ('check_coverage.py', {'--evidence': 'knowledge/evidence.md'}),
     'crossrefs': ('check_crossrefs.py', {}),
     'abbreviations': ('check_abbreviations.py', {}),
     'style': ('check_style.py', {}),
     'revision-claims': ('check_revision_claims.py', {}),
+    'blind-review': ('blind_review.py', {}),
     'response-coverage': ('check_response_coverage.py', {}),
     'lint': ('lint_manuscript.py', {'--terminology': 'Style/terminology.md'}),
     'verify-all': ('verify_all.py', {'--base-dir': '.'}),
@@ -50,7 +52,17 @@ Standalone tools (same flags as scripts/*.py; project paths default to the curre
 Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
   init --refresh-rules [--all]   in an existing paper (or --all registered papers): update only the agent rules (AGENTS/CLAUDE/GEMINI.md)
-  check                      one report: version, agent adapters, main model, key, auto-update, papers to refresh
+  check                      one report: version, agent adapters, main model, key, auto-update, writing mode, papers
+Writing and review (in chat you can simply ask: "서론 써줘", "과장 표현 검사해줘", "근거 다시 확인해줘"):
+  mode [academic|strict|off] academic writing mode (default academic; strict blocks AI-style prose; or say "학술 모드 꺼줘")
+  style card <section>       style card for a section (title, abstract, introduction, ... or 서론, 방법, 결과, 고찰 ...)
+  style learn <folder>       learn the style of 3+ good papers (yours, landmark, target journal; PDF/DOCX/MD/TXT)
+  style edits <ai> <edited>  learn rules from how you edited AI drafts (--git REV; you approve each rule; --apply)
+  style preserve <old> <new> check a style rewrite kept every citation, number, p value and table/figure reference
+  style status               writing mode and learned style (style extract|check: metrics against a Style Spec)
+  claim-strength drafts      cited sentences worded more strongly than their evidence (Claim Strength in evidence.md)
+  search audit               check every evidence.md entry against PubMed: details match, retracted, corrected
+  blind-review packet|check  revision re-review that hides the response letter until the verdicts are written
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)
@@ -66,7 +78,7 @@ Setup and updates:
                                        review.openrouter-models, review.<agent>-model, docx.*
   agents install|update [--only claude,codex,agy,opencode,muse] [--dry-run]
                              install/refresh plugins and skills for each agent
-  hook session|gate|lint|style         entry point for agent plugin hooks
+  hook session|gate|lint|style|subagent   entry point for agent plugin hooks
 Obsidian (Academic Paper Citation Manager plugin):
   obsidian status | obsidian install [--vault PATH] [--enable-mcp] [--yes]
   obsidian connect [--vault PATH] [--only a,b] [--dry-run] [--yes]
@@ -94,13 +106,13 @@ def project_defaults(args, defaults, cwd):
 
 
 HOOKS = {'session': 'session_contract.py', 'gate': 'enforce_gates.py', 'lint': 'lint_on_edit.py',
-         'style': 'style_intent.py'}
+         'style': 'style_intent.py', 'subagent': 'subagent_style.py'}
 
 
 def hook(args):
-    """manuwright hook <session|gate|lint|style>: plugin hook entry (Claude Code, Codex)."""
+    """manuwright hook <session|gate|lint|style|subagent>: plugin hook entry (Claude Code, Codex)."""
     if not args or args[0] not in HOOKS:
-        print('usage: manuwright hook session|gate|lint|style', file=sys.stderr)
+        print('usage: manuwright hook session|gate|lint|style|subagent', file=sys.stderr)
         return 2
     project = Path(os.environ.get('CLAUDE_PROJECT_DIR') or Path.cwd())
     settings = project / '.claude' / 'settings.json'
@@ -186,9 +198,11 @@ def main(argv=None):
             sys.path.insert(0, str(HERE.parent))
         from manuwright import models
         return models.main(rest)
-    if command in {'init', 'rules', 'guide', 'check', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
+    if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status', 'preserve', 'edits'):
+        return subprocess.call([sys.executable, str(ENGINE / 'scripts' / 'academic_style.py'), *rest])
+    if command in {'init', 'rules', 'guide', 'check', 'mode', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
         lifecycle = load_lifecycle()
-        if command in {'config', 'setup'}:
+        if command in {'config', 'setup', 'mode'}:
             return getattr(lifecycle, command)(rest)
         return getattr(lifecycle, command)(ENGINE, rest)
     if command in HARNESS_COMMANDS:
@@ -211,7 +225,7 @@ def main(argv=None):
         print(f'manuwright: unknown command {command!r}\n\n{USAGE}', file=sys.stderr)
         return 2
     script, defaults = TOOLS[command]
-    if command == 'search' and (not rest or rest[0] not in {'search', 'fetch', 'doi', 'related', '-h', '--help'}):
+    if command == 'search' and (not rest or rest[0] not in {'search', 'fetch', 'doi', 'related', 'audit', '-h', '--help'}):
         rest = ['search', *rest]  # `manuwright search "<query>"` as documented
     if '-h' not in rest and '--help' not in rest:
         rest += project_defaults(rest, defaults, Path.cwd())

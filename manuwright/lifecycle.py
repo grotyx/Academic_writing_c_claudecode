@@ -226,6 +226,7 @@ def paper_refresh_hint():
 REVIEW_AGENTS = ('claude', 'codex', 'opencode', 'muse', 'agy')
 CONFIG_KEYS = {  # key -> (path in config.json, kind)
     'auto-update': (('auto_update',), 'onoff'),
+    'writing-mode': (('writing_mode',), ('academic', 'strict', 'off')),
     'main-model': (('main_model',), 'text'),
     'review.reviewers': (('review', 'reviewers'), 'list'),
     'review.openrouter-models': (('review', 'openrouter_models'), 'list'),
@@ -300,6 +301,7 @@ SETUP_HELP = {
     'docx.margin-inches': 'page margins (inches)', 'docx.line-numbers': 'line numbers: continuous, page, off',
     'docx.page-numbers': 'page numbers: center, right, off',
     'auto-update': 'install patch updates automatically: on/off',
+    'writing-mode': 'academic writing mode: academic (cards + findings after each edit), strict (also blocks), off',
 }
 
 
@@ -663,6 +665,33 @@ def refresh_all(engine):
     return 0
 
 
+EVIDENCE_STARTER = """# Evidence
+
+<!-- One entry per source; cite it in drafts as [EVID:<Evidence ID>]. `manuwright search "<query>"` and
+`manuwright search doi <doi>` print ready-made entries. Example (delete it when you add your own):
+
+### [1] Kim et al., 2020
+- **Evidence ID:** kim_2020_pmid12345678
+- **Citation:** Kim A, Lee B. Title of the paper. Spine J. 2020;20:100-110.
+- **DOI:** 10.xxxx/xxxxx
+- **PMID:** 12345678
+- **Source Status:** verified            (verified | full-text-reviewed | abstract-only | todo)
+- **Claim Strength:** observed           (speculative | observed | supported | strong)
+- **Allowed Wording:** was associated with
+- **Study Design:** retrospective cohort, n = 412
+- **Main Findings:** ...
+-->
+"""
+
+
+PAPER_GITIGNORE = """# manuwright: copyright-protected or private material stays on this computer
+knowledge/pdf/
+Style/PDF/
+Style/profile/
+**/Style/profile/
+"""
+
+
 def init(engine, args):
     """manuwright init [folder] [--refresh-rules [--all]]: starter paper folder; never overwrites, never approves."""
     refresh = '--refresh-rules' in args
@@ -686,7 +715,8 @@ def init(engine, args):
         'drafts/draft_plan.md': (engine / 'docs' / 'draft_plan_template.md').read_text(encoding='utf-8'),
         'data/analysis_plan.md': ANALYSIS_PLAN,
         'data/requirements.txt': analysis_env.DEFAULT_REQUIREMENTS,
-        'knowledge/evidence.md': '# Evidence\n',
+        'knowledge/evidence.md': EVIDENCE_STARTER,
+        '.gitignore': PAPER_GITIGNORE,
         'AGENTS.md': bootstrap,
         'CLAUDE.md': bootstrap,
         'GEMINI.md': bootstrap,
@@ -819,6 +849,35 @@ def guide(engine, args):
     return 0
 
 
+MODE_HELP = {
+    'academic': 'section style cards at session start and on drafting requests; academic-prose findings after '
+                'each edit (default)',
+    'strict': 'as academic, and a write to a manuscript section whose new text has high-severity findings is '
+              'blocked until it is rewritten',
+    'off': 'no style cards and no academic-prose findings (terminology lint still runs)',
+}
+
+
+def mode(args):
+    """manuwright mode [academic|strict|off]: show or set the academic writing mode."""
+    data = load('config.json', {})
+    if args:
+        if len(args) != 1 or args[0] not in MODE_HELP:
+            print('usage: manuwright mode [academic|strict|off]', file=sys.stderr)
+            return 2
+        data['writing_mode'] = args[0]
+        save('config.json', data)
+    current = data.get('writing_mode') if data.get('writing_mode') in MODE_HELP else 'academic'
+    print(f'Writing mode: {current}: {MODE_HELP[current]}.')
+    override = os.environ.get('MANUWRIGHT_WRITING_MODE', '').strip().lower()
+    if override in MODE_HELP and override != current:
+        print(f'MANUWRIGHT_WRITING_MODE={override} overrides it in this shell.')
+    if not args:
+        print('Change it: manuwright mode academic|strict|off. Cards: manuwright style card <section>; '
+              'learn a corpus: manuwright style learn <papers>.')
+    return 0
+
+
 # --- health check ------------------------------------------------------------
 
 def _run_text(argv):
@@ -920,6 +979,16 @@ def check(engine, args):
     rows.append((bool(auto), 'Auto-update', 'on' + (' (announces releases; install with the printed line)'
                                                     if on_windows() else '') if auto else 'off',
                  None if auto else 'manuwright config set auto-update on'))
+    writing_mode = data.get('writing_mode') if data.get('writing_mode') in MODE_HELP else 'academic'
+    rows.append((True if writing_mode != 'off' else None, 'Writing mode',
+                 writing_mode if writing_mode != 'off' else 'off (manuwright mode academic turns it on)', None))
+    try:
+        profile = json.loads((home() / 'library' / 'writing' / 'profile' / 'style_profile.json').read_text(encoding='utf-8'))
+        docs = profile.get('documents', 0)
+        rows.append((True if docs >= 3 else None, 'Learned style', f"{docs} document(s), {profile.get('learned', '')}"
+                     + ('' if docs >= 3 else ' (too few to change any check: learn from 3 or more papers)'), None))
+    except (OSError, ValueError):
+        rows.append((None, 'Learned style', 'none yet (optional: manuwright style learn <your or landmark papers>)', None))
     stale = stale_papers(engine)
     rows.append((not stale, 'Paper agent rules', 'all registered papers current' if not stale else
                  f'{len(stale)} out of date: ' + ', '.join(str(p) for p in stale),

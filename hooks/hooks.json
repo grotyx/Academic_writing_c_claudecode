@@ -50,6 +50,18 @@
           }
         ]
       }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v manuwright >/dev/null 2>&1; then manuwright hook subagent; fi",
+            "commandWindows": "if (Get-Command manuwright -ErrorAction SilentlyContinue) { manuwright hook subagent }",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   }
 }

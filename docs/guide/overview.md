@@ -12,7 +12,7 @@ This project provides a comprehensive framework for writing academic medical pap
 - **Statistical analysis workflow** with Python script generation
 - **Quality control procedures** with minimum 3-round verification (6 rounds recommended) plus revision QC re-run workflow
 - **Study-type specific checklists** (STROBE, CONSORT, PRISMA, CARE, etc.)
-- **Natural Academic Writing Style system** with Style Reference Tables (Voice/Tense, Transition Words, Verb Upgrades, Common Corrections, Statistical Notation, Hedging Language) and Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
+- **Natural Academic Writing Style system** with Style Reference Tables (Voice/Tense, Transition Words, Verb Choice, Common Corrections, Statistical Notation, Hedging Language) and Writing Principles (Clarity/Conciseness/Objectivity/Consistency)
 - **Reliable style transformation** (`/style-pass`) — convert a rough draft to a bound journal style: a per-project Style Spec (one chosen exemplar) + section-by-section transform + an independent Style-Conformance verifier (auto-fix loop) + a measurable `scripts/check_style.py` gate (sentence length, citation density, hedging) + auto-trigger on "make it academic" intent (`docs/style_transform_protocol.md`)
 - **Citation quality control** — Claim→Citation Mapping (20 key claims mapped to citations before writing starts; prevents write-first, cite-later)
 - **Style anchor library** (`Style/`) — own, landmark, and target-journal anchors for terminology, tone, framing, and house style

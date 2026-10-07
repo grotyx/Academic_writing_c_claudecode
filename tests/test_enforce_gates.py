@@ -184,7 +184,7 @@ class DecideTests(unittest.TestCase):
             )
             reason = m.decide(event(tmp, file_path="drafts/04_methods.md"))
             self.assertIsNotNone(reason)
-            self.assertIn("not been approved", reason)
+            self.assertIn("not approved yet", reason)
 
             data = Path(tmp) / "data"
             (data / "py").mkdir(parents=True)
@@ -264,6 +264,24 @@ class DecideTests(unittest.TestCase):
             reason = m.decide(event(tmp, file_path="data/py/01_descriptive.py"))
             self.assertIsNotNone(reason)
             self.assertIn("unresolved template", reason)
+
+    def test_block_reason_names_what_to_fix(self) -> None:
+        # A non-coder needs the specific problem, not "template or not approved".
+        m = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            drafts = Path(tmp) / "drafts"
+            drafts.mkdir()
+            plan = drafts / "draft_plan.md"
+            plan.write_text("# Draft Plan\n\n## 1. Key Message\n[핵심 메시지 작성]\n\n- [x] 사용자 승인 완료\n",
+                            encoding="utf-8")
+            reason = m.decide(event(tmp, file_path="drafts/04_methods.md"))
+            self.assertIn("line 4", reason)
+            self.assertIn("[핵심 메시지 작성]", reason)
+
+            plan.write_text("# Draft Plan\n\n## 1. Key Message\nA message.\n\n- [x] 사용자 승인 완료\n",
+                            encoding="utf-8")
+            reason = m.decide(event(tmp, file_path="drafts/04_methods.md"))
+            self.assertIn("missing or empty:", reason)
 
     def test_fails_open_on_garbage(self) -> None:
         m = load_module()

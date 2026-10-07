@@ -79,8 +79,28 @@ reason: number not found in results CSV files
 | 보고하는 모든 수치가 `results/*.csv` 에 있음 | `manuwright numbers` 와 result binding |
 | 출처·계획·엔진이 바뀌면 리뷰가 stale 이 됨 | 모든 기록에 sha256 스냅샷 |
 | 제출에는 사람의 서명, AI 사용 공개, 완료된 체크리스트가 필요함 | `manuwright verify --profile submission` |
+| 문장이 챗봇이 아니라 high-impact 임상 저널처럼 읽힘 | 학술 문체 모드: 초안마다 스타일 카드, 편집마다 문장 검사 (`strict` 는 차단) |
 
 엔진은 승인이나 리뷰를 만들어 내지 않는다. 사람이 내린 결정을 기록할 뿐이다.
+
+## 학술 문체 모드
+
+**매일 이렇게 쓰세요 (채팅으로 말하면 됩니다):**
+1. "서론 써줘", "고찰 다시 써줘": 에이전트가 그 섹션의 문체 카드를 읽고 그 문체로 씁니다.
+2. 검사 결과가 나오면 "고쳐줘". *MUST FIX* 는 AI 말투라 고쳐야 하고, *consider* 는 제안이라 의도한 표현이면 그대로 둬도 됩니다.
+3. 처음 한 번: 좋은 논문(내 논문이나 목표 저널 논문, PDF) 3편 이상을 한 폴더에 넣고 "이 폴더로 내 문체 배워줘".
+4. 초안을 직접 고친 뒤: "내가 고친 거 배워줘". 제안된 규칙은 채팅으로 하나씩 승인합니다.
+5. 투고 전: "과장 표현 검사해줘", "참고문헌 다시 확인해줘"(철회 논문, 틀린 DOI). Revision 때: "블라인드 재검토 해줘".
+엄격 모드("학술 모드 엄격하게 해줘")는 AI 말투 문장을 아예 쓰지 못하게 하고, 기본 모드는 알려 주기만 합니다.
+
+노트북에서 모델을 파인튜닝할 수는 없으므로, manuwright 는 글을 쓸 때마다 그다음으로 효과적인 일을 한다. 쓰는 쪽 눈앞에 알맞은 예문과 측정된 목표치를 놓고, 써 온 문장을 검사한다.
+
+- **섹션 카드.** 섹션마다(title, abstract, introduction, methods, results, discussion, conclusion) 수사 구조(moves), 규칙, 표현집(phrasebank), high-impact 임상 저널 문체로 쓴 모범 문단을 담은 카드가 있다. 핵심 카드는 매 세션 시작 때 들어가고, 섹션 카드는 그 섹션을 써 달라고 할 때("서론 써줘", "draft the Discussion") 또는 `manuwright style card <section>` 으로 들어간다.
+- **추측이 아니라 측정.** 카드의 목표치는 2019~2022년(생성형 AI 이전) JAMA Surgery, JAMA Network Open, Lancet, BMJ, Nature 의 공개 라이선스 원저 33편에서 측정했다: 섹션별 문장 길이와 수동태 비율, 동사·전환어 빈도, 여러 저널에 공통인 표현. 배포되는 것은 숫자뿐이며(`docs/academic_style/reference_profile.json`) 논문 원문은 GitHub 에 올리지 않는다. 예: "showed" 가 "demonstrated" 보다 약 5배 많고, "used" 는 345회, "utilized" 는 1회였다.
+- **항상 맥락 안에.** 카드는 세션 시작과 대화 압축 뒤에 다시 들어가고, 서브에이전트에도 전달되며, 논문 폴더에서는 매 프롬프트마다 한 줄로 다시 상기된다. 대화로 바꿀 수 있다: "학술 모드 꺼줘", "academic mode strict".
+- **내 코퍼스.** `manuwright style learn <논문들>` 이 좋은 논문 묶음(내 논문, 분야의 landmark 논문, 목표 저널의 최근 논문; PDF·DOCX·MD·TXT)을 섹션별로 측정한다: 문장 길이, 수동태 비율, hedging, 자주 쓰는 표현(signature phrase), 문장 시작 패턴, 모범 문단. 이후 모든 카드에 이 목표치와 문단이 함께 들어간다. 프로필은 개인 라이브러리에만 있고 논문 폴더로 복사되지 않는다.
+- **문장 검사.** 원고 섹션을 고칠 때마다 AI 말투(delve, pivotal, "it is worth noting", 끝에 붙는 ", highlighting ..."), 축약형, 본문 굵은 글씨, 너무 긴 문장, 통계 없는 "significant" 같은 문제를 줄 번호와 함께 알려 준다. `manuwright mode strict` 는 문장을 고칠 때까지 쓰기 자체를 막고, `manuwright mode off` 는 모드를 끈다.
+- **고쳐 써도 사실은 그대로.** `manuwright style preserve old.md new.md` 는 문체 수정이 `[EVID:id]`, 숫자, *p* 값, Table/Figure 참조를 하나라도 바꾸면 실패한다. `/style-pass` 가 섹션마다 실행한다.
 
 ## 설치
 
@@ -95,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -121,6 +141,12 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright init [folder]` | 논문 폴더 시작: manifest, 계획 템플릿(미승인), 근거 목록, 에이전트 규칙 |
 | `manuwright rules [keyword]` | 워크플로 규칙 전체 또는 한 절 출력 |
 | `manuwright check` | 버전·에이전트 플러그인·메인 모델·키·자동 업데이트·갱신할 논문을 한 번에 점검하고 고치는 명령 제시 |
+| `manuwright mode academic\|strict\|off` | 학술 문체 모드: 스타일 카드 + 편집마다 문장 검사; `strict` 는 AI 말투가 든 쓰기를 차단 |
+| `manuwright style learn <논문들>` / `style card <section>` | 좋은 논문 코퍼스(내 문체, landmark, 목표 저널) 측정 / 섹션 스타일 카드 출력 |
+| `manuwright claim-strength drafts` | 인용 문장의 표현이 근거의 `Claim Strength`(speculative, observed, supported, strong)보다 센지 검사 |
+| `manuwright search audit` | evidence.md 항목을 PubMed 와 다시 대조: 제목·저자·연도·저널 가중 일치도, DOI 불일치, 철회, 우려 표명, 정정 |
+| `manuwright blind-review packet` / `check` | 응답 편지를 가린 채 먼저 판정을 기록하는 revision 재검토 (편지의 설득에 끌려가지 않음) |
+| `manuwright style edits <ai> <edited>` / `--apply` | AI 초안을 내가 고친 방식에서 규칙을 배움; 내가 체크한 규칙만 `Style/terminology.md` 에 반영 |
 | `manuwright guide [name ...]` | 규칙이 인용하는 엔진 가이드(`docs/<name>.md`) 목록 또는 내용 출력 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 그 단계의 모든 검사 실행 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 파일 하나에 검사기 하나 실행 |

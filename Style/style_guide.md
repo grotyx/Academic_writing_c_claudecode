@@ -6,6 +6,8 @@ Use `knowledge/` for manuscript references: reference PDFs, evidence summaries, 
 
 PDFs are copyright-protected and must remain local only. Store PDFs under `Style/PDF/`; PDF files in that tree are gitignored.
 
+Measured style: `manuwright style learn <papers>` measures full-text papers (your own, landmark, target journal; PDF, DOCX, MD, TXT) per section and feeds the result, with model paragraphs, into every section style card (`manuwright style card <section>`). That profile stays in the personal library and is never copied into a paper.
+
 Use `Style/terminology.md` as the project vocabulary registry. It defines preferred terms, forbidden terms, first-definition rules, and context of use.
 
 ---

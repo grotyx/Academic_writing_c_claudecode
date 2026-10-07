@@ -9,6 +9,7 @@ Usage:
     python search_pubmed.py fetch 12345678 [12345679 ...]
     python search_pubmed.py doi 10.1234/xxxxx
     python search_pubmed.py related 12345678 [--max 10]
+    python search_pubmed.py audit [--evidence knowledge/evidence.md]   (metadata match + retractions)
 
 Output modes:
     --format table    : Summary table (default for search)
@@ -179,6 +180,12 @@ def _parse_article(elem):
     # MeSH terms
     a["mesh"] = [m.text for m in elem.findall(".//MeshHeading/DescriptorName") if m.text]
 
+    # Retractions, expressions of concern and errata linked to this record
+    links = {c.get("RefType", "") for c in elem.findall(".//CommentsCorrections")}
+    a["retracted"] = "Retracted Publication" in a["pub_types"] or "RetractionIn" in links
+    a["concern"] = "ExpressionOfConcernIn" in links
+    a["erratum"] = "ErratumIn" in links
+
     return a
 
 
@@ -278,6 +285,8 @@ def format_evidence_entry(a, ref_num):
 - **PMID:** {a.get('pmid', '')}
 - **PDF:** knowledge/pdf/{fa}_{year}_KEYWORD.pdf
 - **Source Status:** {source_status}
+- **Claim Strength:** [TODO: speculative | observed | supported | strong]
+- **Allowed Wording:** [TODO]
 
 - **Study Design:** {design}
 - **Objective:** [TODO]
@@ -333,19 +342,109 @@ def _itertext(elem):
     return "".join(elem.itertext()).strip()
 
 
+# ─── Evidence audit ──────────────────────────────────────────────
+# Weighted metadata match (title 0.4, first author 0.3, year 0.2, journal 0.1; thresholds 0.9 / 0.7 /
+# 0.5), after claude-scholar's citation verification, plus retraction and concern flags from PubMed.
+
+WEIGHTS = {"title": 0.4, "author": 0.3, "year": 0.2, "journal": 0.1}
+
+
+def _plain(text):
+    """Lower case without accents: "Müller" -> "muller"."""
+    decomposed = unicodedata.normalize("NFKD", text or "")
+    return "".join(c for c in decomposed if not unicodedata.combining(c)).lower()
+
+
+def _norm_words(text):
+    return {w for w in re.findall(r"[a-z0-9]+", _plain(text)) if len(w) > 3}
+
+
+def _clean_doi(value):
+    return re.sub(r"^(?:doi:\s*|https?://(?:dx\.)?doi\.org/)", "", (value or "").strip(), flags=re.I).lower()
+
+
+def match_score(entry_text, article):
+    """(score 0-1, per-field scores) for how well an evidence entry's text matches the PubMed record."""
+    text = _plain(entry_text)
+    words = _norm_words(entry_text)
+    title = _norm_words(article.get("title", ""))
+    title_score = len(title & words) / len(title) if title else 0.0
+    title_score = 1.0 if title_score >= 0.85 else title_score
+    author = _plain(article.get("first_author", ""))
+    author_score = 1.0 if author and author != "unknown" and re.search(r"\b" + re.escape(author) + r"\b", text) else 0.0
+    year = article.get("year", "")
+    year = year if str(year).isdigit() else ""
+    years = {int(y) for y in re.findall(r"\b(?:19|20)\d{2}\b", text)}
+    year_score = 1.0 if year and int(year) in years else 0.5 if year and {int(year) - 1, int(year) + 1} & years else 0.0
+    journals = [j.lower() for j in (article.get("journal_abbr"), article.get("medline_ta"), article.get("journal")) if j]
+    journal_score = 1.0 if any(j.replace(".", "") in text.replace(".", "") for j in journals) else 0.0
+    fields = {"title": title_score, "author": author_score, "year": year_score, "journal": journal_score}
+    return round(sum(WEIGHTS[k] * v for k, v in fields.items()), 2), fields
+
+
+def audit_status(score):
+    return "verified" if score >= 0.9 else "partial" if score >= 0.7 else "low" if score >= 0.5 else "failed"
+
+
+def audit_evidence(evidence_text, fetch=None, resolve=None):
+    """[(evidence_id, status, score, notes)] for every entry with a PMID or DOI."""
+    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
+    from check_citations import parse_evidence_entries
+
+    fetch = fetch or fetch_articles
+    resolve = resolve or doi_to_pmid
+    entries = parse_evidence_entries(evidence_text)
+    wanted = {}
+    for eid, entry in entries.items():
+        found = re.search(r"\d{4,9}", entry.fields.get("pmid", ""))  # "12345678 (PMCID: PMC765...)" -> first number
+        pmid = found.group(0) if found else ""
+        doi = _clean_doi(entry.fields.get("doi", ""))
+        if not pmid and doi:
+            pmid = resolve(doi) or ""
+        if pmid:
+            wanted[eid] = (pmid, doi)
+    ids = sorted({p for p, _ in wanted.values()})
+    articles = {}
+    for start in range(0, len(ids), 200):  # efetch URLs stay short; NCBI asks for batches
+        articles.update({a["pmid"]: a for a in fetch(ids[start:start + 200])})
+    rows = []
+    for eid, (pmid, doi) in wanted.items():
+        article = articles.get(pmid)
+        if not article:
+            rows.append((eid, "failed", 0.0, f"PMID {pmid} not found in PubMed"))
+            continue
+        entry = entries[eid]
+        text = " ".join([entry.heading, entry.fields.get("citation", "")])
+        score, fields = match_score(text, article)
+        status = audit_status(score)
+        notes = [f"{k} {v:.2f}" for k, v in fields.items() if v < 1]
+        if doi and article.get("doi") and doi != _clean_doi(article["doi"]):
+            status, notes = "failed", notes + [f"DOI {doi} != PubMed {article['doi']}"]
+        if article.get("retracted"):
+            status, notes = "retracted", notes + ["RETRACTED: do not cite; set Source Status: retracted"]
+        elif article.get("concern"):
+            notes.append("expression of concern on PubMed")
+        if article.get("erratum"):
+            notes.append("erratum published; check the corrected values")
+        rows.append((eid, status, score, "; ".join(notes)))
+    return rows
+
+
 # ─── CLI ─────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser(
+        prog="manuwright search",
         description="PubMed Search & Evidence Registry Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s search "endoscopic spine surgery outcomes"
-  %(prog)s search "ACDF vs arthroplasty" --max 10 --sort pub_date
+  %(prog)s "endoscopic spine surgery outcomes"
+  %(prog)s "ACDF vs arthroplasty" --max 10 --sort pub_date
   %(prog)s fetch 35486828 33264437
   %(prog)s doi 10.1016/j.spinee.2023.01.005
   %(prog)s related 35486828 --max 5
+  %(prog)s audit                      (check every evidence.md entry against PubMed)
         """,
     )
     sub = parser.add_subparsers(dest="command", required=True)
@@ -388,9 +487,31 @@ Examples:
     p_rel.add_argument("--start-num", type=int, default=1,
                           help="Starting reference number")
 
+    # audit
+    p_audit = sub.add_parser("audit", help="Check evidence.md entries against PubMed: metadata match and retractions")
+    p_audit.add_argument("--evidence", default="knowledge/evidence.md")
+
     args = parser.parse_args()
 
     try:
+        if args.command == "audit":
+            try:
+                with open(args.evidence, encoding="utf-8") as handle:
+                    rows = audit_evidence(handle.read())
+            except OSError:
+                print(f"error: {args.evidence} not found; run this in the paper folder or pass --evidence <file>.",
+                      file=sys.stderr)
+                sys.exit(2)
+            except ValueError as exc:  # duplicate Evidence ID
+                print(f"error: {exc}", file=sys.stderr)
+                sys.exit(2)
+            for eid, status, score, notes in rows:
+                print(f"{status.upper():<10} {score:4.2f}  {eid}" + (f"  ({notes})" if notes else ""))
+            bad = [r for r in rows if r[1] in ("failed", "retracted")]
+            print(f"\n{len(rows)} entr(y/ies) checked; {len(bad)} need attention (failed or retracted)."
+                  if rows else "No entries with a PMID or DOI to check.")
+            sys.exit(1 if bad else 0)
+
         if args.command == "search":
             pmids, total = search_pubmed(args.query, args.max, args.sort)
             if not pmids:
@@ -434,7 +555,8 @@ Examples:
             _output(articles, args.fmt, args.start_num)
 
     except urllib.error.URLError as e:
-        print(f"Network error: {e}", file=sys.stderr)
+        print("Could not reach PubMed (no internet, or a proxy/firewall blocked it); nothing was checked or "
+              f"fetched. Connect to the internet and run the same command again. ({e})", file=sys.stderr)
         sys.exit(1)
     except ET.ParseError as e:
         print(f"XML parse error: {e}", file=sys.stderr)
