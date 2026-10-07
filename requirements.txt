@@ -9,5 +9,6 @@
 
 python-docx>=1.1.0   # DOCX compilation in scripts/compile_response_docx.py
 requests>=2.31.0     # OpenRouter calls in scripts/critical_review.py
+pypdf>=4.0           # reading PDF papers in scripts/academic_style.py learn (pdftotext also works)
 
 # Development / test runner: pip install -r requirements-dev.txt

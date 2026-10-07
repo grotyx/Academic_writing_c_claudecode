@@ -1,4 +1,4 @@
-# manuwright user manual (v2.3.2)
+# manuwright user manual (v2.4.0)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -20,7 +20,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -38,7 +38,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -265,6 +265,9 @@ manuwright update                         # installs, then runs `manuwright agen
 manuwright config set auto-update on      # patch releases only, at most daily
 manuwright init --refresh-rules --all     # every registered paper: update its agent rules (update offers this)
 manuwright check                          # one report of what is current, with the fix for each ✗
+manuwright mode strict                    # academic writing mode: academic (default), strict (blocks AI-register prose), off
+manuwright style learn ~/papers/landmark  # measure good papers so every section card carries their style
+manuwright style card discussion          # the card the agent loads before drafting that section
 ```
 
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.

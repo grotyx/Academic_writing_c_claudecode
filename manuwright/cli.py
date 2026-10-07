@@ -50,7 +50,11 @@ Standalone tools (same flags as scripts/*.py; project paths default to the curre
 Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
   init --refresh-rules [--all]   in an existing paper (or --all registered papers): update only the agent rules (AGENTS/CLAUDE/GEMINI.md)
-  check                      one report: version, agent adapters, main model, key, auto-update, papers to refresh
+  check                      one report: version, agent adapters, main model, key, auto-update, writing mode, papers
+  mode [academic|strict|off] academic writing mode: style cards + prose findings (strict also blocks)
+  style learn [papers...]    measure a corpus of good papers (PDF, DOCX, MD, TXT): your style, landmark, target journal
+  style card <section>       the section's style card: moves, phrasebank, model paragraphs, your measured style
+  style status               writing mode and learned profile (style extract|check: style metrics vs a Style Spec)
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)
@@ -186,9 +190,11 @@ def main(argv=None):
             sys.path.insert(0, str(HERE.parent))
         from manuwright import models
         return models.main(rest)
-    if command in {'init', 'rules', 'guide', 'check', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
+    if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status'):
+        return subprocess.call([sys.executable, str(ENGINE / 'scripts' / 'academic_style.py'), *rest])
+    if command in {'init', 'rules', 'guide', 'check', 'mode', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
         lifecycle = load_lifecycle()
-        if command in {'config', 'setup'}:
+        if command in {'config', 'setup', 'mode'}:
             return getattr(lifecycle, command)(rest)
         return getattr(lifecycle, command)(ENGINE, rest)
     if command in HARNESS_COMMANDS:

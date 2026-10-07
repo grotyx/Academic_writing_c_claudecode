@@ -1,0 +1,200 @@
+"""Academic writing mode: section cards, learned style profile, prose checks and their hooks."""
+from __future__ import annotations
+
+import importlib.util
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'scripts'))
+import academic_style as acad  # noqa: E402
+
+
+def load_hook(name):
+    spec = importlib.util.spec_from_file_location(name, ROOT / 'scripts' / 'hooks' / f'{name}.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+BAD = """Low back pain plays a crucial role in disability, highlighting the need for care. We don't know why.
+Furthermore, it is worth noting that outcomes were good. Moreover, we believe this is **very** important!
+
+10 patients were significantly better in group A."""
+
+
+@pytest.mark.parametrize('section', acad.SECTIONS)
+def test_every_card_exists_and_its_model_text_passes_its_own_checks(section):
+    text = (acad.STYLE_DIR / f'{section}.md').read_text(encoding='utf-8')
+    model = text.split('## Model paragraph', 1)[1].split('\n', 1)[1] if '## Model paragraph' in text else ''
+    assert acad.prose_issues(model, section) == []
+    assert section in acad.card(section)
+
+
+def test_prose_checks_flag_ai_register_and_form():
+    codes = {(sev, code) for sev, code, _, _ in acad.prose_issues(BAD, 'results')}
+    assert {('high', 'AI_PHRASE'), ('high', 'ING_TAIL'), ('high', 'CONTRACTION'), ('high', 'BOLD'),
+            ('medium', 'BELIEF'), ('medium', 'CONNECTIVE_RUN'), ('medium', 'EXCLAMATION'),
+            ('medium', 'NUMERAL_START'), ('medium', 'SIGNIFICANT_NO_STATS')} <= codes
+    lines = {code: line for _, code, line, _ in acad.prose_issues(BAD, 'results')}
+    assert lines['NUMERAL_START'] == 4 and lines['CONTRACTION'] == 1
+    clean = ('Leg pain decreased more after endoscopic decompression (mean difference 1.2; 95% CI 0.4 to 2.0; '
+             '*p* = 0.004).\n\n**Statistical analysis.** Data were analysed with R.\n\n**Keywords:** a; b; c')
+    assert acad.prose_issues(clean, 'results') == []
+    assert acad.prose_issues('Age did not differ significantly between groups (Table 1).', 'results') == []
+
+
+def test_split_sections_keeps_structured_abstract_labels_and_stops_at_references():
+    text = ('Title\nAbstract\nBackground\nStenosis is common.\nMethods\nWe did it.\nIntroduction\nIntro.\n'
+            '2. Materials and Methods\nMethod text.\nResults\nResult text.\nDiscussion\nDiscussion text.\n'
+            'Conclusions\nConclusion.\nReferences\n1. A ref.')
+    assert acad.split_sections(text) == {
+        'abstract': 'Stenosis is common.\nWe did it.', 'introduction': 'Intro.', 'methods': 'Method text.',
+        'results': 'Result text.', 'discussion': 'Discussion text.', 'conclusion': 'Conclusion.'}
+
+
+def write_corpus(folder):
+    intro = ('Lumbar spinal stenosis is a common cause of disability in older adults. The optimal extent of '
+             'decompression remains uncertain. Previous studies were retrospective and small. This study aimed to '
+             'compare two techniques in a prospective cohort. ') * 3
+    discussion = ('In this cohort, endoscopic decompression was associated with fewer reoperations. This finding is '
+                  'consistent with previous reports. However, residual confounding cannot be excluded. Further trials '
+                  'are needed to confirm the association. ') * 3
+    for i in (1, 2):
+        (folder / f'paper{i}.md').write_text(f'Abstract\n\nShort.\n\nIntroduction\n\n{intro}\n\nDiscussion\n\n'
+                                             f'{discussion}\n\nReferences\n\n1. Ref.\n', encoding='utf-8')
+    from docx import Document
+    doc = Document()
+    doc.add_heading('Introduction', 1)
+    doc.add_paragraph(intro)
+    doc.add_heading('Discussion', 1)
+    doc.add_paragraph(discussion)
+    doc.save(folder / 'paper3.docx')
+    (folder / 'example_template.md').write_text('Introduction\n\nignored ' * 50, encoding='utf-8')
+
+
+def test_learn_measures_a_corpus_and_the_card_shows_it(tmp_path, monkeypatch):
+    corpus = tmp_path / 'corpus'
+    corpus.mkdir()
+    write_corpus(corpus)
+    profile = acad.learn([corpus], acad.library_profile_dir())
+    assert profile['documents'] == 3 and set(profile['sections']) == {'introduction', 'discussion'}
+    assert 'example_template.md' not in profile['sources']
+    phrases = [p for p, _ in profile['sections']['discussion']['phrases']]
+    assert 'consistent with previous reports' in phrases
+    assert not any(any(c.isdigit() for c in p) for p in phrases)
+    card = acad.card('discussion')
+    assert 'Your corpus (learned from 3 document(s)' in card and 'Model paragraphs from your corpus' in card
+    assert 'Not learned yet' in acad.card('methods') or 'has no methods text' in acad.card('methods')
+    # A paper's own Style/profile wins over the library's.
+    paper = tmp_path / 'paper'
+    acad.learn([corpus / 'paper1.md'], paper / 'Style' / 'profile')
+    assert 'learned from 1 document(s)' in acad.card('discussion', paper)
+    # The learned profile quotes the sources, so it is never copied into a paper.
+    from manuwright import library
+    (library.writing() / 'own').mkdir(parents=True, exist_ok=True)
+    (library.writing() / 'own' / 'mine.md').write_text('anchor', encoding='utf-8')
+    _, copied = library.copy_into_paper(tmp_path / 'new_paper')
+    assert copied == ['Style/own/mine.md']
+
+
+def test_learned_p90_sets_the_long_sentence_limit(tmp_path):
+    folder = tmp_path / 'p'
+    (folder / 'Style' / 'profile').mkdir(parents=True)
+    (folder / 'Style' / 'profile' / 'style_profile.json').write_text(json.dumps(
+        {'sections': {'methods': {'sentence_length': {'p90': 31}}, 'results': {'sentence_length': {'p90': 90}}}}))
+    assert acad.long_limit_for('methods', folder) == 31
+    assert acad.long_limit_for('results', folder) == 50
+    assert acad.long_limit_for('discussion', folder) == 40
+
+
+def test_mode_comes_from_the_environment_then_config(monkeypatch):
+    assert acad.mode() == 'academic'
+    from manuwright import lifecycle
+    assert lifecycle.mode(['strict']) == 0 and acad.mode() == 'strict'
+    monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
+    assert acad.mode() == 'off'
+    assert lifecycle.mode(['loud']) == 2
+
+
+def test_strict_mode_blocks_high_findings_in_new_manuscript_text(monkeypatch):
+    gates = load_hook('enforce_gates')
+    edit = {'tool_name': 'Edit', 'cwd': '/p', 'tool_input': {
+        'file_path': '/p/drafts/revision/REV1/06_discussion_REV1.md', 'old_string': 'x',
+        'new_string': 'This plays a pivotal role, highlighting the gap.'}}
+    assert gates.decide(edit) is None  # academic mode reports after the edit; it never blocks
+    monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'strict')
+    reason = gates.decide(edit)
+    assert 'BLOCKED by academic writing mode (strict)' in reason and 'ING_TAIL' in reason
+    assert 'manuwright style card discussion' in reason
+    edit['tool_input']['new_string'] = 'Endoscopic decompression was associated with fewer reoperations.'
+    assert gates.decide(edit) is None
+    patch = ('*** Begin Patch\n*** Update File: drafts/revision/notes.md\n+We don\'t know.\n'
+             '*** Update File: drafts/revision/06_discussion.md\n@@\n-old\n+Fine text here.\n*** End Patch')
+    assert gates.decide({'tool_name': 'apply_patch', 'cwd': '/p', 'tool_input': {'command': patch}}).count('CONTRACTION') == 1
+    plan = {'tool_name': 'Write', 'cwd': '/p', 'tool_input': {'file_path': '/p/drafts/draft_plan.md',
+                                                            'content': "We don't block plans."}}
+    assert gates.decide(plan) is None
+
+
+def test_lint_after_edit_reports_academic_findings(tmp_path, monkeypatch):
+    lint = load_hook('lint_on_edit')
+    target = tmp_path / 'drafts' / '06_discussion.md'
+    target.parent.mkdir()
+    target.write_text('This plays a pivotal role in care.\n', encoding='utf-8')
+    event = {'tool_name': 'Write', 'cwd': str(tmp_path), 'tool_input': {'file_path': str(target)}}
+    code, message = lint.evaluate(event)
+    assert code == 2 and '[ACADEMIC/HIGH/AI_PHRASE]' in message and 'manuwright style card discussion' in message
+    monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
+    assert 'ACADEMIC' not in lint.evaluate(event)[1]
+
+
+def test_prompt_hook_injects_the_card_for_a_drafting_request_and_ignores_talk_about_the_tool(monkeypatch):
+    intent = load_hook('style_intent')
+    question = ('이 프로그램도 학술적으로 글을 쓰는 모드 같은 거를 개선할 수 있는 방법이 있을까? '
+                '글 자체를 학술적으로 쓸 수 있도록 바꿀 수 있는 방법')
+    assert intent.evaluate({'prompt': question}) == ''
+    out = intent.evaluate({'prompt': '서론 써줘'})
+    assert 'ACADEMIC STYLE CARD: introduction' in out
+    assert intent.requested_sections('drafts/06_discussion.md 다시 써줘, 결론도 작성') == ['discussion', 'conclusion']
+    assert intent.requested_sections('결과 나오면 알려줘') == []
+    monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
+    assert intent.evaluate({'prompt': '서론 써줘'}) == ''
+
+
+def test_session_start_injects_the_core_card_unless_off(tmp_path, monkeypatch):
+    script = ROOT / 'scripts' / 'hooks' / 'session_contract.py'
+    out = subprocess.run([sys.executable, str(script), str(tmp_path)], capture_output=True, text=True,
+                         encoding='utf-8').stdout
+    assert 'ACADEMIC WRITING MODE' in out and 'manuwright style card' in out
+    monkeypatch.setenv('MANUWRIGHT_WRITING_MODE', 'off')
+    out = subprocess.run([sys.executable, str(script), str(tmp_path)], capture_output=True, text=True,
+                         encoding='utf-8').stdout
+    assert 'WORKFLOW CONTRACT' in out and 'ACADEMIC WRITING MODE' not in out
+
+
+def test_cli_style_commands_and_check_row(tmp_path, capsys, monkeypatch):
+    out = subprocess.run([sys.executable, '-m', 'manuwright.cli', 'style', 'card', 'results'], capture_output=True,
+                         text=True, encoding='utf-8', cwd=str(ROOT)).stdout
+    assert 'ACADEMIC STYLE CARD: results' in out
+    bad = tmp_path / '05_results.md'
+    bad.write_text("We don't know.\n", encoding='utf-8')
+    assert acad.main(['check', str(bad)]) == 1
+    from manuwright import lifecycle
+    monkeypatch.setattr(lifecycle, 'latest_release', lambda: None)
+    monkeypatch.setattr(lifecycle, 'adapter_checks', lambda engine, current: [])
+    lifecycle.check(lifecycle.Path(ROOT), [])
+    report = capsys.readouterr().out
+    assert '✓ Writing mode' in report and '· Learned style' in report
+
+
+def test_a_pdf_without_a_reader_is_skipped_with_the_reason(tmp_path, monkeypatch):
+    (tmp_path / 'paper.pdf').write_bytes(b'%PDF-1.4 not really')
+    monkeypatch.setitem(sys.modules, 'pypdf', None)  # import fails
+    monkeypatch.setattr(acad.shutil, 'which', lambda name: None)
+    profile = acad.learn([tmp_path], tmp_path / 'out')
+    assert profile['documents'] == 0 and 'pypdf' in profile['skipped'][0]

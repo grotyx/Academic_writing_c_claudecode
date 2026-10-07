@@ -79,8 +79,17 @@ reason: number not found in results CSV files
 | 报告的每个数字都存在于 `results/*.csv` | `manuwright numbers` 与 result binding |
 | 来源、计划或引擎变化时，评审即变为 stale | 每条记录中的 sha256 快照 |
 | 投稿需要人工签字、AI 使用声明和完成的检查清单 | `manuwright verify --profile submission` |
+| 文字读起来像高影响力临床期刊，而不是聊天机器人 | 学术文体模式：每次起草提供风格卡，每次编辑检查文字（`strict` 会阻止） |
 
 引擎从不编造批准或评审，只记录人做出的决定。
+
+## 学术文体模式
+
+在本机无法对模型进行微调，因此 manuwright 在每次写作时采取次优而有效的做法：把合适的范例和量化目标放在写作者面前，并检查写出的文字。
+
+- **章节卡片。** 每个章节（title、abstract、introduction、methods、results、discussion、conclusion）都有一张卡片，包含修辞结构（moves）、规则、表达库（phrasebank）以及用高影响力临床期刊文体写成的范例段落。核心卡片在每次会话开始时载入；当你要求起草某一章节（如 "draft the Discussion"）或运行 `manuwright style card <section>` 时载入该章节卡片。
+- **你的语料。** `manuwright style learn <论文>` 按章节测量一组好论文（你自己的论文、领域经典论文、目标期刊的近期论文；PDF、DOCX、MD 或 TXT）：句长、被动语态比例、hedging、常用表达、句首模式和范例段落。此后每张卡片都会带上这些目标和段落。该档案只保存在个人文献库中，不会复制到论文文件夹。
+- **文字检查。** 每次编辑稿件章节后，会按行报告 AI 腔表达（delve、pivotal、"it is worth noting"、句末的 ", highlighting ..."）、缩写形式、正文加粗、过长句子、没有统计量的 "significant" 等问题。`manuwright mode strict` 会在改写之前直接阻止写入；`manuwright mode off` 关闭该模式。
 
 ## 安装
 
@@ -95,7 +104,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -121,6 +130,8 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright init [folder]` | 创建论文文件夹：manifest、计划模板（未批准）、证据登记表、智能体规则 |
 | `manuwright rules [keyword]` | 打印全部工作流规则或其中一节 |
 | `manuwright check` | 一次检查版本、代理插件、主模型、密钥、自动更新和需刷新的论文，并给出修复命令 |
+| `manuwright mode academic\|strict\|off` | 学术文体模式：风格卡片 + 每次编辑后的文字检查；`strict` 阻止含 AI 腔文字的写入 |
+| `manuwright style learn <论文>` / `style card <section>` | 测量好论文语料（你的文体、经典论文、目标期刊）/ 显示章节风格卡片 |
 | `manuwright guide [name ...]` | 列出或打印规则引用的引擎指南（`docs/<name>.md`） |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 运行该阶段的全部检查 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 对单个文件运行单个检查器 |

@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.8.30)
+# Academic Paper Writing Project (v1.9.0)
 
-## Shared Engine (v1.8.30)
+## Shared Engine (v1.9.0)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -219,7 +219,7 @@ These must match across **Abstract ↔ Methods ↔ Results ↔ Tables**:
 - **Verifier 모델:** 사용 가능한 독립 reviewer 또는 인간 검토자. 특정 모델의 우위를 가정하지 않는다.
 - **인용 grounding:** 초안에서 모든 인용은 `[EVID:author_year]` 태그로 표기 (Phase 7에서 저널 형식 변환).
 - **수치 grounding:** 원고 결과 수치는 `results/*.csv`에 존재하는 값만 사용.
-- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅(`Write/Edit/MultiEdit`)이 plan-first를 강제 — 완료·승인된 `draft_plan.md` 없이 섹션 작성, 완료·승인된 `analysis_plan.md` 없이 분석 스크립트 생성을 **차단**한다(Rule 7·8, fail-open). 미완성 템플릿/미체크 승인 plan은 plan으로 인정하지 않는다 — 승인 체크박스(`- [x] 사용자 승인 완료`)가 **없어도** 미승인. 훅은 `scripts/hooks/run.sh` 런처로 실행(`py` 있으면 py, 없으면 `python3` — macOS/Linux에서도 강제 유지). SessionStart 훅이 본 계약(+활성 Style Spec)을 매 세션 주입. PostToolUse 훅(`lint_on_edit.py`)이 draft 편집마다 용어·표기 lint를 표면화하고, UserPromptSubmit 훅(`style_intent.py`)이 "학술적으로 바꿔줘" 류 입력에 style-pass protocol을 자동 주입한다. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
+- **Hook 강제 (결정적):** `.claude/settings.json`의 PreToolUse 훅(`Write/Edit/MultiEdit`)이 plan-first를 강제 — 완료·승인된 `draft_plan.md` 없이 섹션 작성, 완료·승인된 `analysis_plan.md` 없이 분석 스크립트 생성을 **차단**한다(Rule 7·8, fail-open). 미완성 템플릿/미체크 승인 plan은 plan으로 인정하지 않는다 — 승인 체크박스(`- [x] 사용자 승인 완료`)가 **없어도** 미승인. 훅은 `scripts/hooks/run.sh` 런처로 실행(`py` 있으면 py, 없으면 `python3` — macOS/Linux에서도 강제 유지). SessionStart 훅이 본 계약(+활성 Style Spec)을 매 세션 주입. PostToolUse 훅(`lint_on_edit.py`)이 draft 편집마다 용어·표기 lint를 표면화하고, UserPromptSubmit 훅(`style_intent.py`)이 "학술적으로 바꿔줘" 류 입력에 style-pass protocol을 자동 주입한다. **학술 문체 모드**(`manuwright mode academic|strict|off`, 기본 academic): SessionStart 훅이 핵심 스타일 카드를, UserPromptSubmit 훅이 "서론 써줘" 류 섹션 작성 요청에 해당 섹션 카드(`docs/academic_style/`, `manuwright style card <section>`)를 주입하고, PostToolUse 훅이 편집마다 AI 말투·축약형·긴 문장 등 학술 문장 검사 결과를 표면화한다. `strict` 는 고위험 문장이 든 원고 쓰기를 PreToolUse 에서 차단한다. 결정적 검증은 `/verify`(`scripts/verify_all.py`)로 일괄 실행.
 
 **게이트 배치·병렬·freshness:** Phase별 게이트(3 Claim→Citation 사전검증 · 4 섹션 게이트 · 6 경량 · 8 응답 게이트), 병렬 검출, freshness 해시 규칙은 `docs/verification_protocol.md` §7/§3.1/§6 참조. PASS 시 산출물 sha256를 `provenance:`에 기록하고, 산출물이 바뀌면 stale로 보고 재검증(`check_gate.py --verify-hash`). **결정적 차원(citation/numbers/revision_claims)은 `check_gate.py --cross-check`로 원장의 `PASS`를 정본 checker 즉석 재실행과 대조** — 안 돌리고 적은 가짜 PASS나 stale PASS를 모순으로 차단(소스 미도달 시 loud FAIL).
 
@@ -264,6 +264,7 @@ Use a capable planner for design, a shell-capable analyst for reproducible analy
 ## Natural Academic Writing Style
 
 > **상세 가이드: `docs/writing_guide.md`**
+> **학술 문체 모드 (v1.9.0):** 섹션 카드 `docs/academic_style/` (`manuwright style card <section>`), 코퍼스 학습 `manuwright style learn <papers>`, 모드 `manuwright mode academic|strict|off`.
 > 규칙·표·예시는 writing_guide.md에 있음. WORKFLOW.md는 워크플로·Phase 조정만 담당 (중복 방지).
 
 **Phase 5 (Style Polish)에서 적용할 writing_guide.md 섹션:**
@@ -336,6 +337,7 @@ Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 
 Phase 4: Draft (in this order)
 ├── Read docs/drafting_protocol.md + docs/section_templates.md before drafting
+├── Load the section card before each section: `manuwright style card <section>` (moves, phrasebank, model paragraphs, learned corpus style; auto-injected on "서론 써줘")
 ├── Apply Style/terminology.md and relevant Style anchors during drafting
 ├── (선택) /paper-debate — 핵심 섹션 논증 골격을 논리 담당 공동 저자(Codex)와 토론 후 작성
 ├── 04_methods.md      → establishes framework
@@ -353,6 +355,7 @@ Phase 4: Draft (in this order)
 
 Phase 5: Style Polish
 ├── /style-pass — 초안을 bound Style Spec/exemplar에 맞춰 섹션별 변환 + Style Verifier (docs/style_transform_protocol.md; "학술적으로 바꿔줘"에 자동 발동)
+├── Academic prose check: `manuwright lint --academic drafts` (또는 `python scripts/academic_style.py check <section>`) 0 high findings; 좋은 논문 코퍼스는 `manuwright style learn <papers>`
 ├── Apply writing_guide.md Style Reference Tables
 │   ├── Transition Words 업그레이드 (but → nonetheless)
 │   ├── Verb Upgrades (showed → demonstrated)

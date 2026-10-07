@@ -3,7 +3,9 @@
 
 Claude Code injects this hook's stdout into the session context, so the
 non-negotiable rules are present every session (the soft half of enforcement;
-the hard half is the PreToolUse gate in enforce_gates.py).
+the hard half is the PreToolUse gate in enforce_gates.py). With the academic writing
+mode on (the default), it also injects the core academic style card
+(docs/academic_style/core.md) so every draft starts in that register.
 """
 
 import sys
@@ -44,6 +46,17 @@ def style_spec_addendum(root: Path = ROOT) -> str:
     )
 
 
+def academic_card(root: Path) -> str:
+    """The always-on academic writing card, unless the writing mode is off (fails quiet)."""
+    try:
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import academic_style
+
+        return "" if academic_style.mode() == "off" else academic_style.core_card(root)
+    except Exception:
+        return ""
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # avoid cp949 console crashes
@@ -51,9 +64,10 @@ def main() -> int:
         pass
     print(CONTRACT)
     # Plugin hooks (manuwright hook session) pass the paper folder; a checkout scans itself.
-    addendum = style_spec_addendum(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT)
-    if addendum:
-        print(addendum)
+    project = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT
+    for extra in (style_spec_addendum(project), academic_card(project)):
+        if extra:
+            print(extra)
     return 0
 
 

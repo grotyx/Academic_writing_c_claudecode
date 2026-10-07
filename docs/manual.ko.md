@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.3.2)
+# manuwright 사용자 매뉴얼 (v2.4.0)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -20,7 +20,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -38,7 +38,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -272,6 +272,9 @@ manuwright update                         # 설치 후 `manuwright agents update
 manuwright config set auto-update on      # patch 릴리스만, 하루 최대 1회
 manuwright init --refresh-rules --all     # 등록된 모든 논문: 에이전트 규칙만 갱신 (update 가 물어봄)
 manuwright check                          # 최신 상태를 한 화면에 점검, ✗ 마다 고치는 명령
+manuwright mode strict                    # 학술 문체 모드: academic(기본), strict(AI 말투 쓰기 차단), off
+manuwright style learn ~/papers/landmark  # 좋은 논문을 측정해 모든 섹션 카드에 그 문체를 반영
+manuwright style card discussion          # 에이전트가 그 섹션을 쓰기 전에 읽는 카드
 ```
 
 등록된 논문이 엔진을 고정했거나(`project.json` 의 `"engine": ">=1.8,<1.9"`), 엔진이 바뀌면 무효가 될 유효한 검토가 있으면 자동 업데이트는 기다린다. 되돌리기: `manuwright update --to <버전>`.

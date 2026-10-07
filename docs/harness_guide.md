@@ -1,6 +1,6 @@
-# Shared manuscript engine (v1.1.5)
+# Shared manuscript engine (v1.2.0)
 
-Project release: v1.8.30. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
+Project release: v1.9.0. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
 ## Runtime setup
 
@@ -53,10 +53,15 @@ manuwright guide writing_guide      # print an engine guide the rules cite as do
 manuwright update --check           # compare with the newest vX.Y.Z tag
 manuwright check                    # version, agent plugins (path + version), main model, key, auto-update, stale paper rules; fix per item
 manuwright init --refresh-rules --all   # refresh the agent rules of every registered paper (.bak kept)
+manuwright mode academic|strict|off  # academic writing mode (default academic)
+manuwright style learn <papers>     # measure a corpus of good papers (PDF/DOCX/MD/TXT) into the personal library
+manuwright style card <section>     # the section card: moves, rules, phrasebank, model paragraphs, learned style
 manuwright update [--to X.Y.Z]      # reinstall that release (uv tool install --force, else pip), then `agents update` (--no-agents skips); logs to ~/.manuwright/update.log
 manuwright config set auto-update on
 manuwright update --auto            # for SessionStart hooks or shell startup: at most one check a day
 ```
+
+Academic writing mode (`scripts/academic_style.py`, cards in `docs/academic_style/`): in `academic` (default) the SessionStart hook injects the core style card, the UserPromptSubmit hook injects the section card when the prompt asks to draft or rewrite a named section, and the PostToolUse lint adds academic-prose findings (AI-register phrases and words, trailing "-ing" clauses, contractions, bold in running text, lists in Introduction/Discussion, overlong sentences, numeral-initial sentences, "significant" without statistics) after each manuscript edit. `strict` also lets the PreToolUse gate block a write to a manuscript prose file under `drafts/` whose new text has high-severity findings. `off` disables all three. `MANUWRIGHT_WRITING_MODE` overrides the saved mode (`manuwright mode`, `config set writing-mode`). `manuwright style learn` measures a corpus per section (sentence length mean/SD/p90, passive voice, we/our and hedges per 100 words, paragraph length, signature 3-4-word phrases shared across papers, sentence openers, transitions) and picks model paragraphs; the profile lives in `~/.manuwright/library/writing/profile/` (or `--out`; a paper's own `Style/profile/` wins) and is never copied into a paper. The learned p90 sets the overlong-sentence limit (30-50 words, default 40). PDF reading uses `pypdf` (dependency) or `pdftotext`. `manuwright lint --academic` adds the same findings to the lint report; `manuwright verify` profiles are unchanged.
 
 `init` never overwrites an existing file and never ticks an approval box. `manuwright env` builds the paper's analysis environment (uv-managed Python 3.12, `data/requirements.txt`, env in `~/.manuwright/envs/<paper_id>`, versions in `data/environment.lock.txt`); `manuwright run <script>` runs a script with it from the paper folder. `manuwright approve <plan> --kind analysis|draft --approved-by NAME --quote "..."` records an approval the author gave in chat: it ticks the box with who/when/what and writes the hashed receipt (the plan must be complete). A fresh folder is expected to be BLOCKED by `verify` until artifacts exist. `verify`/`status` with `--project` register the manifest in `~/.manuwright/projects.json` (`MANUWRIGHT_HOME` overrides the folder).
 

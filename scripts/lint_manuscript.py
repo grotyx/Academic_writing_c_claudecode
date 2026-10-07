@@ -238,11 +238,24 @@ def lint_file(path: Path, forbidden_terms: dict[str, str]) -> list[tuple[str, Pa
     return issues
 
 
+def academic_issues(path: Path) -> list[tuple[str, Path, int, str]]:
+    """Academic-prose findings (AI register, contractions, long sentences ...) as lint issues."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import academic_style
+
+    section = academic_style.section_of(path)
+    text = path.read_text(encoding="utf-8", errors="replace")
+    return [(f"ACADEMIC_{code}", path, line, f"[{severity}] {message}")
+            for severity, code, line, message in academic_style.prose_issues(text, section)]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Lint manuscript markdown files for terminology and style issues.")
     parser.add_argument("paths", nargs="*", default=["drafts"], help="Markdown files or directories to lint. Default: drafts")
     parser.add_argument("--terminology", default=str(TERMINOLOGY_FILE), help="Path to terminology registry")
     parser.add_argument("--quiet", action="store_true", help="Only print summary")
+    parser.add_argument("--academic", action="store_true",
+                        help="Also report academic-prose findings (scripts/academic_style.py)")
     args = parser.parse_args()
 
     input_paths = [Path(p) for p in args.paths]
@@ -253,6 +266,8 @@ def main() -> int:
     all_issues: list[tuple[str, Path, int, str]] = []
     for file_path in files:
         all_issues.extend(lint_file(file_path, forbidden_terms))
+        if args.academic:
+            all_issues.extend(academic_issues(file_path))
 
     if not args.quiet:
         for code, path, line, message in all_issues:

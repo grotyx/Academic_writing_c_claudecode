@@ -1,5 +1,17 @@
 # 变更记录
 
+### v1.9.0 (261007)
+
+学术文体模式：每次起草时都把合适的范例和量化目标交给写作者，并检查写出的文字。
+
+- 章节风格卡片（`docs/academic_style/`）：一张始终启用的核心卡片，以及每个章节一张卡片（title、abstract、introduction、methods、results、discussion、conclusion），包含修辞结构（moves）、规则、表达库、应避免→建议的表达，以及以高影响力临床期刊文体写成的范例段落。用 `manuwright style card <section>` 显示。
+- SessionStart 钩子注入核心卡片；当你要求起草或改写某一章节（如 "draft the Discussion"）时，UserPromptSubmit 钩子注入该章节卡片。
+- `manuwright style learn [论文]` 按章节测量一组好论文（你自己的、经典论文、目标期刊；PDF、DOCX、MD、TXT；默认是文献库中的 PDF）：句长（均值、SD、第 90 百分位）、被动语态、每 100 词的 we/our 与 hedging、段落长度、多篇论文共有的表达、句首模式、过渡词和范例段落。此后每张卡片都包含这些内容，第 90 百分位作为长句上限。该档案只保存在 `~/.manuwright/library/writing/profile/`，不会复制到论文文件夹。读取 PDF 需要 `pypdf`（新依赖）或 `pdftotext`。
+- 文字检查（`scripts/academic_style.py`）：AI 腔表达和词汇（delve、pivotal、"it is worth noting"、"plays a crucial role" 等）、句末的 ", highlighting/underscoring ..." 从句、缩写形式、聊天残留、正文加粗、Introduction/Discussion 中的列表、过长句子、以数字开头的句子、反问句、连续使用 Furthermore/Moreover，以及 Results 和 Abstract 中没有估计值或 *p* 的 "significant"。每次编辑稿件后报告，也可用 `manuwright lint --academic` 和 `python scripts/academic_style.py check` 直接运行。
+- `manuwright mode academic|strict|off`（或 `config set writing-mode`、`MANUWRIGHT_WRITING_MODE`）：默认 academic；strict 在改写之前阻止写入含高严重度问题的稿件文字；off 关闭该模式。`manuwright check` 显示模式和已学习的档案。
+- "改成学术风格" 的自动触发不再对关于工具本身的问题（程序、模式、功能、钩子、更新）作出反应。
+- 论文代理规则和 manuwright 技能会提示代理在起草前读取章节卡片。已有论文：`manuwright init --refresh-rules --all`（`manuwright update` 会询问）。
+
 ### v1.8.30 (261006)
 
 - 新命令 `manuwright check`：在一屏中显示是否为最新版本、各代理的 manuwright 插件（Claude Code 和 Codex：登记文件夹与版本；opencode：技能）、主模型（会标出 `claude` 这类代理名称）、使用 OpenRouter 评审者时的密钥、自动更新，以及代理规则过期的已登记论文，并为每个 ✗ 给出修复命令。

@@ -1,5 +1,17 @@
 # Changelog
 
+### v1.9.0 (261007)
+
+Academic writing mode: the writer gets the right examples and measured targets at every draft, and the prose that comes back is checked.
+
+- Section style cards (`docs/academic_style/`): an always-on core card plus one card per section (title, abstract, introduction, methods, results, discussion, conclusion) with rhetorical moves, rules, a phrasebank, avoid/prefer pairs and model paragraphs in the register of high-impact clinical journals. `manuwright style card <section>` prints one.
+- The SessionStart hook injects the core card; the UserPromptSubmit hook injects the section card when you ask to draft or rewrite a section ("서론 써줘", "draft the Discussion", "06_discussion.md 다시 써줘").
+- `manuwright style learn [papers]` measures a corpus of good papers (your own, landmark, target journal; PDF, DOCX, MD, TXT; default: the PDFs in your library) per section: sentence length (mean, SD, 90th percentile), passive voice, we/our and hedges per 100 words, paragraph length, signature phrases shared across papers, sentence openers, transitions, and model paragraphs. Every card then includes them; the 90th percentile sets the long-sentence limit. The profile stays in `~/.manuwright/library/writing/profile/` and is never copied into a paper. PDF reading needs `pypdf` (now a dependency) or `pdftotext`.
+- Prose checks (`scripts/academic_style.py`): AI-register phrases and words (delve, pivotal, "it is worth noting", "plays a crucial role", ...), trailing ", highlighting/underscoring ..." clauses, contractions, chat residue, bold in running text, lists in Introduction/Discussion, overlong sentences, sentences starting with a numeral, rhetorical questions, runs of Furthermore/Moreover, and "significant" without an estimate or *p* in Results and Abstract. Reported after each manuscript edit; `manuwright lint --academic` and `python scripts/academic_style.py check` run them on demand.
+- `manuwright mode academic|strict|off` (or `config set writing-mode`, `MANUWRIGHT_WRITING_MODE`): academic is the default; strict blocks a write to a manuscript prose file whose new text has high-severity findings until it is rewritten; off turns the mode off. `manuwright check` shows the mode and the learned profile.
+- The "make it academic" auto-trigger no longer fires on questions about the tool itself (programs, modes, features, hooks, updates).
+- The paper agent rules and the manuwright skill tell agents to load the section card before drafting. Existing papers: `manuwright init --refresh-rules --all` (`manuwright update` offers it).
+
 ### v1.8.30 (261006)
 
 - New `manuwright check`: one screen showing whether the version is the latest, each agent's manuwright plugin (Claude Code and Codex: marketplace folder and version; opencode: skills), the main model (an agent name such as `claude` is flagged), the OpenRouter key when OpenRouter reviewers are set, auto-update, and registered papers whose agent rules are out of date, each ✗ with the command that fixes it.

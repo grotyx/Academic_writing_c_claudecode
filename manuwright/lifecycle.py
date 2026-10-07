@@ -226,6 +226,7 @@ def paper_refresh_hint():
 REVIEW_AGENTS = ('claude', 'codex', 'opencode', 'muse', 'agy')
 CONFIG_KEYS = {  # key -> (path in config.json, kind)
     'auto-update': (('auto_update',), 'onoff'),
+    'writing-mode': (('writing_mode',), ('academic', 'strict', 'off')),
     'main-model': (('main_model',), 'text'),
     'review.reviewers': (('review', 'reviewers'), 'list'),
     'review.openrouter-models': (('review', 'openrouter_models'), 'list'),
@@ -300,6 +301,7 @@ SETUP_HELP = {
     'docx.margin-inches': 'page margins (inches)', 'docx.line-numbers': 'line numbers: continuous, page, off',
     'docx.page-numbers': 'page numbers: center, right, off',
     'auto-update': 'install patch updates automatically: on/off',
+    'writing-mode': 'academic writing mode: academic (cards + findings after each edit), strict (also blocks), off',
 }
 
 
@@ -819,6 +821,35 @@ def guide(engine, args):
     return 0
 
 
+MODE_HELP = {
+    'academic': 'section style cards at session start and on drafting requests; academic-prose findings after '
+                'each edit (default)',
+    'strict': 'as academic, and a write to a manuscript section whose new text has high-severity findings is '
+              'blocked until it is rewritten',
+    'off': 'no style cards and no academic-prose findings (terminology lint still runs)',
+}
+
+
+def mode(args):
+    """manuwright mode [academic|strict|off]: show or set the academic writing mode."""
+    data = load('config.json', {})
+    if args:
+        if len(args) != 1 or args[0] not in MODE_HELP:
+            print('usage: manuwright mode [academic|strict|off]', file=sys.stderr)
+            return 2
+        data['writing_mode'] = args[0]
+        save('config.json', data)
+    current = data.get('writing_mode') if data.get('writing_mode') in MODE_HELP else 'academic'
+    print(f'Writing mode: {current}: {MODE_HELP[current]}.')
+    override = os.environ.get('MANUWRIGHT_WRITING_MODE', '').strip().lower()
+    if override in MODE_HELP and override != current:
+        print(f'MANUWRIGHT_WRITING_MODE={override} overrides it in this shell.')
+    if not args:
+        print('Change it: manuwright mode academic|strict|off. Cards: manuwright style card <section>; '
+              'learn a corpus: manuwright style learn <papers>.')
+    return 0
+
+
 # --- health check ------------------------------------------------------------
 
 def _run_text(argv):
@@ -920,6 +951,14 @@ def check(engine, args):
     rows.append((bool(auto), 'Auto-update', 'on' + (' (announces releases; install with the printed line)'
                                                     if on_windows() else '') if auto else 'off',
                  None if auto else 'manuwright config set auto-update on'))
+    writing_mode = data.get('writing_mode') if data.get('writing_mode') in MODE_HELP else 'academic'
+    rows.append((True if writing_mode != 'off' else None, 'Writing mode',
+                 writing_mode if writing_mode != 'off' else 'off (manuwright mode academic turns it on)', None))
+    try:
+        profile = json.loads((home() / 'library' / 'writing' / 'profile' / 'style_profile.json').read_text(encoding='utf-8'))
+        rows.append((True, 'Learned style', f"{profile.get('documents', 0)} document(s), {profile.get('learned', '')}", None))
+    except (OSError, ValueError):
+        rows.append((None, 'Learned style', 'none yet (optional: manuwright style learn <your or landmark papers>)', None))
     stale = stale_papers(engine)
     rows.append((not stale, 'Paper agent rules', 'all registered papers current' if not stale else
                  f'{len(stale)} out of date: ' + ', '.join(str(p) for p in stale),

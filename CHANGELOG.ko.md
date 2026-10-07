@@ -1,5 +1,17 @@
 # 변경 이력
 
+### v1.9.0 (261007)
+
+학술 문체 모드: 초안을 쓸 때마다 알맞은 예문과 측정된 목표치를 쓰는 쪽에 주고, 써 온 문장을 검사한다.
+
+- 섹션 스타일 카드(`docs/academic_style/`): 항상 켜지는 핵심 카드와 섹션별 카드(title, abstract, introduction, methods, results, discussion, conclusion). 수사 구조(moves), 규칙, 표현집(phrasebank), 피할 표현→바꿀 표현, high-impact 임상 저널 문체의 모범 문단을 담았다. `manuwright style card <section>` 으로 출력한다.
+- SessionStart 훅이 핵심 카드를, UserPromptSubmit 훅이 섹션 작성·수정 요청("서론 써줘", "draft the Discussion", "06_discussion.md 다시 써줘")에 해당 섹션 카드를 넣는다.
+- `manuwright style learn [논문들]` 이 좋은 논문 코퍼스(내 논문, landmark, 목표 저널; PDF·DOCX·MD·TXT; 기본값은 라이브러리의 PDF)를 섹션별로 측정한다: 문장 길이(평균·SD·90 백분위), 수동태, 100단어당 we/our·hedging, 문단 길이, 여러 논문에 공통인 표현, 문장 시작 패턴, 전환어, 모범 문단. 이후 모든 카드에 들어가며, 90 백분위가 긴 문장 기준이 된다. 프로필은 `~/.manuwright/library/writing/profile/` 에만 있고 논문 폴더로 복사되지 않는다. PDF 는 `pypdf`(새 의존성) 또는 `pdftotext` 로 읽는다.
+- 문장 검사(`scripts/academic_style.py`): AI 말투 표현·단어(delve, pivotal, "it is worth noting", "plays a crucial role" 등), 끝에 붙는 ", highlighting/underscoring ..." 절, 축약형, 챗봇 잔재, 본문 굵은 글씨, Introduction/Discussion 의 목록, 너무 긴 문장, 숫자로 시작하는 문장, 수사 의문문, Furthermore/Moreover 연속, Results·Abstract 에서 추정치나 *p* 없는 "significant". 원고를 고칠 때마다 알려 주고, `manuwright lint --academic`·`python scripts/academic_style.py check` 로 직접 돌릴 수 있다.
+- `manuwright mode academic|strict|off` (또는 `config set writing-mode`, `MANUWRIGHT_WRITING_MODE`): 기본은 academic, strict 는 고위험 문장이 든 원고 쓰기를 고칠 때까지 막고, off 는 모드를 끈다. `manuwright check` 가 모드와 학습된 프로필을 보여 준다.
+- "학술적으로 바꿔줘" 자동 발동이 도구 자체에 대한 질문(프로그램, 모드, 기능, 훅, 업데이트)에는 반응하지 않는다.
+- 논문 에이전트 규칙과 manuwright 스킬이 섹션을 쓰기 전에 카드를 읽도록 안내한다. 기존 논문: `manuwright init --refresh-rules --all` (`manuwright update` 가 물어봄).
+
 ### v1.8.30 (261006)
 
 - 새 명령 `manuwright check`: 최신 버전인지, 에이전트별 manuwright 플러그인(Claude Code·Codex: 등록 폴더와 버전, opencode: 스킬), 메인 모델(`claude` 같은 에이전트 이름은 표시), OpenRouter 검토자를 쓸 때 키, 자동 업데이트, 에이전트 규칙이 오래된 등록 논문을 한 화면에 보여 주고 ✗ 마다 고치는 명령을 알려 준다.

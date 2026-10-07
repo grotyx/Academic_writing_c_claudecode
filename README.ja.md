@@ -79,8 +79,17 @@ reason: number not found in results CSV files
 | 報告するすべての数値が `results/*.csv` に存在する | `manuwright numbers` と result binding |
 | 出典・計画・エンジンが変わるとレビューは stale になる | すべての記録に sha256 スナップショット |
 | 投稿には人の署名、AI 使用の開示、完了したチェックリストが必要 | `manuwright verify --profile submission` |
+| 文章がチャットボットではなく high-impact 臨床誌のように読める | 学術文体モード: 草稿ごとのスタイルカード、編集ごとの文章チェック（`strict` はブロック） |
 
 エンジンは承認やレビューを作り出さない。人が下した判断を記録するだけである。
+
+## 学術文体モード
+
+手元でモデルをファインチューニングすることはできないため、manuwright は書くたびに次善の策をとる。書き手の前に適切な例文と測定済みの目標値を置き、書かれた文章を検査する。
+
+- **セクションカード。** 各セクション（title、abstract、introduction、methods、results、discussion、conclusion）に、修辞構造（moves）、規則、表現集（phrasebank）、high-impact 臨床誌の文体で書いた模範段落をまとめたカードがある。コアカードは毎セッション開始時に読み込まれ、セクションカードはそのセクションの執筆を頼んだとき（「Discussion を書いて」など）または `manuwright style card <section>` で読み込まれる。
+- **自分のコーパス。** `manuwright style learn <論文>` が良い論文の集まり（自分の論文、分野の landmark 論文、投稿先誌の最近の論文。PDF・DOCX・MD・TXT）をセクションごとに測定する：文長、受動態の割合、hedging、よく使う表現、文頭パターン、模範段落。以後すべてのカードにこの目標値と段落が加わる。プロファイルは個人ライブラリにのみ保存され、論文フォルダにはコピーされない。
+- **文章チェック。** 原稿セクションを編集するたびに、AI 的な言い回し（delve、pivotal、"it is worth noting"、文末の ", highlighting ..."）、短縮形、本文の太字、長すぎる文、統計値のない "significant" などを行番号付きで報告する。`manuwright mode strict` は書き直すまで書き込み自体をブロックし、`manuwright mode off` でモードを無効にする。
 
 ## インストール
 
@@ -95,7 +104,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -121,6 +130,8 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright init [folder]` | 論文フォルダを開始：manifest、計画テンプレート（未承認）、根拠リスト、エージェント規則 |
 | `manuwright rules [keyword]` | ワークフロー規則の全体または 1 節を表示 |
 | `manuwright check` | バージョン・エージェントプラグイン・メインモデル・キー・自動更新・更新が必要な論文をまとめて点検し、修正コマンドを表示 |
+| `manuwright mode academic\|strict\|off` | 学術文体モード: スタイルカード + 編集ごとの文章チェック。`strict` は AI 的な文章の書き込みをブロック |
+| `manuwright style learn <論文>` / `style card <section>` | 良い論文のコーパス（自分の文体、landmark、投稿先誌）を測定 / セクションのスタイルカードを表示 |
 | `manuwright guide [name ...]` | 規則が引用するエンジンのガイド（`docs/<name>.md`）の一覧または内容を表示 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | その段階のすべての検査を実行 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 1 つのファイルに 1 つのチェッカーを実行 |

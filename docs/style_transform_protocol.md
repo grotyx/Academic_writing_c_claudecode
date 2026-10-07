@@ -1,4 +1,4 @@
-# Style Transformation Protocol
+# Style Transformation Protocol (v0.2.0)
 
 > Turn a rough draft into bound academic/journal style — reliably, without repeating the
 > same style note. Triggered by `/style-pass`, or automatically when you ask to "make it
@@ -39,7 +39,8 @@ rewrite everything.
 For EACH section, in drafting order (Methods → Results → Introduction → Discussion →
 Conclusion → Abstract → Title):
 1. Load the Style Spec + the matching section of the bound exemplar + the `writing_guide`
-   section rules.
+   section rules + the section card (`manuwright style card <section>`: moves, phrasebank,
+   model paragraphs and, when learned with `manuwright style learn`, the corpus targets).
 2. Rewrite the section toward the spec: structure/flow, sentence length, hedging, claim
    strength, reference format, voice/tense. Keep claims and numbers grounded — do not invent.
 
@@ -63,4 +64,7 @@ Record a `style` check PASS in `review/gates/phase_05_style.GATE.md` (template
   claim-strength calibration is binding.
 - Over-compression caution: apply the `writing_guide` Concision Pass, but do not delete
   clinical qualifiers, safety caveats, or grounded numbers to hit a length target.
-- The auto-trigger is advisory and fails open; it never blocks your prompt.
+- The auto-trigger is advisory and fails open; it never blocks your prompt. It stays quiet when the
+  prompt is about the tool itself (programs, modes, features, hooks, updates).
+- Academic writing mode (`manuwright mode`) runs the same prose checks after every edit; in
+  `strict` a write with high-severity findings is blocked until rewritten.

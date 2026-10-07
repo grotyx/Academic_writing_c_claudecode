@@ -13,6 +13,12 @@ a checked `- [x] 사용자 승인 완료` line; a plan missing that line is bloc
 Exit-code contract (Claude Code): 0 = allow, 2 = block (stderr is shown to
 Claude). Any other failure is treated as a non-blocking error.
 
+Academic writing mode `strict` (`manuwright mode strict`): a write to a manuscript prose file
+under drafts/ is also BLOCKED when the new text has high-severity academic-style findings
+(AI-register phrases, trailing "-ing" clauses, contractions, bold in running text, chat
+residue); see scripts/academic_style.py. In the default `academic` mode those findings are
+reported after the edit instead (lint_on_edit.py).
+
 This hook FAILS OPEN: on any parse/logic error it returns 0 (allow). A gate
 must never wedge the user's workflow because of a hook bug.
 """
@@ -99,10 +105,59 @@ def event_paths(event: dict) -> list[str]:
 def decide(event: dict) -> str | None:
     """Return a block reason, or None to allow. Pure function for testing."""
     for raw_path in event_paths(event):
-        reason = decide_path(event.get("cwd") or ".", raw_path)
+        reason = decide_path(event.get("cwd") or ".", raw_path) or strict_style(event, raw_path)
         if reason:
             return reason
     return None
+
+
+def is_prose_file(raw_path: str) -> bool:
+    spath = "/" + _norm(raw_path).lstrip("/")
+    name = spath.rsplit("/", 1)[-1].lower()
+    return ("/drafts/" in spath and name.endswith(".md") and "/figures/" not in spath
+            and name not in ("draft_plan.md", "style_spec.md") and not name.startswith("table"))
+
+
+def new_text(event: dict, raw_path: str) -> str:
+    """The text this write adds: Write content, Edit/MultiEdit replacements, or a patch's + lines."""
+    tool_input = event.get("tool_input") or {}
+    if tool_input.get("file_path"):
+        if "content" in tool_input:
+            return str(tool_input.get("content") or "")
+        edits = tool_input.get("edits") or [tool_input]
+        return "\n\n".join(str(e.get("new_string") or "") for e in edits if isinstance(e, dict))
+    patch = str(tool_input.get("command") or tool_input.get("patch") or "")
+    added, inside = [], False
+    for line in patch.splitlines():
+        header = PATCH_PATH_RE.match(line)
+        if header or line.startswith("*** "):
+            inside = bool(header) and _norm(header.group(1)) == _norm(raw_path)
+            continue
+        if inside and line.startswith("+"):
+            added.append(line[1:])
+    return "\n".join(added)
+
+
+def strict_style(event: dict, raw_path: str) -> str | None:
+    """Strict academic writing mode: block new manuscript prose with high-severity findings."""
+    if not is_prose_file(raw_path):
+        return None
+    import academic_style
+
+    if academic_style.mode() != "strict":
+        return None
+    section = academic_style.section_of(raw_path)
+    issues = [i for i in academic_style.prose_issues(new_text(event, raw_path), section)
+              if i[0] == academic_style.HIGH]
+    if not issues:
+        return None
+    shown = "\n".join(f"- line {line} of the new text [{code}] {message}" for _, code, line, message in issues[:12])
+    return (
+        f"BLOCKED by academic writing mode (strict): {len(issues)} high-severity style finding(s) in the "
+        f"text written to {raw_path}:\n{shown}\n"
+        f"Rewrite those sentences and write again. Section card: `manuwright style card {section or '<section>'}`. "
+        "(`manuwright mode academic` reports these after the edit instead of blocking.)"
+    )
 
 
 def decide_path(event_cwd: str, raw_path: str) -> str | None:

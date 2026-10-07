@@ -10,6 +10,14 @@ instead of free-handing an abstract "academic style".
 It only fires when BOTH a style cue AND a transform/action verb are present, so it
 stays quiet on questions *about* academic writing or on reference searches.
 
+It also stays quiet when the prompt is about the tool itself (programs, modes, features,
+hooks, updates): that is a discussion of the engine, not a request to rewrite text.
+
+Drafting: when the prompt asks to write or rewrite a named section ("서론 써줘", "draft the
+Discussion", "04_methods.md 작성") and the academic writing mode is on, the matching section
+card (scripts/academic_style.py: moves, phrasebank, model paragraphs, learned style) is
+injected, so the section is written in that register from the first draft.
+
 Mechanism: prints the instruction to stdout (exit 0) -- for a UserPromptSubmit hook
 Claude adds non-empty stdout to the prompt context. It NEVER blocks the prompt and
 FAILS OPEN (exit 0) on any error.
@@ -20,6 +28,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+from pathlib import Path
 
 # Style cue -- Korean + English. `학술` covers 학술적/학술논문/학술적으로.
 TRIGGERS = [
@@ -52,8 +61,55 @@ INJECTION = (
 )
 
 
+# Talk about the engine itself ("이 프로그램에 학술 모드를 만들 수 있을까") is not a request to rewrite text.
+META = re.compile(r"프로그램|모드|기능|스킬|플러그인|훅|업데이트|구현|program|\bmodes?\b|feature|\bskills?\b"
+                  r"|plugin|\bhooks?\b|implement", re.IGNORECASE)
+
+SECTION_WORDS = {
+    "title": r"제목|\btitle\b",
+    "abstract": r"초록|abstract",
+    "introduction": r"서론|도입부|introduction|\bintro\b",
+    "methods": r"방법\s*(?:섹션|파트|부분|론)|재료\s*(?:및|와)\s*방법|\bmethods?\b",
+    "results": r"결과\s*(?:섹션|파트|부분)|\bresults\b",
+    "discussion": r"고찰|discussion",
+    "conclusion": r"결론|conclusion",
+}
+SECTION_FILE = re.compile(r"\b0([1-7])_[a-z_]*\.md\b")
+FILE_SECTIONS = {"1": "title", "2": "abstract", "3": "introduction", "4": "methods", "5": "results",
+                 "6": "discussion", "7": "conclusion"}
+DRAFT_VERBS = re.compile(r"써|쓰|작성|초안|다시|고쳐|수정|다듬|draft|write|rewrite|revise", re.IGNORECASE)
+MAX_CARDS = 2
+
+
+def requested_sections(prompt: str) -> list:
+    """Sections the prompt asks to draft or rewrite (at most MAX_CARDS), in order of mention."""
+    if not prompt or META.search(prompt) or not DRAFT_VERBS.search(prompt):
+        return []
+    low = prompt.lower()
+    hits = [(m.start(), FILE_SECTIONS[m.group(1)]) for m in SECTION_FILE.finditer(low)]
+    plain = re.sub(r"\S*[/\\_@]\S*", " ", low)
+    for section, pattern in SECTION_WORDS.items():
+        match = re.search(pattern, plain, re.IGNORECASE)
+        if match:
+            hits.append((match.start(), section))
+    return list(dict.fromkeys(section for _, section in sorted(hits)))[:MAX_CARDS]
+
+
+def draft_cards(prompt: str, cwd: str | None = None) -> str:
+    sections = requested_sections(prompt)
+    if not sections:
+        return ""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import academic_style
+
+    if academic_style.mode() == "off":
+        return ""
+    project = Path(cwd) if cwd else None
+    return "\n\n".join(academic_style.card(section, project) for section in sections)
+
+
 def detect(prompt: str) -> bool:
-    if not prompt:
+    if not prompt or META.search(prompt):
         return False
     # Drop paths, URLs and identifiers before matching: pasted logs carry the repository name
     # (Academic_writing_...) and lines like "Restart to apply changes", which are not a request.
@@ -66,7 +122,15 @@ def detect(prompt: str) -> bool:
 
 def evaluate(event: dict) -> str:
     """Return the injection text on intent, else empty string. Pure for testing."""
-    return INJECTION if detect(event.get("prompt") or "") else ""
+    prompt = event.get("prompt") or ""
+    parts = [INJECTION] if detect(prompt) else []
+    try:
+        cards = draft_cards(prompt, event.get("cwd"))
+    except Exception:
+        cards = ""  # fail open: a missing card never blocks the prompt
+    if cards:
+        parts.append(cards)
+    return "\n\n".join(parts)
 
 
 def main() -> int:

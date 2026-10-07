@@ -1,5 +1,17 @@
 # 変更履歴
 
+### v1.9.0 (261007)
+
+学術文体モード：草稿を書くたびに適切な例文と測定済みの目標値を書き手に渡し、書かれた文章を検査する。
+
+- セクションスタイルカード（`docs/academic_style/`）：常時有効なコアカードと、セクションごとのカード（title、abstract、introduction、methods、results、discussion、conclusion）。修辞構造（moves）、規則、表現集、避ける表現→推奨表現、high-impact 臨床誌の文体による模範段落を収録。`manuwright style card <section>` で表示する。
+- SessionStart フックがコアカードを、UserPromptSubmit フックがセクションの執筆・書き直しの依頼（「Discussion を書いて」、"draft the Discussion"）に対応するセクションカードを注入する。
+- `manuwright style learn [論文]` が良い論文のコーパス（自分の論文、landmark、投稿先誌。PDF・DOCX・MD・TXT。既定はライブラリの PDF）をセクションごとに測定する：文長（平均・SD・90 パーセンタイル）、受動態、100 語あたりの we/our と hedging、段落長、複数の論文に共通する表現、文頭パターン、接続語、模範段落。以後すべてのカードに含まれ、90 パーセンタイルが長文の上限になる。プロファイルは `~/.manuwright/library/writing/profile/` にのみ保存され、論文フォルダにはコピーされない。PDF は `pypdf`（新しい依存関係）または `pdftotext` で読む。
+- 文章チェック（`scripts/academic_style.py`）：AI 的な表現と単語（delve、pivotal、"it is worth noting"、"plays a crucial role" など）、文末の ", highlighting/underscoring ..." 節、短縮形、チャットの残骸、本文の太字、Introduction/Discussion の箇条書き、長すぎる文、数字で始まる文、修辞疑問、Furthermore/Moreover の連続、Results と Abstract で推定値や *p* のない "significant"。原稿の編集ごとに報告し、`manuwright lint --academic` と `python scripts/academic_style.py check` で直接実行できる。
+- `manuwright mode academic|strict|off`（または `config set writing-mode`、`MANUWRIGHT_WRITING_MODE`）：既定は academic。strict は高重要度の指摘を含む原稿の書き込みを書き直すまでブロックし、off はモードを無効にする。`manuwright check` がモードと学習済みプロファイルを表示する。
+- 「学術的に直して」の自動起動は、ツール自体についての質問（プログラム、モード、機能、フック、更新）には反応しない。
+- 論文のエージェント規則と manuwright スキルが、執筆前にセクションカードを読むよう指示する。既存の論文：`manuwright init --refresh-rules --all`（`manuwright update` が確認する）。
+
 ### v1.8.30 (261006)
 
 - 新コマンド `manuwright check`：最新バージョンか、エージェントごとの manuwright プラグイン（Claude Code・Codex：登録フォルダとバージョン、opencode：スキル）、メインモデル（`claude` のようなエージェント名は指摘）、OpenRouter レビュアー使用時のキー、自動更新、エージェント規則が古い登録済み論文を 1 画面に表示し、✗ ごとに直すコマンドを示す。

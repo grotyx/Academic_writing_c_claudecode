@@ -79,8 +79,17 @@ reason: number not found in results CSV files
 | 보고하는 모든 수치가 `results/*.csv` 에 있음 | `manuwright numbers` 와 result binding |
 | 출처·계획·엔진이 바뀌면 리뷰가 stale 이 됨 | 모든 기록에 sha256 스냅샷 |
 | 제출에는 사람의 서명, AI 사용 공개, 완료된 체크리스트가 필요함 | `manuwright verify --profile submission` |
+| 문장이 챗봇이 아니라 high-impact 임상 저널처럼 읽힘 | 학술 문체 모드: 초안마다 스타일 카드, 편집마다 문장 검사 (`strict` 는 차단) |
 
 엔진은 승인이나 리뷰를 만들어 내지 않는다. 사람이 내린 결정을 기록할 뿐이다.
+
+## 학술 문체 모드
+
+노트북에서 모델을 파인튜닝할 수는 없으므로, manuwright 는 글을 쓸 때마다 그다음으로 효과적인 일을 한다. 쓰는 쪽 눈앞에 알맞은 예문과 측정된 목표치를 놓고, 써 온 문장을 검사한다.
+
+- **섹션 카드.** 섹션마다(title, abstract, introduction, methods, results, discussion, conclusion) 수사 구조(moves), 규칙, 표현집(phrasebank), high-impact 임상 저널 문체로 쓴 모범 문단을 담은 카드가 있다. 핵심 카드는 매 세션 시작 때 들어가고, 섹션 카드는 그 섹션을 써 달라고 할 때("서론 써줘", "draft the Discussion") 또는 `manuwright style card <section>` 으로 들어간다.
+- **내 코퍼스.** `manuwright style learn <논문들>` 이 좋은 논문 묶음(내 논문, 분야의 landmark 논문, 목표 저널의 최근 논문; PDF·DOCX·MD·TXT)을 섹션별로 측정한다: 문장 길이, 수동태 비율, hedging, 자주 쓰는 표현(signature phrase), 문장 시작 패턴, 모범 문단. 이후 모든 카드에 이 목표치와 문단이 함께 들어간다. 프로필은 개인 라이브러리에만 있고 논문 폴더로 복사되지 않는다.
+- **문장 검사.** 원고 섹션을 고칠 때마다 AI 말투(delve, pivotal, "it is worth noting", 끝에 붙는 ", highlighting ..."), 축약형, 본문 굵은 글씨, 너무 긴 문장, 통계 없는 "significant" 같은 문제를 줄 번호와 함께 알려 준다. `manuwright mode strict` 는 문장을 고칠 때까지 쓰기 자체를 막고, `manuwright mode off` 는 모드를 끈다.
 
 ## 설치
 
@@ -95,7 +104,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.8.30
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -121,6 +130,8 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright init [folder]` | 논문 폴더 시작: manifest, 계획 템플릿(미승인), 근거 목록, 에이전트 규칙 |
 | `manuwright rules [keyword]` | 워크플로 규칙 전체 또는 한 절 출력 |
 | `manuwright check` | 버전·에이전트 플러그인·메인 모델·키·자동 업데이트·갱신할 논문을 한 번에 점검하고 고치는 명령 제시 |
+| `manuwright mode academic\|strict\|off` | 학술 문체 모드: 스타일 카드 + 편집마다 문장 검사; `strict` 는 AI 말투가 든 쓰기를 차단 |
+| `manuwright style learn <논문들>` / `style card <section>` | 좋은 논문 코퍼스(내 문체, landmark, 목표 저널) 측정 / 섹션 스타일 카드 출력 |
 | `manuwright guide [name ...]` | 규칙이 인용하는 엔진 가이드(`docs/<name>.md`) 목록 또는 내용 출력 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 그 단계의 모든 검사 실행 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 파일 하나에 검사기 하나 실행 |

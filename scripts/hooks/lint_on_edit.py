@@ -2,7 +2,8 @@
 """PostToolUse hook: surface style/terminology drift right after a draft edit.
 
 After a Write/Edit/MultiEdit to a manuscript section under `drafts/`, this runs the same
-checks as `lint_manuscript.py` (terminology registry + style rules) on the edited
+checks as `lint_manuscript.py` (terminology registry + style rules), plus the academic-prose
+checks of `academic_style.py` when the writing mode is on (the default), on the edited
 file and, if there are findings, feeds them back to Claude (exit 2 + stderr) so it
 can fix them immediately -- no need for the author to repeat the same style note.
 
@@ -54,6 +55,36 @@ def _style_metric_lines(target: Path) -> list[str]:
         return [f"[STYLE-METRIC] {m}" for m in issues]
     except Exception:
         return []
+
+
+def _load_academic():
+    spec = importlib.util.spec_from_file_location(
+        "academic_style", ROOT / "scripts" / "academic_style.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def _academic_lines(target: Path) -> list[str]:
+    """Academic-prose findings (writing mode academic/strict), plus a pointer to the section card."""
+    try:
+        acad = _load_academic()
+        if acad.mode() == "off" or target.name.lower() == "style_spec.md":
+            return []
+        section = acad.section_of(target)
+        project = next((p for p in target.resolve().parents if (p / "project.json").is_file()), None)
+        issues = acad.prose_issues(
+            target.read_text(encoding="utf-8", errors="replace"), section,
+            acad.long_limit_for(section, project),
+        )
+    except Exception:
+        return []
+    lines = [f"[ACADEMIC/{sev.upper()}/{code}] line {line}: {msg}" for sev, code, line, msg in issues[:MAX_LINES]]
+    if lines and section:
+        lines.append(f"(section card with moves, phrasebank and model paragraphs: `manuwright style card {section}`)")
+    return lines
 
 
 def _is_manuscript_md(spath: str) -> bool:
@@ -110,7 +141,7 @@ def evaluate(event: dict) -> tuple[int, str]:
     term_lines = [
         f"[{code}] line {line}: {message}" for code, _p, line, message in issues[:MAX_LINES]
     ]
-    style_lines = _style_metric_lines(target)
+    style_lines = _style_metric_lines(target) + _academic_lines(target)
     if not term_lines and not style_lines:
         return 0, ""
 
@@ -119,10 +150,10 @@ def evaluate(event: dict) -> tuple[int, str]:
         if len(issues) > MAX_LINES
         else ""
     )
-    total = len(issues) + len(style_lines)
+    total = len(issues) + sum(1 for line in style_lines if line.startswith('['))
     msg = (
         f"Style lint on {target.name}: {total} finding(s) "
-        f"(terminology + style metrics vs Style Spec). Fix before finalizing:\n"
+        f"(terminology, academic prose, style metrics vs Style Spec). Fix before finalizing:\n"
         + "\n".join(term_lines + style_lines)
         + extra
         + "\n"

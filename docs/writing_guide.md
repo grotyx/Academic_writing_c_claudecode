@@ -1,4 +1,6 @@
-# Section-by-Section Writing Guide (v0.5.1)
+# Section-by-Section Writing Guide (v0.6.0)
+
+> **Academic writing mode (v1.9.0).** The always-on core card and one card per section (moves, rules, phrasebank, model paragraphs) live in `docs/academic_style/`; agents load them with `manuwright style card <section>`, and `manuwright style learn <papers>` adds the measured style of a corpus of good papers. The prose checks behind the mode (`scripts/academic_style.py`) enforce the AI-Draft De-bloat and form rules below. This guide remains the full reference.
 
 ## General Principles
 - Use past tense for completed actions (Methods, Results)
