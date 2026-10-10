@@ -138,6 +138,55 @@ def install_command(tag):
     return [sys.executable, '-m', 'pip', 'install', '--upgrade', source]
 
 
+def windows_update_line(command):
+    """The one line a Windows user pastes into PowerShell when the update window cannot be opened."""
+    return f'{" ".join(command)}; if ($?) {{ manuwright agents update; manuwright init --refresh-rules --all --auto }}'
+
+
+def _ps(text):
+    return "'" + str(text).replace("'", "''") + "'"
+
+
+def windows_update_script(current, target, command):
+    """PowerShell for the update window: wait until no process runs from this install, install, refresh."""
+    exe = shutil.which('manuwright') or ''
+    install = '& ' + ' '.join(_ps(part) for part in command)
+    return f"""$Host.UI.RawUI.WindowTitle = 'manuwright update'
+$envDir = {_ps(os.path.join(sys.prefix, ''))}
+$exe = {_ps(exe)}
+function Busy {{ @(Get-Process -ErrorAction SilentlyContinue | Where-Object {{ $_.Path -and ($_.Path.StartsWith($envDir, [StringComparison]::OrdinalIgnoreCase) -or ($exe -and $_.Path -ieq $exe)) }}) }}
+Write-Host 'manuwright {current} -> {target}'
+$waited = 0
+while ((Busy).Count -gt 0 -and $waited -lt 120) {{
+  if ($waited -eq 5) {{ Write-Host 'Waiting for manuwright to close. If this does not finish, close Claude Code / Codex sessions.' }}
+  Start-Sleep -Seconds 1; $waited++
+}}
+{install}
+if ($LASTEXITCODE -eq 0) {{
+  & manuwright agents update
+  & manuwright init --refresh-rules --all --auto
+  Write-Host ''; Write-Host 'manuwright {target} is installed. You can close this window.'
+}} else {{
+  Write-Host ''; Write-Host 'The install did not finish (see above). Close Claude Code / Codex sessions, then run this line here:'
+  Write-Host {_ps(windows_update_line(command))}
+}}
+Read-Host 'Press Enter to close'
+"""
+
+
+def launch_windows_update(current, target, command):
+    """Open the update window (its own console, so it outlives this process). False when it cannot start."""
+    import base64
+    script = windows_update_script(current, target, command)
+    encoded = base64.b64encode(script.encode('utf-16-le')).decode('ascii')
+    try:
+        subprocess.Popen(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded],
+                         creationflags=getattr(subprocess, 'CREATE_NEW_CONSOLE', 0x10), close_fds=True)
+    except OSError:
+        return False
+    return True
+
+
 def update(engine, args):
     """manuwright update [--check] [--auto] [--to X.Y.Z] [--no-agents]"""
     current, api = engine_api(engine)
@@ -178,13 +227,22 @@ def update(engine, args):
         print(f'note: {path} review/signoff will need re-review after this update.')
     command = install_command(target)
     if on_windows() and command[0] == 'uv':
-        # uv deletes the tool environment before reinstalling; Windows cannot replace the running
-        # manuwright.exe, so an in-process update left a half-removed install (ModuleNotFoundError).
-        print(f'manuwright {current} -> {target}: Windows cannot replace manuwright while it is running.\n'
-              'Close agent sessions (Claude Code, Codex, ...) and paste this line into a new PowerShell window '
-              '(it installs, then refreshes the agent adapters):\n'
-              f'  {" ".join(command)}; if ($?) {{ manuwright agents update; manuwright init --refresh-rules --all --auto }}\n'
-              '(Paper folders you open later in Claude Code or Codex also update their agent rules themselves.)')
+        # uv deletes the tool environment before reinstalling, and Windows cannot replace a running
+        # manuwright.exe: installing from this process left a half-removed install. A separate PowerShell
+        # window waits until no manuwright process is running, then installs and refreshes everything.
+        line = windows_update_line(command)
+        if auto:  # never pop a window from a session hook
+            print(f'manuwright {target} available: run `manuwright update`.')
+            return 0
+        if launch_windows_update(current, target, command):
+            print(f'manuwright {current} -> {target}: a PowerShell window opened. It waits for manuwright to close, '
+                  'installs the new version, then refreshes the agent adapters and the agent rules of your papers; '
+                  'follow it there. If no window appeared, close agent sessions (Claude Code, Codex, ...) and paste '
+                  f'this line into a new PowerShell window:\n  {line}')
+        else:
+            print(f'manuwright {current} -> {target}: Windows cannot replace manuwright while it is running.\n'
+                  'Close agent sessions (Claude Code, Codex, ...) and paste this line into a new PowerShell window '
+                  f'(it installs, then refreshes the agent adapters and your papers\' agent rules):\n  {line}')
         return 0
     log = home() / 'update.log'
     home().mkdir(parents=True, exist_ok=True)

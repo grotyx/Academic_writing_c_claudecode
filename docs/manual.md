@@ -1,4 +1,4 @@
-# manuwright user manual (v2.6.2)
+# manuwright user manual (v2.6.3)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -440,7 +440,7 @@ manuwright check                          # one report of what is current, with 
 
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
 
-On Windows with a uv install, `manuwright update` does not install in place (Windows cannot replace the running `manuwright.exe`); it prints the command instead. Close agent sessions and paste it into a new PowerShell window: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }` (installs, refreshes the agent adapters and the papers' agent rules). Even if you only run the install part, each paper updates its rules the next time you open it. If an earlier update left `ModuleNotFoundError: No module named 'manuwright'`, the same command repairs it.
+On Windows with a uv install, `manuwright update` cannot install in place (Windows cannot replace the running `manuwright.exe`). From v1.9.7 it opens a PowerShell window instead: the window waits until manuwright has closed (close Claude Code or Codex sessions if it says it is still waiting), installs the new version, refreshes the agent adapters and the papers' agent rules, and waits for Enter. If no window can open, it prints the same steps as one line to paste into a new PowerShell window: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`. Updating from v1.9.6 or earlier still prints this line once, because the old version runs the update. Even if you only run the install part, each paper updates its rules the next time you open it. If an earlier update left `ModuleNotFoundError: No module named 'manuwright'`, the same command repairs it.
 
 Check that an update worked:
 

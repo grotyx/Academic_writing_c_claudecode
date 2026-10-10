@@ -114,8 +114,11 @@ def test_windows_update_line_chains_the_agent_refresh(fake_release, monkeypatch,
     engine, calls = fake_release
     monkeypatch.setattr(lifecycle, 'install_command', lambda tag: ['uv', 'tool', 'install', '--force', f'x@v{tag}'])
     monkeypatch.setattr(lifecycle, 'on_windows', lambda: True)
+    monkeypatch.setattr(lifecycle, 'launch_windows_update', lambda *a: False)  # no window: the paste line
     assert lifecycle.update(engine, []) == 0
-    assert not calls and '; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }' in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert not calls and 'new PowerShell window' in out
+    assert '; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }' in out
 
 
 def test_manual_update_skips_reinstall_when_up_to_date(fake_release, monkeypatch, capsys):
@@ -125,13 +128,41 @@ def test_manual_update_skips_reinstall_when_up_to_date(fake_release, monkeypatch
     assert not calls and 'up to date' in capsys.readouterr().out
 
 
-def test_windows_uv_update_prints_command_instead_of_replacing_running_exe(fake_release, monkeypatch, capsys):
+def test_windows_update_opens_a_window_that_waits_then_installs(fake_release, monkeypatch, capsys):
+    import base64
     engine, calls = fake_release
     monkeypatch.setattr(lifecycle, 'install_command', lambda tag: ['uv', 'tool', 'install', '--force', f'x@v{tag}'])
     monkeypatch.setattr(lifecycle, 'on_windows', lambda: True)
+    opened = []
+    monkeypatch.setattr(lifecycle.subprocess, 'Popen', lambda argv, **kw: opened.append((argv, kw)))
     assert lifecycle.update(engine, []) == 0
     out = capsys.readouterr().out
-    assert not calls and 'uv tool install --force' in out and 'new PowerShell window' in out
+    assert not calls and 'a PowerShell window opened' in out and 'uv tool install --force' in out  # fallback line too
+    argv, kw = opened[0]
+    assert argv[:2] == ['powershell.exe', '-NoProfile'] and kw['creationflags'] == 0x10  # its own console
+    script = base64.b64decode(argv[argv.index('-EncodedCommand') + 1]).decode('utf-16-le')
+    wait, install, refresh = (script.index('while ((Busy).Count'), script.index("& 'uv' 'tool' 'install'"),
+                              script.index('& manuwright init --refresh-rules --all --auto'))
+    assert wait < install < refresh and 'if ($LASTEXITCODE -eq 0)' in script and "Read-Host" in script
+    # a session hook never opens a window, and a window that cannot start falls back to the line
+    lifecycle.config(['set', 'auto-update', 'on'])
+    lifecycle.save('state.json', {})
+    assert lifecycle.update(engine, ['--auto']) == 0
+    assert len(opened) == 1 and 'run `manuwright update`' in capsys.readouterr().out
+    monkeypatch.setattr(lifecycle.subprocess, 'Popen', lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError()))
+    assert lifecycle.update(engine, []) == 0
+    assert 'paste this line into a new PowerShell window' in capsys.readouterr().out
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows PowerShell parser')
+def test_windows_update_script_parses_in_powershell(tmp_path):
+    import subprocess
+    script = lifecycle.windows_update_script('1.0.0', '1.0.1', ['uv', 'tool', 'install', '--force', "x@v1.0.1"])
+    (tmp_path / 'u.ps1').write_text(script, encoding='utf-8-sig')
+    check = (f"$e = $null; [void][System.Management.Automation.Language.Parser]::ParseFile('{tmp_path / 'u.ps1'}', "
+             "[ref]$null, [ref]$e); $e.Count")
+    result = subprocess.run(['powershell.exe', '-NoProfile', '-Command', check], capture_output=True, text=True)
+    assert result.stdout.strip() == '0', result.stdout + result.stderr
 
 
 def test_update_refuses_source_checkout():

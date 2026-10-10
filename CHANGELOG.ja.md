@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`: ロゴマークのベクター版(明るい背景用、暗い背景用)。
 
+### v1.9.7 (261010)
+
+Windows: `manuwright update` が更新を最後まで行う。貼り付ける行は不要。
+
+- Windows（uv インストール）では `manuwright update` が PowerShell ウィンドウを開く。ウィンドウは manuwright のプロセスがなくなるまで待ってから新しい版をインストールし、続けて `manuwright agents update` と `manuwright init --refresh-rules --all --auto` を実行する。5 秒たっても manuwright が動いていれば、Claude Code や Codex のセッションを閉じるよう表示する。インストールに失敗すると、実行する 1 行を表示する。
+- ウィンドウを開けない場合、`update` は従来どおり 1 行のコマンドを表示する。Windows の自動更新（`--auto`）は新しい版があることを知らせるだけで、セッション中にウィンドウを開かない。
+- v1.9.6 以前から更新するときは古い版が更新を実行するため、この 1 行がもう一度表示される。
+- マニュアル v2.6.3、README。
+
 ### v1.9.6 (261010)
 
 エージェント規則の自動更新を安全にした（コードレビューの反映）。

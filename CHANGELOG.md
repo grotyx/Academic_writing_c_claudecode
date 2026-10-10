@@ -4,6 +4,15 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.7 (261010)
+
+Windows: `manuwright update` finishes the update itself; no line to paste.
+
+- On Windows (uv install) `manuwright update` opens a PowerShell window. The window waits until no manuwright process is running, installs the new version, then runs `manuwright agents update` and `manuwright init --refresh-rules --all --auto`. If manuwright is still running after 5 seconds, the window asks you to close Claude Code or Codex sessions. If the install fails, the window shows the line to run.
+- If no window can open, `update` prints the one-line command as before. Automatic updates (`--auto`) on Windows only say that a new version is available; they never open a window during a session.
+- Updating from v1.9.6 or earlier still prints the line once, because the old version runs that update.
+- Manual v2.6.3, READMEs.
+
 ### v1.9.6 (261010)
 
 Automatic agent-rule refresh made safe (code review fixes).

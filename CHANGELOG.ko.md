@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.7 (261010)
+
+Windows: `manuwright update` 가 업데이트를 끝까지 한다. 붙여 넣을 줄이 없다.
+
+- Windows(uv 설치)에서 `manuwright update` 가 PowerShell 창을 연다. 창은 실행 중인 manuwright 가 없어질 때까지 기다렸다가 새 버전을 설치하고, 이어서 `manuwright agents update` 와 `manuwright init --refresh-rules --all --auto` 를 실행한다. 5초가 지나도 manuwright 가 실행 중이면 Claude Code 나 Codex 세션을 닫으라고 알려 준다. 설치에 실패하면 실행할 한 줄을 보여 준다.
+- 창을 열 수 없으면 `update` 가 전처럼 한 줄 명령을 출력한다. Windows 의 자동 업데이트(`--auto`)는 새 버전이 있다는 것만 알리고, 세션 중에 창을 열지 않는다.
+- v1.9.6 이하에서 올릴 때는 이전 버전이 업데이트를 실행하므로 한 줄이 한 번 더 출력된다.
+- 매뉴얼 v2.6.3, README.
+
 ### v1.9.6 (261010)
 
 에이전트 규칙 자동 갱신을 안전하게 고쳤다(코드 리뷰 반영).
