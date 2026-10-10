@@ -48,6 +48,7 @@ Never stage or commit these unless the user explicitly overrides the rule:
 - Verify no PDFs or private anchor summaries are staged before committing.
 - Do not rewrite history, amend commits, force-push, or revert user changes unless explicitly requested.
 - **Doc/version sync + auto commit-push (WORKFLOW.md Rule 12):** any harness code/bug change must update the affected docs and bump the version (project header in WORKFLOW.md + README.md/ko/ja/zh, the changed doc's own header, and a README changelog entry) in the same change, then auto-commit and push once tests are green — without asking. STOP and confirm first only when sensitive data could be staged, the change is large/destructive, manuscript WIP (`drafts/`) would be swept in, or history rewrite/force-push is involved.
+- **Paper agent rules:** when `docs/agent_bootstrap.md` changes, append its new hash to `docs/agent_bootstrap.sha256` (LF, no BOM; a test checks it). Automatic refreshes replace only paper rule files whose hash is in that list.
 
 ## Shared commands
 

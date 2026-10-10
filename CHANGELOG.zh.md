@@ -4,6 +4,17 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
+### v1.9.6 (261010)
+
+让代理规则的自动更新更安全（代码审查修复）。
+
+- 只有当规则文件是 manuwright 发布过的某个版本且未经编辑的副本时才会自动替换，按内容哈希判断（`docs/agent_bootstrap.sha256`，忽略 Windows 换行和 BOM）。你自己写的文件、在 manuwright 副本上添加过内容的文件、非 UTF-8 文件以及由更新版本 manuwright 写的文件都会保留。此前所有带 manuwright 标题的文件都会被替换，添加的内容会在下次会话开始时丢失。
+- 自动更新不再重建你删除的规则文件，也不再改动 `project.json` 固定了其他引擎版本的论文。
+- 某个论文文件夹无法读取时不再中断其他论文的更新；`manuwright check` 只统计含未编辑旧副本的论文，修复命令为 `manuwright init --refresh-rules --all --auto`。
+- `.bak` 按原始字节保存；内容不同的旧 `.bak` 以带日期的名称保留。新论文文件夹在 git 中忽略 `*.bak`。
+- `manuwright update --no-agents` 也会跳过论文规则更新。`projects.json` 以原子方式写入，无法读取时不会覆盖。会话钩子与命令使用同一段代码。
+- 手册 v2.6.2、harness guide v1.3.2、README。
+
 ### v1.9.5 (261010)
 
 代理规则自动更新；`manuwright update` 之后无需额外步骤，Windows 也一样。

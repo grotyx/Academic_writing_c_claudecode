@@ -107,7 +107,7 @@ def test_update_refreshes_agents_with_the_new_cli_and_names_papers(fake_release,
     assert 'init --refresh-rules --all --auto' in capsys.readouterr().out
     calls.clear()
     assert lifecycle.update(engine, ['--to', lifecycle.latest_release(), '--no-agents']) == 0
-    assert len(calls) == 2 and 'not refreshed (--no-agents)' in capsys.readouterr().out
+    assert len(calls) == 1 and 'not refreshed (--no-agents)' in capsys.readouterr().out  # install only
 
 
 def test_windows_update_line_chains_the_agent_refresh(fake_release, monkeypatch, capsys):
@@ -493,17 +493,42 @@ def test_paper_rules_say_where_the_guides_are(tmp_path):
         assert 'manuwright guide <name>' in (tmp_path / 'paper' / name).read_text(encoding='utf-8')
 
 
-def test_refresh_all_updates_every_registered_paper(tmp_path, capsys):
+def ship(monkeypatch, *older):
+    """Pretend manuwright once shipped these rule texts (as if listed in docs/agent_bootstrap.sha256)."""
+    current = lifecycle.known_bootstraps(ENGINE)
+    monkeypatch.setattr(lifecycle, 'known_bootstraps',
+                        lambda engine: [lifecycle._rule_hash(t.encode('utf-8')) for t in older] + current)
+
+
+def test_shipped_hash_list_matches_the_current_bootstrap():
+    listed = [l for l in (ENGINE / 'docs' / 'agent_bootstrap.sha256').read_text(encoding='utf-8').splitlines()
+              if l and not l.startswith('#')]
+    assert listed[-1] == lifecycle._rule_hash((ENGINE / 'docs' / 'agent_bootstrap.md').read_bytes())
+    assert lifecycle._rule_hash('\ufeffa\r\nb\n'.encode('utf-8')) == lifecycle._rule_hash(b'a\nb\n')  # BOM, CRLF
+    assert lifecycle._rule_hash(b'\xff\xfe') is None
+
+
+def test_refresh_all_updates_every_registered_paper(tmp_path, monkeypatch, capsys):
+    ship(monkeypatch, 'old rules')
     papers = [tmp_path / 'a', tmp_path / 'b']
     for paper in papers:
         lifecycle.init(ENGINE, [str(paper)])
         lifecycle.register(paper / 'project.json')
     (papers[0] / 'CLAUDE.md').write_text('old rules', encoding='utf-8')
     assert lifecycle.stale_papers(ENGINE) == [papers[0]]
-    assert lifecycle.init(ENGINE, ['--refresh-rules', '--all']) == 0
+    assert lifecycle.init(ENGINE, ['--refresh-rules', '--all', '--auto']) == 0
     assert lifecycle.stale_papers(ENGINE) == []
     assert (papers[0] / 'CLAUDE.md.bak').read_text(encoding='utf-8') == 'old rules'
     assert not (papers[1] / 'CLAUDE.md.bak').exists()  # already current: untouched
+    # a file the author wrote is not "out of date" for check, and --all --auto leaves it
+    (papers[1] / 'CLAUDE.md').write_text('my notes', encoding='utf-8')
+    assert lifecycle.stale_papers(ENGINE) == []
+    lifecycle.init(ENGINE, ['--refresh-rules', '--all', '--auto'])
+    assert (papers[1] / 'CLAUDE.md').read_text(encoding='utf-8') == 'my notes'
+    # one unreadable folder does not stop the others
+    monkeypatch.setattr(lifecycle, 'refresh_rules', lambda *a, **k: (_ for _ in ()).throw(PermissionError('locked')))
+    assert lifecycle.refresh_all(ENGINE, auto=True) == 0
+    assert capsys.readouterr().out.count('skipped (locked)') == 2
 
 
 def test_update_refreshes_registered_papers_without_asking(fake_release, project, monkeypatch, capsys):
@@ -575,34 +600,68 @@ def test_refresh_leaves_a_template_checkout_alone(tmp_path, capsys):
     assert 'template checkout' in capsys.readouterr().out
 
 
-def test_rules_refresh_automatically_but_never_replaces_the_authors_own_file(tmp_path, capsys):
+def test_rules_refresh_automatically_but_never_replaces_the_authors_own_file(tmp_path, monkeypatch, capsys):
     import importlib.util
+    old = '# manuwright agent instructions\n\nold rules\n'
+    ship(monkeypatch, old)
     bootstrap = (ENGINE / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
     root = tmp_path / 'paper'
     (root / 'drafts').mkdir(parents=True)
     (root / 'knowledge').mkdir()
     (root / 'knowledge' / 'evidence.md').write_text('# Evidence\n', encoding='utf-8')
     (root / 'project.json').write_text('{"artifacts": []}', encoding='utf-8')
-    (root / 'AGENTS.md').write_text('# manuwright agent instructions\n\nold rules\n', encoding='utf-8')
+    (root / 'AGENTS.md').write_bytes(old.replace('\n', '\r\n').encode('utf-8'))  # Windows line endings
     (root / 'CLAUDE.md').write_text('# My own notes\nOLIF study.\n', encoding='utf-8')
-    # update path: --auto replaces only files manuwright wrote
+    (root / 'GEMINI.md').write_text(old + 'Always cite the 2019 cohort.\n', encoding='utf-8')  # edited copy
+    assert lifecycle.rule_status(ENGINE, root) == {'AGENTS.md': 'outdated', 'CLAUDE.md': 'yours', 'GEMINI.md': 'yours'}
+    # update path: --auto replaces only unedited copies manuwright wrote
     assert lifecycle.refresh_rules(ENGINE, root, auto=True) == 0
     assert (root / 'AGENTS.md').read_text(encoding='utf-8') == bootstrap
-    assert (root / 'AGENTS.md.bak').read_text(encoding='utf-8').endswith('old rules\n')
+    assert (root / 'AGENTS.md.bak').read_bytes() == old.replace('\n', '\r\n').encode('utf-8')  # bytes kept as they were
     assert (root / 'CLAUDE.md').read_text(encoding='utf-8').startswith('# My own notes')
-    assert 'Kept CLAUDE.md' in capsys.readouterr().out
+    assert (root / 'GEMINI.md').read_text(encoding='utf-8').endswith('2019 cohort.\n')
+    assert 'Kept CLAUDE.md, GEMINI.md' in capsys.readouterr().out
     # session start does the same for the paper it opens, and registers it
-    (root / 'GEMINI.md').write_text('# paperflow agent instructions\nolder\n', encoding='utf-8')
+    (root / 'GEMINI.md').write_text(old, encoding='utf-8')
+    (root / 'CLAUDE.md').write_bytes('# Notizen \xfc\n'.encode('latin-1'))  # not UTF-8: the author's, never a crash
     spec = importlib.util.spec_from_file_location('session_contract', ENGINE / 'scripts' / 'hooks' / 'session_contract.py')
     hook = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(hook)
     note = hook.refresh_agent_rules(root / 'drafts')
-    assert 'updated GEMINI.md' in note and 'CLAUDE.md was written by the author' in note
+    assert 'updated GEMINI.md' in note and 'CLAUDE.md' not in note
     assert (root / 'GEMINI.md').read_text(encoding='utf-8') == bootstrap
+    assert (root / 'CLAUDE.md').read_bytes() == '# Notizen \xfc\n'.encode('latin-1')
     assert str((root / 'project.json').resolve()) in json.loads((lifecycle.home() / 'projects.json').read_text())
     assert hook.refresh_agent_rules(root) == ''  # current now: nothing to say
     assert hook.refresh_agent_rules(ENGINE) == ''  # the engine checkout is never touched
-    # the manual command still replaces the author's file on request (with a .bak)
+    # a deleted rule file is not recreated automatically
+    (root / 'GEMINI.md').unlink()
+    assert lifecycle.refresh_files(ENGINE, root, auto=True)[0] == [] and not (root / 'GEMINI.md').exists()
+    # a paper pinned to another engine version is left alone
+    (root / 'AGENTS.md').write_bytes(old.encode('utf-8'))  # LF bytes: differ from the CRLF .bak on every OS
+    (root / 'project.json').write_text('{"artifacts": [], "engine": "<1.0"}', encoding='utf-8')
+    changed, _kept, reason = lifecycle.refresh_files(ENGINE, root, auto=True)
+    assert changed == [] and reason and (root / 'AGENTS.md').read_bytes() == old.encode('utf-8')
+    # the manual command still replaces the author's file on request; an earlier, different .bak is kept
     assert lifecycle.refresh_rules(ENGINE, root) == 0
     assert (root / 'CLAUDE.md').read_text(encoding='utf-8') == bootstrap
-    assert (root / 'CLAUDE.md.bak').read_text(encoding='utf-8').startswith('# My own notes')
+    assert (root / 'GEMINI.md').read_text(encoding='utf-8') == bootstrap  # written again on request
+    assert (root / 'AGENTS.md.bak').read_bytes() == old.replace('\n', '\r\n').encode('utf-8')
+    assert len(list(root.glob('AGENTS.md.*.bak'))) == 1
+
+
+def test_register_never_replaces_an_unreadable_paper_list(tmp_path):
+    registry = lifecycle.home() / 'projects.json'
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    registry.write_text('["/a/project.json", ', encoding='utf-8')  # half-written by another session
+    lifecycle.register(tmp_path / 'project.json')
+    assert registry.read_text(encoding='utf-8') == '["/a/project.json", '
+    registry.write_text('["/a/project.json"]', encoding='utf-8')
+    lifecycle.register(tmp_path / 'project.json')
+    assert json.loads(registry.read_text(encoding='utf-8')) == ['/a/project.json', str((tmp_path / 'project.json').resolve())]
+    assert not list(registry.parent.glob('projects.*.tmp'))
+
+
+def test_paper_gitignore_keeps_rule_backups_out_of_git(tmp_path):
+    lifecycle.init(ENGINE, [str(tmp_path / 'paper')])
+    assert '*.bak' in (tmp_path / 'paper' / '.gitignore').read_text(encoding='utf-8').splitlines()

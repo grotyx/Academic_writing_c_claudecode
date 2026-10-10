@@ -4,6 +4,17 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.6 (261010)
+
+Automatic agent-rule refresh made safe (code review fixes).
+
+- A rule file is replaced automatically only when it is an unedited copy of a version manuwright shipped, matched by content hash (`docs/agent_bootstrap.sha256`, Windows line endings and BOM ignored). A file you wrote, a manuwright copy you added lines to, a file that is not UTF-8 and a file written by a newer manuwright are kept. Before, every file with the manuwright header was replaced, so additions to it were lost at the next session start.
+- Automatic refreshes no longer recreate a rule file you deleted and leave alone a paper whose `project.json` pins another engine version.
+- One unreadable paper folder no longer stops the refresh of the others; `manuwright check` counts only papers with an unedited old copy, and its fix is `manuwright init --refresh-rules --all --auto`.
+- `.bak` copies are byte-for-byte; an earlier, different `.bak` is kept under a dated name. New paper folders ignore `*.bak` in git.
+- `manuwright update --no-agents` now skips the paper rule refresh too. `projects.json` is written atomically and never replaced when it cannot be read. The session hook uses the same code as the command.
+- Manual v2.6.2, harness guide v1.3.2, READMEs.
+
 ### v1.9.5 (261010)
 
 Agent rules update themselves; no separate step after `manuwright update`, on Windows too.

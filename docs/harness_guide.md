@@ -1,4 +1,4 @@
-# Shared manuscript engine (v1.3.1)
+# Shared manuscript engine (v1.3.2)
 
 Project release: v1.9.0. Python 3.10+ (`doctor` warns on older interpreters); install `requirements.txt`, or `requirements-dev.txt` (adds pytest) for development. Run commands from the repository root. On Windows replace `python` with `py` if needed. Real manuscripts belong in a separate private project; the repository's tracked drafts are public templates, and `.gitignore` cannot protect edits to tracked files.
 
@@ -52,7 +52,7 @@ manuwright rules "Citation"         # print one WORKFLOW section (or all with no
 manuwright guide writing_guide      # print an engine guide the rules cite as docs/<name>.md (several names allowed; none = list)
 manuwright update --check           # compare with the newest vX.Y.Z tag
 manuwright check                    # version, agent plugins (path + version), main model, key, auto-update, stale paper rules; fix per item
-manuwright init --refresh-rules --all   # refresh the agent rules of every registered paper (.bak kept; --auto: only files manuwright wrote; update runs it, and the session hook refreshes the opened paper)
+manuwright init --refresh-rules --all   # refresh the agent rules of every registered paper (.bak kept; --auto: only unedited copies manuwright wrote, matched by docs/agent_bootstrap.sha256; update runs it, and the session hook refreshes the opened paper)
 manuwright mode academic|strict|off  # academic writing mode (default academic)
 manuwright style learn <papers>     # measure a corpus of good papers (PDF/DOCX/MD/TXT) into the personal library
 manuwright style card <section>     # the section card: moves, rules, phrasebank, model paragraphs, measured targets, learned style
