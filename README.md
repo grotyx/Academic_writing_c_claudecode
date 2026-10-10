@@ -100,6 +100,8 @@ You use it from the chat:
 
 It works only inside a paper folder. Rewrites never change the facts: `manuwright style preserve` fails if a citation, number, *p* value or Table/Figure reference moved. Walkthrough: [manual, section 6](docs/manual.md#6-academic-writing-mode).
 
+**What you teach it stays.** Say "from now on use *used*, not *utilized*", "remember: Spine wants a capital P" or "add Dr Kim as a co-author" and the agent saves it in your personal library (`~/.manuwright/library`: wording rules, notes, team profile), adding without overwriting. Every new paper starts with it, and a paper you already started pulls the new items when you open a session. Rules you approve from your own edits go there too. "Sync my library" runs `manuwright library sync --pull` (or `--push` to send a paper's rules up).
+
 ## Install
 
 Two ways, one engine. Pick one.
@@ -113,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -145,6 +147,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright search audit` | Re-check every evidence.md entry against PubMed: weighted title/author/year/journal match, DOI mismatch, retractions, expressions of concern, errata |
 | `manuwright blind-review packet` / `check` | Revision re-review with the response letter withheld until the verdicts are recorded (no persuasion by the letter) |
 | `manuwright style edits <ai> <edited>` / `--apply` | Learn rules from how you edited AI drafts; only the rules you tick reach `Style/terminology.md` |
+| `manuwright library term` / `note` / `sync [--pull\|--push]` | Keep a wording rule or a lesson across papers; bring a paper and your library in step (additions only) |
 | `manuwright guide [name ...]` | List the engine guides the rules cite (`docs/<name>.md`), or print them |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | Run every check for that stage |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | Run one checker on one file |

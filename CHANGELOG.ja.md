@@ -4,6 +4,16 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`: ロゴマークのベクター版(明るい背景用、暗い背景用)。
 
+### v1.9.4 (261010)
+
+個人ライブラリを記憶として：論文で教えたことがすべての論文に引き継がれる。追加のみ。
+
+- チャット：「今後は Y ではなく X で」「覚えて ...」「共著者に Dr Kim を追加して」「所属が変わった」「ライブラリを同期して」でエージェントが保存の指示を受ける（論文フォルダのみ）。`manuwright library term --prefer X --avoid Y` は用語規則をライブラリと論文に、`manuwright library note "..." --topic journal|reviewer|writing|method|other` はメモを `library/notes.md` に保存し、論文フォルダのセッション開始ごとに表示する。著者情報は変更行を先に示し、その人の行だけをライブラリのチーム情報と論文の `profile/authors.md` で直す。
+- `manuwright library sync` は論文とライブラリの差分を表示し、`--pull` / `--push` は不足する用語規則・文体資料・Style Spec・チーム情報を追加する。上書き・削除はせず、変更するファイルは `.bak` に保存し、衝突する規則や異なるファイルは著者の判断に任せる。
+- 自動：`style edits --apply` で承認した規則はライブラリにも入り、論文フォルダでセッションを開くとライブラリの新しい項目が取り込まれる（`manuwright config set library-sync auto|ask|off`）。エンジンのテンプレート clone は同期しない。`manuwright check` に Library sync 行を追加。
+- 修正：`style edits --apply` が学習規則だけの用語集を作り project.json に登録しなかったため、チェックが読まなかった。論文に登録された用語集にエンジンの語彙を基に書き込み、登録する。
+- エージェント規則（AGENTS/CLAUDE/GEMINI.md）が変わったため、更新後に `manuwright init --refresh-rules --all` を実行する。マニュアル v2.6.0、harness guide v1.3.0。
+
 ### v1.9.3 (261007)
 
 コードレビューと合成データによるエンドツーエンド試験(新しい論文フォルダ、合成データ、実際の PubMed 検索、DOCX ビルドまで全段階)からの修正。

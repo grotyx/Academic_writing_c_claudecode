@@ -227,6 +227,7 @@ REVIEW_AGENTS = ('claude', 'codex', 'opencode', 'muse', 'agy')
 CONFIG_KEYS = {  # key -> (path in config.json, kind)
     'auto-update': (('auto_update',), 'onoff'),
     'writing-mode': (('writing_mode',), ('academic', 'strict', 'off')),
+    'library-sync': (('library_sync',), ('auto', 'ask', 'off')),
     'main-model': (('main_model',), 'text'),
     'review.reviewers': (('review', 'reviewers'), 'list'),
     'review.openrouter-models': (('review', 'openrouter_models'), 'list'),
@@ -992,6 +993,21 @@ def check(engine, args):
                      + ('' if docs >= 3 else ' (too few to change any check: learn from 3 or more papers)'), None))
     except (OSError, ValueError):
         rows.append((None, 'Learned style', 'none yet (optional: manuwright style learn <your or landmark papers>)', None))
+    library = home() / 'library'
+    sync_mode = data.get('library_sync') if data.get('library_sync') in ('auto', 'ask', 'off') else 'auto'
+    try:
+        rules_file = (library / 'writing' / 'terminology.md').read_text(encoding='utf-8')
+        learned = sum(1 for line in rules_file.splitlines() if line.startswith('| ') and '|---' not in line
+                      and 'Preferred Term' not in line and 'Forbidden Terms' not in line)
+    except OSError:
+        learned = 0
+    try:
+        notes = sum(1 for line in (library / 'notes.md').read_text(encoding='utf-8').splitlines() if line.startswith('- '))
+    except OSError:
+        notes = 0
+    rows.append((True if sync_mode != 'off' else None, 'Library sync',
+                 f'{sync_mode}: {learned} wording-rule row(s), {notes} note(s), team profile '
+                 f"{'yes' if (library / 'profile' / 'authors.md').is_file() else 'no'} ({library})", None))
     stale = stale_papers(engine)
     rows.append((not stale, 'Paper agent rules', 'all registered papers current' if not stale else
                  f'{len(stale)} out of date: ' + ', '.join(str(p) for p in stale),

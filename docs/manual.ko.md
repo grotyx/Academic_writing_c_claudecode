@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.5.2)
+# manuwright 사용자 매뉴얼 (v2.6.0)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -505,6 +505,26 @@ manuwright library writing import Style/                      # 기존 Style/ �
 - **Word 스타일.** Word 서식은 보통 목표 저널에 따라 정해지므로 저널용(`--journal`), 팀용(`--team`), 개인용(`--personal`)으로 저장한다. 논문 폴더에서 `docx save` 를 하면 그 논문의 저널에 연결된다. `manuwright target` 에서 저널을 고르면 그 저널용으로 저장한 서식이 맨 위에 미리 선택돼 나오고, 팀·개인 서식이 뒤에 나온다. Word 서식 파일은 그 파일의 글꼴·제목 스타일·여백을 그대로 쓴다(서식 파일 안의 글은 버리고 스타일만 사용). 그 위에 따로 정한 것(예: 줄 번호)만 바꾼다.
 - **팀 정보.** 새 논문마다 `profile/authors.md` 로 복사되고 title page 는 이걸로 쓴다. 에이전트에게 "이 CV 로 manuwright 팀 정보 채워줘" 라고 해도 된다. 라이브러리 파일만 고치고, ORCID·연구비 번호는 추측하지 않으며, 모르는 칸은 `[...]` 로 둔다.
 - **글쓰기 스타일.** `manuwright library writing import Style/` 에서 `writing` 은 명령어, `Style/` 은 가져올 폴더(여기서는 템플릿 저장소의 Style 폴더)다. 논문에서 문체를 뽑아내는 건 LLM 이 할 일이다. `writing add` 다음 에이전트에게 "manuwright 라이브러리에 내 글쓰기 스타일 등록해줘" 라고 하면 manuwright skill 이 `Style/style_guide.md` 기준으로 패턴과 측정값(문장 길이, 인용 밀도)을 뽑는다. 문단 복사는 하지 않는다. 그 결과로 앵커 파일, `terminology.md`, `style_spec.md` 를 만든다. 새 논문은 이걸 `Style/` 로 받아 `/style-pass` 와 용어 검사에 쓴다. 원본 PDF 는 라이브러리에만 남는다.
+
+### 논문에서 배운 것을 라이브러리에 쌓기 (기억)
+
+논문을 쓰며 정한 용어, 저자 정보, 저널·리뷰어에 대해 알게 된 것은 개인 라이브러리에 쌓여 다음 논문으로 이어진다. 원칙은 하나다: **추가만 하고 덮어쓰거나 지우지 않는다.** 바뀌는 파일은 `.bak` 으로 보관하고, 서로 다르면 고르지 않고 알려 준다.
+
+| 채팅으로 | 명령 | 어디에 |
+|---|---|---|
+| "앞으로는 utilized 대신 used로 써" | `manuwright library term --prefer used --avoid utilized` | 라이브러리와 이 논문의 용어집(`Style/terminology.md`), 이후 검사가 강제 |
+| "기억해줘: Spine은 P 대문자" | `manuwright library note "Spine uses a capital P" --topic journal` | 라이브러리 `notes.md`. 논문 폴더에서 세션을 열 때마다 에이전트에게 보임 |
+| "공동저자 김철수(MD, ORCID ...) 추가해줘", "이 사람 소속이 바뀌었어" | (명령 없음: 에이전트가 고침) | 라이브러리 팀 정보와 이 논문의 `profile/authors.md` 에서 그 사람 줄만. 바꿀 줄을 먼저 보여 줌 |
+| "라이브러리 최신으로 받아줘" | `manuwright library sync --pull` | 라이브러리에 있고 이 논문에 없는 규칙·문체 자료·Style Spec·팀 정보를 이 논문에 추가 |
+| "이 논문 것을 라이브러리에 올려줘" | `manuwright library sync --push` | 반대 방향 |
+| "라이브러리랑 차이 보여줘" | `manuwright library sync` | 바꾸지 않고 차이만 |
+
+자동으로 일어나는 것:
+- "내가 고친 거 배워줘"로 승인한 규칙(`style edits --apply`)은 논문과 라이브러리 양쪽에 들어간다.
+- 논문 폴더에서 세션을 열면 라이브러리에 새로 생긴 규칙과 문체 자료가 그 논문에 추가되고, 무엇을 받았는지 에이전트가 한 줄로 알려 준다. 끄거나 묻게 하려면 `manuwright config set library-sync off` 또는 `ask`.
+- 같은 단어에 서로 다른 규칙(라이브러리는 "showed", 논문은 "found")이 있거나 Style Spec·팀 정보가 서로 다르면 `CONFLICT` / `differs` 로 표시만 하고, 어느 쪽을 쓸지는 저자가 정한다.
+
+엔진 템플릿을 clone 한 폴더는 동기화하지 않는다(그 Style/ 은 공개 템플릿이다). `manuwright check` 의 `Library sync` 줄이 규칙 수, 메모 수, 팀 정보 유무를 보여 준다.
 
 ### 저널 참고문헌 형식
 

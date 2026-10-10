@@ -60,6 +60,17 @@ def academic_card(root: Path) -> str:
         return ""
 
 
+def library_sync(root: Path) -> str:
+    """Pull the personal library's additions into this paper and show the author's notes (fails quiet)."""
+    try:
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import library_sync as sync
+
+        return sync.session_sync(root)
+    except Exception:
+        return ""
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # avoid cp949 console crashes
@@ -68,7 +79,7 @@ def main() -> int:
     print(CONTRACT)
     # Plugin hooks (manuwright hook session) pass the paper folder; a checkout scans itself.
     project = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT
-    for extra in (style_spec_addendum(project), academic_card(project)):
+    for extra in (style_spec_addendum(project), academic_card(project), library_sync(project)):
         if extra:
             print(extra)
     return 0

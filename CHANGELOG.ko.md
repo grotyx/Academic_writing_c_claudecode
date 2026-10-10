@@ -4,6 +4,16 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.4 (261010)
+
+개인 라이브러리를 기억처럼: 논문에서 가르친 것이 모든 논문에 이어진다. 추가만 한다.
+
+- 채팅: "앞으로는 X 대신 Y로 써", "기억해줘 ...", "공동저자 김철수 추가해줘", "소속이 바뀌었어", "라이브러리 최신으로 받아줘" 에 에이전트가 저장 지시를 받는다(논문 폴더에서만). `manuwright library term --prefer X --avoid Y` 는 용어 규칙을 라이브러리와 이 논문에, `manuwright library note "..." --topic journal|reviewer|writing|method|other` 는 메모를 `library/notes.md` 에 남기고 논문 폴더의 세션 시작마다 보여 준다. 저자 정보는 바꿀 줄을 먼저 보여 준 뒤 그 사람 줄만 라이브러리 팀 정보와 논문의 `profile/authors.md` 에서 고친다.
+- `manuwright library sync` 는 논문과 라이브러리의 차이를 보여 주고, `--pull` / `--push` 는 없는 용어 규칙·문체 자료·Style Spec·팀 정보를 추가한다. 덮어쓰거나 지우지 않고, 바뀌는 파일은 `.bak` 으로 보관하며, 충돌하는 규칙이나 서로 다른 파일은 저자가 정하도록 알려 준다.
+- 자동: `style edits --apply` 로 승인한 규칙은 라이브러리에도 들어가고, 논문 폴더에서 세션을 열면 라이브러리의 새 항목이 그 논문에 들어온다(`manuwright config set library-sync auto|ask|off`). 엔진 템플릿 clone 은 동기화하지 않는다. `manuwright check` 에 Library sync 줄이 생겼다.
+- 수정: `style edits --apply` 가 학습 규칙만 든 용어집을 만들고 project.json 에 등록하지 않아 검사가 그 파일을 읽지 않았다. 이제 논문에 등록된 용어집에 엔진 기본 어휘를 바탕으로 쓰고 등록한다.
+- 에이전트 규칙(AGENTS/CLAUDE/GEMINI.md)이 바뀌었으니 업데이트 후 `manuwright init --refresh-rules --all` 을 실행한다. 설명서 v2.6.0(라이브러리 기억 절), harness guide v1.3.0.
+
 ### v1.9.3 (261007)
 
 코드 리뷰와 가상 데이터 종단 테스트(새 논문 폴더, 합성 데이터, 실제 PubMed 검색, DOCX 빌드까지 전 단계)에서 나온 수정.

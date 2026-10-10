@@ -4,6 +4,16 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.4 (261010)
+
+Personal library as memory: what you teach a paper reaches every paper, additions only.
+
+- In chat: "from now on use X, not Y", "remember ...", "add Dr Kim as a co-author", "her affiliation changed", "sync my library" give the agent a memory instruction (paper folders only): `manuwright library term --prefer X --avoid Y` keeps a wording rule in the library and the paper; `manuwright library note "..." --topic journal|reviewer|writing|method|other` keeps a lesson in `library/notes.md`, shown at every session start in a paper folder; one person's author details are edited line by line in the library team profile and the paper's `profile/authors.md`, after showing the change.
+- `manuwright library sync` shows the difference between a paper and the library; `--pull` / `--push` add the missing wording rules, style anchors, style spec and team profile. Nothing is overwritten or deleted, a changed file keeps `.bak`, and a conflicting rule or a differing file is reported for the author to decide.
+- Automatic: rules approved with `style edits --apply` also go to the library, and opening a session in a paper folder pulls the library's new items into it (`manuwright config set library-sync auto|ask|off`). The engine template checkout is never synced. `manuwright check` shows a Library sync row.
+- Fix: `style edits --apply` wrote a registry holding only the learned rules that project.json did not name, so the lint never read it; it now writes the paper's declared registry, seeded from the engine's vocabulary, and declares it.
+- Agent rules changed (AGENTS/CLAUDE/GEMINI.md): run `manuwright init --refresh-rules --all` after updating. Manual v2.6.0 (library memory section), harness guide v1.3.0.
+
 ### v1.9.3 (261007)
 
 Fixes from a code review and a synthetic end-to-end run (new paper folder, synthetic data, real PubMed search, every stage up to the DOCX build).
