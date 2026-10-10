@@ -4,6 +4,17 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.6 (261010)
+
+에이전트 규칙 자동 갱신을 안전하게 고쳤다(코드 리뷰 반영).
+
+- 규칙 파일은 manuwright 가 배포한 버전 그대로이고 손대지 않은 사본일 때만 자동으로 바뀐다. 내용 해시로 확인한다(`docs/agent_bootstrap.sha256`, Windows 줄바꿈과 BOM 은 무시). 직접 쓴 파일, manuwright 사본에 줄을 덧붙인 파일, UTF-8 이 아닌 파일, 더 새 manuwright 가 쓴 파일은 그대로 둔다. 전에는 manuwright 머리글이 있는 파일을 모두 바꿔서, 덧붙인 내용이 다음 세션 시작 때 사라졌다.
+- 자동 갱신은 지운 규칙 파일을 다시 만들지 않고, `project.json` 이 다른 엔진 버전을 고정한 논문은 건드리지 않는다.
+- 읽을 수 없는 논문 폴더 하나 때문에 나머지 갱신이 멈추지 않는다. `manuwright check` 는 손대지 않은 옛 사본이 있는 논문만 세고, 고치는 명령은 `manuwright init --refresh-rules --all --auto` 다.
+- `.bak` 은 원본 바이트 그대로 저장하고, 내용이 다른 이전 `.bak` 은 날짜가 붙은 이름으로 남긴다. 새 논문 폴더는 git 에서 `*.bak` 을 무시한다.
+- `manuwright update --no-agents` 는 논문 규칙 갱신도 건너뛴다. `projects.json` 은 원자적으로 쓰고, 읽을 수 없을 때는 덮어쓰지 않는다. 세션 훅은 명령과 같은 코드를 쓴다.
+- 매뉴얼 v2.6.2, harness guide v1.3.2, README.
+
 ### v1.9.5 (261010)
 
 에이전트 규칙이 스스로 갱신된다. `manuwright update` 뒤에 따로 할 일이 없고, Windows 도 마찬가지다.

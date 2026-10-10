@@ -51,7 +51,7 @@ Standalone tools (same flags as scripts/*.py; project paths default to the curre
   manuwright <tool> --help    shows that tool's own options
 Setup and updates:
   init [folder]              starter paper folder (never overwrites, never approves)
-  init --refresh-rules [--all]   in an existing paper (or --all registered papers): update only the agent rules (AGENTS/CLAUDE/GEMINI.md)
+  init --refresh-rules [--all] [--auto]   in an existing paper (or --all registered papers): update only the agent rules (AGENTS/CLAUDE/GEMINI.md); --auto keeps files you wrote or edited
   check                      one report: version, agent adapters, main model, key, auto-update, writing mode, papers
 Writing and review (in chat you can simply ask: "서론 써줘", "과장 표현 검사해줘", "근거 다시 확인해줘"):
   mode [academic|strict|off] academic writing mode (default academic; strict blocks AI-style prose; or say "학술 모드 꺼줘")

@@ -6,6 +6,7 @@ the new version or holds a fresh semantic review / human signoff that an
 engine change would invalidate.
 """
 from __future__ import annotations
+import hashlib
 import importlib.util
 import json
 import os
@@ -48,9 +49,21 @@ def engine_api(engine):
 
 def register(manifest):
     path = str(Path(manifest).resolve())
-    known = load('projects.json', [])
+    registry = home() / 'projects.json'
+    if registry.exists():
+        try:
+            known = json.loads(registry.read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            return  # unreadable right now (locked, half-written): never replace the list with one paper
+        if not isinstance(known, list):
+            return
+    else:
+        known = []
     if path not in known:
-        save('projects.json', known + [path])
+        home().mkdir(parents=True, exist_ok=True)
+        temporary = registry.with_name(f'projects.{os.getpid()}.tmp')
+        temporary.write_text(json.dumps(known + [path], indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+        os.replace(temporary, registry)  # atomic: a concurrent reader never sees a half-written file
 
 
 def known_projects():
@@ -193,29 +206,21 @@ def update(engine, args):
         return code
     print(f'manuwright {current} -> {target}. Roll back: manuwright update --to {current}')
     if '--no-agents' in args:
-        print('Agent adapters not refreshed (--no-agents): run `manuwright agents update`.')
-    else:
-        # Run the newly installed CLI, not this process: its code (and even its Python) is the old one.
-        print('Refreshing the agent adapters: manuwright agents update', flush=True)
-        if subprocess.call([shutil.which('manuwright') or 'manuwright', 'agents', 'update']):
-            print('Agent refresh reported a problem above; fix it and run `manuwright agents update` again.')
+        print('Agent adapters and paper agent rules not refreshed (--no-agents): run `manuwright agents update` '
+              'and `manuwright init --refresh-rules --all --auto`.')
+        return 0
+    # Run the newly installed CLI, not this process: its code (and even its Python) is the old one.
+    print('Refreshing the agent adapters: manuwright agents update', flush=True)
+    if subprocess.call([shutil.which('manuwright') or 'manuwright', 'agents', 'update']):
+        print('Agent refresh reported a problem above; fix it and run `manuwright agents update` again.')
     if known_projects():
-        # Automatic: only rule files manuwright wrote are replaced (.bak kept); a CLAUDE.md the author
-        # wrote is reported, never replaced. Run through the new CLI, which carries the new rules.
+        # Automatic: only unedited earlier manuwright copies are replaced (.bak kept); a file the author wrote
+        # or edited is reported, never replaced. Run through the new CLI, which carries the new rules.
         print('Updating the agent rules of your paper folders: manuwright init --refresh-rules --all --auto', flush=True)
-        subprocess.call([shutil.which('manuwright') or 'manuwright', 'init', '--refresh-rules', '--all', '--auto'])
+        if subprocess.call([shutil.which('manuwright') or 'manuwright', 'init', '--refresh-rules', '--all', '--auto']):
+            print('The paper rule refresh reported a problem above; run `manuwright init --refresh-rules --all --auto` again.')
     print('Paper folders you open later in Claude Code or Codex also update their agent rules themselves.')
     return 0
-
-
-def paper_refresh_hint():
-    """Which paper folders still carry the old agent rules, and the command that updates them."""
-    papers = [m.parent for m in known_projects()]
-    if not papers:
-        return 'In each existing paper folder: `manuwright init --refresh-rules` (updates only its agent rule files).'
-    return ('Update the agent rules of every registered paper at once (only AGENTS/CLAUDE/GEMINI.md change; .bak '
-            'copies kept): `manuwright init --refresh-rules --all`. Registered papers:\n'
-            + '\n'.join(f'  {p}' for p in dict.fromkeys(papers)))
 
 
 REVIEW_AGENTS = ('claude', 'codex', 'opencode', 'muse', 'agy')
@@ -615,53 +620,119 @@ ANALYSIS_PLAN = """# Analysis Plan
 BOOTSTRAP_FILES = ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md')
 
 
-MANAGED_HEADERS = ('# manuwright agent instructions', '# paperflow agent instructions')
+def _rule_hash(data):
+    """sha256 of a rule file's text with LF line endings and no BOM; None when it is not UTF-8."""
+    try:
+        text = data.decode('utf-8')
+    except UnicodeDecodeError:
+        return None
+    return hashlib.sha256(text.lstrip('\ufeff').replace('\r\n', '\n').encode('utf-8')).hexdigest()
 
 
-def managed(text):
-    """A rule file manuwright wrote (any version), as opposed to one the author wrote."""
-    return text.lstrip('\ufeff').startswith(MANAGED_HEADERS)
+def known_bootstraps(engine):
+    """Hashes of every agent_bootstrap.md manuwright has shipped, oldest first (docs/agent_bootstrap.sha256)."""
+    try:
+        lines = (engine / 'docs' / 'agent_bootstrap.sha256').read_text(encoding='utf-8').splitlines()
+    except OSError:
+        lines = []
+    known = [line.strip() for line in lines if re.fullmatch(r'[0-9a-f]{64}', line.strip())]
+    current = _rule_hash((engine / 'docs' / 'agent_bootstrap.md').read_bytes())
+    return known if current in known else known + [current]
+
+
+def is_template_checkout(root):
+    """A clone of the engine template: CLAUDE.md imports WORKFLOW.md. Its rule files are never refreshed."""
+    return any('@WORKFLOW.md' in (root / n).read_text(encoding='utf-8', errors='replace')
+               for n in BOOTSTRAP_FILES if (root / n).is_file())
+
+
+def rule_status(engine, root):
+    """{rule file: 'current' | 'outdated' | 'missing' | 'yours'}. Only an exact copy of a version manuwright
+    shipped is 'outdated' (safe to replace); an edited copy, a file the author wrote, a file that is not UTF-8
+    or one written by a newer engine than this one is 'yours'."""
+    known = known_bootstraps(engine)
+    status = {}
+    for name in BOOTSTRAP_FILES:
+        path = root / name
+        if not path.is_file():
+            status[name] = 'missing'
+            continue
+        digest = _rule_hash(path.read_bytes())
+        status[name] = 'current' if digest == known[-1] else 'outdated' if digest in known else 'yours'
+    return status
+
+
+def _backup(path):
+    """Copy the file's bytes to name.bak; an earlier, different .bak is kept under a dated name."""
+    backup = path.with_name(path.name + '.bak')
+    if backup.exists() and backup.read_bytes() != path.read_bytes():
+        backup = path.with_name(f"{path.name}.{datetime.now().strftime('%Y%m%d-%H%M%S')}.bak")
+    shutil.copyfile(path, backup)
+
+
+def pin_problem(engine, root):
+    """The paper's engine pin (project.json "engine") when this engine does not satisfy it, else None."""
+    try:
+        spec = json.loads((root / 'project.json').read_text(encoding='utf-8')).get('engine')
+        if not spec:
+            return None
+        engine_version, project_api = engine_api(engine)
+        return project_api.engine_problem(spec, engine_version)
+    except Exception:
+        return None
+
+
+def refresh_files(engine, root, auto=False):
+    """Update the paper's rule files; returns (changed, kept, reason). auto (update, session start): only exact
+    copies of an earlier manuwright version are replaced, missing files are not recreated, and a paper pinned
+    to another engine version is left alone. Without auto (the author's command) every differing file is
+    replaced and missing ones are written. Replaced files keep a .bak copy."""
+    if is_template_checkout(root):
+        return [], [], 'this folder is a template checkout; update it with `git pull` instead'
+    pinned = pin_problem(engine, root) if auto else None
+    if pinned:
+        return [], [], pinned
+    bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
+    changed, kept = [], []
+    for name, state in rule_status(engine, root).items():
+        if state == 'current' or (auto and state == 'missing'):
+            continue
+        if auto and state == 'yours':
+            kept.append(name)
+            continue
+        target = root / name
+        if target.exists():
+            _backup(target)
+        target.write_text(bootstrap, encoding='utf-8')
+        changed.append(name)
+    return changed, kept, None
 
 
 def refresh_rules(engine, root, auto=False):
-    """Bring an existing paper's agent rule files up to this engine version (old copies kept as .bak).
-    auto (update, session start): replace only files manuwright wrote; an author's own file is reported."""
-    bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
-    changed, kept = [], []
-    # A template checkout imports WORKFLOW.md from CLAUDE.md only; its AGENTS.md and GEMINI.md are the
-    # template's own, so the whole folder is left alone when any rule file does.
-    if any('@WORKFLOW.md' in (root / n).read_text(encoding='utf-8', errors='replace')
-           for n in BOOTSTRAP_FILES if (root / n).exists()):
-        print('kept the agent rules: this folder is a template checkout; update it with `git pull` instead.')
+    """Bring an existing paper's agent rule files up to this engine version (old copies kept as .bak)."""
+    changed, kept, reason = refresh_files(engine, root, auto)
+    if reason:
+        print(f'kept the agent rules: {reason}.')
         return 0
-    for name in BOOTSTRAP_FILES:
-        target = root / name
-        if target.exists() and target.read_text(encoding='utf-8') == bootstrap:
-            continue
-        if auto and target.exists() and not managed(target.read_text(encoding='utf-8', errors='replace')):
-            kept.append(name)
-            continue
-        if target.exists():
-            shutil.copyfile(target, target.with_name(name + '.bak'))
-        target.write_text(bootstrap, encoding='utf-8')
-        changed.append(name)
-    print(f"Agent rules {'updated: ' + ', '.join(changed) + ' (previous copies saved as .bak)' if changed else 'already current'}."
+    print(f"Agent rules {'updated: ' + ', '.join(changed) + ' (previous copies saved as .bak)' if changed else 'current'}."
           ' Nothing else in the paper was changed.'
-          + (f" Kept {', '.join(kept)}: written by you, not by manuwright; `manuwright init --refresh-rules` in that"
-             ' folder replaces it (with a .bak copy).' if kept else ''))
+          + (f" Kept {', '.join(kept)}: you wrote or edited it, so it was not replaced; `manuwright init "
+             '--refresh-rules` in that folder replaces it (with a .bak copy).' if kept else ''))
     return 0
 
 
 def stale_papers(engine):
-    """Registered paper folders whose agent rule files differ from this engine's (template checkouts excluded)."""
-    bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
+    """Registered papers holding an unedited earlier manuwright version of a rule file (what --auto refreshes).
+    Template checkouts, pinned papers and files the author wrote are not counted."""
     stale = []
     for root in dict.fromkeys(m.parent for m in known_projects()):
-        texts = [(root / n).read_text(encoding='utf-8', errors='replace') for n in BOOTSTRAP_FILES if (root / n).exists()]
-        if any('@WORKFLOW.md' in t for t in texts):
+        try:
+            if is_template_checkout(root) or pin_problem(engine, root):
+                continue
+            if 'outdated' in rule_status(engine, root).values():
+                stale.append(root)
+        except OSError:
             continue
-        if len(texts) < len(BOOTSTRAP_FILES) or any(t != bootstrap for t in texts):
-            stale.append(root)
     return stale
 
 
@@ -674,7 +745,10 @@ def refresh_all(engine, auto=False):
         return 0
     for root in roots:
         print(f'{root}: ', end='', flush=True)
-        refresh_rules(engine, root, auto=auto)
+        try:
+            refresh_rules(engine, root, auto=auto)
+        except OSError as exc:  # one unreadable folder must not stop the others
+            print(f'skipped ({exc}).')
     return 0
 
 
@@ -698,6 +772,7 @@ EVIDENCE_STARTER = """# Evidence
 
 
 PAPER_GITIGNORE = """# manuwright: copyright-protected or private material stays on this computer
+*.bak
 knowledge/pdf/
 Style/PDF/
 Style/profile/
@@ -706,7 +781,8 @@ Style/profile/
 
 
 def init(engine, args):
-    """manuwright init [folder] [--refresh-rules [--all]]: starter paper folder; never overwrites, never approves."""
+    """manuwright init [folder] [--refresh-rules [--all] [--auto]]: starter paper folder; never overwrites, never
+    approves. --refresh-rules updates the agent rules; --auto replaces only unedited earlier manuwright copies."""
     refresh = '--refresh-rules' in args
     auto = '--auto' in args
     if refresh and '--all' in args:
@@ -1021,7 +1097,7 @@ def check(engine, args):
     stale = stale_papers(engine)
     rows.append((not stale, 'Paper agent rules', 'all registered papers current' if not stale else
                  f'{len(stale)} out of date: ' + ', '.join(str(p) for p in stale),
-                 None if not stale else 'manuwright init --refresh-rules --all'))
+                 None if not stale else 'manuwright init --refresh-rules --all --auto'))
     marks = {True: '✓', False: '✗', None: '·'}
     for ok, label, detail, fix in rows:
         print(f'{marks[ok]} {label:<18} {detail}' + (f'\n    fix: {fix}' if fix else ''))

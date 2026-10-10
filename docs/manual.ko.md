@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.6.1)
+# manuwright 사용자 매뉴얼 (v2.6.2)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.5
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.5
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -443,7 +443,7 @@ manuwright init --refresh-rules --all     # 등록된 모든 논문: 에이전�
 manuwright check                          # 최신 상태를 한 화면에 점검, ✗ 마다 고치는 명령
 ```
 
-`check` 는 학술 문체 모드와 학습한 문체가 있는지도 보여 준다. 에이전트 규칙(`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`)은 이제 스스로 갱신된다(v1.9.5): `manuwright update` 가 등록된 모든 논문을 갱신하고, Claude Code 나 Codex 로 논문 폴더를 열면 세션 시작 때 그 논문도 갱신한다(Windows 포함). manuwright 가 만든 파일만 바꾸고(.bak 보관), 직접 쓴 CLAUDE.md 는 그 폴더에서 `manuwright init --refresh-rules` 를 실행할 때까지 그대로 둔다.
+`check` 는 학술 문체 모드와 학습한 문체가 있는지도 보여 준다. 에이전트 규칙(`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`)은 이제 스스로 갱신된다(v1.9.5): `manuwright update` 가 등록된 모든 논문을 갱신하고, Claude Code 나 Codex 로 논문 폴더를 열면 세션 시작 때 그 논문도 갱신한다(Windows 포함). manuwright 가 만든 뒤 손대지 않은 파일만 바꾸고(.bak 보관), 직접 쓰거나 고친 파일, 지운 파일, 다른 엔진 버전을 고정한 논문은 그 폴더에서 `manuwright init --refresh-rules` 를 실행할 때까지 그대로 둔다(v1.9.6).
 
 등록된 논문이 엔진을 고정했거나(`project.json` 의 `"engine": ">=1.8,<1.9"`), 엔진이 바뀌면 무효가 될 유효한 검토가 있으면 자동 업데이트는 기다린다. 되돌리기: `manuwright update --to <버전>`.
 

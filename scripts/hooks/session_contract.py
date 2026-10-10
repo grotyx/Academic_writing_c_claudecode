@@ -60,55 +60,33 @@ def academic_card(root: Path) -> str:
         return ""
 
 
-RULE_FILES = ("AGENTS.md", "CLAUDE.md", "GEMINI.md")
-MANAGED_HEADERS = ("# manuwright agent instructions", "# paperflow agent instructions")
-
-
 def refresh_agent_rules(folder: Path) -> str:
     """Bring this paper's agent rule files up to the installed engine, so an update needs no extra step
-    (Windows included). Only files manuwright wrote are replaced (.bak kept); a file the author wrote is
-    left alone. The paper is also registered, so `manuwright init --refresh-rules --all` reaches it."""
+    (Windows included). Uses the same code as `manuwright init --refresh-rules --auto`: only unedited copies of
+    an earlier manuwright version are replaced (.bak kept); files the author wrote or edited, missing files,
+    template checkouts and papers pinned to another engine version are left alone. Registers the paper."""
     try:
         sys.path.insert(0, str(ROOT / "scripts"))
-        import json
-
         import library_sync as sync
 
         root = sync.paper_root(folder)
-        if not root or not (root / "project.json").is_file() or sync.is_template(root):
+        if not root or not (root / "project.json").is_file():
             return ""
-        bootstrap = (ROOT / "docs" / "agent_bootstrap.md").read_text(encoding="utf-8")
-        updated, kept = [], []
-        for name in RULE_FILES:
-            target = root / name
-            current = target.read_text(encoding="utf-8", errors="replace") if target.exists() else None
-            if current == bootstrap:
-                continue
-            if current is not None and not current.lstrip("\ufeff").startswith(MANAGED_HEADERS):
-                kept.append(name)
-                continue
-            if current is not None:
-                target.with_name(name + ".bak").write_text(current, encoding="utf-8")
-            target.write_text(bootstrap, encoding="utf-8")
-            updated.append(name)
-        registry = sync.academic_style.home() / "projects.json"
-        try:
-            known = json.loads(registry.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            known = []
-        manifest = str((root / "project.json").resolve())
-        if isinstance(known, list) and manifest not in known:
-            registry.parent.mkdir(parents=True, exist_ok=True)
-            registry.write_text(json.dumps(known + [manifest], indent=2) + "\n", encoding="utf-8")
-        if not updated:
-            return ""
-        note = (f"AGENT RULES: updated {', '.join(updated)} in this paper to the installed manuwright version "
-                "(old copies saved as .bak); the new rules apply fully from the next session. Tell the author in one line.")
-        if kept:
-            note += f" {', '.join(kept)} was written by the author and was left as it is."
-        return note
+        if str(ROOT) not in sys.path:
+            sys.path.insert(0, str(ROOT))
+        from manuwright import lifecycle
+
+        changed, _kept, _reason = lifecycle.refresh_files(ROOT, root, auto=True)
     except Exception:
         return ""  # never block a session
+    try:
+        lifecycle.register(root / "project.json")
+    except Exception:
+        pass  # the registry is a convenience; the note below still reaches the author
+    if not changed:
+        return ""
+    return (f"AGENT RULES: updated {', '.join(changed)} in this paper to the installed manuwright version "
+            "(old copies saved as .bak); the new rules apply fully from the next session. Tell the author in one line.")
 
 
 def library_sync(root: Path) -> str:

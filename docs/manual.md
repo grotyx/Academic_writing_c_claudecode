@@ -1,4 +1,4 @@
-# manuwright user manual (v2.6.1)
+# manuwright user manual (v2.6.2)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.5
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.5
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -436,7 +436,7 @@ manuwright init --refresh-rules --all     # every registered paper: update its a
 manuwright check                          # one report of what is current, with the fix for each ✗
 ```
 
-`check` also shows the writing mode and whether a learned style exists. Agent rules (`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`) update themselves (v1.9.5): `manuwright update` refreshes every registered paper, and opening a paper folder in Claude Code or Codex refreshes that paper at session start (Windows included). Only files manuwright wrote are replaced (.bak kept); a CLAUDE.md you wrote yourself is left alone until you run `manuwright init --refresh-rules` in that folder.
+`check` also shows the writing mode and whether a learned style exists. Agent rules (`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`) update themselves (v1.9.5): `manuwright update` refreshes every registered paper, and opening a paper folder in Claude Code or Codex refreshes that paper at session start (Windows included). Only unedited copies manuwright wrote are replaced (.bak kept). A file you wrote or edited, a deleted file and a paper that pins another engine version are left alone until you run `manuwright init --refresh-rules` in that folder (v1.9.6).
 
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
 

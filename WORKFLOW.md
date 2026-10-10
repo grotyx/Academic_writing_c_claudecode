@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.9.5)
+# Academic Paper Writing Project (v1.9.6)
 
-## Shared Engine (v1.9.5)
+## Shared Engine (v1.9.6)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
