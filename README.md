@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.5
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -130,7 +130,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | skills in `~/.config/opencode/skills` | `manuwright verify` |
 | Muse | user skills | `manuwright verify` |
 
-**Update.** `manuwright update` installs the newest release and then refreshes the agent adapters (`manuwright agents update`; skip with `--no-agents`), then offers to update the agent rules of every registered paper (`manuwright init --refresh-rules --all`; only AGENTS/CLAUDE/GEMINI.md change, .bak kept). `manuwright check` shows in one screen whether everything is current (version, each agent's plugin, main model, OpenRouter key, auto-update, paper rules) and the command that fixes each ✗. Opt in to automatic patch updates with `manuwright config set auto-update on`: it checks once a day and never applies an update that would invalidate a paper's current review. On Windows (uv install) `manuwright update` prints one line (`uv tool install --force ...; if ($?) { manuwright agents update }`) to paste into a new PowerShell window, because Windows cannot replace the running `manuwright.exe`. Template users: `git pull`, or see the [migration guide](docs/migration_guide.md).
+**Update.** `manuwright update` installs the newest release and then refreshes the agent adapters (`manuwright agents update`; skip with `--no-agents`), then updates the agent rules of every registered paper without asking (`manuwright init --refresh-rules --all --auto`; only AGENTS/CLAUDE/GEMINI.md that manuwright wrote change, .bak kept; a CLAUDE.md you wrote yourself is left alone). A paper folder you open in Claude Code or Codex also updates its own rules at session start, so nothing is missed on Windows or for papers not yet registered. `manuwright check` shows in one screen whether everything is current (version, each agent's plugin, main model, OpenRouter key, auto-update, paper rules) and the command that fixes each ✗. Opt in to automatic patch updates with `manuwright config set auto-update on`: it checks once a day and never applies an update that would invalidate a paper's current review. On Windows (uv install) `manuwright update` prints one line (`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`) to paste into a new PowerShell window, because Windows cannot replace the running `manuwright.exe`. Template users: `git pull`, or see the [migration guide](docs/migration_guide.md).
 
 **Uninstall.** `claude plugin uninstall manuwright@manuwright`, `codex plugin remove manuwright@manuwright`, `agy plugin uninstall manuwright`, `muse skills uninstall manuwright`, then `uv tool uninstall manuwright`.
 

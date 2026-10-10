@@ -170,8 +170,8 @@ def update(engine, args):
         print(f'manuwright {current} -> {target}: Windows cannot replace manuwright while it is running.\n'
               'Close agent sessions (Claude Code, Codex, ...) and paste this line into a new PowerShell window '
               '(it installs, then refreshes the agent adapters):\n'
-              f'  {" ".join(command)}; if ($?) {{ manuwright agents update }}\n'
-              + paper_refresh_hint())
+              f'  {" ".join(command)}; if ($?) {{ manuwright agents update; manuwright init --refresh-rules --all --auto }}\n'
+              '(Paper folders you open later in Claude Code or Codex also update their agent rules themselves.)')
         return 0
     log = home() / 'update.log'
     home().mkdir(parents=True, exist_ok=True)
@@ -199,17 +199,12 @@ def update(engine, args):
         print('Refreshing the agent adapters: manuwright agents update', flush=True)
         if subprocess.call([shutil.which('manuwright') or 'manuwright', 'agents', 'update']):
             print('Agent refresh reported a problem above; fix it and run `manuwright agents update` again.')
-    papers = [m.parent for m in known_projects()]
-    if papers and not auto and sys.stdin.isatty():
-        print('Registered paper folders:\n' + '\n'.join(f'  {p}' for p in dict.fromkeys(papers)))
-        try:
-            answer = input('Update their agent rules now (only AGENTS/CLAUDE/GEMINI.md, .bak kept)? [Y/n] ')
-        except EOFError:
-            answer = 'n'
-        if answer.strip().lower() in ('', 'y', 'yes'):
-            subprocess.call([shutil.which('manuwright') or 'manuwright', 'init', '--refresh-rules', '--all'])
-            return 0
-    print(paper_refresh_hint())
+    if known_projects():
+        # Automatic: only rule files manuwright wrote are replaced (.bak kept); a CLAUDE.md the author
+        # wrote is reported, never replaced. Run through the new CLI, which carries the new rules.
+        print('Updating the agent rules of your paper folders: manuwright init --refresh-rules --all --auto', flush=True)
+        subprocess.call([shutil.which('manuwright') or 'manuwright', 'init', '--refresh-rules', '--all', '--auto'])
+    print('Paper folders you open later in Claude Code or Codex also update their agent rules themselves.')
     return 0
 
 
@@ -620,10 +615,19 @@ ANALYSIS_PLAN = """# Analysis Plan
 BOOTSTRAP_FILES = ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md')
 
 
-def refresh_rules(engine, root):
-    """Bring an existing paper's agent rule files up to this engine version (old copies kept as .bak)."""
+MANAGED_HEADERS = ('# manuwright agent instructions', '# paperflow agent instructions')
+
+
+def managed(text):
+    """A rule file manuwright wrote (any version), as opposed to one the author wrote."""
+    return text.lstrip('\ufeff').startswith(MANAGED_HEADERS)
+
+
+def refresh_rules(engine, root, auto=False):
+    """Bring an existing paper's agent rule files up to this engine version (old copies kept as .bak).
+    auto (update, session start): replace only files manuwright wrote; an author's own file is reported."""
     bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
-    changed = []
+    changed, kept = [], []
     # A template checkout imports WORKFLOW.md from CLAUDE.md only; its AGENTS.md and GEMINI.md are the
     # template's own, so the whole folder is left alone when any rule file does.
     if any('@WORKFLOW.md' in (root / n).read_text(encoding='utf-8', errors='replace')
@@ -634,12 +638,17 @@ def refresh_rules(engine, root):
         target = root / name
         if target.exists() and target.read_text(encoding='utf-8') == bootstrap:
             continue
+        if auto and target.exists() and not managed(target.read_text(encoding='utf-8', errors='replace')):
+            kept.append(name)
+            continue
         if target.exists():
             shutil.copyfile(target, target.with_name(name + '.bak'))
         target.write_text(bootstrap, encoding='utf-8')
         changed.append(name)
     print(f"Agent rules {'updated: ' + ', '.join(changed) + ' (previous copies saved as .bak)' if changed else 'already current'}."
-          ' Nothing else in the paper was changed.')
+          ' Nothing else in the paper was changed.'
+          + (f" Kept {', '.join(kept)}: written by you, not by manuwright; `manuwright init --refresh-rules` in that"
+             ' folder replaces it (with a .bak copy).' if kept else ''))
     return 0
 
 
@@ -656,8 +665,8 @@ def stale_papers(engine):
     return stale
 
 
-def refresh_all(engine):
-    """`manuwright init --refresh-rules --all`: refresh every registered paper folder."""
+def refresh_all(engine, auto=False):
+    """`manuwright init --refresh-rules --all [--auto]`: refresh every registered paper folder."""
     roots = list(dict.fromkeys(m.parent for m in known_projects()))
     if not roots:
         print('No registered paper folders yet (a paper registers when `manuwright verify` runs in it). '
@@ -665,7 +674,7 @@ def refresh_all(engine):
         return 0
     for root in roots:
         print(f'{root}: ', end='', flush=True)
-        refresh_rules(engine, root)
+        refresh_rules(engine, root, auto=auto)
     return 0
 
 
@@ -699,13 +708,14 @@ Style/profile/
 def init(engine, args):
     """manuwright init [folder] [--refresh-rules [--all]]: starter paper folder; never overwrites, never approves."""
     refresh = '--refresh-rules' in args
+    auto = '--auto' in args
     if refresh and '--all' in args:
-        return refresh_all(engine)
-    args = [a for a in args if a not in ('--refresh-rules', '--all')]
+        return refresh_all(engine, auto=auto)
+    args = [a for a in args if a not in ('--refresh-rules', '--all', '--auto')]
     root = Path(args[0] if args else '.').resolve()
     if (root / 'project.json').exists():
         if refresh:
-            return refresh_rules(engine, root)
+            return refresh_rules(engine, root, auto=auto)
         print(f'manuwright: {root / "project.json"} already exists; nothing changed. After an update, '
               f'`manuwright init --refresh-rules` brings this paper\'s agent rules (AGENTS.md, CLAUDE.md, '
               'GEMINI.md) up to date.', file=sys.stderr)

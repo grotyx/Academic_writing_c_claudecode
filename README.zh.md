@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.5
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -130,7 +130,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` 中的 skill | `manuwright verify` |
 | Muse | 用户 skill | `manuwright verify` |
 
-**更新。** `manuwright update` 安装最新版本后接着刷新代理适配器（`manuwright agents update`；用 `--no-agents` 跳过），随后询问是否更新所有已登记论文的代理规则（`manuwright init --refresh-rules --all`；只改 AGENTS/CLAUDE/GEMINI.md，保留 .bak）。`manuwright check` 在一屏中显示版本、各代理插件、主模型、OpenRouter 密钥、自动更新和论文规则是否最新，并为每个 ✗ 给出修复命令。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会输出一行命令（`uv tool install --force ...; if ($?) { manuwright agents update }`），粘贴到新的 PowerShell 窗口运行。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
+**更新。** `manuwright update` 安装最新版本后接着刷新代理适配器（`manuwright agents update`；用 `--no-agents` 跳过），随后不再询问、直接更新所有已登记论文的代理规则（`manuwright init --refresh-rules --all --auto`；只改 manuwright 写的 AGENTS/CLAUDE/GEMINI.md，保留 .bak，你自己写的 CLAUDE.md 不动）。在 Claude Code 或 Codex 中打开论文文件夹时，会话开始时也会自动更新该论文的规则，因此 Windows 和尚未登记的论文也不会遗漏。`manuwright check` 在一屏中显示版本、各代理插件、主模型、OpenRouter 密钥、自动更新和论文规则是否最新，并为每个 ✗ 给出修复命令。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会输出一行命令（`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`），粘贴到新的 PowerShell 窗口运行。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
 
 **卸载。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`，最后 `uv tool uninstall manuwright`。
 

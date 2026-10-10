@@ -4,6 +4,16 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`: ロゴマークのベクター版(明るい背景用、暗い背景用)。
 
+### v1.9.5 (261010)
+
+エージェント規則が自動で更新される。`manuwright update` の後に別の手順は不要で、Windows も同様。
+
+- `manuwright update` が登録済みのすべての論文のエージェント規則を確認なしで更新する（`init --refresh-rules --all --auto`）。
+- Claude Code や Codex で論文フォルダを開くと、セッション開始時にその論文の規則を更新し、論文を登録する。`update` がインストール行を表示するだけの Windows や未登録の論文も漏れない。
+- 自動更新は manuwright が書いた規則ファイルだけを置き換え（旧ファイルは .bak）、著者が書いた CLAUDE.md はそのまま残して知らせる。そのフォルダで `manuwright init --refresh-rules` を実行すれば置き換える。
+- Windows の 1 行：`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`。
+- マニュアル v2.6.1、harness guide v1.3.1、README。
+
 ### v1.9.4 (261010)
 
 個人ライブラリを記憶として：論文で教えたことがすべての論文に引き継がれる。追加のみ。

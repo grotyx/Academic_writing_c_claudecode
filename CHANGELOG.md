@@ -4,6 +4,16 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.5 (261010)
+
+Agent rules update themselves; no separate step after `manuwright update`, on Windows too.
+
+- `manuwright update` refreshes the agent rules of every registered paper without asking (`init --refresh-rules --all --auto`).
+- Opening a paper folder in Claude Code or Codex refreshes that paper's rules at session start and registers the paper. This covers Windows, where `update` only prints an install line, and papers never registered.
+- Automatic refreshes replace only rule files manuwright wrote (old copies kept as .bak); a CLAUDE.md the author wrote is left alone and reported. `manuwright init --refresh-rules` in that folder still replaces it on request.
+- The Windows line now reads `uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`.
+- Manual v2.6.1, harness guide v1.3.1, READMEs.
+
 ### v1.9.4 (261010)
 
 Personal library as memory: what you teach a paper reaches every paper, additions only.

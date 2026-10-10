@@ -60,6 +60,57 @@ def academic_card(root: Path) -> str:
         return ""
 
 
+RULE_FILES = ("AGENTS.md", "CLAUDE.md", "GEMINI.md")
+MANAGED_HEADERS = ("# manuwright agent instructions", "# paperflow agent instructions")
+
+
+def refresh_agent_rules(folder: Path) -> str:
+    """Bring this paper's agent rule files up to the installed engine, so an update needs no extra step
+    (Windows included). Only files manuwright wrote are replaced (.bak kept); a file the author wrote is
+    left alone. The paper is also registered, so `manuwright init --refresh-rules --all` reaches it."""
+    try:
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import json
+
+        import library_sync as sync
+
+        root = sync.paper_root(folder)
+        if not root or not (root / "project.json").is_file() or sync.is_template(root):
+            return ""
+        bootstrap = (ROOT / "docs" / "agent_bootstrap.md").read_text(encoding="utf-8")
+        updated, kept = [], []
+        for name in RULE_FILES:
+            target = root / name
+            current = target.read_text(encoding="utf-8", errors="replace") if target.exists() else None
+            if current == bootstrap:
+                continue
+            if current is not None and not current.lstrip("\ufeff").startswith(MANAGED_HEADERS):
+                kept.append(name)
+                continue
+            if current is not None:
+                target.with_name(name + ".bak").write_text(current, encoding="utf-8")
+            target.write_text(bootstrap, encoding="utf-8")
+            updated.append(name)
+        registry = sync.academic_style.home() / "projects.json"
+        try:
+            known = json.loads(registry.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            known = []
+        manifest = str((root / "project.json").resolve())
+        if isinstance(known, list) and manifest not in known:
+            registry.parent.mkdir(parents=True, exist_ok=True)
+            registry.write_text(json.dumps(known + [manifest], indent=2) + "\n", encoding="utf-8")
+        if not updated:
+            return ""
+        note = (f"AGENT RULES: updated {', '.join(updated)} in this paper to the installed manuwright version "
+                "(old copies saved as .bak); the new rules apply fully from the next session. Tell the author in one line.")
+        if kept:
+            note += f" {', '.join(kept)} was written by the author and was left as it is."
+        return note
+    except Exception:
+        return ""  # never block a session
+
+
 def library_sync(root: Path) -> str:
     """Pull the personal library's additions into this paper and show the author's notes (fails quiet)."""
     try:
@@ -79,7 +130,8 @@ def main() -> int:
     print(CONTRACT)
     # Plugin hooks (manuwright hook session) pass the paper folder; a checkout scans itself.
     project = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT
-    for extra in (style_spec_addendum(project), academic_card(project), library_sync(project)):
+    for extra in (refresh_agent_rules(project), style_spec_addendum(project), academic_card(project),
+                  library_sync(project)):
         if extra:
             print(extra)
     return 0
