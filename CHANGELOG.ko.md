@@ -4,6 +4,16 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.5 (261010)
+
+에이전트 규칙이 스스로 갱신된다. `manuwright update` 뒤에 따로 할 일이 없고, Windows 도 마찬가지다.
+
+- `manuwright update` 가 등록된 모든 논문의 에이전트 규칙을 묻지 않고 갱신한다(`init --refresh-rules --all --auto`).
+- Claude Code 나 Codex 로 논문 폴더를 열면 세션 시작 때 그 논문의 규칙을 갱신하고 논문을 등록한다. `update` 가 설치 명령만 출력하는 Windows 와, 등록된 적 없는 논문도 이걸로 빠지지 않는다.
+- 자동 갱신은 manuwright 가 만든 규칙 파일만 바꾸고(이전 파일은 .bak), 저자가 직접 쓴 CLAUDE.md 는 그대로 두고 알려 준다. 그 폴더에서 `manuwright init --refresh-rules` 를 실행하면 요청대로 바꾼다.
+- Windows 한 줄 명령: `uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`.
+- 설명서 v2.6.1, harness guide v1.3.1, README.
+
 ### v1.9.4 (261010)
 
 개인 라이브러리를 기억처럼: 논문에서 가르친 것이 모든 논문에 이어진다. 추가만 한다.

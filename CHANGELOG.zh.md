@@ -4,6 +4,16 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
+### v1.9.5 (261010)
+
+代理规则自动更新；`manuwright update` 之后无需额外步骤，Windows 也一样。
+
+- `manuwright update` 不再询问，直接更新所有已登记论文的代理规则（`init --refresh-rules --all --auto`）。
+- 在 Claude Code 或 Codex 中打开论文文件夹时，会话开始时会更新该论文的规则并登记该论文。`update` 只输出安装命令的 Windows 以及从未登记的论文也不会遗漏。
+- 自动更新只替换 manuwright 写的规则文件（旧文件保留为 .bak）；作者自己写的 CLAUDE.md 保持不动并给出提示。在该文件夹运行 `manuwright init --refresh-rules` 时才按要求替换。
+- Windows 一行命令：`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`。
+- 手册 v2.6.1，harness guide v1.3.1，README。
+
 ### v1.9.4 (261010)
 
 把个人文献库当作记忆：在论文中教过的内容会延续到所有论文，只追加。

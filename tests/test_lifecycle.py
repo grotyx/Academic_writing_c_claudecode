@@ -102,12 +102,12 @@ def test_update_refreshes_agents_with_the_new_cli_and_names_papers(fake_release,
     monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: f'/new/bin/{name}')
     lifecycle.register(project)
     assert lifecycle.update(engine, []) == 0
-    assert len(calls) == 2 and calls[1] == ['/new/bin/manuwright', 'agents', 'update']  # installed CLI, not this one
-    out = capsys.readouterr().out
-    assert 'init --refresh-rules' in out and str(project.parent) in out
+    assert len(calls) == 3 and calls[1] == ['/new/bin/manuwright', 'agents', 'update']  # installed CLI, not this one
+    assert calls[2] == ['/new/bin/manuwright', 'init', '--refresh-rules', '--all', '--auto']  # papers, no question
+    assert 'init --refresh-rules --all --auto' in capsys.readouterr().out
     calls.clear()
     assert lifecycle.update(engine, ['--to', lifecycle.latest_release(), '--no-agents']) == 0
-    assert len(calls) == 1 and 'not refreshed (--no-agents)' in capsys.readouterr().out
+    assert len(calls) == 2 and 'not refreshed (--no-agents)' in capsys.readouterr().out
 
 
 def test_windows_update_line_chains_the_agent_refresh(fake_release, monkeypatch, capsys):
@@ -115,7 +115,7 @@ def test_windows_update_line_chains_the_agent_refresh(fake_release, monkeypatch,
     monkeypatch.setattr(lifecycle, 'install_command', lambda tag: ['uv', 'tool', 'install', '--force', f'x@v{tag}'])
     monkeypatch.setattr(lifecycle, 'on_windows', lambda: True)
     assert lifecycle.update(engine, []) == 0
-    assert not calls and '; if ($?) { manuwright agents update }' in capsys.readouterr().out
+    assert not calls and '; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }' in capsys.readouterr().out
 
 
 def test_manual_update_skips_reinstall_when_up_to_date(fake_release, monkeypatch, capsys):
@@ -506,15 +506,14 @@ def test_refresh_all_updates_every_registered_paper(tmp_path, capsys):
     assert not (papers[1] / 'CLAUDE.md.bak').exists()  # already current: untouched
 
 
-def test_update_offers_to_refresh_registered_papers(fake_release, project, monkeypatch, capsys):
+def test_update_refreshes_registered_papers_without_asking(fake_release, project, monkeypatch, capsys):
     engine, calls = fake_release
     monkeypatch.setattr(lifecycle, 'on_windows', lambda: False)
     monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: f'/new/bin/{name}')
-    monkeypatch.setattr(lifecycle.sys.stdin, 'isatty', lambda: True, raising=False)
-    monkeypatch.setattr('builtins.input', lambda prompt: '')
+    monkeypatch.setattr('builtins.input', lambda prompt: pytest.fail('update must not ask'))
     lifecycle.register(project)
     assert lifecycle.update(engine, []) == 0
-    assert calls[-1] == ['/new/bin/manuwright', 'init', '--refresh-rules', '--all']
+    assert calls[-1] == ['/new/bin/manuwright', 'init', '--refresh-rules', '--all', '--auto']
 
 
 def test_check_reports_each_item_with_a_fix(project, monkeypatch, capsys):
@@ -574,3 +573,36 @@ def test_refresh_leaves_a_template_checkout_alone(tmp_path, capsys):
         assert (tmp_path / name).read_text(encoding='utf-8') == (ENGINE / name).read_text(encoding='utf-8')
         assert not (tmp_path / (name + '.bak')).exists()
     assert 'template checkout' in capsys.readouterr().out
+
+
+def test_rules_refresh_automatically_but_never_replaces_the_authors_own_file(tmp_path, capsys):
+    import importlib.util
+    bootstrap = (ENGINE / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')
+    root = tmp_path / 'paper'
+    (root / 'drafts').mkdir(parents=True)
+    (root / 'knowledge').mkdir()
+    (root / 'knowledge' / 'evidence.md').write_text('# Evidence\n', encoding='utf-8')
+    (root / 'project.json').write_text('{"artifacts": []}', encoding='utf-8')
+    (root / 'AGENTS.md').write_text('# manuwright agent instructions\n\nold rules\n', encoding='utf-8')
+    (root / 'CLAUDE.md').write_text('# My own notes\nOLIF study.\n', encoding='utf-8')
+    # update path: --auto replaces only files manuwright wrote
+    assert lifecycle.refresh_rules(ENGINE, root, auto=True) == 0
+    assert (root / 'AGENTS.md').read_text(encoding='utf-8') == bootstrap
+    assert (root / 'AGENTS.md.bak').read_text(encoding='utf-8').endswith('old rules\n')
+    assert (root / 'CLAUDE.md').read_text(encoding='utf-8').startswith('# My own notes')
+    assert 'Kept CLAUDE.md' in capsys.readouterr().out
+    # session start does the same for the paper it opens, and registers it
+    (root / 'GEMINI.md').write_text('# paperflow agent instructions\nolder\n', encoding='utf-8')
+    spec = importlib.util.spec_from_file_location('session_contract', ENGINE / 'scripts' / 'hooks' / 'session_contract.py')
+    hook = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(hook)
+    note = hook.refresh_agent_rules(root / 'drafts')
+    assert 'updated GEMINI.md' in note and 'CLAUDE.md was written by the author' in note
+    assert (root / 'GEMINI.md').read_text(encoding='utf-8') == bootstrap
+    assert str((root / 'project.json').resolve()) in json.loads((lifecycle.home() / 'projects.json').read_text())
+    assert hook.refresh_agent_rules(root) == ''  # current now: nothing to say
+    assert hook.refresh_agent_rules(ENGINE) == ''  # the engine checkout is never touched
+    # the manual command still replaces the author's file on request (with a .bak)
+    assert lifecycle.refresh_rules(ENGINE, root) == 0
+    assert (root / 'CLAUDE.md').read_text(encoding='utf-8') == bootstrap
+    assert (root / 'CLAUDE.md.bak').read_text(encoding='utf-8').startswith('# My own notes')
