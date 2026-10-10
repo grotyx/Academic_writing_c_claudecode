@@ -100,6 +100,8 @@ reason: number not found in results CSV files
 
 論文フォルダの中でのみ動作する。文体を直しても事実は変わらない：引用、数値、*p* 値、Table/Figure 参照が変わると `manuwright style preserve` が失敗する。手順：[マニュアル 6 節](docs/manual.md#6-academic-writing-mode)（英語）。
 
+**教えたことは蓄積される。** 「今後は utilized ではなく used で」「覚えて：Spine は P を大文字」「共著者に Dr Kim を追加して」と言うと、エージェントが個人ライブラリ（`~/.manuwright/library`：用語規則、メモ、チーム情報）に追加し、上書きはしない。新しい論文は最初からこれを持ち、作成済みの論文もセッションを開くと新しい項目だけを取り込む。自分の修正から承認した規則もここに蓄積される。同期は `manuwright library sync --pull`（論文の規則を送るときは `--push`）。
+
 ## インストール
 
 方法は 2 つ、エンジンは 1 つ。どちらかを選ぶ。
@@ -113,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -145,6 +147,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright search audit` | evidence.md の各項目を PubMed と再照合：タイトル・著者・年・誌名の加重一致度、DOI 不一致、撤回、懸念表明、訂正 |
 | `manuwright blind-review packet` / `check` | 回答書を伏せたまま先に判定を記録する revision 再査読（回答書の説得に引きずられない） |
 | `manuwright style edits <ai> <edited>` / `--apply` | AI 草稿を自分が直した方法から規則を学習；チェックした規則だけが `Style/terminology.md` に入る |
+| `manuwright library term` / `note` / `sync [--pull\|--push]` | 用語規則やメモを論文をまたいで保持；論文と個人ライブラリを同期（追加のみ） |
 | `manuwright guide [name ...]` | 規則が引用するエンジンのガイド（`docs/<name>.md`）の一覧または内容を表示 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | その段階のすべての検査を実行 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 1 つのファイルに 1 つのチェッカーを実行 |

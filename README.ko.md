@@ -100,6 +100,8 @@ reason: number not found in results CSV files
 
 논문 폴더 안에서만 작동한다. 문체를 고쳐도 사실은 바뀌지 않는다: 인용, 숫자, *p* 값, Table/Figure 참조가 바뀌면 `manuwright style preserve` 가 실패한다. 따라 하기: [설명서 6절](docs/manual.ko.md#6-학술-문체-모드).
 
+**가르친 것은 쌓인다.** "앞으로는 utilized 대신 used로 써", "기억해줘: Spine은 P 대문자", "공동저자 김철수 추가해줘"라고 하면 에이전트가 개인 라이브러리(`~/.manuwright/library`: 용어 규칙, 메모, 팀 정보)에 저장한다. 추가만 하고 덮어쓰지 않는다. 새 논문은 처음부터 이걸 갖고 시작하고, 이미 만든 논문도 세션을 열 때 새 항목만 받아 온다. 내가 고친 방식에서 승인한 규칙도 여기에 쌓인다. "라이브러리 최신으로 받아줘"는 `manuwright library sync --pull`, "이 논문 것을 라이브러리에 올려줘"는 `--push`.
+
 ## 설치
 
 방법은 두 가지, 엔진은 하나. 하나를 고르면 된다.
@@ -113,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -145,6 +147,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright search audit` | evidence.md 항목을 PubMed 와 다시 대조: 제목·저자·연도·저널 가중 일치도, DOI 불일치, 철회, 우려 표명, 정정 |
 | `manuwright blind-review packet` / `check` | 응답 편지를 가린 채 먼저 판정을 기록하는 revision 재검토 (편지의 설득에 끌려가지 않음) |
 | `manuwright style edits <ai> <edited>` / `--apply` | AI 초안을 내가 고친 방식에서 규칙을 배움; 내가 체크한 규칙만 `Style/terminology.md` 에 반영 |
+| `manuwright library term` / `note` / `sync [--pull\|--push]` | 용어 규칙이나 메모를 모든 논문에 남김; 논문과 개인 라이브러리를 맞춤(추가만, 덮어쓰지 않음) |
 | `manuwright guide [name ...]` | 규칙이 인용하는 엔진 가이드(`docs/<name>.md`) 목록 또는 내용 출력 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 그 단계의 모든 검사 실행 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 파일 하나에 검사기 하나 실행 |

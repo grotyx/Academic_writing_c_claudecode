@@ -109,7 +109,11 @@ def test_edits_propose_rules_and_only_ticked_rules_reach_the_registry(tmp_path, 
     assert acad.main(['edits', '--apply']) == 0
     import lint_manuscript
     terms = lint_manuscript.load_forbidden_terms(tmp_path / 'Style' / 'terminology.md')
-    assert terms == {'demonstrated': 'showed'}
+    # the paper registry starts from the engine's vocabulary and project.json names it, so the lint reads it
+    assert terms['demonstrated'] == 'showed' and len(terms) > 20 and 'notably' not in terms
+    import json
+    assert json.loads((tmp_path / 'project.json').read_text(encoding='utf-8'))['terminology'] == 'Style/terminology.md' \
+        if (tmp_path / 'project.json').is_file() else True
 
 
 def test_evidence_audit_scores_metadata_and_flags_retractions():

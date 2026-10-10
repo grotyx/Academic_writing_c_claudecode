@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.9.3)
+# Academic Paper Writing Project (v1.9.4)
 
-## Shared Engine (v1.9.3)
+## Shared Engine (v1.9.4)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -265,6 +265,7 @@ Use a capable planner for design, a shell-capable analyst for reproducible analy
 
 > **상세 가이드: `docs/writing_guide.md`**
 > **학술 문체 모드 (v1.9.0):** 섹션 카드 `docs/academic_style/` (`manuwright style card <section>`), 코퍼스 학습 `manuwright style learn <papers>`, 모드 `manuwright mode academic|strict|off`.
+> **개인 라이브러리 기억 (v1.9.4):** "기억해"·"앞으로는 X 대신 Y"·"공동저자 추가해줘" 는 `~/.manuwright/library` 에 추가만 한다 (`manuwright library term|note|sync`, 승인된 수정 규칙은 자동 반영, 논문 세션 시작 때 라이브러리 추가분 자동 수신; `config set library-sync auto|ask|off`).
 > 규칙·표·예시는 writing_guide.md에 있음. WORKFLOW.md는 워크플로·Phase 조정만 담당 (중복 방지).
 
 **Phase 5 (Style Polish)에서 적용할 writing_guide.md 섹션:**

@@ -4,6 +4,16 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
+### v1.9.4 (261010)
+
+把个人文献库当作记忆：在论文中教过的内容会延续到所有论文，只追加。
+
+- 对话："以后用 X，不要用 Y""记住 ...""添加共同作者 Dr Kim""她的单位变了""同步我的文献库"会让代理收到保存指示（仅在论文文件夹中）。`manuwright library term --prefer X --avoid Y` 把用词规则存入文献库和本论文；`manuwright library note "..." --topic journal|reviewer|writing|method|other` 把笔记存入 `library/notes.md`，并在论文文件夹每次会话开始时显示。作者信息先展示要改的行，再只修改该人的行（文献库团队信息和论文的 `profile/authors.md`）。
+- `manuwright library sync` 显示论文与文献库的差异；`--pull` / `--push` 追加缺少的用词规则、文体资料、Style Spec 和团队信息。从不覆盖或删除，被修改的文件保留 `.bak`，冲突的规则或不同的文件交由作者决定。
+- 自动：用 `style edits --apply` 批准的规则也会进入文献库；在论文文件夹打开会话时会取回文献库的新增项（`manuwright config set library-sync auto|ask|off`）。引擎模板 clone 不同步。`manuwright check` 新增 Library sync 一行。
+- 修复：`style edits --apply` 生成的用词表只含学习到的规则且未登记到 project.json，检查从未读取它；现在写入论文已登记的用词表（以引擎词汇为基础）并登记。
+- 代理规则（AGENTS/CLAUDE/GEMINI.md）已变更：更新后运行 `manuwright init --refresh-rules --all`。手册 v2.6.0，harness guide v1.3.0。
+
 ### v1.9.3 (261007)
 
 来自代码审查和合成数据端到端测试(新论文文件夹、合成数据、真实 PubMed 检索、直至 DOCX 构建的全部阶段)的修复。

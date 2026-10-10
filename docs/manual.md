@@ -1,4 +1,4 @@
-# manuwright user manual (v2.5.2)
+# manuwright user manual (v2.6.0)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -498,6 +498,26 @@ manuwright library writing import Style/                      # or an existing S
 - **Word styles.** Word layout usually follows the target journal, so a style can be saved for a journal (`--journal`), for the team (`--team`) or as your own (`--personal`); `docx save` inside a paper links it to that paper's journal. In `manuwright target`, after you pick the journal, a style saved for that journal is listed first and preselected; team and personal styles follow. A Word template keeps its own fonts, heading styles and margins; the build drops the template's text and uses its styles. Only what you set on top (for example line numbers) is changed.
 - **Team profile.** Every new paper gets a copy in `profile/authors.md`, which the title page is written from. You can also ask your agent: "Fill my manuwright team profile from this CV". It edits the library file, never guesses an ORCID or grant number, and leaves `[...]` for what it does not know.
 - **Writing style.** In `manuwright library writing import Style/`, `writing` is the command and `Style/` is the folder you import from (here the Style folder of a template checkout). Turning your papers into a style needs an LLM. After `writing add`, ask your agent "register my writing style in the manuwright library". The manuwright skill follows `Style/style_guide.md`: patterns and measured numbers (sentence length, citation density), no copied paragraphs. It writes the anchors, `terminology.md` and `style_spec.md`. New papers get them in `Style/` and use them for `/style-pass` and the terminology lint. Source PDFs stay in the library.
+
+### Keeping what a paper teaches (memory)
+
+Wording decisions, author details and what you learn about journals and reviewers collect in your personal library and carry into the next paper. One rule: **add, never overwrite or delete.** A changed file keeps a `.bak`, and a disagreement is reported, not resolved for you.
+
+| In chat | Command | Where it goes |
+|---|---|---|
+| "from now on use used, not utilized" | `manuwright library term --prefer used --avoid utilized` | The library's and this paper's registry (`Style/terminology.md`); the checks enforce it |
+| "remember: Spine wants a capital P" | `manuwright library note "Spine uses a capital P" --topic journal` | The library's `notes.md`, shown to the agent at every session start in a paper folder |
+| "add Dr Kim (MD, ORCID ...) as a co-author", "her affiliation changed" | (no command: the agent edits) | Only that person's lines in the library team profile and this paper's `profile/authors.md`; the changed lines are shown first |
+| "sync my library" | `manuwright library sync --pull` | Adds the library's rules, style anchors, style spec and team profile that this paper lacks |
+| "send this paper's rules to my library" | `manuwright library sync --push` | The other direction |
+| "show the difference" | `manuwright library sync` | Reports only |
+
+What happens on its own:
+- Rules you approve from your edits (`style edits --apply`) go to the paper and the library.
+- Opening a session in a paper folder adds the library's new rules and anchors to that paper, and the agent says in one line what came in. `manuwright config set library-sync off` (or `ask`) turns that off or makes it ask.
+- The same avoided word with a different preferred word, or a style spec or team profile that differs, is shown as `CONFLICT` / `differs`; the author decides.
+
+A clone of the engine template is never synced (its Style/ is the public template). The `Library sync` row of `manuwright check` shows the rule and note counts and whether a team profile exists.
 
 ### Journal reference style
 

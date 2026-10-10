@@ -971,9 +971,31 @@ def _main(argv: list[str] | None = None) -> int:
             if not PENDING.is_file():
                 print(f'No {PENDING}; run `manuwright style edits` first.', file=sys.stderr)
                 return 2
-            rows = apply_pending(PENDING, Path('Style') / 'terminology.md')
-            print(f'Added {len(rows)} approved rule(s) to Style/terminology.md.' if rows
-                  else 'Nothing new to apply: no ticked rules, or they are already in Style/terminology.md.')
+            import library_sync  # the paper's registry (project.json "terminology"), seeded from the engine's
+            root = library_sync.paper_root(Path.cwd()) or Path.cwd()
+            registry = library_sync.paper_terminology(root)
+            waiting = [l for l in PENDING.read_text(encoding='utf-8').splitlines()
+                       if re.match(r'-\s*\[[xX]\]\s*P\d', l.strip()) and '(applied)' not in l]
+            if waiting:  # nothing ticked: create nothing
+                library_sync.seed_registry(registry)
+            rows = apply_pending(PENDING, registry)
+            if rows:
+                library_sync._declare(root, 'terminology', registry)
+            shown = registry.relative_to(root).as_posix() if registry.is_relative_to(root) else registry
+            print(f'Added {len(rows)} approved rule(s) to {shown}.' if rows
+                  else f'Nothing new to apply: no ticked rules, or they are already in {shown}.')
+            if rows and library_sync.sync_mode() != 'off':
+                # what the author taught in this paper reaches every later paper
+                learned = {}
+                for row in rows:
+                    new_word, old_word = [c.strip() for c in row.strip('|').split('|')[:2]]
+                    learned[old_word.lower()] = (new_word, old_word, 'learned from author edits')
+                added, conflicts = library_sync.add_rules(library_sync.library_terminology(), learned,
+                                                          'learned from author edits')
+                if added:
+                    print(f'Also kept in your personal library ({library_sync.library_terminology()}): {", ".join(added)}')
+                for conflict in conflicts:
+                    print(f'Library not changed for {conflict}; ask the author which to keep.')
             return 0
         if args.git:
             try:

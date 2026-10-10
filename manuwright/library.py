@@ -7,6 +7,13 @@
                                      PDF/<kind>/ sources and profile/ (the style learned from them by
                                      `manuwright style learn`); neither is copied into papers
 
+  notes.md                           lessons kept across papers (`manuwright library note`), shown at session start
+
+What a paper teaches flows back without overwriting anything (scripts/library_sync.py): `library term` keeps a
+wording rule in the library and the paper, `style edits --apply` sends approved rules to the library, `library
+sync --pull/--push` adds the missing rules, anchors, style spec and team profile in either direction, and the
+session hook pulls the library's additions into a paper folder (`config set library-sync auto|ask|off`).
+
 `manuwright init` copies profile and writing style into each new paper; `manuwright target` offers the
 saved Word styles. Extracting a writing style from your papers is LLM work: your agent does it with the
 manuwright skill ("register my writing style"), writing into writing/ by Style/style_guide.md.
@@ -30,7 +37,11 @@ USAGE = """usage: manuwright library [status]
        manuwright library profile [--edit | --import FILE]
        manuwright library writing add <paper.pdf|.md>... [--kind own|landmark|target_journal]
        manuwright library writing import <folder with own/ landmark/ target_journal/ anchors>
-  Existing names are never overwritten; add --replace to do that."""
+       manuwright library sync [--pull | --push]      this paper <-> your library, additions only
+       manuwright library term --prefer WORD --avoid WORD [--context TEXT]   keep one wording rule
+       manuwright library note ["TEXT" --topic journal|reviewer|writing|method|other]   keep a lesson
+  Existing names are never overwritten; add --replace to do that. In chat: "기억해", "앞으로는 X 대신 Y",
+  "공동저자 추가해줘", "라이브러리 최신으로 받아줘" do the same through your agent."""
 
 
 def root():
@@ -302,6 +313,10 @@ def main(engine, args):
             return profile_command(engine, args[1:])
         if args[0] in ('writing', 'style'):  # "style" was the first name
             return writing_command(args[1:])
+        if args[0] in ('sync', 'term', 'note'):
+            sys.path.insert(0, str(engine / 'scripts'))
+            import library_sync
+            return library_sync.main(args)
     except (OSError, ValueError, KeyError, IndexError) as exc:
         print(f'manuwright library: {exc}', file=sys.stderr)
         return 1

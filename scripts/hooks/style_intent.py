@@ -153,6 +153,42 @@ NOT_A_REQUEST = re.compile(r"\?|뭐|어떻게|왜|무엇|지\s*마|말고|않|�
                            re.IGNORECASE)
 
 
+# "Remember this" requests: wording rules, author/team details and lessons kept in the personal library.
+MEMORY = re.compile(
+    r"기억해|기억하고|기억해\s*둬|잊지\s*마|앞으로(?:는)?\s.*(?:쓰지|쓰고|써|사용|대신|말고)|라이브러리에\s*(?:추가|반영|저장|넣어|올려)"
+    r"|저자.{0,15}(?:추가|정보|수정|변경|바뀌|넣어)|소속.{0,8}(?:추가|변경|바뀌|수정)|ORCID|연구비\s*(?:번호|정보)"
+    r"|팀\s*정보|프로필\s*(?:추가|수정|업데이트)|라이브러리\s*(?:최신|동기화|받아|올려)"
+    r"|\bremember\b|\bfrom now on\b|\b(?:add|update)\b.{0,20}\b(?:author|co-?author|affiliation|orcid)\b"
+    r"|\bmy (?:team )?profile\b|\bsync (?:the |my )?library\b", re.IGNORECASE)
+MEMORY_INJECTION = (
+    "[manuwright memory] The author wants something kept across papers in the personal library "
+    "(~/.manuwright/library). Save it there now, additions only, never deleting other entries:\n"
+    "- a wording rule (always X, not Y): `manuwright library term --prefer \"X\" --avoid \"Y\" "
+    "[--context \"...\"]` (saved in the library and this paper);\n"
+    "- an author, affiliation, ORCID, email, funding or disclosure: edit only that person's lines in the "
+    "library team profile (`manuwright library profile` prints its path) and in this paper's profile/authors.md "
+    "if it exists; show the changed lines before saving; never guess ORCID or grant numbers;\n"
+    "- anything else to remember (journal requirements, reviewer preferences, lessons): "
+    "`manuwright library note \"<one plain sentence>\" --topic journal|reviewer|writing|method|other`;\n"
+    "- \"라이브러리 최신으로 받아줘\" / sync: `manuwright library sync --pull`; \"이 논문 것을 라이브러리에 올려줘\": "
+    "`manuwright library sync --push`; a CONFLICT or 'differs' line is the author's decision: ask.\n"
+    "Then tell the author in one line what was saved where."
+)
+
+
+def memory_request(prompt: str, cwd: str | None) -> str:
+    """The memory instruction for "기억해" / "공동저자 추가해줘" style requests inside a paper folder."""
+    text = prompt or ""
+    if not text or len(text) > 600 or META.search(text) or not MEMORY.search(text):
+        return ""
+    try:
+        if not _academic().in_paper(Path(cwd) if cwd else None):
+            return ""
+    except Exception:
+        return ""
+    return MEMORY_INJECTION
+
+
 def mode_toggle(prompt: str) -> str | None:
     """'학술 모드 꺼줘' / 'academic mode strict' / '학술 모드 켜줘' -> the mode; anything else -> None."""
     text = (prompt or "").strip()
@@ -186,6 +222,9 @@ def evaluate(event: dict) -> str:
         except Exception:
             return ""
     parts = [INJECTION] if detect(prompt) else []
+    memory = memory_request(prompt, event.get("cwd"))
+    if memory:
+        parts.append(memory)
     try:
         cards = draft_cards(prompt, event.get("cwd"))
     except Exception:

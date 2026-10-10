@@ -100,6 +100,8 @@ reason: number not found in results CSV files
 
 只在论文文件夹中生效。改写不改事实：引用、数字、*p* 值或 Table/Figure 引用一旦改变，`manuwright style preserve` 就会失败。操作步骤：[手册第 6 节](docs/manual.md#6-academic-writing-mode)（英文）。
 
+**教过的会累积下来。** 说"以后用 used，不要用 utilized""记住：Spine 要大写 P""添加共同作者 Dr Kim"，代理会把它存入个人文献库（`~/.manuwright/library`：用词规则、笔记、团队信息），只追加、不覆盖。新论文一开始就带有这些内容，已创建的论文在打开会话时也只取回新增项。从你自己的修改中批准的规则也会存到这里。同步用 `manuwright library sync --pull`（把论文的规则送上去用 `--push`）。
+
 ## 安装
 
 两种方式，一个引擎。任选其一。
@@ -113,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.4
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -145,6 +147,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright search audit` | 将 evidence.md 每个条目与 PubMed 重新核对：标题/作者/年份/期刊加权匹配、DOI 不一致、撤稿、关注声明、勘误 |
 | `manuwright blind-review packet` / `check` | 在记录判定之前隐藏回复信的修订复审（不受回复信说服） |
 | `manuwright style edits <ai> <edited>` / `--apply` | 从你修改 AI 草稿的方式中学习规则；只有你勾选的规则才进入 `Style/terminology.md` |
+| `manuwright library term` / `note` / `sync [--pull\|--push]` | 跨论文保留用词规则或笔记；同步论文与个人文献库（只追加） |
 | `manuwright guide [name ...]` | 列出或打印规则引用的引擎指南（`docs/<name>.md`） |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 运行该阶段的全部检查 |
 | `manuwright citations \| numbers \| abstract \| crossrefs \| lint ...` | 对单个文件运行单个检查器 |
