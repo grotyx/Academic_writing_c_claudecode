@@ -1,4 +1,4 @@
-# manuwright 사용자 매뉴얼 (v2.6.2)
+# manuwright 사용자 매뉴얼 (v2.6.3)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -447,7 +447,7 @@ manuwright check                          # 최신 상태를 한 화면에 점�
 
 등록된 논문이 엔진을 고정했거나(`project.json` 의 `"engine": ">=1.8,<1.9"`), 엔진이 바뀌면 무효가 될 유효한 검토가 있으면 자동 업데이트는 기다린다. 되돌리기: `manuwright update --to <버전>`.
 
-Windows 에서 uv 로 설치했다면 `manuwright update` 는 직접 설치하지 않고 명령을 출력한다(실행 중인 `manuwright.exe` 는 Windows 에서 교체할 수 없다). 에이전트 세션을 닫고 새 PowerShell 창에 붙여 넣는다: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }` (설치, 에이전트 어댑터 갱신, 논문 규칙 갱신까지). 설치 부분만 실행해도 각 논문은 다음에 열 때 규칙을 스스로 갱신한다. 이전 업데이트 후 `ModuleNotFoundError: No module named 'manuwright'` 가 나오면 같은 명령으로 복구된다.
+Windows 에서 uv 로 설치했다면 `manuwright update` 가 그 자리에서 설치할 수 없다(실행 중인 `manuwright.exe` 는 Windows 에서 교체할 수 없다). v1.9.7 부터는 대신 PowerShell 창을 연다. 그 창이 manuwright 가 닫히기를 기다렸다가(계속 기다린다고 나오면 Claude Code 나 Codex 세션을 닫는다) 새 버전 설치, 에이전트 어댑터 갱신, 논문 규칙 갱신까지 하고 Enter 를 기다린다. 창을 열 수 없으면 같은 단계를 한 줄로 출력하니 새 PowerShell 창에 붙여 넣는다: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`. v1.9.6 이하에서 올릴 때는 이전 버전이 업데이트를 실행하므로 이 한 줄이 한 번 더 출력된다. 설치 부분만 실행해도 각 논문은 다음에 열 때 규칙을 스스로 갱신한다. 이전 업데이트 후 `ModuleNotFoundError: No module named 'manuwright'` 가 나오면 같은 명령으로 복구된다.
 
 업데이트가 잘 됐는지 확인:
 

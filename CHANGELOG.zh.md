@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
+### v1.9.7 (261010)
+
+Windows：`manuwright update` 自行完成更新，无需粘贴命令。
+
+- Windows（uv 安装）上 `manuwright update` 会打开一个 PowerShell 窗口。该窗口等到没有 manuwright 进程在运行后安装新版本，然后运行 `manuwright agents update` 和 `manuwright init --refresh-rules --all --auto`。5 秒后 manuwright 仍在运行时，窗口会提示关闭 Claude Code 或 Codex 会话。安装失败时，窗口会显示要运行的那一行命令。
+- 无法打开窗口时，`update` 会像以前一样输出一行命令。Windows 上的自动更新（`--auto`）只提示有新版本，不会在会话中打开窗口。
+- 从 v1.9.6 或更早版本升级时，由于是旧版本执行这次更新，仍会再输出一次这行命令。
+- 手册 v2.6.3、README。
+
 ### v1.9.6 (261010)
 
 让代理规则的自动更新更安全（代码审查修复）。

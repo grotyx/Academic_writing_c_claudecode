@@ -1,4 +1,4 @@
-# Academic Paper Writing Project (v1.9.6)
+# Academic Paper Writing Project (v1.9.7)
 
 @WORKFLOW.md
 

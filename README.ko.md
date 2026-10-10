@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.6
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -130,7 +130,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` 의 skill | `manuwright verify` |
 | Muse | 사용자 skill | `manuwright verify` |
 
-**업데이트.** `manuwright update` 가 최신 릴리스를 설치한 뒤 에이전트 어댑터도 이어서 갱신한다(`manuwright agents update`; 건너뛰려면 `--no-agents`). 이어서 등록된 모든 논문의 에이전트 규칙을 묻지 않고 갱신한다(`manuwright init --refresh-rules --all --auto`; manuwright 가 만든 뒤 손대지 않은 AGENTS/CLAUDE/GEMINI.md 만 바뀌고 .bak 보관, 직접 쓰거나 고친 파일과 다른 엔진 버전을 고정한 논문은 그대로). Claude Code 나 Codex 로 논문 폴더를 열면 세션 시작 때 그 논문의 규칙도 스스로 갱신하므로, Windows 나 아직 등록되지 않은 논문도 빠지지 않는다. `manuwright check` 는 버전, 에이전트별 플러그인, 메인 모델, OpenRouter 키, 자동 업데이트, 논문 규칙이 최신인지 한 화면에 보여 주고 ✗ 마다 고치는 명령을 알려 준다. `manuwright config set auto-update on` 으로 patch 자동 업데이트를 켤 수 있다. 하루 한 번 확인하고, 논문의 현재 리뷰를 무효로 만들 업데이트는 적용하지 않는다. Windows(uv 설치)에서는 실행 중인 `manuwright.exe` 를 교체할 수 없어 `manuwright update` 가 새 PowerShell 창에 붙여 넣을 한 줄(`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`)을 출력한다. 템플릿 사용자는 `git pull`, 또는 [이전 가이드](docs/migration_guide.md) 참고.
+**업데이트.** `manuwright update` 가 최신 릴리스를 설치한 뒤 에이전트 어댑터도 이어서 갱신한다(`manuwright agents update`; 건너뛰려면 `--no-agents`). 이어서 등록된 모든 논문의 에이전트 규칙을 묻지 않고 갱신한다(`manuwright init --refresh-rules --all --auto`; manuwright 가 만든 뒤 손대지 않은 AGENTS/CLAUDE/GEMINI.md 만 바뀌고 .bak 보관, 직접 쓰거나 고친 파일과 다른 엔진 버전을 고정한 논문은 그대로). Claude Code 나 Codex 로 논문 폴더를 열면 세션 시작 때 그 논문의 규칙도 스스로 갱신하므로, Windows 나 아직 등록되지 않은 논문도 빠지지 않는다. `manuwright check` 는 버전, 에이전트별 플러그인, 메인 모델, OpenRouter 키, 자동 업데이트, 논문 규칙이 최신인지 한 화면에 보여 주고 ✗ 마다 고치는 명령을 알려 준다. `manuwright config set auto-update on` 으로 patch 자동 업데이트를 켤 수 있다. 하루 한 번 확인하고, 논문의 현재 리뷰를 무효로 만들 업데이트는 적용하지 않는다. Windows(uv 설치)에서는 실행 중인 `manuwright.exe` 를 교체할 수 없어, `manuwright update` 가 새 PowerShell 창을 열고 그 창이 manuwright 가 닫히기를 기다렸다가 새 버전 설치, 에이전트 어댑터와 논문 규칙 갱신까지 이어서 한다. 창을 열 수 없으면 같은 단계를 한 줄(`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`)로 출력하니 새 PowerShell 창에 붙여 넣는다. 템플릿 사용자는 `git pull`, 또는 [이전 가이드](docs/migration_guide.md) 참고.
 
 **삭제.** `claude plugin uninstall manuwright@manuwright`, `codex plugin remove manuwright@manuwright`, `agy plugin uninstall manuwright`, `muse skills uninstall manuwright`, 그다음 `uv tool uninstall manuwright`.
 
