@@ -638,10 +638,10 @@ def test_rules_refresh_automatically_but_never_replaces_the_authors_own_file(tmp
     (root / 'GEMINI.md').unlink()
     assert lifecycle.refresh_files(ENGINE, root, auto=True)[0] == [] and not (root / 'GEMINI.md').exists()
     # a paper pinned to another engine version is left alone
-    (root / 'AGENTS.md').write_text(old, encoding='utf-8')
+    (root / 'AGENTS.md').write_bytes(old.encode('utf-8'))  # LF bytes: differ from the CRLF .bak on every OS
     (root / 'project.json').write_text('{"artifacts": [], "engine": "<1.0"}', encoding='utf-8')
     changed, _kept, reason = lifecycle.refresh_files(ENGINE, root, auto=True)
-    assert changed == [] and reason and (root / 'AGENTS.md').read_text(encoding='utf-8') == old
+    assert changed == [] and reason and (root / 'AGENTS.md').read_bytes() == old.encode('utf-8')
     # the manual command still replaces the author's file on request; an earlier, different .bak is kept
     assert lifecycle.refresh_rules(ENGINE, root) == 0
     assert (root / 'CLAUDE.md').read_text(encoding='utf-8') == bootstrap
