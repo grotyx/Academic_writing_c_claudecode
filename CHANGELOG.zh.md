@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
+### v1.9.9 (261021)
+
+`manuwright init` 会说明无法使用的文件夹，setup 会列出本机找到的代理审稿人。
+
+- `init` 不会在系统文件夹（Windows、Program Files、/usr、/System 等）中创建论文。以管理员身份打开的 PowerShell 从 `C:\Windows\System32` 开始，在那里运行 `manuwright init my-paper` 会把论文建在其中；现在会提示先 `cd ~\Documents` 或给出完整路径。
+- 无法创建的文件夹（拒绝访问、驱动器不存在）也会给出同样的简短提示，而不是 traceback。
+- `manuwright setup` 会在本机查找已安装的代理审稿人，只提供找到的那些（未找到的会注明 not found）。对选中的每个代理，再从该 CLI 报告的列表中选择模型：Claude Code 别名（opus、sonnet、haiku）、`agy models` 列出的模型、`~/.codex/config.toml` 中的 Codex 默认模型（Codex 没有列表命令）、CLI 自身默认值，或手动输入。保存为 `review.<agent>-model`；`manuwright models` 显示同样的列表。
+- 手册 v2.6.5：第 2 节说明在自己的文件夹中运行 `init`，故障排除表增加一行，并说明 setup 的代理审稿人查找。
+
 ### v1.9.8 (261021)
 
 程序名称写作 ManuWright。

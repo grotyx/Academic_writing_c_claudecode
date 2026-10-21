@@ -4,6 +4,15 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.9 (261021)
+
+`manuwright init` explains a folder it cannot use, and setup offers the agent reviewers it finds on this computer.
+
+- `init` refuses to create a paper inside a system folder (Windows, Program Files, /usr, /System, ...). An administrator PowerShell starts in `C:\Windows\System32`, so `manuwright init my-paper` there would land in it; the message says to `cd ~\Documents` first or give a full path.
+- A folder that cannot be created (access denied, missing drive) gives a short message with the same advice, not a traceback.
+- `manuwright setup` looks for the agent reviewers on this computer and offers only the ones it finds (others are named as not found). For each one picked it asks which model to run, from what that CLI reports: Claude Code's aliases (opus, sonnet, haiku), the models `agy models` lists, the Codex default in `~/.codex/config.toml` (Codex has no list command), the CLI's own default, or a typed id. Saved as `review.<agent>-model`; `manuwright models` lists the same.
+- Manual v2.6.5: section 2 says to run `init` in your own folder, plus a troubleshooting row; setup describes the agent reviewer search.
+
 ### v1.9.8 (261021)
 
 The product name is written ManuWright.

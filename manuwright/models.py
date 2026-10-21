@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 UPDATED = '2026-10-01'
 OPENROUTER_SETS = {
@@ -61,18 +62,67 @@ def openrouter_prices():
         return {}
 
 
-def opencode_models():
-    """Model ids opencode can use; empty when opencode is missing or slow."""
-    exe = shutil.which('opencode')  # full path: a bare name misses Windows .cmd shims
+def _list_output(argv, timeout=30):
+    """stdout of a model-list command, '' when the CLI is missing, slow or fails."""
+    exe = shutil.which(argv[0])  # full path: a bare name misses Windows .cmd shims
     if not exe:
-        return set()
+        return ''
     try:  # detached from the terminal (see obsidian.DETACHED)
-        done = subprocess.run([exe, 'models'], capture_output=True, text=True, encoding='utf-8',
-                              errors='replace', timeout=30,
+        done = subprocess.run([exe] + argv[1:], capture_output=True, text=True, encoding='utf-8',
+                              errors='replace', timeout=timeout,
                               stdin=subprocess.DEVNULL, start_new_session=True)
     except (OSError, subprocess.TimeoutExpired):
-        return set()
-    return {line.strip() for line in done.stdout.splitlines() if '/' in line}
+        return ''
+    return done.stdout if done.returncode == 0 else ''
+
+
+def opencode_models():
+    """Model ids opencode can use; empty when opencode is missing or slow."""
+    return {line.strip() for line in _list_output(['opencode', 'models']).splitlines() if '/' in line}
+
+
+# Model ids each agent CLI accepts, found on this computer. Only `agy models` (and `opencode models`)
+# print a list; Claude Code takes aliases; Codex has no list command, so its configured default is shown.
+CLAUDE_ALIASES = [('opus', 'opus    strongest Claude model on your plan'),
+                  ('sonnet', 'sonnet  balanced'), ('haiku', 'haiku   fastest')]
+MODEL_TOKEN = re.compile(r'[a-z][a-z0-9._:/-]*\d[a-z0-9._:/-]*', re.I)
+
+
+def installed_agents():
+    """Agent reviewers whose CLI is on PATH, in the usual order."""
+    return [a for a in AGENTS if shutil.which(a)]
+
+
+def _configured(path, pattern):
+    try:
+        found = re.search(pattern, path.read_text(encoding='utf-8'), re.M)
+    except OSError:
+        return None
+    return found.group(1) if found else None
+
+
+def agent_models(agent):
+    """([(model id, label)], how the list was found) for one installed agent CLI."""
+    home = os.path.expanduser('~')
+    if agent == 'claude':
+        options = list(CLAUDE_ALIASES)
+        settings = os.path.join(os.environ.get('CLAUDE_CONFIG_DIR') or os.path.join(home, '.claude'), 'settings.json')
+        current = _configured(Path(settings), r'"model"\s*:\s*"([^"]+)"')
+        if current and current not in dict(options):
+            options.append((current, f'{current}  (set in Claude Code)'))
+        return options, 'Claude Code model aliases'
+    if agent == 'codex':
+        config = os.path.join(os.environ.get('CODEX_HOME') or os.path.join(home, '.codex'), 'config.toml')
+        current = _configured(Path(config), r'^\s*model\s*=\s*"([^"]+)"')
+        return ([(current, f'{current}  (set in Codex)')] if current else []), 'Codex has no model list; your Codex default is shown'
+    if agent == 'agy':
+        ids = []
+        for line in _list_output(['agy', 'models'], timeout=20).splitlines():
+            match = MODEL_TOKEN.match(line.strip().lstrip('*-> ').strip())
+            if match and match.group(0) not in ids:
+                ids.append(match.group(0))
+        return [(m, m) for m in ids], ('agy models' if ids else 'agy models gave no list (sign in to agy first?)')
+    return [], 'no model list for this CLI'
 
 
 def key_works(key):
@@ -396,7 +446,15 @@ def main(args):
     for name, (about, models) in OPENCODE_SETS.items():
         print(f'  {name}: {about}')
         print('\n'.join(describe(models, known)))
+    found = installed_agents()
+    print('\nAgent reviewers on this computer (your signed-in plan, no API cost): '
+          + (', '.join(found) or 'none found') + '.')
+    for agent in found:
+        options, source = agent_models(agent)
+        print(f'  {agent}: ' + (', '.join(m for m, _ in options) if options else 'its own default model')
+              + f'  ({source})')
     print('\nChoose one in `manuwright setup`, or set it directly:\n'
           '  manuwright config set review.openrouter-models z-ai/glm-5.3,moonshotai/kimi-k3\n'
-          '  manuwright config set review.reviewers "codex, openrouter, opencode:opencode-go/glm-5.3"')
+          '  manuwright config set review.reviewers "codex, openrouter, opencode:opencode-go/glm-5.3"\n'
+          '  manuwright config set review.claude-model sonnet')
     return 0

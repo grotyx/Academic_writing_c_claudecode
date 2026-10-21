@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.9 (261021)
+
+`manuwright init` 이 쓸 수 없는 폴더를 설명하고, setup 이 이 컴퓨터에서 찾은 에이전트 검토자를 보여 준다.
+
+- `init` 은 시스템 폴더(Windows, Program Files, /usr, /System 등) 안에 논문을 만들지 않는다. 관리자 PowerShell 은 `C:\Windows\System32` 에서 시작해서 그곳에서 `manuwright init my-paper` 를 실행하면 그 안에 만들어질 뻔했다. 먼저 `cd ~\Documents` 하거나 전체 경로를 주라고 안내한다.
+- 만들 수 없는 폴더(접근 거부, 없는 드라이브)도 traceback 대신 같은 안내를 짧게 보여 준다.
+- `manuwright setup` 이 이 컴퓨터에 설치된 에이전트 검토자를 찾아서 그것만 고르게 한다(없는 것은 not found 로 알려 준다). 고른 에이전트마다 쓸 모델을 그 CLI 가 알려 주는 목록에서 묻는다: Claude Code 별칭(opus, sonnet, haiku), `agy models` 목록, `~/.codex/config.toml` 의 Codex 기본 모델(Codex 는 목록 명령이 없다), CLI 자체 기본값, 또는 직접 입력. `review.<agent>-model` 로 저장되고 `manuwright models` 도 같은 목록을 보여 준다.
+- 매뉴얼 v2.6.5: 2절에 내 폴더에서 `init` 을 실행하라는 안내와 문제 해결 표 한 줄, setup 의 에이전트 검토자 검색 설명.
+
 ### v1.9.8 (261021)
 
 프로그램 이름을 ManuWright 로 표기한다.
