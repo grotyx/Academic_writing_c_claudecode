@@ -1,4 +1,4 @@
-ACADEMIC WRITING MODE (manuwright): applies to every manuscript sentence you draft or rewrite.
+ACADEMIC WRITING MODE (ManuWright): applies to every manuscript sentence you draft or rewrite.
 Targets are measured from 33 openly licensed papers in JAMA Surgery, JAMA Network Open, Lancet, BMJ
 and Nature (2019-2022, written before generative AI; docs/academic_style/reference_profile.json).
 - Register: plain, exact, declarative. Mean sentence length is about 22-24 words in Methods and

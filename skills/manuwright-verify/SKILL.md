@@ -1,9 +1,9 @@
 ---
 name: manuwright-verify
-description: Run manuwright's deterministic checks before recording a gate PASS or claiming a manuscript step is finished. Use for "verify", "check citations", "check numbers", "gate", "submission check", or before moving to the next phase.
+description: Run ManuWright's deterministic checks before recording a gate PASS or claiming a manuscript step is finished. Use for "verify", "check citations", "check numbers", "gate", "submission check", or before moving to the next phase.
 ---
 
-# manuwright verification
+# ManuWright verification
 
 Run from the paper folder (the one with `project.json`).
 

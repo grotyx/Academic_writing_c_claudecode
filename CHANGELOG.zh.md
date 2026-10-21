@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
+### v1.9.8 (261021)
+
+程序名称写作 ManuWright。
+
+- README、手册、指南、skill 说明、代理规则、插件显示名称和 CLI 消息现在都写作 ManuWright（`--version` 显示 `ManuWright 1.9.8`）。
+- 命令和需要输入的内容仍为小写：`manuwright update`、`pip`/`uv` 包名 `manuwright`、`~/.manuwright`，以及插件和 skill 的 id。
+- 代理规则的文字（标题）有变化，因此论文的规则文件会更新一次；你自己写或改过的文件仍会保留。
+- 手册 v2.6.4、harness guide v1.3.3、AGENTS.md 名称写法规则。
+
 ### v1.9.7 (261010)
 
 Windows：`manuwright update` 自行完成更新，无需粘贴命令。

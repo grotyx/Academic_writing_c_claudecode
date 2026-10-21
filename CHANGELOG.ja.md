@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`: ロゴマークのベクター版(明るい背景用、暗い背景用)。
 
+### v1.9.8 (261021)
+
+プログラム名を ManuWright と表記する。
+
+- README、マニュアル、ガイド、skill の説明、エージェント規則、プラグインの表示名、CLI のメッセージが ManuWright になった（`--version` は `ManuWright 1.9.8`）。
+- コマンドと入力するものは小文字のまま：`manuwright update`、`pip`/`uv` のパッケージ `manuwright`、`~/.manuwright`、プラグインと skill の id。
+- エージェント規則の文言（見出し）が変わったため、論文の規則ファイルが一度更新される。自分で書いた・編集したファイルはこれまでどおりそのまま。
+- マニュアル v2.6.4、harness guide v1.3.3、AGENTS.md の名前表記ルール。
+
 ### v1.9.7 (261010)
 
 Windows: `manuwright update` が更新を最後まで行う。貼り付ける行は不要。

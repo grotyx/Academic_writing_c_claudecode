@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.8 (261021)
+
+프로그램 이름을 ManuWright 로 표기한다.
+
+- README, 매뉴얼, 가이드, skill 설명, 에이전트 규칙, 플러그인 표시 이름, CLI 메시지가 ManuWright 로 바뀌었다(`--version` 은 `ManuWright 1.9.8`).
+- 명령과 직접 입력하는 것은 그대로 소문자다: `manuwright update`, `pip`/`uv` 패키지 `manuwright`, `~/.manuwright`, 플러그인과 skill id.
+- 에이전트 규칙 문구(제목)가 바뀌어 논문의 규칙 파일이 한 번 갱신된다. 직접 쓰거나 고친 파일은 전과 같이 그대로 둔다.
+- 매뉴얼 v2.6.4, harness guide v1.3.3, AGENTS.md 이름 표기 규칙.
+
 ### v1.9.7 (261010)
 
 Windows: `manuwright update` 가 업데이트를 끝까지 한다. 붙여 넣을 줄이 없다.

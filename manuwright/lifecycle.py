@@ -151,21 +151,21 @@ def windows_update_script(current, target, command):
     """PowerShell for the update window: wait until no process runs from this install, install, refresh."""
     exe = shutil.which('manuwright') or ''
     install = '& ' + ' '.join(_ps(part) for part in command)
-    return f"""$Host.UI.RawUI.WindowTitle = 'manuwright update'
+    return f"""$Host.UI.RawUI.WindowTitle = 'ManuWright update'
 $envDir = {_ps(os.path.join(sys.prefix, ''))}
 $exe = {_ps(exe)}
 function Busy {{ @(Get-Process -ErrorAction SilentlyContinue | Where-Object {{ $_.Path -and ($_.Path.StartsWith($envDir, [StringComparison]::OrdinalIgnoreCase) -or ($exe -and $_.Path -ieq $exe)) }}) }}
-Write-Host 'manuwright {current} -> {target}'
+Write-Host 'ManuWright {current} -> {target}'
 $waited = 0
 while ((Busy).Count -gt 0 -and $waited -lt 120) {{
-  if ($waited -eq 5) {{ Write-Host 'Waiting for manuwright to close. If this does not finish, close Claude Code / Codex sessions.' }}
+  if ($waited -eq 5) {{ Write-Host 'Waiting for ManuWright to close. If this does not finish, close Claude Code / Codex sessions.' }}
   Start-Sleep -Seconds 1; $waited++
 }}
 {install}
 if ($LASTEXITCODE -eq 0) {{
   & manuwright agents update
   & manuwright init --refresh-rules --all --auto
-  Write-Host ''; Write-Host 'manuwright {target} is installed. You can close this window.'
+  Write-Host ''; Write-Host 'ManuWright {target} is installed. You can close this window.'
 }} else {{
   Write-Host ''; Write-Host 'The install did not finish (see above). Close Claude Code / Codex sessions, then run this line here:'
   Write-Host {_ps(windows_update_line(command))}
@@ -210,16 +210,16 @@ def update(engine, args):
     target = target.lstrip('v')
     newer = api.version_tuple(target) > api.version_tuple(current)
     if '--check' in args or (not newer and '--to' not in args):
-        print(f'manuwright {current}; latest {target}' + ('' if newer else ' (up to date)'))
+        print(f'ManuWright {current}; latest {target}' + ('' if newer else ' (up to date)'))
         return 0
     manifests = known_projects()
     if auto:
         if not load('config.json', {}).get('auto_update'):
-            print(f'manuwright {target} available: run `manuwright update`.')
+            print(f'ManuWright {target} available: run `manuwright update`.')
             return 0
         blockers = auto_blockers(api, current, target, manifests)
         if blockers:
-            print(f'manuwright {target} available, not auto-applied:\n  - ' + '\n  - '.join(blockers)
+            print(f'ManuWright {target} available, not auto-applied:\n  - ' + '\n  - '.join(blockers)
                   + '\n  Run `manuwright update` when ready.')
             return 0
     stale = fresh_reviews(api, manifests)
@@ -232,15 +232,15 @@ def update(engine, args):
         # window waits until no manuwright process is running, then installs and refreshes everything.
         line = windows_update_line(command)
         if auto:  # never pop a window from a session hook
-            print(f'manuwright {target} available: run `manuwright update`.')
+            print(f'ManuWright {target} available: run `manuwright update`.')
             return 0
         if launch_windows_update(current, target, command):
-            print(f'manuwright {current} -> {target}: a PowerShell window opened. It waits for manuwright to close, '
+            print(f'ManuWright {current} -> {target}: a PowerShell window opened. It waits for ManuWright to close, '
                   'installs the new version, then refreshes the agent adapters and the agent rules of your papers; '
                   'follow it there. If no window appeared, close agent sessions (Claude Code, Codex, ...) and paste '
                   f'this line into a new PowerShell window:\n  {line}')
         else:
-            print(f'manuwright {current} -> {target}: Windows cannot replace manuwright while it is running.\n'
+            print(f'ManuWright {current} -> {target}: Windows cannot replace ManuWright while it is running.\n'
                   'Close agent sessions (Claude Code, Codex, ...) and paste this line into a new PowerShell window '
                   f'(it installs, then refreshes the agent adapters and your papers\' agent rules):\n  {line}')
         return 0
@@ -252,7 +252,7 @@ def update(engine, args):
         handle.flush()
         subprocess.Popen(command, stdout=handle, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                          start_new_session=True)
-        print(f'manuwright {current} -> {target}: auto-update running in the background '
+        print(f'ManuWright {current} -> {target}: auto-update running in the background '
               f'(log: {log}). New sessions use it; then run `manuwright agents update`.')
         return 0
     print('running: ' + ' '.join(command))
@@ -262,7 +262,7 @@ def update(engine, args):
                      f'{" auto" if auto else ""}\n')
     if code != 0:
         return code
-    print(f'manuwright {current} -> {target}. Roll back: manuwright update --to {current}')
+    print(f'ManuWright {current} -> {target}. Roll back: manuwright update --to {current}')
     if '--no-agents' in args:
         print('Agent adapters and paper agent rules not refreshed (--no-agents): run `manuwright agents update` '
               'and `manuwright init --refresh-rules --all --auto`.')
@@ -1059,7 +1059,7 @@ def adapter_checks(engine, current):
         if markets is None or plugins is None:
             rows.append((None, 'Claude Code', 'could not query `claude plugin`'))
         elif not market or not plugin:
-            rows.append((False, 'Claude Code', 'manuwright plugin not installed'))
+            rows.append((False, 'Claude Code', 'ManuWright plugin not installed'))
         elif not _same_path(market.get('path', ''), engine):
             rows.append((False, 'Claude Code', f"marketplace points at {market.get('path')}, not this engine"))
         elif plugin.get('version') != current:
@@ -1078,7 +1078,7 @@ def adapter_checks(engine, current):
         if markets is None or plugins is None:
             rows.append((None, 'Codex', 'could not query `codex plugin`'))
         elif not root or not version:
-            rows.append((False, 'Codex', 'manuwright plugin not installed'))
+            rows.append((False, 'Codex', 'ManuWright plugin not installed'))
         elif not _same_path(root, engine):
             rows.append((False, 'Codex', f'marketplace points at {root}, not this engine'))
         elif version != current:

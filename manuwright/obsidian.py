@@ -321,7 +321,7 @@ def offer_connect():
     if not vaults:
         print(f'\nOptional (recommended): the Obsidian plugin "Academic Paper Citation Manager" gives every agent a '
               'searchable reference library (PubMed import, AI summaries, citekeys). Not required; '
-              'manuwright works without it. https://github.com/grotyx/rag-obsidian')
+              'ManuWright works without it. https://github.com/grotyx/rag-obsidian')
         if sys.stdin.isatty() and ask('Install it now?', []):
             install([])
         else:

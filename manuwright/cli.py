@@ -140,7 +140,7 @@ def hook(args):
                 subprocess.Popen([sys.executable, '-m', 'manuwright.cli', 'agents', 'update'], stdin=subprocess.DEVNULL,
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
                                  cwd=str(HERE.parent))
-                print(f'manuwright plugin {plugin} -> CLI {version()}: refreshing agent adapters in the background.')
+                print(f'ManuWright plugin {plugin} -> CLI {version()}: refreshing agent adapters in the background.')
             else:
                 print(f'WARNING: manuwright plugin {plugin} != CLI {version()}. Run `manuwright agents update` '
                       'so hooks, skills and engine match.')
@@ -168,7 +168,7 @@ def main(argv=None):
         return 0
     command, rest = argv[0], argv[1:]
     if command in {'--version', 'version'}:
-        print(f'manuwright {version()} ({ENGINE})')
+        print(f'ManuWright {version()} ({ENGINE})')
         return 0
     if command == 'hook':
         return hook(rest)

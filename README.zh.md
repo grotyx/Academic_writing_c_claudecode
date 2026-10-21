@@ -1,11 +1,11 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
-    <img src="assets/logo.png" width="220" alt="manuwright, the careful senior author">
+    <img src="assets/logo.png" width="220" alt="ManuWright, the careful senior author">
   </picture>
 </p>
 
-<h1 align="center">manuwright</h1>
+<h1 align="center">ManuWright</h1>
 
 <p align="center">
   <em>没登记过的论文，他绝不让你引用。</em>
@@ -32,15 +32,15 @@
 
 想想每个好实验室里都有的那位资深作者。他拿着笔读初稿，圈出一句话，轻声问：*"这是哪篇论文说的？"* 圈出一个数字：*"哪张表？"* 他签字之前，什么都不会离开实验室。
 
-manuwright 把这个人放进你的 AI 智能体里。
+ManuWright 把这个人放进你的 AI 智能体里。
 
 ## 使用前 / 使用后
 
 计划还没定，你就让智能体去写 Results。
 
-没有 manuwright 时，它会写出流畅的文字，引用一篇看似可信却不存在的论文，再把一个它从没读过的均值四舍五入写进去。
+没有 ManuWright 时，它会写出流畅的文字，引用一篇看似可信却不存在的论文，再把一个它从没读过的均值四舍五入写进去。
 
-有了 manuwright：
+有了 ManuWright：
 
 ```text
 BLOCKED by workflow gate (Rule 8): drafts/draft_plan.md has not been approved.
@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -130,7 +130,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` 中的 skill | `manuwright verify` |
 | Muse | 用户 skill | `manuwright verify` |
 
-**更新。** `manuwright update` 安装最新版本后接着刷新代理适配器（`manuwright agents update`；用 `--no-agents` 跳过），随后不再询问、直接更新所有已登记论文的代理规则（`manuwright init --refresh-rules --all --auto`；只改 manuwright 写的、未经编辑的 AGENTS/CLAUDE/GEMINI.md，保留 .bak；你自己写或改过的文件、以及固定了其他引擎版本的论文都不动）。在 Claude Code 或 Codex 中打开论文文件夹时，会话开始时也会自动更新该论文的规则，因此 Windows 和尚未登记的论文也不会遗漏。`manuwright check` 在一屏中显示版本、各代理插件、主模型、OpenRouter 密钥、自动更新和论文规则是否最新，并为每个 ✗ 给出修复命令。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会打开一个新的 PowerShell 窗口，该窗口等待 manuwright 关闭后安装新版本，并接着刷新代理适配器和论文规则；无法打开窗口时，会把同样的步骤输出为一行（`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`），粘贴到新的 PowerShell 窗口运行。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
+**更新。** `manuwright update` 安装最新版本后接着刷新代理适配器（`manuwright agents update`；用 `--no-agents` 跳过），随后不再询问、直接更新所有已登记论文的代理规则（`manuwright init --refresh-rules --all --auto`；只改 ManuWright 写的、未经编辑的 AGENTS/CLAUDE/GEMINI.md，保留 .bak；你自己写或改过的文件、以及固定了其他引擎版本的论文都不动）。在 Claude Code 或 Codex 中打开论文文件夹时，会话开始时也会自动更新该论文的规则，因此 Windows 和尚未登记的论文也不会遗漏。`manuwright check` 在一屏中显示版本、各代理插件、主模型、OpenRouter 密钥、自动更新和论文规则是否最新，并为每个 ✗ 给出修复命令。用 `manuwright config set auto-update on` 开启 patch 自动更新：每天检查一次，绝不应用会让论文当前评审失效的更新。Windows（uv 安装）无法替换正在运行的 `manuwright.exe`，因此 `manuwright update` 会打开一个新的 PowerShell 窗口，该窗口等待 ManuWright 关闭后安装新版本，并接着刷新代理适配器和论文规则；无法打开窗口时，会把同样的步骤输出为一行（`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`），粘贴到新的 PowerShell 窗口运行。模板用户请 `git pull`，或参阅[迁移指南](docs/migration_guide.md)。
 
 **卸载。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`，最后 `uv tool uninstall manuwright`。
 
@@ -196,7 +196,7 @@ vault 用于查找文献，只有登记在 `knowledge/evidence.md` 中的条目�
 
 **真实稿件放在哪里？** 放在私有文件夹或仓库中，不要放进本模板的公开 clone。`manuwright init` 会创建这样的文件夹。
 
-**为什么叫 "manuwright"？** manuscript + *wright*。wright 是"制作者"的古词（playwright 剧作家，shipwright 造船匠）。一位细心打造稿件的人。
+**为什么叫 "ManuWright"？** manuscript + *wright*。wright 是"制作者"的古词（playwright 剧作家，shipwright 造船匠）。一位细心打造稿件的人。
 
 ## 文档
 

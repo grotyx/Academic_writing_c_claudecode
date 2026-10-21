@@ -85,7 +85,7 @@ def refresh_agent_rules(folder: Path) -> str:
         pass  # the registry is a convenience; the note below still reaches the author
     if not changed:
         return ""
-    return (f"AGENT RULES: updated {', '.join(changed)} in this paper to the installed manuwright version "
+    return (f"AGENT RULES: updated {', '.join(changed)} in this paper to the installed ManuWright version "
             "(old copies saved as .bak); the new rules apply fully from the next session. Tell the author in one line.")
 
 
