@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- `manuwright check` 와 `setup` 이 Windows 에서 더 이상 "출력된 줄로 설치"하라고 하지 않는다. v1.9.7 부터 `manuwright update` 가 직접 설치한다.
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
 ### v1.9.9 (261021)

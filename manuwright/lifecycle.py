@@ -545,8 +545,8 @@ def _setup_steps(data, prompt, ask, secret):
         prompt('auto-update')
     else:  # first setup: recommend on; Enter accepts
         while True:
-            answer = ask(f"{SETUP_HELP['auto-update']} (recommended: on; on Windows it only announces new "
-                         "releases)\n  auto-update [on]: ").strip().lower()
+            answer = ask(f"{SETUP_HELP['auto-update']} (recommended: on; on Windows it announces new releases "
+                         "and `manuwright update` installs them)\n  auto-update [on]: ").strip().lower()
             if answer in ('', 'on', 'off'):
                 data['auto_update'] = answer != 'off'
                 break
@@ -1194,7 +1194,7 @@ def check(engine, args):
         rows.append((has_key, 'OpenRouter key', 'saved' if has_key else 'missing (OpenRouter reviewers are skipped)',
                      None if has_key else 'manuwright setup'))
     auto = data.get('auto_update')
-    rows.append((bool(auto), 'Auto-update', 'on' + (' (announces releases; install with the printed line)'
+    rows.append((bool(auto), 'Auto-update', 'on' + (' (announces releases; `manuwright update` installs them)'
                                                     if on_windows() else '') if auto else 'off',
                  None if auto else 'manuwright config set auto-update on'))
     writing_mode = data.get('writing_mode') if data.get('writing_mode') in MODE_HELP else 'academic'
