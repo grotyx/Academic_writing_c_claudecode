@@ -4,6 +4,14 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.9 (261021)
+
+`manuwright init` 이 쓸 수 없는 폴더에서 Python traceback 대신 설명을 보여 준다.
+
+- `init` 은 시스템 폴더(Windows, Program Files, /usr, /System 등) 안에 논문을 만들지 않는다. 관리자 PowerShell 은 `C:\Windows\System32` 에서 시작해서 그곳에서 `manuwright init my-paper` 를 실행하면 그 안에 만들어질 뻔했다. 먼저 `cd ~\Documents` 하거나 전체 경로를 주라고 안내한다.
+- 만들 수 없는 폴더(접근 거부, 없는 드라이브)도 traceback 대신 같은 안내를 짧게 보여 준다.
+- 매뉴얼 v2.6.5: 2절에 내 폴더에서 `init` 을 실행하라는 안내와 문제 해결 표 한 줄.
+
 ### v1.9.8 (261021)
 
 프로그램 이름을 ManuWright 로 표기한다.

@@ -1,4 +1,4 @@
-# ManuWright user manual (v2.6.4)
+# ManuWright user manual (v2.6.5)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.9
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.9
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -55,7 +55,10 @@ manuwright agents install          # Claude Code, Codex, Antigravity, opencode, 
 
 ## 2. Start a paper
 
+Run this in your own folder, such as Documents. On Windows, open PowerShell normally, not as administrator: an administrator PowerShell starts in `C:\Windows\System32`, and `init` refuses to put a paper there (v1.9.9).
+
 ```sh
+cd ~/Documents
 manuwright init my-paper
 cd my-paper
 ```
@@ -542,6 +545,7 @@ Presets: `vancouver`, `ama` (JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`,
 | Symptom | Cause and fix |
 |---|---|
 | A section was written without an approved plan | Hooks only exist in Claude Code and Codex. Template: upgrade to v1.8.5+ (relative hook paths failed after a `cd`). Codex: trust the plugin hooks. Others: run `manuwright verify`. |
+| `init` says "system folder" or "could not create the paper folder" | The terminal is in a folder you cannot or should not write to (an administrator PowerShell starts in `C:\Windows\System32`). `cd ~/Documents` (Windows: `cd ~\Documents`), then `manuwright init my-paper`, or give a full path. |
 | `Hooks need review` in Codex | New or changed plugin hooks. Review, then trust the ManuWright hooks. |
 | Lint flags a term your plan chose | Give the paper its own `Style/terminology.md` and set `terminology` in `project.json`. |
 | `one or more declared artifacts are missing: ...` | `project.json` lists sections that do not exist yet. Edit `artifacts`. |

@@ -838,6 +838,32 @@ Style/profile/
 """
 
 
+def system_folder(root):
+    """The system folder root lies in (C:\\Windows, Program Files, /usr, ...), or None. An administrator
+    PowerShell starts in C:\\Windows\\System32, so `manuwright init my-paper` there would land in it."""
+    if on_windows():
+        bases = [os.environ.get(k) for k in ('SystemRoot', 'windir', 'ProgramFiles', 'ProgramFiles(x86)')]
+    else:
+        bases = ['/usr', '/bin', '/sbin', '/etc', '/System', '/Library', '/opt/homebrew']
+    target = os.path.normcase(str(root))
+    for base in filter(None, bases):
+        base = os.path.normcase(os.path.abspath(base))
+        try:
+            if os.path.commonpath([target, base]) == base:
+                return base
+        except ValueError:  # another drive
+            continue
+    return None
+
+
+INIT_HINT = ('Make the paper in your own folder instead, for example:\n'
+             + ('  cd ~\\Documents\n  manuwright init my-paper\n'
+                '(or give the full path: manuwright init "$HOME\\Documents\\my-paper")'
+                if os.name == 'nt' else
+                '  cd ~/Documents\n  manuwright init my-paper\n'
+                '(or give the full path: manuwright init ~/Documents/my-paper)'))
+
+
 def init(engine, args):
     """manuwright init [folder] [--refresh-rules [--all] [--auto]]: starter paper folder; never overwrites, never
     approves. --refresh-rules updates the agent rules; --auto replaces only unedited earlier manuwright copies."""
@@ -854,6 +880,20 @@ def init(engine, args):
               f'`manuwright init --refresh-rules` brings this paper\'s agent rules (AGENTS.md, CLAUDE.md, '
               'GEMINI.md) up to date.', file=sys.stderr)
         return 1
+    system = system_folder(root)
+    if system:
+        print(f'manuwright: {root} is inside a system folder ({system}); a paper does not belong there '
+              '(PowerShell started as administrator opens in C:\\Windows\\System32).\n' + INIT_HINT, file=sys.stderr)
+        return 1
+    try:
+        return _create_paper(engine, root)
+    except OSError as exc:
+        print(f'manuwright: could not create the paper folder {root}: {exc.strerror or exc}.\n' + INIT_HINT,
+              file=sys.stderr)
+        return 1
+
+
+def _create_paper(engine, root):
     from manuwright import analysis_env
     manifest = json.loads((engine / 'docs' / 'project.example.json').read_text(encoding='utf-8'))
     bootstrap = (engine / 'docs' / 'agent_bootstrap.md').read_text(encoding='utf-8')

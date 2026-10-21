@@ -1,4 +1,4 @@
-# ManuWright 사용자 매뉴얼 (v2.6.4)
+# ManuWright 사용자 매뉴얼 (v2.6.5)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.9
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.9
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -55,7 +55,10 @@ manuwright agents install          # Claude Code, Codex, Antigravity, opencode, 
 
 ## 2. 논문 시작
 
+문서(Documents) 같은 내 폴더에서 실행한다. Windows 에서는 PowerShell 을 관리자 권한이 아닌 일반으로 연다. 관리자 PowerShell 은 `C:\Windows\System32` 에서 시작하고, `init` 은 그곳에 논문을 만들지 않는다(v1.9.9).
+
 ```sh
+cd ~/Documents
 manuwright init my-paper
 cd my-paper
 ```
@@ -549,6 +552,7 @@ manuwright format-references drafts/*.md --journal nejm --fetch   # PubMed 전�
 | 증상 | 원인과 해결 |
 |---|---|
 | 승인된 계획 없이 섹션이 써짐 | hook 은 Claude Code 와 Codex 에만 있음. 템플릿은 v1.8.5 이상으로 올릴 것(상대 경로 hook 이 `cd` 후 실패했음). Codex 는 plugin hook 신뢰. 나머지는 `manuwright verify` 실행 |
+| `init` 이 "system folder" 나 "could not create the paper folder" 를 출력 | 터미널이 쓸 수 없거나 쓰면 안 되는 폴더에 있다(관리자 PowerShell 은 `C:\Windows\System32` 에서 시작). `cd ~/Documents`(Windows: `cd ~\Documents`) 후 `manuwright init my-paper`, 또는 전체 경로를 준다. |
 | Codex 의 `Hooks need review` | plugin hook 이 새로 생기거나 바뀜. 확인 후 ManuWright hook 신뢰 |
 | lint 가 계획에서 정한 용어를 잡음 | 논문 전용 `Style/terminology.md` 를 두고 `project.json` 의 `terminology` 에 지정 |
 | `one or more declared artifacts are missing: ...` | `project.json` 이 아직 없는 섹션을 가리킴. `artifacts` 수정 |

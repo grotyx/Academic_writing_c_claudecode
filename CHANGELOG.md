@@ -4,6 +4,14 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.9 (261021)
+
+`manuwright init` explains a folder it cannot use instead of showing a Python traceback.
+
+- `init` refuses to create a paper inside a system folder (Windows, Program Files, /usr, /System, ...). An administrator PowerShell starts in `C:\Windows\System32`, so `manuwright init my-paper` there would land in it; the message says to `cd ~\Documents` first or give a full path.
+- A folder that cannot be created (access denied, missing drive) gives a short message with the same advice, not a traceback.
+- Manual v2.6.5: section 2 says to run `init` in your own folder, plus a troubleshooting row.
+
 ### v1.9.8 (261021)
 
 The product name is written ManuWright.

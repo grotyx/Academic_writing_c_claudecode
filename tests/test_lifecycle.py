@@ -696,3 +696,25 @@ def test_register_never_replaces_an_unreadable_paper_list(tmp_path):
 def test_paper_gitignore_keeps_rule_backups_out_of_git(tmp_path):
     lifecycle.init(ENGINE, [str(tmp_path / 'paper')])
     assert '*.bak' in (tmp_path / 'paper' / '.gitignore').read_text(encoding='utf-8').splitlines()
+
+
+def test_init_refuses_a_system_folder_and_explains(tmp_path, monkeypatch, capsys):
+    windows = tmp_path / 'Windows'
+    (windows / 'System32').mkdir(parents=True)
+    monkeypatch.setattr(lifecycle, 'on_windows', lambda: True)
+    monkeypatch.setenv('SystemRoot', str(windows))
+    monkeypatch.chdir(windows / 'System32')  # where an administrator PowerShell starts
+    assert lifecycle.init(ENGINE, ['my-paper']) == 1
+    err = capsys.readouterr().err
+    assert 'system folder' in err and 'manuwright init my-paper' in err and 'Traceback' not in err
+    assert not (windows / 'System32' / 'my-paper').exists()
+    assert lifecycle.init(ENGINE, [str(tmp_path / 'Documents' / 'my-paper')]) == 0  # a full path elsewhere works
+
+
+def test_init_reports_a_folder_it_cannot_create_without_a_traceback(tmp_path, monkeypatch, capsys):
+    def denied(self, *a, **k):
+        raise PermissionError(13, 'Access is denied')
+    monkeypatch.setattr(lifecycle.Path, 'mkdir', denied)
+    assert lifecycle.init(ENGINE, [str(tmp_path / 'locked' / 'paper')]) == 1
+    err = capsys.readouterr().err
+    assert 'could not create the paper folder' in err and 'Access is denied' in err and 'cd ' in err

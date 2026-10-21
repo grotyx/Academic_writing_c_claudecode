@@ -4,6 +4,14 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`: ロゴマークのベクター版(明るい背景用、暗い背景用)。
 
+### v1.9.9 (261021)
+
+`manuwright init` は使えないフォルダで Python の traceback ではなく説明を表示する。
+
+- `init` はシステムフォルダ（Windows、Program Files、/usr、/System など）の中に論文を作らない。管理者 PowerShell は `C:\Windows\System32` で始まるため、そこで `manuwright init my-paper` を実行するとその中に作られるところだった。先に `cd ~\Documents` するか完全なパスを指定するよう案内する。
+- 作成できないフォルダ（アクセス拒否、存在しないドライブ）も traceback ではなく同じ案内を短く表示する。
+- マニュアル v2.6.5：2 節に自分のフォルダで `init` を実行する案内と、トラブルシューティング表の 1 行。
+
 ### v1.9.8 (261021)
 
 プログラム名を ManuWright と表記する。

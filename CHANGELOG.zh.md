@@ -4,6 +4,14 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
+### v1.9.9 (261021)
+
+`manuwright init` 遇到无法使用的文件夹时给出说明，而不是 Python traceback。
+
+- `init` 不会在系统文件夹（Windows、Program Files、/usr、/System 等）中创建论文。以管理员身份打开的 PowerShell 从 `C:\Windows\System32` 开始，在那里运行 `manuwright init my-paper` 会把论文建在其中；现在会提示先 `cd ~\Documents` 或给出完整路径。
+- 无法创建的文件夹（拒绝访问、驱动器不存在）也会给出同样的简短提示，而不是 traceback。
+- 手册 v2.6.5：第 2 节说明在自己的文件夹中运行 `init`，并在故障排除表中增加一行。
+
 ### v1.9.8 (261021)
 
 程序名称写作 ManuWright。
