@@ -882,8 +882,9 @@ def init(engine, args):
         return 1
     system = system_folder(root)
     if system:
-        print(f'manuwright: {root} is inside a system folder ({system}); a paper does not belong there '
-              '(PowerShell started as administrator opens in C:\\Windows\\System32).\n' + INIT_HINT, file=sys.stderr)
+        why = ' (PowerShell started as administrator opens in C:\\Windows\\System32)' if on_windows() else ''
+        print(f'manuwright: {root} is inside a system folder ({system}); a paper does not belong there{why}.\n'
+              + INIT_HINT, file=sys.stderr)
         return 1
     try:
         return _create_paper(engine, root)
