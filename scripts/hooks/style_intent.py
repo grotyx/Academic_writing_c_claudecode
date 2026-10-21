@@ -161,7 +161,7 @@ MEMORY = re.compile(
     r"|\bremember\b|\bfrom now on\b|\b(?:add|update)\b.{0,20}\b(?:author|co-?author|affiliation|orcid)\b"
     r"|\bmy (?:team )?profile\b|\bsync (?:the |my )?library\b", re.IGNORECASE)
 MEMORY_INJECTION = (
-    "[manuwright memory] The author wants something kept across papers in the personal library "
+    "[ManuWright memory] The author wants something kept across papers in the personal library "
     "(~/.manuwright/library). Save it there now, additions only, never deleting other entries:\n"
     "- a wording rule (always X, not Y): `manuwright library term --prefer \"X\" --avoid \"Y\" "
     "[--context \"...\"]` (saved in the library and this paper);\n"
@@ -214,10 +214,10 @@ def evaluate(event: dict) -> str:
             academic.set_mode(toggle)
             effective = academic.mode()
             if effective != toggle:  # MANUWRIGHT_WRITING_MODE in the environment wins over the saved setting
-                return (f"[manuwright] Saved academic writing mode '{toggle}', but the environment variable "
+                return (f"[ManuWright] Saved academic writing mode '{toggle}', but the environment variable "
                         f"MANUWRIGHT_WRITING_MODE={effective} overrides it, so '{effective}' stays in effect. Tell the "
                         "user in one line, and that removing that variable makes the saved setting apply.")
-            return (f"[manuwright] Academic writing mode is now '{toggle}' for every paper and session "
+            return (f"[ManuWright] Academic writing mode is now '{toggle}' for every paper and session "
                     "(`manuwright mode` shows it). Confirm this to the user in one line.")
         except Exception:
             return ""

@@ -1,11 +1,11 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
-    <img src="assets/logo.png" width="220" alt="manuwright, the careful senior author">
+    <img src="assets/logo.png" width="220" alt="ManuWright, the careful senior author">
   </picture>
 </p>
 
-<h1 align="center">manuwright</h1>
+<h1 align="center">ManuWright</h1>
 
 <p align="center">
   <em>登録していない論文は、決して引用させない人。</em>
@@ -32,15 +32,15 @@
 
 どの研究室にも一人はいる、あの先輩著者を思い浮かべてほしい。ペンを手に草稿を読む。一文に丸をつけて静かに尋ねる。*「これはどの論文に書いてある？」* 数値に丸をつける。*「どの表？」* 彼が署名するまで、何も研究室の外には出ない。
 
-manuwright は、その人を AI エージェントの中に入れる。
+ManuWright は、その人を AI エージェントの中に入れる。
 
 ## 導入前 / 導入後
 
 計画が固まる前に、エージェントに Results を書かせたとする。
 
-manuwright がなければ、エージェントは滑らかな文章を書き、もっともらしいが存在しない論文を引用し、読んでもいない平均値を丸めて書き込む。
+ManuWright がなければ、エージェントは滑らかな文章を書き、もっともらしいが存在しない論文を引用し、読んでもいない平均値を丸めて書き込む。
 
-manuwright があれば：
+ManuWright があれば：
 
 ```text
 BLOCKED by workflow gate (Rule 8): drafts/draft_plan.md has not been approved.
@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -130,7 +130,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | `~/.config/opencode/skills` の skill | `manuwright verify` |
 | Muse | ユーザー skill | `manuwright verify` |
 
-**更新。** `manuwright update` が最新リリースをインストールし、続けてエージェントアダプターも更新する（`manuwright agents update`、省略は `--no-agents`）。続けて登録済みのすべての論文のエージェント規則を確認なしで更新する（`manuwright init --refresh-rules --all --auto`、manuwright が書いたまま編集されていない AGENTS/CLAUDE/GEMINI.md だけを変更し .bak を保存、自分で書いた・編集したファイルや別のエンジン版を固定した論文はそのまま）。Claude Code や Codex で論文フォルダを開くとセッション開始時にその論文の規則も更新されるため、Windows や未登録の論文も漏れない。`manuwright check` はバージョン、エージェントごとのプラグイン、メインモデル、OpenRouter キー、自動更新、論文の規則が最新かを 1 画面で示し、✗ ごとに直すコマンドを表示する。`manuwright config set auto-update on` で patch の自動更新を有効にできる。1 日 1 回確認し、論文の現在のレビューを無効にする更新は適用しない。Windows（uv インストール）では実行中の `manuwright.exe` を置き換えられないため、`manuwright update` は新しい PowerShell ウィンドウを開き、そのウィンドウが manuwright の終了を待ってから新しい版のインストールとエージェントアダプター・論文の規則の更新まで続けて行う。ウィンドウを開けない場合は同じ手順を 1 行（`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`）で表示するので、新しい PowerShell ウィンドウに貼り付ける。テンプレート利用者は `git pull`、または[移行ガイド](docs/migration_guide.md)を参照。
+**更新。** `manuwright update` が最新リリースをインストールし、続けてエージェントアダプターも更新する（`manuwright agents update`、省略は `--no-agents`）。続けて登録済みのすべての論文のエージェント規則を確認なしで更新する（`manuwright init --refresh-rules --all --auto`、ManuWright が書いたまま編集されていない AGENTS/CLAUDE/GEMINI.md だけを変更し .bak を保存、自分で書いた・編集したファイルや別のエンジン版を固定した論文はそのまま）。Claude Code や Codex で論文フォルダを開くとセッション開始時にその論文の規則も更新されるため、Windows や未登録の論文も漏れない。`manuwright check` はバージョン、エージェントごとのプラグイン、メインモデル、OpenRouter キー、自動更新、論文の規則が最新かを 1 画面で示し、✗ ごとに直すコマンドを表示する。`manuwright config set auto-update on` で patch の自動更新を有効にできる。1 日 1 回確認し、論文の現在のレビューを無効にする更新は適用しない。Windows（uv インストール）では実行中の `manuwright.exe` を置き換えられないため、`manuwright update` は新しい PowerShell ウィンドウを開き、そのウィンドウが ManuWright の終了を待ってから新しい版のインストールとエージェントアダプター・論文の規則の更新まで続けて行う。ウィンドウを開けない場合は同じ手順を 1 行（`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`）で表示するので、新しい PowerShell ウィンドウに貼り付ける。テンプレート利用者は `git pull`、または[移行ガイド](docs/migration_guide.md)を参照。
 
 **アンインストール。** `claude plugin uninstall manuwright@manuwright`、`codex plugin remove manuwright@manuwright`、`agy plugin uninstall manuwright`、`muse skills uninstall manuwright`、最後に `uv tool uninstall manuwright`。
 
@@ -196,7 +196,7 @@ vault は文献を探す場所で、引用できるのは `knowledge/evidence.md
 
 **実際の原稿はどこに置く？** 非公開のフォルダやリポジトリに置く。このテンプレートの公開 clone には置かない。`manuwright init` がそのフォルダを作る。
 
-**なぜ「manuwright」？** manuscript + *wright*。wright は「作る人」を意味する古い言葉（playwright 劇作家、shipwright 船大工）。原稿を丁寧に組み上げる人。
+**なぜ「ManuWright」？** manuscript + *wright*。wright は「作る人」を意味する古い言葉（playwright 劇作家、shipwright 船大工）。原稿を丁寧に組み上げる人。
 
 ## ドキュメント
 

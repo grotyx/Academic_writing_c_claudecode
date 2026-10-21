@@ -100,7 +100,7 @@ def manuwright(*args, cwd):
 @installed
 def test_installed_engine_is_not_the_checkout(tmp_path):
     out = manuwright('--version', cwd=tmp_path).stdout
-    assert 'manuwright ' in out and str(ENGINE) not in out, out
+    assert 'ManuWright ' in out and str(ENGINE) not in out, out
     doctor = json.loads(manuwright('doctor', cwd=tmp_path).stdout)
     assert doctor['hooks']['ok'], doctor
 

@@ -1,6 +1,6 @@
-# manuwright agent instructions
+# ManuWright agent instructions
 
-This paper uses the manuwright manuscript engine. These rules are mandatory for every agent (Claude Code, Codex, Antigravity/Gemini, opencode, Muse).
+This paper uses the ManuWright manuscript engine. These rules are mandatory for every agent (Claude Code, Codex, Antigravity/Gemini, opencode, Muse).
 
 - Read the rules before work: `manuwright rules` (full workflow) or `manuwright rules <keyword>` (one section).
 - Guides: the rules cite guides as `docs/<name>.md` (for example `docs/writing_guide.md`). They are part of the installed engine, not files in this folder, so do not look for them here: read them with `manuwright guide <name>` (several at once: `manuwright guide <name> <name>`; list: `manuwright guide`). Each `manuwright rules` output ends with the guides it cites; read the ones for the current step in full before doing it.

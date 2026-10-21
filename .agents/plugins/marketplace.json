@@ -1,6 +1,6 @@
 {
   "name": "manuwright",
-  "interface": { "displayName": "manuwright" },
+  "interface": { "displayName": "ManuWright" },
   "plugins": [
     {
       "name": "manuwright",

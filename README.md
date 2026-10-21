@@ -1,11 +1,11 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
-    <img src="assets/logo.png" width="220" alt="manuwright, the careful senior author">
+    <img src="assets/logo.png" width="220" alt="ManuWright, the careful senior author">
   </picture>
 </p>
 
-<h1 align="center">manuwright</h1>
+<h1 align="center">ManuWright</h1>
 
 <p align="center">
   <em>He will not let you cite a paper you have not registered.</em>
@@ -32,15 +32,15 @@
 
 You know him. The senior author in every good lab. Reads the draft with a pen in hand. Circles a sentence and asks, quietly, *"Which paper says that?"* Circles a number: *"Which table?"* Nothing leaves the lab until he signs it.
 
-manuwright puts him inside your AI agent.
+ManuWright puts him inside your AI agent.
 
 ## Before / after
 
 You ask your agent to write the Results section before the plan is settled.
 
-Without manuwright, it writes fluent prose, cites a plausible paper that does not exist, and rounds a mean it never read.
+Without ManuWright, it writes fluent prose, cites a plausible paper that does not exist, and rounds a mean it never read.
 
-With manuwright:
+With ManuWright:
 
 ```text
 BLOCKED by workflow gate (Rule 8): drafts/draft_plan.md has not been approved.
@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # models, reviewers, Word style, updates, Obsidian
 manuwright init my-paper
@@ -130,7 +130,7 @@ manuwright target                      # inside the paper: target journal + Word
 | opencode | skills in `~/.config/opencode/skills` | `manuwright verify` |
 | Muse | user skills | `manuwright verify` |
 
-**Update.** `manuwright update` installs the newest release and then refreshes the agent adapters (`manuwright agents update`; skip with `--no-agents`), then updates the agent rules of every registered paper without asking (`manuwright init --refresh-rules --all --auto`; only unedited AGENTS/CLAUDE/GEMINI.md copies that manuwright wrote change, .bak kept; a file you wrote or edited is left alone, as is a paper that pins another engine version). A paper folder you open in Claude Code or Codex also updates its own rules at session start, so nothing is missed on Windows or for papers not yet registered. `manuwright check` shows in one screen whether everything is current (version, each agent's plugin, main model, OpenRouter key, auto-update, paper rules) and the command that fixes each ✗. Opt in to automatic patch updates with `manuwright config set auto-update on`: it checks once a day and never applies an update that would invalidate a paper's current review. On Windows (uv install) Windows cannot replace the running `manuwright.exe`, so `manuwright update` opens a PowerShell window that waits until manuwright has closed, installs the new version and refreshes the agent adapters and paper rules; if no window can open, it prints the same steps as one line (`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`) to paste into a new PowerShell window. Template users: `git pull`, or see the [migration guide](docs/migration_guide.md).
+**Update.** `manuwright update` installs the newest release and then refreshes the agent adapters (`manuwright agents update`; skip with `--no-agents`), then updates the agent rules of every registered paper without asking (`manuwright init --refresh-rules --all --auto`; only unedited AGENTS/CLAUDE/GEMINI.md copies that ManuWright wrote change, .bak kept; a file you wrote or edited is left alone, as is a paper that pins another engine version). A paper folder you open in Claude Code or Codex also updates its own rules at session start, so nothing is missed on Windows or for papers not yet registered. `manuwright check` shows in one screen whether everything is current (version, each agent's plugin, main model, OpenRouter key, auto-update, paper rules) and the command that fixes each ✗. Opt in to automatic patch updates with `manuwright config set auto-update on`: it checks once a day and never applies an update that would invalidate a paper's current review. On Windows (uv install) Windows cannot replace the running `manuwright.exe`, so `manuwright update` opens a PowerShell window that waits until ManuWright has closed, installs the new version and refreshes the agent adapters and paper rules; if no window can open, it prints the same steps as one line (`uv tool install --force ...; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`) to paste into a new PowerShell window. Template users: `git pull`, or see the [migration guide](docs/migration_guide.md).
 
 **Uninstall.** `claude plugin uninstall manuwright@manuwright`, `codex plugin remove manuwright@manuwright`, `agy plugin uninstall manuwright`, `muse skills uninstall manuwright`, then `uv tool uninstall manuwright`.
 
@@ -196,7 +196,7 @@ Full rules: [WORKFLOW.md](WORKFLOW.md). Everything that used to live in this REA
 
 **Where do my real manuscripts go?** In a private folder or repository, never in a public clone of this template. `manuwright init` creates one.
 
-**Why "manuwright"?** Manuscript + *wright*, an old word for a maker: playwright, shipwright. Someone who builds manuscripts carefully.
+**Why "ManuWright"?** Manuscript + *wright*, an old word for a maker: playwright, shipwright. Someone who builds manuscripts carefully.
 
 ## Documentation
 

@@ -1,10 +1,10 @@
-# manuwright user manual (v2.6.3)
+# ManuWright user manual (v2.6.4)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
 Screenshots are renders of the terminals' text captured during that run (the session had no macOS screen-recording permission), so they show what the tools printed; a few long outputs are abridged and say so. The images in section 6, the claim-strength image in section 8 and the images in section 11 come from a second run with v1.9.1 in a new paper folder (2026-10-07); grey `#` lines are annotations added for the reader.
 
-![manuwright pipeline](images/manual/01_pipeline_overview.png)
+![ManuWright pipeline](images/manual/01_pipeline_overview.png)
 
 ## At a glance
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,13 +45,13 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
 ```
 
-`agents install` also offers the optional Obsidian library (section 3b). Restart Claude Code after installing or updating the plugin. The first Codex session in a folder asks you to trust the plugin hooks: choose "Trust all" for the five manuwright hooks. Template users (no install) run the same engine as `python -m harness ...` and `python scripts/<tool>.py ...` inside the cloned repository.
+`agents install` also offers the optional Obsidian library (section 3b). Restart Claude Code after installing or updating the plugin. The first Codex session in a folder asks you to trust the plugin hooks: choose "Trust all" for the five ManuWright hooks. Template users (no install) run the same engine as `python -m harness ...` and `python scripts/<tool>.py ...` inside the cloned repository.
 
 ## 2. Start a paper
 
@@ -93,7 +93,7 @@ The author decides the value. The `claim-strength` check in section 8 uses it; a
 
 ### 3b. Your Obsidian library (optional, recommended)
 
-If you keep references in Obsidian with the plugin "Academic Paper Citation Manager" (PubMed import, AI summaries, citekeys), every agent can search that library while it writes. manuwright never requires it.
+If you keep references in Obsidian with the plugin "Academic Paper Citation Manager" (PubMed import, AI summaries, citekeys), every agent can search that library while it writes. ManuWright never requires it.
 
 **Install the plugin** (skip if you already have it). `manuwright agents install` offers this when the plugin is missing; or run it yourself. It downloads the latest release into the vault you pick, enables it and, if you agree, turns on MCP access. Obsidian itself must be installed and the vault created once in Obsidian. The first time Obsidian opens that vault it asks whether to trust its plugins; allow it.
 
@@ -436,11 +436,11 @@ manuwright init --refresh-rules --all     # every registered paper: update its a
 manuwright check                          # one report of what is current, with the fix for each ✗
 ```
 
-`check` also shows the writing mode and whether a learned style exists. Agent rules (`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`) update themselves (v1.9.5): `manuwright update` refreshes every registered paper, and opening a paper folder in Claude Code or Codex refreshes that paper at session start (Windows included). Only unedited copies manuwright wrote are replaced (.bak kept). A file you wrote or edited, a deleted file and a paper that pins another engine version are left alone until you run `manuwright init --refresh-rules` in that folder (v1.9.6).
+`check` also shows the writing mode and whether a learned style exists. Agent rules (`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`) update themselves (v1.9.5): `manuwright update` refreshes every registered paper, and opening a paper folder in Claude Code or Codex refreshes that paper at session start (Windows included). Only unedited copies ManuWright wrote are replaced (.bak kept). A file you wrote or edited, a deleted file and a paper that pins another engine version are left alone until you run `manuwright init --refresh-rules` in that folder (v1.9.6).
 
 Auto-update waits when a registered paper pins the engine (`"engine": ">=1.8,<1.9"` in `project.json`) or holds a fresh review that an engine change would invalidate. Roll back with `manuwright update --to <version>`.
 
-On Windows with a uv install, `manuwright update` cannot install in place (Windows cannot replace the running `manuwright.exe`). From v1.9.7 it opens a PowerShell window instead: the window waits until manuwright has closed (close Claude Code or Codex sessions if it says it is still waiting), installs the new version, refreshes the agent adapters and the papers' agent rules, and waits for Enter. If no window can open, it prints the same steps as one line to paste into a new PowerShell window: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`. Updating from v1.9.6 or earlier still prints this line once, because the old version runs the update. Even if you only run the install part, each paper updates its rules the next time you open it. If an earlier update left `ModuleNotFoundError: No module named 'manuwright'`, the same command repairs it.
+On Windows with a uv install, `manuwright update` cannot install in place (Windows cannot replace the running `manuwright.exe`). From v1.9.7 it opens a PowerShell window instead: the window waits until ManuWright has closed (close Claude Code or Codex sessions if it says it is still waiting), installs the new version, refreshes the agent adapters and the papers' agent rules, and waits for Enter. If no window can open, it prints the same steps as one line to paste into a new PowerShell window: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`. Updating from v1.9.6 or earlier still prints this line once, because the old version runs the update. Even if you only run the install part, each paper updates its rules the next time you open it. If an earlier update left `ModuleNotFoundError: No module named 'manuwright'`, the same command repairs it.
 
 Check that an update worked:
 
@@ -496,8 +496,8 @@ manuwright library writing import Style/                      # or an existing S
 ```
 
 - **Word styles.** Word layout usually follows the target journal, so a style can be saved for a journal (`--journal`), for the team (`--team`) or as your own (`--personal`); `docx save` inside a paper links it to that paper's journal. In `manuwright target`, after you pick the journal, a style saved for that journal is listed first and preselected; team and personal styles follow. A Word template keeps its own fonts, heading styles and margins; the build drops the template's text and uses its styles. Only what you set on top (for example line numbers) is changed.
-- **Team profile.** Every new paper gets a copy in `profile/authors.md`, which the title page is written from. You can also ask your agent: "Fill my manuwright team profile from this CV". It edits the library file, never guesses an ORCID or grant number, and leaves `[...]` for what it does not know.
-- **Writing style.** In `manuwright library writing import Style/`, `writing` is the command and `Style/` is the folder you import from (here the Style folder of a template checkout). Turning your papers into a style needs an LLM. After `writing add`, ask your agent "register my writing style in the manuwright library". The manuwright skill follows `Style/style_guide.md`: patterns and measured numbers (sentence length, citation density), no copied paragraphs. It writes the anchors, `terminology.md` and `style_spec.md`. New papers get them in `Style/` and use them for `/style-pass` and the terminology lint. Source PDFs stay in the library.
+- **Team profile.** Every new paper gets a copy in `profile/authors.md`, which the title page is written from. You can also ask your agent: "Fill my ManuWright team profile from this CV". It edits the library file, never guesses an ORCID or grant number, and leaves `[...]` for what it does not know.
+- **Writing style.** In `manuwright library writing import Style/`, `writing` is the command and `Style/` is the folder you import from (here the Style folder of a template checkout). Turning your papers into a style needs an LLM. After `writing add`, ask your agent "register my writing style in the ManuWright library". The ManuWright skill follows `Style/style_guide.md`: patterns and measured numbers (sentence length, citation density), no copied paragraphs. It writes the anchors, `terminology.md` and `style_spec.md`. New papers get them in `Style/` and use them for `/style-pass` and the terminology lint. Source PDFs stay in the library.
 
 ### Keeping what a paper teaches (memory)
 
@@ -542,7 +542,7 @@ Presets: `vancouver`, `ama` (JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`,
 | Symptom | Cause and fix |
 |---|---|
 | A section was written without an approved plan | Hooks only exist in Claude Code and Codex. Template: upgrade to v1.8.5+ (relative hook paths failed after a `cd`). Codex: trust the plugin hooks. Others: run `manuwright verify`. |
-| `Hooks need review` in Codex | New or changed plugin hooks. Review, then trust the manuwright hooks. |
+| `Hooks need review` in Codex | New or changed plugin hooks. Review, then trust the ManuWright hooks. |
 | Lint flags a term your plan chose | Give the paper its own `Style/terminology.md` and set `terminology` in `project.json`. |
 | `one or more declared artifacts are missing: ...` | `project.json` lists sections that do not exist yet. Edit `artifacts`. |
 | Numbers in Discussion fail | Literature values: add a `numeric_exemptions` reason and have the semantic review check them. |

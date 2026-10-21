@@ -1,9 +1,9 @@
 ---
 name: manuwright
-description: Medical manuscript workflow with the manuwright engine. Use when planning, drafting, revising or checking a paper in a folder that has project.json, drafts/draft_plan.md or knowledge/evidence.md, or when the user mentions manuwright, draft plan, analysis plan, evidence.md, EVID citations, reviewer response or submission build.
+description: Medical manuscript workflow with the ManuWright engine. Use when planning, drafting, revising or checking a paper in a folder that has project.json, drafts/draft_plan.md or knowledge/evidence.md, or when the user mentions ManuWright, draft plan, analysis plan, evidence.md, EVID citations, reviewer response or submission build.
 ---
 
-# manuwright workflow
+# ManuWright workflow
 
 1. Load the rules for the current step: `manuwright rules <keyword>` (for example `Citation Integrity`, `Draft Plan`, `Verification Gates`, `Phase 4`). Run `manuwright rules` once for the full workflow when the phase is unclear.
 2. Phase order: setup and evidence, then analysis plan (approved), analysis, draft plan (approved), drafting (Methods, Results, Introduction, Discussion, Conclusion, Abstract, Title), style polish, QC (3+ rounds), finalize, revision.

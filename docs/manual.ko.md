@@ -1,10 +1,10 @@
-# manuwright 사용자 매뉴얼 (v2.6.3)
+# ManuWright 사용자 매뉴얼 (v2.6.4)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
 스크린샷은 시험 중 터미널의 텍스트를 이미지로 렌더링한 것이다(세션에 macOS 화면 기록 권한이 없었음). 도구가 출력한 내용과 같고, 긴 출력은 줄였다고 표시했다. 6절, 8절의 claim-strength, 11절 그림은 v1.9.1 로 새 논문 폴더에서 다시 돌린 시험(2026-10-07)의 출력이다. 회색 `#` 줄은 설명을 위해 붙인 주석이다.
 
-![manuwright 파이프라인](images/manual/01_pipeline_overview.png)
+![ManuWright 파이프라인](images/manual/01_pipeline_overview.png)
 
 ## 한눈에 보기
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,13 +45,13 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.7
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.8
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
 ```
 
-`agents install` 은 선택 기능인 Obsidian 라이브러리도 제안한다(3b 절). plugin 을 설치·업데이트한 뒤에는 Claude Code 를 재시작한다. Codex 는 폴더에서 처음 실행할 때 plugin hook 을 신뢰할지 묻는다. manuwright hook 5개에 "Trust all" 을 고른다. 설치하지 않는 템플릿 사용자는 clone 한 저장소 안에서 같은 엔진을 `python -m harness ...`, `python scripts/<tool>.py ...` 로 쓴다.
+`agents install` 은 선택 기능인 Obsidian 라이브러리도 제안한다(3b 절). plugin 을 설치·업데이트한 뒤에는 Claude Code 를 재시작한다. Codex 는 폴더에서 처음 실행할 때 plugin hook 을 신뢰할지 묻는다. ManuWright hook 5개에 "Trust all" 을 고른다. 설치하지 않는 템플릿 사용자는 clone 한 저장소 안에서 같은 엔진을 `python -m harness ...`, `python scripts/<tool>.py ...` 로 쓴다.
 
 ## 2. 논문 시작
 
@@ -98,7 +98,7 @@ manuwright search fetch 31476471 34602458 --format evidence
 
 ### 3b. 내 Obsidian 라이브러리 (선택, 권장)
 
-Obsidian 에서 "Academic Paper Citation Manager" 플러그인(PubMed 가져오기, AI 요약, citekey)으로 참고문헌을 관리한다면, 모든 에이전트가 글을 쓰는 동안 그 라이브러리를 검색할 수 있다. manuwright 는 이것을 요구하지 않는다.
+Obsidian 에서 "Academic Paper Citation Manager" 플러그인(PubMed 가져오기, AI 요약, citekey)으로 참고문헌을 관리한다면, 모든 에이전트가 글을 쓰는 동안 그 라이브러리를 검색할 수 있다. ManuWright 는 이것을 요구하지 않는다.
 
 **플러그인 설치** (이미 있으면 건너뜀). 플러그인이 없으면 `manuwright agents install` 이 설치를 제안하고, 직접 실행해도 된다. 고른 vault 에 최신 릴리스를 받아 켜고, 동의하면 MCP 접근도 켠다. Obsidian 앱은 설치돼 있어야 하고 vault 는 Obsidian 에서 한 번 만들어 둬야 한다. Obsidian 이 그 vault 를 처음 열 때 플러그인을 신뢰할지 묻는데, 허용한다.
 
@@ -443,11 +443,11 @@ manuwright init --refresh-rules --all     # 등록된 모든 논문: 에이전�
 manuwright check                          # 최신 상태를 한 화면에 점검, ✗ 마다 고치는 명령
 ```
 
-`check` 는 학술 문체 모드와 학습한 문체가 있는지도 보여 준다. 에이전트 규칙(`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`)은 이제 스스로 갱신된다(v1.9.5): `manuwright update` 가 등록된 모든 논문을 갱신하고, Claude Code 나 Codex 로 논문 폴더를 열면 세션 시작 때 그 논문도 갱신한다(Windows 포함). manuwright 가 만든 뒤 손대지 않은 파일만 바꾸고(.bak 보관), 직접 쓰거나 고친 파일, 지운 파일, 다른 엔진 버전을 고정한 논문은 그 폴더에서 `manuwright init --refresh-rules` 를 실행할 때까지 그대로 둔다(v1.9.6).
+`check` 는 학술 문체 모드와 학습한 문체가 있는지도 보여 준다. 에이전트 규칙(`AGENTS.md`/`CLAUDE.md`/`GEMINI.md`)은 이제 스스로 갱신된다(v1.9.5): `manuwright update` 가 등록된 모든 논문을 갱신하고, Claude Code 나 Codex 로 논문 폴더를 열면 세션 시작 때 그 논문도 갱신한다(Windows 포함). ManuWright 가 만든 뒤 손대지 않은 파일만 바꾸고(.bak 보관), 직접 쓰거나 고친 파일, 지운 파일, 다른 엔진 버전을 고정한 논문은 그 폴더에서 `manuwright init --refresh-rules` 를 실행할 때까지 그대로 둔다(v1.9.6).
 
 등록된 논문이 엔진을 고정했거나(`project.json` 의 `"engine": ">=1.8,<1.9"`), 엔진이 바뀌면 무효가 될 유효한 검토가 있으면 자동 업데이트는 기다린다. 되돌리기: `manuwright update --to <버전>`.
 
-Windows 에서 uv 로 설치했다면 `manuwright update` 가 그 자리에서 설치할 수 없다(실행 중인 `manuwright.exe` 는 Windows 에서 교체할 수 없다). v1.9.7 부터는 대신 PowerShell 창을 연다. 그 창이 manuwright 가 닫히기를 기다렸다가(계속 기다린다고 나오면 Claude Code 나 Codex 세션을 닫는다) 새 버전 설치, 에이전트 어댑터 갱신, 논문 규칙 갱신까지 하고 Enter 를 기다린다. 창을 열 수 없으면 같은 단계를 한 줄로 출력하니 새 PowerShell 창에 붙여 넣는다: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`. v1.9.6 이하에서 올릴 때는 이전 버전이 업데이트를 실행하므로 이 한 줄이 한 번 더 출력된다. 설치 부분만 실행해도 각 논문은 다음에 열 때 규칙을 스스로 갱신한다. 이전 업데이트 후 `ModuleNotFoundError: No module named 'manuwright'` 가 나오면 같은 명령으로 복구된다.
+Windows 에서 uv 로 설치했다면 `manuwright update` 가 그 자리에서 설치할 수 없다(실행 중인 `manuwright.exe` 는 Windows 에서 교체할 수 없다). v1.9.7 부터는 대신 PowerShell 창을 연다. 그 창이 ManuWright 가 닫히기를 기다렸다가(계속 기다린다고 나오면 Claude Code 나 Codex 세션을 닫는다) 새 버전 설치, 에이전트 어댑터 갱신, 논문 규칙 갱신까지 하고 Enter 를 기다린다. 창을 열 수 없으면 같은 단계를 한 줄로 출력하니 새 PowerShell 창에 붙여 넣는다: `uv tool install --force git+https://github.com/grotyx/Academic_writing_c_claudecode@vX.Y.Z; if ($?) { manuwright agents update; manuwright init --refresh-rules --all --auto }`. v1.9.6 이하에서 올릴 때는 이전 버전이 업데이트를 실행하므로 이 한 줄이 한 번 더 출력된다. 설치 부분만 실행해도 각 논문은 다음에 열 때 규칙을 스스로 갱신한다. 이전 업데이트 후 `ModuleNotFoundError: No module named 'manuwright'` 가 나오면 같은 명령으로 복구된다.
 
 업데이트가 잘 됐는지 확인:
 
@@ -503,8 +503,8 @@ manuwright library writing import Style/                      # 기존 Style/ �
 ```
 
 - **Word 스타일.** Word 서식은 보통 목표 저널에 따라 정해지므로 저널용(`--journal`), 팀용(`--team`), 개인용(`--personal`)으로 저장한다. 논문 폴더에서 `docx save` 를 하면 그 논문의 저널에 연결된다. `manuwright target` 에서 저널을 고르면 그 저널용으로 저장한 서식이 맨 위에 미리 선택돼 나오고, 팀·개인 서식이 뒤에 나온다. Word 서식 파일은 그 파일의 글꼴·제목 스타일·여백을 그대로 쓴다(서식 파일 안의 글은 버리고 스타일만 사용). 그 위에 따로 정한 것(예: 줄 번호)만 바꾼다.
-- **팀 정보.** 새 논문마다 `profile/authors.md` 로 복사되고 title page 는 이걸로 쓴다. 에이전트에게 "이 CV 로 manuwright 팀 정보 채워줘" 라고 해도 된다. 라이브러리 파일만 고치고, ORCID·연구비 번호는 추측하지 않으며, 모르는 칸은 `[...]` 로 둔다.
-- **글쓰기 스타일.** `manuwright library writing import Style/` 에서 `writing` 은 명령어, `Style/` 은 가져올 폴더(여기서는 템플릿 저장소의 Style 폴더)다. 논문에서 문체를 뽑아내는 건 LLM 이 할 일이다. `writing add` 다음 에이전트에게 "manuwright 라이브러리에 내 글쓰기 스타일 등록해줘" 라고 하면 manuwright skill 이 `Style/style_guide.md` 기준으로 패턴과 측정값(문장 길이, 인용 밀도)을 뽑는다. 문단 복사는 하지 않는다. 그 결과로 앵커 파일, `terminology.md`, `style_spec.md` 를 만든다. 새 논문은 이걸 `Style/` 로 받아 `/style-pass` 와 용어 검사에 쓴다. 원본 PDF 는 라이브러리에만 남는다.
+- **팀 정보.** 새 논문마다 `profile/authors.md` 로 복사되고 title page 는 이걸로 쓴다. 에이전트에게 "이 CV 로 ManuWright 팀 정보 채워줘" 라고 해도 된다. 라이브러리 파일만 고치고, ORCID·연구비 번호는 추측하지 않으며, 모르는 칸은 `[...]` 로 둔다.
+- **글쓰기 스타일.** `manuwright library writing import Style/` 에서 `writing` 은 명령어, `Style/` 은 가져올 폴더(여기서는 템플릿 저장소의 Style 폴더)다. 논문에서 문체를 뽑아내는 건 LLM 이 할 일이다. `writing add` 다음 에이전트에게 "ManuWright 라이브러리에 내 글쓰기 스타일 등록해줘" 라고 하면 ManuWright skill 이 `Style/style_guide.md` 기준으로 패턴과 측정값(문장 길이, 인용 밀도)을 뽑는다. 문단 복사는 하지 않는다. 그 결과로 앵커 파일, `terminology.md`, `style_spec.md` 를 만든다. 새 논문은 이걸 `Style/` 로 받아 `/style-pass` 와 용어 검사에 쓴다. 원본 PDF 는 라이브러리에만 남는다.
 
 ### 논문에서 배운 것을 라이브러리에 쌓기 (기억)
 
@@ -549,7 +549,7 @@ manuwright format-references drafts/*.md --journal nejm --fetch   # PubMed 전�
 | 증상 | 원인과 해결 |
 |---|---|
 | 승인된 계획 없이 섹션이 써짐 | hook 은 Claude Code 와 Codex 에만 있음. 템플릿은 v1.8.5 이상으로 올릴 것(상대 경로 hook 이 `cd` 후 실패했음). Codex 는 plugin hook 신뢰. 나머지는 `manuwright verify` 실행 |
-| Codex 의 `Hooks need review` | plugin hook 이 새로 생기거나 바뀜. 확인 후 manuwright hook 신뢰 |
+| Codex 의 `Hooks need review` | plugin hook 이 새로 생기거나 바뀜. 확인 후 ManuWright hook 신뢰 |
 | lint 가 계획에서 정한 용어를 잡음 | 논문 전용 `Style/terminology.md` 를 두고 `project.json` 의 `terminology` 에 지정 |
 | `one or more declared artifacts are missing: ...` | `project.json` 이 아직 없는 섹션을 가리킴. `artifacts` 수정 |
 | Discussion 의 수치가 실패 | 문헌 수치임. `numeric_exemptions` 에 사유를 적고 semantic review 에서 확인 |

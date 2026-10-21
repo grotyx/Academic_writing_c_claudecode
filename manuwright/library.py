@@ -212,7 +212,7 @@ def profile_command(engine, args):
     print(f'Team profile: {path}\n'
           'Fill it once: authors, degrees, affiliations, ORCID, email, funding statements, standard\n'
           'disclosures. Edit it directly (manuwright library profile --edit), or ask your agent:\n'
-          '  "Fill my manuwright team profile from this CV / author list" (it edits that file).\n'
+          '  "Fill my ManuWright team profile from this CV / author list" (it edits that file).\n'
           'New papers get a copy in profile/authors.md (manuwright init); the title page is written from it.')
     return 0
 
@@ -240,8 +240,8 @@ def writing_command(args):
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)
             print(f'added {target}')
-        print('\nNext (needs an LLM): in Claude Code or Codex, ask "register my writing style in the manuwright '
-              'library".\nThe manuwright skill turns these sources into style anchors, terminology.md and '
+        print('\nNext (needs an LLM): in Claude Code or Codex, ask "register my writing style in the ManuWright '
+              'library".\nThe ManuWright skill turns these sources into style anchors, terminology.md and '
               f'style_spec.md under {writing()}.')
         return 0
     if action == 'import' and files:

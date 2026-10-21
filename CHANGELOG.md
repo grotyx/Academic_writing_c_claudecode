@@ -4,6 +4,15 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.8 (261021)
+
+The product name is written ManuWright.
+
+- The READMEs, manuals, guides, skill descriptions, agent rules, plugin display names and CLI messages now say ManuWright (`ManuWright 1.9.8` from `--version`).
+- The command and everything you type stay lowercase: `manuwright update`, `pip`/`uv` package `manuwright`, `~/.manuwright`, and the plugin and skill ids.
+- The agent rule text changed (its title), so paper rule files refresh once; files you wrote or edited are kept as before.
+- Manual v2.6.4, harness guide v1.3.3, AGENTS.md naming note.
+
 ### v1.9.7 (261010)
 
 Windows: `manuwright update` finishes the update itself; no line to paste.
