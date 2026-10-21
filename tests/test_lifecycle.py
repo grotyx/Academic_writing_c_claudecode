@@ -331,7 +331,9 @@ def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
     monkeypatch.setattr(models, 'opencode_models', lambda: {'opencode-go/kimi-k3', 'opencode-go/glm-5.3'})
     monkeypatch.delenv('OPENROUTER_API_KEY', raising=False)
     monkeypatch.setattr(models, 'key_works', lambda key: key == 'sk-or-good')
-    answers = iter(['claude-opus-5-5', 'codex',
+    monkeypatch.setattr(models, 'installed_agents', lambda: ['codex'])
+    monkeypatch.setattr(models, 'agent_models', lambda agent: ([], 'none'))
+    answers = iter(['claude-opus-5-5', 'codex', '',  # codex reviewer keeps its own default model
                     'deepseek/b', 'n', 'deepseek/a',  # OpenRouter: unknown id refused, then a known one
                     'sk-or-good',                     # OpenRouter key, hidden input
                     '9', 'opencode-go/kimi-k3,opencode-go/glm-5.3',  # opencode: out-of-range number, then own ids
@@ -359,6 +361,7 @@ def test_setup_main_model_is_a_numbered_choice_with_installed_agents(monkeypatch
     monkeypatch.setattr(models, 'opencode_models', set)
     monkeypatch.setattr(models.shutil, 'which', lambda name: '/bin/codex' if name == 'codex' else None)
     monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/codex' if name == 'codex' else None)
+    monkeypatch.setattr(models, 'installed_agents', lambda: ['codex'])
     answers = iter(['claude', '99', '1', '', '0', '0', ''])  # agent name and bad number refused, then 1
     assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
     out = capsys.readouterr().out
@@ -376,6 +379,7 @@ def test_setup_picks_a_recommended_set(monkeypatch):
     monkeypatch.setattr(models, 'opencode_models', set)
     monkeypatch.delenv('OPENROUTER_API_KEY', raising=False)
     monkeypatch.setattr(models, 'key_works', lambda key: False)
+    monkeypatch.setattr(models, 'installed_agents', lambda: ['codex'])
     answers = iter(['', '-', '1', 'sk-bad', '0', ''])  # a rejected key is not saved
     assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
     review = lifecycle.load('config.json', {})['review']
@@ -718,3 +722,28 @@ def test_init_reports_a_folder_it_cannot_create_without_a_traceback(tmp_path, mo
     assert lifecycle.init(ENGINE, [str(tmp_path / 'locked' / 'paper')]) == 1
     err = capsys.readouterr().err
     assert 'could not create the paper folder' in err and 'Access is denied' in err and 'cd ' in err
+
+
+def test_setup_offers_only_agents_found_and_their_models(monkeypatch, tmp_path, capsys):
+    from manuwright import obsidian, models
+    monkeypatch.setattr(obsidian, 'offer_connect', lambda: None)
+    monkeypatch.setattr(models, 'openrouter_prices', lambda: {})
+    monkeypatch.setattr(models, 'opencode_models', set)
+    monkeypatch.setattr(models.shutil, 'which', lambda name: f'/bin/{name}' if name in ('codex', 'agy') else None)
+    (tmp_path / 'config.toml').write_text('model = "gpt-6.1-sol"\n', encoding='utf-8')
+    monkeypatch.setenv('CODEX_HOME', str(tmp_path))
+    listing = 'Available models:\n* gemini-3.8-pro-high   Gemini 3.8 Pro\n  claude-sonnet-5-5\n'
+    monkeypatch.setattr(models, '_list_output', lambda argv, timeout=30: listing if argv == ['agy', 'models'] else '')
+    assert models.agent_models('agy')[0] == [('gemini-3.8-pro-high', 'gemini-3.8-pro-high'),
+                                            ('claude-sonnet-5-5', 'claude-sonnet-5-5')]
+    answers = iter(['', 'codex,agy', '2', '3', '0', '0', ''])  # codex: its configured model; agy: second listed
+    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    review = lifecycle.load('config.json', {})['review']
+    assert review['reviewers'] == ['codex', 'agy']
+    assert review['codex_model'] == 'gpt-6.1-sol' and review['agy_model'] == 'claude-sonnet-5-5'
+    out = capsys.readouterr().out
+    assert 'Found on this computer: Codex, Antigravity / Gemini; not found: claude, muse' in out
+    answers = iter(['', '', '1', '4', 'my-model', '0', '0', ''])  # keep agents; codex default; agy typed id
+    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    review = lifecycle.load('config.json', {})['review']
+    assert 'codex_model' not in review and review['agy_model'] == 'my-model'

@@ -6,11 +6,12 @@
 
 ### v1.9.9 (261021)
 
-`manuwright init` は使えないフォルダで Python の traceback ではなく説明を表示する。
+`manuwright init` は使えないフォルダを説明し、setup はこのコンピューターで見つかったエージェントのレビュアーを示す。
 
 - `init` はシステムフォルダ（Windows、Program Files、/usr、/System など）の中に論文を作らない。管理者 PowerShell は `C:\Windows\System32` で始まるため、そこで `manuwright init my-paper` を実行するとその中に作られるところだった。先に `cd ~\Documents` するか完全なパスを指定するよう案内する。
 - 作成できないフォルダ（アクセス拒否、存在しないドライブ）も traceback ではなく同じ案内を短く表示する。
-- マニュアル v2.6.5：2 節に自分のフォルダで `init` を実行する案内と、トラブルシューティング表の 1 行。
+- `manuwright setup` はこのコンピューターにインストールされているエージェントのレビュアーを探し、見つかったものだけを選択肢にする（ないものは not found と表示）。選んだエージェントごとに、その CLI が示す一覧から使うモデルを尋ねる：Claude Code のエイリアス（opus、sonnet、haiku）、`agy models` の一覧、`~/.codex/config.toml` の Codex 既定モデル（Codex には一覧コマンドがない）、CLI 自身の既定、または直接入力。`review.<agent>-model` に保存され、`manuwright models` も同じ一覧を表示する。
+- マニュアル v2.6.5：2 節に自分のフォルダで `init` を実行する案内とトラブルシューティング表の 1 行、setup のエージェントレビュアー検索の説明。
 
 ### v1.9.8 (261021)
 

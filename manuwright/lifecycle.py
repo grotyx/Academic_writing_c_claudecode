@@ -459,6 +459,27 @@ def main_model_step(data, ask, models):
         print('  not valid here; try again.')
 
 
+def agent_model_step(data, agent, ask, models):
+    """Which model an agent reviewer runs: the models found for that CLI, its own default, or a typed id."""
+    review = data.setdefault('review', {})
+    key = f'{agent}_model'
+    found, source = models.agent_models(agent)
+    current = review.get(key) or ''
+    options = ([('', f"{agent}'s own default model")] + found
+               + ([(current, f'{current}  (current)')] if current and current not in dict(found) else [])
+               + [('?', 'other: type a model id')])
+    label = models.AGENT_LABELS[agent].split(' (')[0]
+    choice = models.select_one(f'{label} reviewer model ({source})', options, current, ask)
+    if choice == '?':
+        choice = ask(f'  {agent} model id (as `{agent} --model` takes it; Enter keeps): ').strip() or None
+    if choice is None:
+        return
+    if choice:
+        review[key] = choice
+    else:
+        review.pop(key, None)
+
+
 def _setup_steps(data, prompt, ask, secret):
     try:
         from manuwright import models
@@ -470,6 +491,8 @@ def _setup_steps(data, prompt, ask, secret):
     current = [r.strip() for r in review.get('reviewers', [])]
     local = [r for r in current if r.split(':')[0] in models.AGENTS]
     menu = models.can_menu() and ask is input
+    found = models.installed_agents()
+    missing = [a for a in models.AGENTS if a not in found]
     if menu:
         main = data.get('main_model')
         print('Reviewers read the finished draft in the independent review step (critical review). '
@@ -480,21 +503,27 @@ def _setup_steps(data, prompt, ask, secret):
             prompt('main-model')
         elif picked:
             data['main_model'] = picked[0]
-        picked = models.pick('Agent reviewers: run on your signed-in plan, no API cost',
-                             [(a, models.AGENT_LABELS[a] + ('' if shutil.which(a) else '   - not installed'))
-                              for a in models.AGENTS],
-                             set(local))
-        if picked is not None:
-            local = picked
     else:
         main_model_step(data, ask, models)
-        SETUP_HELP['review.local'] = ('agent reviewers on your signed-in plan (subscription), comma-separated: '
-                                      'claude, codex, muse, agy (empty = none)')
-        for agent in models.AGENTS:
-            print(f"   {agent:<6} {models.AGENT_LABELS[agent]}{'' if shutil.which(agent) else '   - not installed'}")
-        answer = ask(f"{SETUP_HELP['review.local']}\n  agents [{','.join(local) or 'none'}]: ").strip()
+    print('Agent reviewers run on the plan you are signed in with (no API cost). Found on this computer: '
+          + (', '.join(models.AGENT_LABELS[a].split(' (')[0] for a in found) or 'none')
+          + (f"; not found: {', '.join(missing)} (install one, then run setup again)" if missing else '') + '.')
+    if menu and found:
+        picked = models.pick('Agent reviewers found on this computer',
+                             [(a, models.AGENT_LABELS[a]) for a in found], set(local))
+        if picked is not None:
+            local = picked + [a for a in local if a.split(':')[0] not in found]
+    elif found:
+        answer = ask(f"  agent reviewers, comma-separated ({', '.join(found)}; empty keeps, - none) "
+                     f"[{','.join(local) or 'none'}]: ").strip()
         if answer:
             local = [] if answer == '-' else [a.strip() for a in answer.split(',') if a.strip()]
+            for agent in local:
+                if agent.split(':')[0] not in found:
+                    print(f'  note: {agent} is not installed on this computer; it is kept, but its reviews will '
+                          'fail until it is.')
+    for agent in [a for a in local if a in found]:
+        agent_model_step(data, agent, ask, models)
     print('Checking the current OpenRouter and opencode model lists...')
     prices = models.openrouter_prices()
     openrouter = models.choose('OpenRouter', models.OPENROUTER_SETS, review.get('openrouter_models', [])
