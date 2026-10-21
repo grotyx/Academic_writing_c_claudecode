@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- `manuwright check` 和 `setup` 不再提示 Windows 用户“用输出的命令行安装”：自 v1.9.7 起 `manuwright update` 会自行安装。
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
 ### v1.9.9 (261021)

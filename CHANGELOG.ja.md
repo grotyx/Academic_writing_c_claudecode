@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- `manuwright check` と `setup` は Windows で「表示された行でインストール」と案内しなくなった。v1.9.7 から `manuwright update` が自分でインストールする。
 - `assets/logo.svg`、`assets/logo-dark.svg`: ロゴマークのベクター版(明るい背景用、暗い背景用)。
 
 ### v1.9.9 (261021)

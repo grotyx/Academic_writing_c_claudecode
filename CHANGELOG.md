@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- `manuwright check` and `setup` no longer tell Windows users to install with a printed line: since v1.9.7 `manuwright update` installs the release itself.
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
 ### v1.9.9 (261021)
