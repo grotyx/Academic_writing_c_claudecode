@@ -194,7 +194,7 @@ JOURNAL_INJECTION = (
     "`manuwright journal fit \"<journal>\" --query \"...\"` (it runs the author's saved reviewers; with --no-review, "
     "review review/journal/<run>/packet.md yourself as a fresh subagent using scripts/critical_prompts/journal.txt).\n"
     "3. Which journal (\"어느 저널이 좋을까\"): `manuwright journal suggest --query \"...\"` (add --mine to rank only the "
-    "journals in the author's list, `manuwright journal list`); add --review to have the "
+    "journals in the author's list, `manuwright journal list`; with no list, offer `manuwright journal list --build --preset ortho-neuro` or the author's field); add --review to have the "
     "reviewers rank the fit; then offer `journal fit` for the top choices.\n"
     "4. Report the verdict (FIT / BORDERLINE / NOT A FIT), the most important fixes and the candidates, with the "
     "counts as evidence. Never state an impact factor, acceptance rate or policy that is not in the profile."

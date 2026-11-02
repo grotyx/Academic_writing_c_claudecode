@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -146,7 +146,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright claim-strength drafts` | 引用文の表現が根拠の `Claim Strength`（speculative、observed、supported、strong）より強すぎないか検査 |
 | `manuwright search audit` | evidence.md の各項目を PubMed と再照合：タイトル・著者・年・誌名の加重一致度、DOI 不一致、撤回、懸念表明、訂正 |
 | `manuwright blind-review packet` / `check` | 回答書を伏せたまま先に判定を記録する revision 再査読（回答書の説得に引きずられない） |
-| `manuwright journal fit [ジャーナル]` / `suggest` | 投稿前：このジャーナルに合うか（同じテーマの掲載記録、語数・文献数の制限、そのジャーナルの編集者の視点でのレビュー）、または同様の研究が多く載るジャーナルの推薦 |
+| `manuwright journal fit [ジャーナル]` / `suggest` | 投稿前：このジャーナルに合うか（同じテーマの掲載記録、語数・文献数の制限、そのジャーナルの編集者の視点でのレビュー）、または同様の研究が多く載るジャーナルの推薦；`journal list --build` は自分の分野の上位 50% ジャーナル一覧を自分のコンピューターに作る |
 | `manuwright style edits <ai> <edited>` / `--apply` | AI 草稿を自分が直した方法から規則を学習；チェックした規則だけが `Style/terminology.md` に入る |
 | `manuwright library term` / `note` / `sync [--pull\|--push]` | 用語規則やメモを論文をまたいで保持；論文と個人ライブラリを同期（追加のみ） |
 | `manuwright guide [name ...]` | 規則が引用するエンジンのガイド（`docs/<name>.md`）の一覧または内容を表示 |

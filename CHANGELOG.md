@@ -4,6 +4,15 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.11 (261102)
+
+The journal list builds itself on your computer.
+
+- `manuwright journal list --build --preset ortho-neuro` searches the public SCIE ranking site once (newest year, journals in the top 50% of their category; `--top` changes it), keeps the field's journals (presets `ortho-neuro`, `ortho`, `neurosurgery`; `--category "<JCR category>"` for any field), finds each journal's NLM abbreviation in the NLM Catalog (cached), and saves the list in your library. An earlier list is kept as `list.md.bak`; `--from-html` builds from a saved result page.
+- The list is in the library, so every paper uses it, including the ones `manuwright init` makes later; `init` says whether you have one. `manuwright setup` offers to build it once (Enter skips), and `manuwright check` shows it.
+- The ranking data is fetched on each user's computer and never shipped with ManuWright.
+- Manual v2.7.1, critical review protocol v1.2.1, READMEs.
+
 ### v1.9.10 (261102)
 
 Journal fit review and journal suggestions; setup picks the reviewers itself.

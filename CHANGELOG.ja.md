@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`: ロゴマークのベクター版(明るい背景用、暗い背景用)。
 
+### v1.9.11 (261102)
+
+ジャーナル一覧を自分のコンピューターで自動作成する。
+
+- `manuwright journal list --build --preset ortho-neuro` は公開 SCIE ランキングサイトを 1 回検索し（最新年、分野上位 50%；`--top` で変更）、その分野のジャーナルだけを残し（プリセット `ortho-neuro`、`ortho`、`neurosurgery`；他分野は `--category "<JCR 分野>"`）、各ジャーナルの NLM 略称を NLM Catalog で調べて（キャッシュ）ライブラリに保存する。以前の一覧は `list.md.bak` として残し、`--from-html` は保存した結果ページから作る。
+- 一覧はライブラリにあるので、後で `manuwright init` で作る論文も含めてすべての論文が使う。`init` は一覧があるかを知らせる。`manuwright setup` が一度作成を提案し（Enter で省略）、`manuwright check` が表示する。
+- ランキングデータは各ユーザーのコンピューターで取得し、ManuWright には含めて配布しない。
+- マニュアル v2.7.1、critical review protocol v1.2.1、README。
+
 ### v1.9.10 (261102)
 
 ジャーナル適合性レビューとジャーナル推薦。setup がレビュアーを自動で選ぶ。

@@ -1,4 +1,4 @@
-# ManuWright 사용자 매뉴얼 (v2.7.0)
+# ManuWright 사용자 매뉴얼 (v2.7.1)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -353,7 +353,7 @@ manuwright journal suggest --query "..." [--review]
 - **Profile.** 저널의 aims & scope, 논문 유형, 제한(초록 단어 수, 본문 단어 수, 참고문헌 수, 표·그림 수), 요구 사항을 공식 페이지에서 옮겨 `~/.manuwright/library/journals/<저널>.md` 에 두고 모든 논문에서 다시 쓴다. 많은 출판사가 프로그램의 자동 읽기를 막으므로, 에이전트가 페이지를 직접 읽어 채우고 저자에게 보여 준 뒤 저자가 확인했을 때만 `verified_by_author: yes` 로 표시한다. 리뷰어는 저널 규정을 이 profile 에서만 가져온다.
 - **Fit.** `fit`(생략하면 `manuwright target` 으로 정한 저널)은 그 저널이 최근 5년 동안 같은 주제로 실은 논문 수와 최근 제목을 보여 주고, 원고를 profile 의 제한과 비교하며(OVER 표시), 저장해 둔 리뷰어가 그 저널 편집자 입장에서 판단한다: scope 적합성, 논문 유형, 최근 게재 논문과의 중복, 요구 사항, 편집자가 요구할 것, 판정 FIT / BORDERLINE / NOT A FIT. `--no-review` 는 리뷰어 단계 전에서 멈춘다.
 - **Suggest.** `suggest` 는 비슷한 논문이 가장 많이 실린 저널 순위(편수, 비율, 최근 연도)를 보여 주고 `profile/journals.md` 에 있는 저널을 표시한다. `--review` 를 주면 리뷰어가 적합도 순으로 매긴다. 편수는 비슷한 연구가 어디에 실리는지를 보여 줄 뿐 저널 순위가 아니며, Impact Factor 는 쓰지 않는다.
-- **내 저널 목록.** `manuwright journal list --import <파일>` 은 내가 정한 저널 목록(그룹, 분야, 분야 내 백분위)을 `~/.manuwright/library/journals/list.md` 에 이 컴퓨터에만 둔다. 그러면 `suggest --mine` 이 목록의 모든 저널에서 같은 주제 논문 수를 세어 그 저널들만 순위를 매기고, `fit` 과 `suggest` 가 그 저널이 목록에서 어디인지 보여 준다("Spine: top 9.88% Orthopedics"). `manuwright journal list` 로 목록을 본다.
+- **내 저널 목록.** `manuwright journal list --build --preset ortho-neuro` 가 이 컴퓨터에서 목록을 만든다(v1.9.11). 공개 SCIE 순위 사이트(compbio.sookmyung.ac.kr/~journal)를 최신 연도로 한 번 검색해 분야 상위 50%(`--top`) 저널 중 그 분야 저널(프리셋 `ortho-neuro`, `ortho`, `neurosurgery`, 다른 분야는 `--category "<JCR 분야>"`)을 고르고, 저널마다 NLM 약어를 NLM Catalog 에서 찾는다. 1분 정도 걸리고, 전에 만든 목록은 `list.md.bak` 으로 남기며, `manuwright setup` 이 한 번 제안한다. 목록은 라이브러리에 있어서 모든 논문이 쓴다(나중에 `manuwright init` 으로 만든 논문도). 직접 만든 목록은 `manuwright journal list --import <파일>` 로 넣는다. 그 목록(그룹, 분야, 분야 내 백분위)을 `~/.manuwright/library/journals/list.md` 에 이 컴퓨터에만 둔다. 그러면 `suggest --mine` 이 목록의 모든 저널에서 같은 주제 논문 수를 세어 그 저널들만 순위를 매기고, `fit` 과 `suggest` 가 그 저널이 목록에서 어디인지 보여 준다("Spine: top 9.88% Orthopedics"). `manuwright journal list` 로 목록을 본다.
 - 결과는 `review/journal/<run>/` 에 남는다(보고서, packet, 리뷰어별 파일). PubMed 에는 검색어만 가고, 원고는 저자가 고른 리뷰어에게만 간다. critical review 처럼 참고용이다.
 
 ## 10. 제출

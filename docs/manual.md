@@ -1,4 +1,4 @@
-# ManuWright user manual (v2.7.0)
+# ManuWright user manual (v2.7.1)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -345,7 +345,7 @@ manuwright journal suggest --query "..." [--review]
 - **Profile.** A journal's aims and scope, article types, limits (abstract words, main-text words, references, tables and figures) and requirements, copied from its official pages, are kept in `~/.manuwright/library/journals/<journal>.md` and reused for every paper. Many publishers block automated reads, so your agent reads the page and fills the profile, shows it to you, and marks it `verified_by_author: yes` only when you confirm. Reviewers use only the profile for journal policies.
 - **Fit.** `fit` (default: the journal set with `manuwright target`) counts what the journal published on this topic in the last 5 years and lists the recent titles, compares the manuscript with the profile's limits (OVER is flagged), then your saved reviewers judge it as that journal's editor: scope fit, article type, overlap with its recent papers, requirements, what the editor would ask for, and a verdict FIT / BORDERLINE / NOT A FIT. `--no-review` stops before the reviewers.
 - **Suggest.** `suggest` ranks the journals that published the most similar papers (counts, share, latest year) and marks the ones in your `profile/journals.md`; `--review` asks the reviewers to rank the fit. Counts show where similar work appears, not a journal's rank; impact factors are not used.
-- **Your journal list.** `manuwright journal list --import <file>` keeps your own list of journals (group, category, category percentile) in `~/.manuwright/library/journals/list.md`, on this computer only. `suggest --mine` then counts the topic in every journal of that list and ranks only those; `fit` and `suggest` show where a journal sits in it ("Spine: top 9.88% Orthopedics"). `manuwright journal list` prints it.
+- **Your journal list.** `manuwright journal list --build --preset ortho-neuro` builds it on this computer (v1.9.11): one search of the public SCIE ranking site (compbio.sookmyung.ac.kr/~journal) for the newest year, the journals in the top 50% of their category (`--top`), the field's categories (presets `ortho-neuro`, `ortho`, `neurosurgery`, or `--category "<JCR category>"` for any field), and each journal's NLM abbreviation from the NLM Catalog. It takes about a minute, keeps an earlier list as `list.md.bak`, and `manuwright setup` offers it once. The list lives in your library, so every paper uses it, the ones `manuwright init` creates later included. `manuwright journal list --import <file>` keeps a list you made yourself (group, category, category percentile) in `~/.manuwright/library/journals/list.md`, on this computer only. `suggest --mine` then counts the topic in every journal of that list and ranks only those; `fit` and `suggest` show where a journal sits in it ("Spine: top 9.88% Orthopedics"). `manuwright journal list` prints it.
 - Results go to `review/journal/<run>/` (report, packet, one file per reviewer). Only the search terms go to PubMed; the manuscript goes only to your chosen reviewers. The check is advisory, like the critical review.
 
 ## 10. Submission

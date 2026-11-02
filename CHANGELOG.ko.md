@@ -4,6 +4,15 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.11 (261102)
+
+저널 목록을 내 컴퓨터에서 알아서 만든다.
+
+- `manuwright journal list --build --preset ortho-neuro` 는 공개 SCIE 순위 사이트를 한 번 검색해(최신 연도, 분야 상위 50%; `--top` 으로 바꿈) 그 분야 저널만 남기고(프리셋 `ortho-neuro`, `ortho`, `neurosurgery`; 다른 분야는 `--category "<JCR 분야>"`), 저널마다 NLM 약어를 NLM Catalog 에서 찾아(캐시) 라이브러리에 저장한다. 전에 만든 목록은 `list.md.bak` 으로 남기고, `--from-html` 은 저장해 둔 결과 페이지로 만든다.
+- 목록은 라이브러리에 있어서 모든 논문이 쓰고, 나중에 `manuwright init` 으로 만든 논문도 마찬가지다. `init` 이 목록이 있는지 알려 준다. `manuwright setup` 이 한 번 만들기를 제안하고(Enter 는 건너뜀), `manuwright check` 가 보여 준다.
+- 순위 데이터는 사용자마다 자기 컴퓨터에서 받아 오고, ManuWright 에 담아 배포하지 않는다.
+- 매뉴얼 v2.7.1, critical review protocol v1.2.1, README.
+
 ### v1.9.10 (261102)
 
 저널 적합성 리뷰와 저널 추천. setup 이 리뷰어를 알아서 고른다.
