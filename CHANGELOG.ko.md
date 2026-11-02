@@ -1,5 +1,14 @@
 # 변경 이력
 
+### v1.10.1 (261103)
+
+결과에서 그리는 그림. Codex(gpt-6.1-sol)와 설계·검토했다.
+
+- `manuwright figure SPEC.json` 이 결과 CSV 하나에서 forest plot, 막대그래프, 선그래프를 `"figure_style"` 의 크기·해상도·글꼴(기본 85/174 mm, 600 dpi, Arial 8 pt)로 TIFF(LZW)·PNG·PDF·EPS 로 그린다. CSV 값만 그리고, 주석은 CSV 열을 적힌 그대로 표시한다. 출처 기록 파일에 spec·CSV·이미지 해시와 그린 행이 남는다.
+- `verify` 가 등록된 그림을 검사한다: CSV·spec·그림 스타일·이미지가 바뀌면 실패. 결과에서 그리지 않은 그림은 revision·submission 에서 `"figures_unbound"` 에 이유가 필요하다. `manuwright figure --check` 는 matplotlib 없이 된다.
+- 그림 폴더의 spec·출처 기록 파일은 더 이상 교차참조 목록에서 그림으로 세지 않는다.
+- 매뉴얼 v2.9.0, harness 가이드 v1.5.0, README.
+
 ### v1.10.0 (261102)
 
 실제 논문을 쓰는 임상의가 손으로 하던 네 가지. Codex(gpt-6.1-sol)와 설계·검토했고, v1.9.4~v1.9.11 리뷰 수정도 포함.

@@ -1,5 +1,14 @@
 # 変更履歴
 
+### v1.10.1 (261103)
+
+結果から描く図。Codex (gpt-6.1-sol) と設計・レビューした。
+
+- `manuwright figure SPEC.json` は結果 CSV 一つから forest plot・棒グラフ・折れ線グラフを `"figure_style"` のサイズ・解像度・フォント(既定 85/174 mm、600 dpi、Arial 8 pt)で TIFF (LZW)・PNG・PDF・EPS に描く。CSV の値だけを描き、注記は CSV の列を書かれたとおりに表示する。出所記録ファイルに spec・CSV・画像のハッシュと描いた行が残る。
+- `verify` が登録された図を検査する: CSV・spec・図スタイル・画像が変わると失敗。結果から描いていない図は revision・submission で `"figures_unbound"` に理由が必要。`manuwright figure --check` は matplotlib なしで動く。
+- 図フォルダの spec・出所記録ファイルは相互参照の一覧で図として数えない。
+- マニュアル v2.9.0、harness ガイド v1.5.0、README。
+
 ### v1.10.0 (261102)
 
 実際の論文を書く臨床医が手作業で行っていた四つの作業。Codex(gpt-6.1-sol)と設計・レビューし、v1.9.4〜v1.9.11 のレビュー修正も含む。

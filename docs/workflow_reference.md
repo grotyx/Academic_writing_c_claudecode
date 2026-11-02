@@ -226,7 +226,7 @@ project/
 | `Generate analysis scripts` | Create Python scripts in data/py/ |
 | `Run analysis` | Execute Python scripts, export to results/ |
 | `Generate tables` | Create drafts/table_*.md from results CSV |
-| `Generate figures` | Create figures in drafts/figures/ |
+| `Generate figures` | Create figures in drafts/figures/ (`manuwright figure SPEC.json` draws forest/bar/line charts from a results CSV with provenance; others need a `figures_unbound` reason) |
 | `Summarize statistics` | Overview of all statistical results |
 
 ### Draft Plan

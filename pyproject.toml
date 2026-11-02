@@ -12,6 +12,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["python-docx>=1.1.0", "requests>=2.31.0", "pypdf>=4.0"]
 
+[project.optional-dependencies]
+figures = ["matplotlib>=3.7"]
+
 [project.scripts]
 manuwright = "manuwright.cli:main"
 

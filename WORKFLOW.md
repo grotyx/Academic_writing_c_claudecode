@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.10.0)
+# Academic Paper Writing Project (v1.10.1)
 
-## Shared Engine (v1.10.0)
+## Shared Engine (v1.10.1)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -317,7 +317,7 @@ Phase 2: Statistical Analysis — Opus 권장 (analysis_plan)
 ├── Run analysis → export results to results/
 │   └── table1_demographics.csv, table2_outcomes.csv, etc.
 ├── Generate drafts/table_*.md from results CSV
-└── Generate figures → drafts/figures/
+└── Generate figures → drafts/figures/ (`manuwright figure SPEC.json`: forest/bar/line from results CSV, provenance checked by verify)
 
 Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 ├── Step 0: Socratic 브레인스토밍 — 항목을 채우기 전 사용자에게 한 번에 하나씩 질문해 의도(key message) 정제 (draft_plan_template.md 상단; /paper-debate와 별개, R0 준비자료로 활용)

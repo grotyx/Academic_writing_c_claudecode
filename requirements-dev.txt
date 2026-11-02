@@ -1,2 +1,3 @@
 -r requirements.txt
 pytest>=8.0
+matplotlib>=3.7  # manuwright figure (optional at runtime; tests draw each format)

@@ -1,5 +1,14 @@
 # Changelog
 
+### v1.10.1 (261103)
+
+Figures drawn from the results, designed and reviewed with Codex (gpt-6.1-sol).
+
+- `manuwright figure SPEC.json` draws a forest plot, bar chart or line chart from one results CSV, at the size, resolution and font in `"figure_style"` (defaults 85/174 mm, 600 dpi, Arial 8 pt), as TIFF (LZW), PNG, PDF or EPS. Only CSV values are plotted; annotations print a CSV column as written. A provenance file records the spec, CSV and image hashes and the plotted rows.
+- `verify` checks listed figures: a changed CSV, spec, figure style or image fails; a figure not drawn from results needs a reason in `"figures_unbound"` for revision and submission. `manuwright figure --check` needs no matplotlib.
+- Specs and provenance files in a figures folder no longer count as figures in the cross-reference inventory.
+- Manual v2.9.0, harness guide v1.5.0, READMEs.
+
 ### v1.10.0 (261102)
 
 Four things a clinician writing a real paper used to do by hand, designed and reviewed with Codex (gpt-6.1-sol), plus the fixes from the review of v1.9.4-v1.9.11.

@@ -43,7 +43,7 @@ Step 4: Execute Analysis
 
 Step 5: Output Generation
 ├── Run "Generate tables"
-├── Run "Generate figures" (if needed)
+├── Run "Generate figures" (if needed; forest/bar/line: `manuwright figure SPEC.json`, docs/harness_guide.md)
 └── Creates drafts/
     ├── table_1.md, table_2.md, ...
     └── figures/fig_*.png (초안), fig_*.tiff (제출용)

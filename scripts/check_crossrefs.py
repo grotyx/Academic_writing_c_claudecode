@@ -51,6 +51,7 @@ RANGE_RE = re.compile(r"(\d+)\s*[-–]\s*(\d+)")
 TABLE_FILE_RE = re.compile(r"table[_\- ]?(\d+)", re.IGNORECASE)
 TABLE_TITLE_RE = re.compile(r"(?im)^#+\s*Table\s+(\d+)\b")
 LEGEND_ENTRY_RE = re.compile(r"(?im)^\s*(?:[-*>]\s*)?(?:\*{1,2}|#+\s*)?\s*Fig(?:ure)?\.?\s+(\d+)\b")
+IMAGE_SUFFIXES = {".tif", ".tiff", ".png", ".jpg", ".jpeg", ".pdf", ".eps", ".svg", ".gif", ".bmp", ".emf", ".wmf"}
 FIGURE_FILE_RE = re.compile(r"fig(?:ure)?[_\- ]?(\d+)", re.IGNORECASE)
 
 
@@ -123,6 +124,8 @@ def collect_figure_inventory(legends: Path | None, figures_dir: Path | None) -> 
         numbers.update(int(n) for n in LEGEND_ENTRY_RE.findall(text))
     if figures_dir is not None and figures_dir.is_dir():
         for path in figures_dir.iterdir():
+            if path.suffix.lower() not in IMAGE_SUFFIXES:
+                continue  # figure_2.json (spec) or figure_2.tiff.provenance.json is not Figure 2
             match = FIGURE_FILE_RE.search(path.stem)
             if match:
                 numbers.add(int(match.group(1)))

@@ -1,5 +1,14 @@
 # 变更记录
 
+### v1.10.1 (261103)
+
+从结果绘制的图，与 Codex (gpt-6.1-sol) 共同设计和审查。
+
+- `manuwright figure SPEC.json` 从一个结果 CSV 绘制森林图、柱状图或折线图，按 `"figure_style"` 的尺寸、分辨率和字体（默认 85/174 mm、600 dpi、Arial 8 pt）输出 TIFF (LZW)、PNG、PDF 或 EPS。只绘制 CSV 中的值；注释按原样显示 CSV 的一列。来源记录文件保存 spec、CSV、图像哈希和所绘制的行。
+- `verify` 检查已登记的图：CSV、spec、图样式或图像改变即失败；非由结果绘制的图在 revision 和 submission 中需要在 `"figures_unbound"` 写明理由。`manuwright figure --check` 不需要 matplotlib。
+- 图文件夹中的 spec 和来源记录文件不再在交叉引用清单中计为图。
+- 手册 v2.9.0、harness 指南 v1.5.0、README。
+
 ### v1.10.0 (261102)
 
 撰写真实论文的临床医生过去需手工完成的四件事,与 Codex(gpt-6.1-sol)共同设计和审查,并包含对 v1.9.4–v1.9.11 审查的修复。

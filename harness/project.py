@@ -60,6 +60,12 @@ def load_project(path):
             for e in allow):
         raise ValueError('numeric_allow entries need "text" (with a number), a nonempty "reason" and, if given, '
                          'an "artifact" listed in artifacts, tables or supplements')
+    unbound = config.get('figures_unbound', {})  # figures not drawn from results (flow diagram, photo), with a reason
+    figures = {inside(path.parent, item) for item in config.get('figures', [])}
+    if not isinstance(unbound, dict) or any(
+            not isinstance(reason, str) or not reason.strip() or inside(path.parent, name) not in figures
+            for name, reason in unbound.items()):
+        raise ValueError('figures_unbound maps a figure listed in "figures" to a nonempty reason')
     number_of = re.compile(r'table[_\- ]?(\d+)', re.I)
     seen = {}
     for item in config.get('tables', []):
@@ -109,6 +115,8 @@ def snapshot(path, config):
             receipt = inside(root, config[key]).with_suffix('.approval.json')
             if receipt.exists():
                 files.add(receipt)
+    # figures drawn by `manuwright figure`: their provenance and the spec/CSV it names
+    files.update(checker('make_figure').dependencies(root, config.get('figures', [])))
     if config.get('results'):
         directory = inside(root, config['results'])
         if not directory.is_dir():
@@ -377,6 +385,33 @@ def verify(path, profile='draft'):
                 return f'{kind} first appearances are out of order'
         return True
     run('crossrefs', crossrefs)
+    def figures():
+        drawn = checker('make_figure')
+        notes, failed, blocked = [], [], []
+        exempt = {str(inside(root, k)): v for k, v in config.get('figures_unbound', {}).items()}
+        for value in config.get('figures', []):
+            state, detail = drawn.check(root, config, inside(root, value))
+            if state == 'fail':
+                failed.append(detail)
+            elif state == 'ok':
+                notes.append(detail)
+            elif str(inside(root, value)) in exempt:
+                notes.append(f'{value} not drawn from results: {exempt[str(inside(root, value))]}')
+            elif profile == 'draft':
+                notes.append(f'{value} unbound (not drawn from results)')
+            else:
+                blocked.append(value)
+        if failed:
+            record('figures', 'FAIL', ' | '.join(failed))
+        elif blocked:
+            record('figures', 'BLOCKED', 'no provenance and no "figures_unbound" reason: ' + ', '.join(blocked)
+                   + ' (draw it with manuwright figure, or give the reason)')
+        else:
+            record('figures', 'PASS' if config.get('figures') else 'NOT_APPLICABLE', '; '.join(notes))
+    try:
+        figures()
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        record('figures', 'BLOCKED', str(exc))
     refs = checker('format_references')
     def bibliography():
         result = refs.build(artifacts, evidence_path=inside(root, config['evidence']), style='numbered',
