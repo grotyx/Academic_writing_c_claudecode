@@ -4,6 +4,16 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.11 (261102)
+
+The journal list builds itself on your computer.
+
+- `manuwright journal list --build` searches the public SCIE ranking site once (newest year) and finds your field itself: it reads the PMIDs in your papers' `evidence.md` and their target journals, takes the main JCR categories of those journals and, for a broad category (Surgery, Clinical Neurology), keeps only titles with the words your journals share. It keeps the top 50% of each category and looks up each NLM abbreviation in the NLM Catalog (cached).
+- Or set it yourself: `--preset ortho-neuro|ortho|neurosurgery`; `--category "SURGERY:neurosurg,spine"` (any category, optional title words); `--exclude`, `--group "Spine=spine,spinal"`, `--top 25`; `--categories neuro` lists category names; `--add`/`--remove` change one journal. The settings are saved in the list, so the next `--build` repeats them; the earlier list stays as `list.md.bak`; `--from-html` uses a saved result page.
+- The list is in the library, so every paper uses it, including the ones `manuwright init` makes later; `init` says whether you have one. `manuwright setup` offers to build it once (Enter detects your field, `-` skips), and `manuwright check` shows it.
+- The ranking data is fetched on each user's computer and never shipped with ManuWright.
+- Manual v2.7.1, critical review protocol v1.2.1, READMEs.
+
 ### v1.9.10 (261102)
 
 Journal fit review and journal suggestions; setup picks the reviewers itself.

@@ -4,6 +4,16 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
+### v1.9.11 (261102)
+
+期刊列表在你自己的电脑上自动生成。
+
+- `manuwright journal list --build` 查询一次公开的 SCIE 排名网站（最新年份），并自动识别你的领域：读取你各篇论文 `evidence.md` 中的 PMID 和目标期刊，选取这些期刊的主要 JCR 学科；对于宽泛的学科（Surgery、Clinical Neurology），只保留标题含有你的期刊共同词语的期刊。每个学科保留前 50%，并在 NLM Catalog 中查找每本期刊的 NLM 缩写（有缓存）。
+- 也可以自己设置：`--preset ortho-neuro|ortho|neurosurgery`；`--category "SURGERY:neurosurg,spine"`（任意学科，标题词可选）；`--exclude`、`--group "Spine=spine,spinal"`、`--top 25`；`--categories neuro` 列出学科名称，`--add`/`--remove` 修改单本期刊。设置保存在列表中，下次 `--build` 会沿用；之前的列表保留为 `list.md.bak`；`--from-html` 可从保存的结果页生成。
+- 列表位于个人库中，因此所有论文都会使用，包括之后用 `manuwright init` 创建的论文；`init` 会提示是否已有列表。`manuwright setup` 会提议生成一次（回车自动识别领域，`-` 跳过），`manuwright check` 会显示它。
+- 排名数据在每位用户自己的电脑上获取，不随 ManuWright 分发。
+- 手册 v2.7.1、critical review protocol v1.2.1、README。
+
 ### v1.9.10 (261102)
 
 期刊适合性评审与期刊推荐；setup 自动选择审稿人。

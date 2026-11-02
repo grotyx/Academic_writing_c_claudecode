@@ -1,4 +1,4 @@
-# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.2.0)
+# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.2.1)
 
 > 완성된 원고/response를 여러 리뷰어가 적대적으로 공격해 허점을 발굴하는 절차의 단일 기준. `/critical-review` command와 `qc_guide.md`는 이 문서를 참조한다. QC Round 6 Critical Review의 외부 멀티모델 강화판.
 > 공개 운영 기준은 이 문서가 원본입니다. 내부 설계 노트 경로는 런타임 의존성으로 두지 않습니다.
@@ -71,7 +71,7 @@
 - **근거 3가지:** ① 저널 profile(`~/.manuwright/library/journals/<slug>.md`, 공식 Aims & Scope·Guide for Authors 에서 저자가 옮기고 확인 — `verified_by_author`) ② PubMed 기록(최근 N년 같은 주제 게재 수, 전체 대비 비율, 최근 제목) ③ 제한 비교표(초록·본문 단어, 참고문헌, 표+그림 vs profile Limits, OVER 표시).
 - **프롬프트:** `scripts/critical_prompts/journal.txt` — MODE fit: scope 인용 → 논문 유형·설계 → 그 저널 최근 논문과의 중복 → 요구 사항 → 편집자 요구 → FIT / BORDERLINE / NOT A FIT. MODE suggest: 후보 순위와 저널별 위험.
 - **실행:** `manuwright journal fit [journal] --query ...` 가 packet 을 만들고 저장된 리뷰어(`review.reviewers`)를 `--role journal` 로 돌린다. 리뷰어가 없거나 `--no-review` 면 packet 을 새 서브에이전트가 검토. `journal suggest` 는 PubMed esummary 로 비슷한 논문의 저널을 세어 순위를 만들고 `profile/journals.md` 를 표시, `--review` 로 적합도 순위.
-- **저자 목록:** `journal list --import` 로 저자가 정한 저널 목록(그룹·분야·백분위)을 library 에 둔다(이 컴퓨터에만, 저장소에 넣지 않음). `suggest --mine` 은 목록 저널마다 주제 논문 수를 직접 세어 순위, `fit`/`suggest` 는 목록 위치를 표시.
+- **저자 목록:** `journal list --build` 가 사용자 논문들의 evidence.md PMID·투고 대상 저널로 분야(JCR 분야, 넓은 분야는 공통 제목 단어로 좁힘)를 찾거나, `--preset ortho-neuro|ortho|neurosurgery`·`--category "CAT:단어"`·`--exclude`·`--group`·`--top` 설정대로(목록에 저장, 다음 build 가 재사용; `--add`/`--remove`) 사용자 컴퓨터에서 공개 SCIE 순위 검색(최신 연도, 분야 상위 50%)과 NLM Catalog 약어 조회로 목록을 만든다(데이터는 배포하지 않음). 또는 `journal list --import` 로 저자가 정한 저널 목록(그룹·분야·백분위)을 library 에 둔다(이 컴퓨터에만, 저장소에 넣지 않음). `suggest --mine` 은 목록 저널마다 주제 논문 수를 직접 세어 순위, `fit`/`suggest` 는 목록 위치를 표시.
 - **규칙:** profile 에 없는 규정·Impact Factor·채택률은 만들지 않는다. PubMed 에는 검색어만, 원고는 고른 리뷰어에게만. advisory — 게이트를 대체하지 않는다.
 
 ## v1.7.0 provider execution

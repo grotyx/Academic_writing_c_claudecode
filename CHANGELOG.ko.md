@@ -4,6 +4,16 @@
 
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
+### v1.9.11 (261102)
+
+저널 목록을 내 컴퓨터에서 알아서 만든다.
+
+- `manuwright journal list --build` 는 공개 SCIE 순위 사이트를 한 번 검색하고(최신 연도) 분야를 알아서 찾는다: 내 논문들의 `evidence.md` PMID 와 투고 대상 저널을 읽어 그 저널들의 주요 JCR 분야를 고르고, 넓은 분야(Surgery, Clinical Neurology)는 내 저널들 제목에 공통인 단어가 든 저널만 남긴다. 분야마다 상위 50% 를 남기고 저널마다 NLM 약어를 NLM Catalog 에서 찾는다(캐시).
+- 직접 정할 수도 있다: `--preset ortho-neuro|ortho|neurosurgery`; `--category "SURGERY:neurosurg,spine"`(아무 분야, 제목 단어 선택); `--exclude`, `--group "Spine=spine,spinal"`, `--top 25`; `--categories neuro` 는 분야 이름을 보여 주고, `--add`/`--remove` 는 저널 하나를 고친다. 설정은 목록에 저장되어 다음 `--build` 도 같은 설정으로 만들고, 전 목록은 `list.md.bak` 으로 남는다. `--from-html` 은 저장해 둔 결과 페이지로 만든다.
+- 목록은 라이브러리에 있어서 모든 논문이 쓰고, 나중에 `manuwright init` 으로 만든 논문도 마찬가지다. `init` 이 목록이 있는지 알려 준다. `manuwright setup` 이 한 번 만들기를 제안하고(Enter 는 분야 자동 감지, `-` 는 건너뜀), `manuwright check` 가 보여 준다.
+- 순위 데이터는 사용자마다 자기 컴퓨터에서 받아 오고, ManuWright 에 담아 배포하지 않는다.
+- 매뉴얼 v2.7.1, critical review protocol v1.2.1, README.
+
 ### v1.9.10 (261102)
 
 저널 적합성 리뷰와 저널 추천. setup 이 리뷰어를 알아서 고른다.

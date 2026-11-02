@@ -578,6 +578,46 @@ def _setup_steps(data, prompt, ask, secret, custom=False):
     return _setup_rest(data, prompt, ask)
 
 
+def journal_tool():
+    """scripts/journal_fit.py of this engine (installed wheel or checkout)."""
+    here = Path(__file__).resolve().parent
+    scripts = here / 'scripts' if (here / 'scripts').is_dir() else here.parent / 'scripts'
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    spec = importlib.util.spec_from_file_location('journal_fit', scripts / 'journal_fit.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def journal_list_step(ask):
+    """Offer to build the journal list (`journal suggest --mine`) once; Enter skips."""
+    try:
+        tool = journal_tool()
+        if tool.list_path().is_file():
+            return
+    except Exception:
+        return
+    print('\n3. Journal list (optional): the journals of your field in the top half of their category, for '
+          '`manuwright journal suggest --mine`. Built on this computer from the SCIE ranking table (about a minute).')
+    answer = ask(f"  field: Enter = detect from your papers' references; or {', '.join(tool.PRESETS)}; or JCR "
+                 "categories separated by ';' (`manuwright journal list --categories`); - skips: ").strip()
+    if answer == '-':
+        print('  skipped; later: manuwright journal list --build')
+        return
+    if not answer:
+        settings = {'auto': True}
+    elif answer in tool.PRESETS:
+        settings = {**tool.PRESETS[answer], 'label': answer}
+    else:
+        settings = {'rules': [c.strip() for c in answer.split(';') if c.strip()]}
+    try:
+        count, message = tool.journal_list.build(settings, target_ta=tool.STYLE_TA)
+    except (OSError, ValueError) as exc:
+        count, message = 0, f'could not reach the ranking site ({exc}); later: manuwright journal list --build'
+    print('  ' + message)
+
+
 def _setup_rest(data, prompt, ask):
     print('\n2. Updates')
     if 'auto_update' in data:
@@ -592,7 +632,8 @@ def _setup_rest(data, prompt, ask):
             print('  not valid here; try again.')
     save('config.json', data)
     print(f'\nSaved to {home() / "config.json"}.')
-    print('\n3. Obsidian reference library (optional, recommended)')
+    journal_list_step(ask)
+    print('\n4. Obsidian reference library (optional, recommended)')
     print('Word style and reference format belong to each paper: run `manuwright target` inside a paper folder.')
     try:
         from manuwright import obsidian
@@ -1000,6 +1041,13 @@ def _create_paper(engine, root):
     register(root / 'project.json')
     print('\nSet the target journal and this paper\'s Word style any time: cd into the folder and run '
           '`manuwright target`.')
+    try:
+        listed = journal_tool().my_list()
+        print(f'Your journal list ({len(listed)} journals) applies to this paper: `manuwright journal suggest --mine`.'
+              if listed else 'No journal list yet (optional, once for all papers): '
+              '`manuwright journal list --build` (detects your field from your references).')
+    except Exception:
+        pass
     print(f'\nNext: fill drafts/draft_plan.md and data/analysis_plan.md, get approval, then edit '
           f'project.json artifacts. `manuwright verify --project {root / "project.json"}` reports what is missing.')
     return 0
@@ -1261,6 +1309,13 @@ def check(engine, args):
     rows.append((True if sync_mode != 'off' else None, 'Library sync',
                  f'{sync_mode}: {learned} wording-rule row(s), {notes} note(s), team profile '
                  f"{'yes' if (library / 'profile' / 'authors.md').is_file() else 'no'} ({library})", None))
+    try:
+        listed = journal_tool().my_list()
+    except Exception:
+        listed = None
+    if listed is not None:
+        rows.append((None, 'Journal list', f'{len(listed)} journals (journal suggest --mine)' if listed else
+                     'none yet (optional): manuwright journal list --build (detects your field)', None))
     stale = stale_papers(engine)
     rows.append((not stale, 'Paper agent rules', 'all registered papers current' if not stale else
                  f'{len(stale)} out of date: ' + ', '.join(str(p) for p in stale),

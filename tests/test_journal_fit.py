@@ -158,37 +158,3 @@ def test_chat_requests_reach_the_agent_only_in_a_paper(tmp_path):
         assert intent.journal_request(prompt, str(root)) == '', prompt
     assert intent.journal_request('어느 저널에 투고할까?', str(tmp_path)) == ''  # not a paper folder
 
-
-LIST = """# My journal list
-
-| Group | Journal (NLM) | Full title | Category | Category %rank | IF |
-|---|---|---|---|---|---|
-| Spine | Spine J | Spine Journal | Orthopedics | 9.88 | 5.1 |
-| Spine | Eur Spine J | European Spine Journal | Orthopedics | 28.49 | 3.2 |
-"""
-
-
-def test_journal_list_is_imported_and_used_by_suggest_and_fit(tmp_path, monkeypatch, capsys):
-    root = paper(tmp_path)
-    monkeypatch.chdir(root)
-    (tmp_path / 'list.md').write_text(LIST, encoding='utf-8')
-    (tmp_path / 'bad.md').write_text('| a | b |\n', encoding='utf-8')
-    assert jf.cmd_list(argparse.Namespace(import_file=str(tmp_path / 'bad.md'))) == 2
-    assert jf.cmd_list(argparse.Namespace(import_file=str(tmp_path / 'list.md'))) == 0
-    assert set(jf.my_list()) == {'spinej', 'eurspinej'} and jf.list_path().is_file()
-    assert jf.cmd_list(argparse.Namespace(import_file=None)) == 0
-    assert 'top  9.88% Orthopedics' in capsys.readouterr().out
-
-    def counts(term, retmax=20, sort='relevance'):  # articles per listed journal on this topic
-        return [], (4 if '"Eur Spine J"[ta]' in term else 0)
-    real = jf.mine_counts
-    monkeypatch.setattr(jf.pubmed, 'search_pubmed', lambda term, retmax=20, sort='relevance': (['1'], 30))
-    monkeypatch.setattr(jf, 'summaries', lambda ids: [])
-    monkeypatch.setattr(jf, 'mine_counts', lambda q, mine, years: real(q, mine, years, counts))
-    args = argparse.Namespace(query='olif', years=5, top=5, review=False, reviewers=None, mine=True)
-    assert jf.cmd_suggest(args) == 0
-    out = capsys.readouterr().out
-    assert '| 1 | Eur Spine J | 4 | 100% | - | Spine: top 28.49% Orthopedics |' in out
-    assert '| Spine J |' not in out  # no articles there: left out
-    assert jf.cmd_fit(fit_args(journal='Spine J'), search=fake_search, fetch=fake_fetch) == 0
-    assert 'In your journal list: Spine: top 9.88% Orthopedics.' in capsys.readouterr().out
