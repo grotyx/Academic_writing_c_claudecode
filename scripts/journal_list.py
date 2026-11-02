@@ -20,6 +20,7 @@ next `--build` (a new ranking year) repeats them.
 from __future__ import annotations
 
 import difflib
+import hashlib
 import html
 import json
 import re
@@ -202,7 +203,8 @@ def site_rows(page: str) -> list[dict]:
 def fetch_site(source: str) -> str:
     """The whole ranking table for the newest year (filtered here, so one download serves every field).
     Kept for a day in the library, so --categories and a rebuild do not download it again."""
-    cache = library_journals() / 'ranking_cache.html'
+    tag = hashlib.sha256(source.encode()).hexdigest()[:8]
+    cache = library_journals() / f'ranking_cache_{tag}.html'  # one per ranking page
     if cache.is_file() and time.time() - cache.stat().st_mtime < 86400:
         return cache.read_text(encoding='utf-8')
     agent = {'User-Agent': 'Mozilla/5.0 (ManuWright journal list; one download per build)'}
@@ -250,11 +252,14 @@ def select(rows: list[dict], settings: dict) -> list[dict]:
         if any(w in title for w in exclude):
             continue
         for category, words in rules:
-            rank = row['cats'].get(category)
-            if rank is None or float(rank) > top or (words and not any(w in title for w in words)):
+            try:
+                rank = float(row['cats'][category])
+            except (KeyError, ValueError):
+                continue
+            if rank > top or (words and not any(w in title for w in words)):
                 continue
             group = next((name for name, kws in groups if any(w in title for w in kws)), category.title())
-            picked.append({**row, 'group': group, 'category': category, 'rank': float(rank)})
+            picked.append({**row, 'group': group, 'category': category, 'rank': rank})
             break
     return picked
 
@@ -277,6 +282,7 @@ def your_journals(root: Path | None, target_ta: dict) -> Counter:
     for folder in paper_folders(root):
         try:
             text = (folder / 'knowledge' / 'evidence.md').read_text(encoding='utf-8')
+            text = re.sub(r'<!--.*?-->', '', text, flags=re.S)  # the starter's example entry is a comment
             pmids += re.findall(r'\*\*PMID:\*\*\s*(\d+)', text)
         except OSError:
             pass
@@ -349,7 +355,7 @@ def list_text(picked: list[dict], settings: dict, label: str) -> str:
              f'- built: {datetime.now().date().isoformat()}; Category %rank = position in that category '
              '(lower is better; 10 = top 10%)',
              '- kept on this computer only (personal reference); edit freely: add, delete or regroup rows',
-             f'- settings: {json.dumps(settings, ensure_ascii=False)}', '', LIST_HEADER, '|---|---|---|---|---|---|']
+             f"- settings: {json.dumps({**settings, 'label': label}, ensure_ascii=False)}", '', LIST_HEADER, '|---|---|---|---|---|---|']
     order = [parse_group(g)[0] for g in settings.get('groups', [])]
     for row in sorted(picked, key=lambda r: (order.index(r['group']) if r['group'] in order else len(order),
                                               r['group'], r['rank'])):
@@ -424,12 +430,15 @@ def settings_from(args) -> dict:
         rules = PRESETS[args.preset]['rules'] + rules
         groups = groups or PRESETS[args.preset]['groups']
         label = args.preset
-    settings = {'rules': rules, 'groups': groups, 'exclude': [w for w in args.exclude.split(',') if w.strip()]
-                if args.exclude else [], 'top': args.top, 'source': args.source}
+    exclude = [w.strip() for w in args.exclude.split(',') if w.strip()] if args.exclude else []
+    settings = {'rules': rules, 'groups': groups, 'exclude': exclude, 'top': args.top, 'source': args.source}
     if args.auto or not (rules or args.preset):
         saved = saved_settings()
-        if saved and not args.auto and not (args.exclude or args.group or args.top_given):
-            return {**saved, 'source': args.source}
+        if saved.get('rules') and not args.auto:  # the saved field, with any option given now
+            changes = {'groups': groups} if groups else {}
+            changes.update({'exclude': exclude} if args.exclude else {})
+            changes.update({'top': args.top} if args.top_given else {})
+            return {**saved, **changes, 'source': args.source}
         settings['auto'] = True
     if label:
         settings['label'] = label
@@ -484,28 +493,31 @@ def cmd_list(args, root: Path | None = None, target_ta: dict | None = None) -> i
             count, message = build(settings_from(args), page, root, target_ta)
             print(message, file=sys.stdout if count else sys.stderr)
             return 0 if count else 1
+        if args.add:
+            print(add_row(args.add, args.group[0] if args.group else 'Added'))
+            return 0
+        if args.remove:
+            print(remove_row(args.remove))
+            return 0
+        if args.import_file:
+            text = Path(args.import_file).read_text(encoding='utf-8')
+            if LIST_HEADER not in text:
+                print(f'journal list: {args.import_file} is not a journal list (needs the table header {LIST_HEADER}).',
+                      file=sys.stderr)
+                return 2
+            save_list(text)
+            print(f'saved {len(my_list())} journals to {path} (kept on this computer)')
+            return 0
     except ValueError as exc:
         print(f'journal list: {exc}', file=sys.stderr)
+        return 2
+    except FileNotFoundError as exc:
+        print(f'journal list: no such file: {exc.filename}', file=sys.stderr)
         return 2
     except OSError as exc:
         print(f'journal list: could not reach the ranking site or PubMed ({exc}). Save the ranking result page from '
               'a browser and pass it with --from-html, or import a list with --import.', file=sys.stderr)
         return 1
-    if args.add:
-        print(add_row(args.add, args.group[0] if args.group else 'Added'))
-        return 0
-    if args.remove:
-        print(remove_row(args.remove))
-        return 0
-    if args.import_file:
-        text = Path(args.import_file).read_text(encoding='utf-8')
-        if LIST_HEADER not in text:
-            print(f'journal list: {args.import_file} is not a journal list (needs the table header {LIST_HEADER}).',
-                  file=sys.stderr)
-            return 2
-        save_list(text)
-        print(f'saved {len(my_list())} journals to {path} (kept on this computer)')
-        return 0
     rows = my_list()
     if not rows:
         print(f'No journal list yet ({path}). Build one: manuwright journal list --build (detects your field from '

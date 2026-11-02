@@ -36,8 +36,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import search_pubmed as pubmed  # noqa: E402
 import journal_list  # noqa: E402
-from journal_list import (JCR_SITE, LIST_HEADER, PRESETS, list_note, list_path, my_list, patient,  # noqa: E402,F401
-                          save_list, summaries)
+from journal_list import (PRESETS, library_journals, list_note, list_path, my_list, norm,  # noqa: E402,F401
+                          patient, summaries)
 
 # Reference-style keys from `manuwright target` -> NLM title abbreviation (PubMed [ta]).
 STYLE_TA = {
@@ -67,11 +67,6 @@ def paper_root(start: Path) -> Path | None:
 
 def slug(name: str) -> str:
     return re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-') or 'journal'
-
-
-def library_journals() -> Path:
-    import library_sync
-    return library_sync.library() / 'journals'
 
 
 def profile_path(journal: str, root: Path | None) -> Path:
@@ -291,10 +286,6 @@ def own_list(root: Path | None) -> list[tuple[str, str]]:
 
 def cmd_list(args) -> int:
     return journal_list.cmd_list(args, paper_root(Path.cwd()), STYLE_TA)
-
-
-def norm(text: str) -> str:
-    return re.sub(r'[^a-z0-9]', '', text.lower())
 
 
 def rank_journals(records: list[dict], preferred: list[tuple[str, str]], top: int) -> list[dict]:

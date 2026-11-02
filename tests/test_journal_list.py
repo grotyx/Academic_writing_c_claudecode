@@ -158,3 +158,32 @@ def test_setup_offers_the_list_once(monkeypatch, capsys):
     assert 'skipped; later: manuwright journal list --build' in capsys.readouterr().out
     jl.save_list('# x\n\n' + jl.LIST_HEADER + '\n| Spine | Spine J | S | Orthopedics | 9 | 5 |\n')
     lifecycle.journal_list_step(lambda _: pytest.fail('a list exists: no question'))
+
+
+def test_review_fixes_options_on_saved_settings_label_offline_and_odd_cells(tmp_path, monkeypatch, capsys):
+    (tmp_path / 'page.html').write_text(PAGE + '\n' + row(8, 'SPINE DEFORMITY', '2212-134X', 'ORTHOPEDICS', 'N/A'),
+                                        encoding='utf-8')
+    page = str(tmp_path / 'page.html')
+    assert jl.cmd_list(args(preset='ortho-neuro', from_html=page)) == 0  # a non-numeric rank is skipped
+    assert jl.saved_settings()['label'] == 'ortho-neuro' and 'ortho-neuro' in jl.list_path().read_text()
+    assert jl.cmd_list(args(top=5, from_html=page)) == 0  # --top on the saved field, not detection
+    assert set(jl.my_list()) == {'jphysiother'} and jl.saved_settings()['rules'][0] == 'ORTHOPEDICS'
+    assert jl.cmd_list(args(top=50, exclude='urology, physiother', from_html=page)) == 0
+    assert 'jphysiother' not in jl.my_list() and jl.saved_settings()['exclude'] == ['urology', 'physiother']
+
+    def offline(ta):
+        raise OSError('no network')
+    monkeypatch.setattr(jl, 'journal_issns', offline)
+    assert jl.cmd_list(args(build=False, add='World Neurosurg')) == 1
+    assert jl.cmd_list(args(build=False, import_file=str(tmp_path / 'missing.md'))) == 2
+    assert 'could not reach' in capsys.readouterr().err
+
+
+def test_the_starter_example_pmid_is_not_a_reference(tmp_path, monkeypatch):
+    sys.path.insert(0, str(ROOT))
+    from manuwright import lifecycle
+    (tmp_path / 'knowledge').mkdir()
+    (tmp_path / 'knowledge' / 'evidence.md').write_text(lifecycle.EVIDENCE_STARTER, encoding='utf-8')
+    seen = []
+    monkeypatch.setattr(jl, 'summaries', lambda ids: seen.append(ids) or [])
+    assert jl.your_journals(tmp_path, {}) == Counter() and seen == [[]]
