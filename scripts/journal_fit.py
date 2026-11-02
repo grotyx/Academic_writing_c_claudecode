@@ -4,7 +4,7 @@
     journal_fit.py profile <journal> [--url URL] [--from FILE]   journal profile: aims & scope, limits
     journal_fit.py fit [<journal>] [--query Q] [--years 5] [--reviewers ...] [--no-review]
     journal_fit.py suggest [--query Q] [--years 5] [--top 10] [--mine] [--review] [--reviewers ...]
-    journal_fit.py list [--import FILE | --build [--preset ortho-neuro] [--category C] [--top 50]]
+    journal_fit.py list [--build [--auto|--preset P|--category C[:words]] | --categories | --add J | --import F]
 
 `fit` checks one journal: what it published on this topic in PubMed (counts, recent titles), the
 manuscript against the limits in its profile (abstract and main-text words, references, tables and
@@ -35,6 +35,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import search_pubmed as pubmed  # noqa: E402
+import journal_list  # noqa: E402
+from journal_list import (JCR_SITE, LIST_HEADER, PRESETS, list_note, list_path, my_list, patient,  # noqa: E402,F401
+                          save_list, summaries)
 
 # Reference-style keys from `manuwright target` -> NLM title abbreviation (PubMed [ta]).
 STYLE_TA = {
@@ -248,19 +251,6 @@ def manuscript(root: Path) -> str:
 
 # --- PubMed ----------------------------------------------------------------------
 
-def patient(call):
-    """Retry a PubMed call that NCBI rate-limited (HTTP 429), waiting longer each time."""
-    def wrapped(*args, **kwargs):
-        for wait in (1, 2, 4, 8, None):
-            try:
-                return call(*args, **kwargs)
-            except urllib.error.HTTPError as exc:
-                if exc.code != 429 or wait is None:
-                    raise
-                time.sleep(wait)
-    return wrapped
-
-
 def since(years: int) -> str:
     return f'("{datetime.now().year - years + 1}"[dp] : "3000"[dp])'
 
@@ -289,16 +279,6 @@ def design(pub_types: list[str]) -> str:
     return next((t for t in pub_types if t not in ('Journal Article', 'English Abstract')), 'article')
 
 
-def summaries(ids: list[str]) -> list[dict]:
-    out = []
-    for i in range(0, len(ids), 100):
-        params = urllib.parse.urlencode({'db': 'pubmed', 'id': ','.join(ids[i:i + 100]), 'retmode': 'json'})
-        result = patient(pubmed._fetch_json)(f'{pubmed.BASE_URL}/esummary.fcgi?{params}').get('result', {})
-        out += [result[u] for u in result.get('uids', []) if u in result]
-        time.sleep(pubmed.RATE_LIMIT_DELAY)
-    return out
-
-
 def own_list(root: Path | None) -> list[tuple[str, str]]:
     """[(name, abbreviation)] in the order of the author's profile/journals.md (paper, else library)."""
     import library_sync
@@ -309,215 +289,8 @@ def own_list(root: Path | None) -> list[tuple[str, str]]:
     return []
 
 
-LIST_HEADER = '| Group | Journal (NLM) | Full title | Category | Category %rank | IF |'
-
-
-def list_path() -> Path:
-    return library_journals() / 'list.md'
-
-
-def my_list() -> dict:
-    """{normalised NLM abbreviation: row} from the author's journal list (library/journals/list.md)."""
-    path = list_path()
-    if not path.is_file():
-        return {}
-    rows = {}
-    for line in path.read_text(encoding='utf-8').splitlines():
-        cells = [c.strip() for c in line.strip().strip('|').split('|')]
-        if len(cells) >= 5 and cells[1] and not set(cells[1]) <= set('-: ') and cells[1] != 'Journal (NLM)':
-            rows[norm(cells[1])] = {'group': cells[0], 'journal': cells[1], 'title': cells[2],
-                                    'category': cells[3], 'rank': cells[4]}
-    return rows
-
-
-def list_note(entry: dict | None) -> str:
-    return f"{entry['group']}: top {entry['rank']}% {entry['category'].title()}" if entry else ''
-
-
-# Building the list on the author's own computer from a public SCIE ranking search (the data stays there;
-# it is never shipped with ManuWright). Presets pick the JCR categories and, for broad categories, titles.
-JCR_SITE = 'https://compbio.sookmyung.ac.kr/~journal/'
-NEURO_TITLE = re.compile(r'NEUROSURG|SPINE|SPINAL|STEREOTACT|NEURO-ONCOL|NEUROINTERV|NEUROTRAUMA|NEUROSPINE|NEUROMODUL', re.I)
-PRESETS = {
-    'ortho-neuro': [('ORTHOPEDICS', None), ('CLINICAL NEUROLOGY', NEURO_TITLE), ('SURGERY', NEURO_TITLE),
-                    ('NEUROSCIENCES', NEURO_TITLE)],
-    'ortho': [('ORTHOPEDICS', None)],
-    'neurosurgery': [('CLINICAL NEUROLOGY', NEURO_TITLE), ('SURGERY', NEURO_TITLE), ('NEUROSCIENCES', NEURO_TITLE)],
-}
-
-
-def site_rows(page: str) -> list[dict]:
-    """Journals from the ranking table: title, ISSNs, IF and {category: %rank} (top category first)."""
-    rows = []
-    for line in page.splitlines():
-        if not re.match(r'\s*(?:<tr>)?\s*<td>\d+</td>', line):
-            continue
-        cells = [' '.join(html.unescape(re.sub(r'<[^>]+>', ' ', re.sub(r'<br\s*/?>', ' ; ', c))).split())
-                 for c in re.findall(r'<td[^>]*>(.*?)</td>', line)]
-        if len(cells) < 8:
-            continue
-        cats = {cells[5]: cells[6]}
-        for m in re.finditer(r'([A-Z][A-Z ,&\-()/]+?)\s*:\s*([\d.]+)', cells[7]):
-            cats[m.group(1).strip(' ;')] = m.group(2)
-        rows.append({'title': cells[1], 'issn': cells[2], 'eissn': cells[3], 'if': cells[4], 'cats': cats})
-    return rows
-
-
-def fetch_site(source: str, top: int) -> str:
-    """The ranking search for the newest year, journals in the top `top`% of their category."""
-    agent = {'User-Agent': 'Mozilla/5.0 (ManuWright journal list; one query per build)'}
-    with urllib.request.urlopen(urllib.request.Request(source, headers=agent), timeout=60) as response:
-        form = response.read().decode('utf-8', errors='replace')
-    action = (re.search(r'<form[^>]+action="([^"]+)"', form) or [None, urllib.parse.urljoin(source, 'getJournalResult.php')])[1]
-    years = re.findall(r'name="(year(\d{4}))"\s+value="(\d+)"', form)
-    fields = {'check_submit': '1', 'title': '', 'i_f': '', 'rank': str(top)}
-    if years:
-        name, _, value = max(years, key=lambda y: y[1])
-        fields[name] = value
-    request = urllib.request.Request(action, data=urllib.parse.urlencode(fields).encode(), headers=agent)
-    with urllib.request.urlopen(request, timeout=180) as response:
-        return response.read().decode('utf-8', errors='replace')
-
-
-def select_rows(rows: list[dict], rules: list, top: float) -> list[dict]:
-    picked = []
-    for row in rows:
-        for category, title_rule in rules:
-            rank = row['cats'].get(category)
-            if rank is None or float(rank) > top or (title_rule and not title_rule.search(row['title'])):
-                continue
-            first = next(iter(row['cats']))
-            group = ('Spine' if re.search(r'SPINE', row['title'], re.I) else
-                     'Neurosurgery' if title_rule is NEURO_TITLE else
-                     'Rehabilitation (orthopaedics)' if category == 'ORTHOPEDICS' and first == 'REHABILITATION' else
-                     'Orthopaedics' if category == 'ORTHOPEDICS' else category.title())
-            picked.append({**row, 'group': group, 'category': category, 'rank': float(rank)})
-            break
-    return picked
-
-
-def resolve_ta(row: dict, cache: dict) -> str:
-    """NLM title abbreviation from the ISSNs (NLM Catalog), cached; the record whose title matches best."""
-    import difflib
-    for issn in (row['issn'], row['eissn']):
-        if issn and issn in cache:
-            return cache[issn]
-    best = ('', 0.0)
-    for issn in [i for i in (row['issn'], row['eissn']) if i]:
-        query = urllib.parse.urlencode({'db': 'nlmcatalog', 'term': f'{issn}[issn]', 'retmode': 'json'})
-        ids = patient(pubmed._fetch_json)(f'{pubmed.BASE_URL}/esearch.fcgi?{query}')['esearchresult']['idlist'][:5]
-        time.sleep(pubmed.RATE_LIMIT_DELAY)
-        if ids:
-            query = urllib.parse.urlencode({'db': 'nlmcatalog', 'id': ','.join(ids), 'retmode': 'json'})
-            result = patient(pubmed._fetch_json)(f'{pubmed.BASE_URL}/esummary.fcgi?{query}')['result']
-            time.sleep(pubmed.RATE_LIMIT_DELAY)
-            for uid in ids:
-                record = result.get(uid, {})
-                full = ' '.join(t.get('title', '') for t in record.get('titlemainlist', []))
-                score = difflib.SequenceMatcher(None, row['title'].lower(), full.lower()).ratio()
-                if record.get('medlineta') and score > best[1]:
-                    best = (record['medlineta'], score)
-        if best[0]:
-            break
-    for issn in (row['issn'], row['eissn']):
-        if issn and best[0]:
-            cache[issn] = best[0]
-    return best[0]
-
-
-ORDER = {'Spine': 0, 'Orthopaedics': 1, 'Neurosurgery': 2, 'Rehabilitation (orthopaedics)': 3}
-SMALL = {'And', 'Of', 'The', 'In', 'For', 'On'}
-
-
-def nice(title: str) -> str:
-    words = title.title().split(' ')
-    return ' '.join(w.lower() if i and w in SMALL else w for i, w in enumerate(words))
-
-
-def list_text(picked: list[dict], source: str, label: str, top: float) -> str:
-    lines = [f'# My journal list: {label}, top {top:g}% of their category', '',
-             f'- source: {source} (SCIE ranking search, newest year)',
-             f'- built: {datetime.now().date().isoformat()}; Category %rank = position in that category '
-             '(lower is better; 10 = top 10%)',
-             '- kept on this computer only (personal reference); edit freely: add, delete or regroup rows', '',
-             LIST_HEADER, '|---|---|---|---|---|---|']
-    for row in sorted(picked, key=lambda r: (ORDER.get(r['group'], 9), r['group'], r['rank'])):
-        lines.append(f"| {row['group']} | {row['ta']} | {nice(row['title'])} | {row['category'].title()} | "
-                     f"{row['rank']:g} | {row['if']} |")
-    return '\n'.join(lines) + '\n'
-
-
-def save_list(text: str) -> Path:
-    path = list_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if path.is_file() and path.read_text(encoding='utf-8') != text:
-        path.with_name('list.md.bak').write_bytes(path.read_bytes())
-    path.write_text(text, encoding='utf-8')
-    return path
-
-
-def build(preset: str, categories: list[str], top: float, source: str, page: str | None = None) -> tuple[int, str]:
-    """Build and save the list; (journals saved, message)."""
-    preset = preset or ('' if categories else 'ortho-neuro')
-    rules = list(PRESETS.get(preset, [])) + [(c.upper(), None) for c in categories]
-    if not rules or (preset and preset not in PRESETS):
-        return 0, f'unknown preset {preset!r}; use one of {", ".join(PRESETS)} or --category "<JCR category>"'
-    if page is None:
-        page = fetch_site(source, int(top))
-    rows = site_rows(page)
-    if not rows:
-        return 0, 'the ranking page had no journal table (the site may have changed); nothing saved'
-    picked = select_rows(rows, rules, top)
-    cache_path = library_journals() / 'nlm_cache.json'
-    try:
-        cache = json.loads(cache_path.read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        cache = {}
-    print(f'{len(picked)} journals selected; looking up their NLM abbreviations (cached after the first run)...',
-          flush=True)
-    for row in picked:
-        try:
-            row['ta'] = resolve_ta(row, cache)
-        except (OSError, ValueError, KeyError, RuntimeError):
-            row['ta'] = ''
-        row['ta'] = row['ta'] or nice(row['title'])
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    cache_path.write_text(json.dumps(cache, indent=1, ensure_ascii=False), encoding='utf-8')
-    label = preset if preset in PRESETS else ', '.join(c.title() for c in categories)
-    path = save_list(list_text(picked, source, label, top))
-    return len(picked), f'saved {len(picked)} journals to {path} (kept on this computer)'
-
-
 def cmd_list(args) -> int:
-    path = list_path()
-    if args.build:
-        try:
-            page = Path(args.from_html).read_text(encoding='utf-8', errors='replace') if args.from_html else None
-            count, message = build(args.preset, args.category, args.top, args.source, page)
-        except (OSError, ValueError) as exc:
-            print(f'journal list --build: could not reach {args.source} ({exc}). Save the result page from a '
-                  'browser and pass it with --from-html, or import a list with --import.', file=sys.stderr)
-            return 1
-        print(message, file=sys.stdout if count else sys.stderr)
-        return 0 if count else 1
-    if args.import_file:
-        text = Path(args.import_file).read_text(encoding='utf-8')
-        if LIST_HEADER not in text:
-            print(f'journal list: {args.import_file} is not a journal list (needs the table header {LIST_HEADER}).',
-                  file=sys.stderr)
-            return 2
-        save_list(text)
-        print(f'saved {len(my_list())} journals to {path} (kept on this computer)')
-        return 0
-    rows = my_list()
-    if not rows:
-        print(f'No journal list yet ({path}). Build one: manuwright journal list --build --preset ortho-neuro '
-              '(or ortho, neurosurgery, or --category "<JCR category>"), or import a file with --import <file>.')
-        return 0
-    for row in sorted(rows.values(), key=lambda r: (r['group'], float(r['rank'] or 100))):
-        print(f"{row['group']:<14} {row['journal']:<34} top {row['rank']:>5}% {row['category'].title()}")
-    print(f'\n{len(rows)} journals in {path}')
-    return 0
+    return journal_list.cmd_list(args, paper_root(Path.cwd()), STYLE_TA)
 
 
 def norm(text: str) -> str:
@@ -722,19 +495,15 @@ def main(argv=None) -> int:
     s.add_argument('--review', action='store_true', help='also ask the reviewers to rank the fit')
     s.add_argument('--mine', action='store_true', help='only journals in your journal list')
     li = sub.add_parser('list', help='your journal list (group, category percentile), kept on this computer')
-    li.add_argument('--import', dest='import_file', help='save this list file to your library')
-    li.add_argument('--build', action='store_true', help='build the list from the SCIE ranking search')
-    li.add_argument('--preset', help=f"field: {', '.join(PRESETS)} (default ortho-neuro unless --category is given)")
-    li.add_argument('--category', action='append', default=[], help='a JCR category to add, e.g. "UROLOGY & NEPHROLOGY"')
-    li.add_argument('--top', type=float, default=50, help='category percentile limit (default 50)')
-    li.add_argument('--source', default=JCR_SITE, help='ranking search page')
-    li.add_argument('--from-html', help='a saved result page instead of searching')
+    journal_list.add_arguments(li)
     for q in (f, s):
         q.add_argument('--query', help='PubMed terms for the topic (default: words of the title)')
         q.add_argument('--years', type=int, default=5)
         q.add_argument('--reviewers', help='reviewer specs as in critical review (default: your saved reviewers)')
     f.add_argument('--no-review', action='store_true', help='only the PubMed and requirements part')
     args = parser.parse_args(argv)
+    if args.command == 'list':
+        journal_list.finish_arguments(args)
     return {'profile': cmd_profile, 'fit': cmd_fit, 'suggest': cmd_suggest, 'list': cmd_list}[args.command](args)
 
 

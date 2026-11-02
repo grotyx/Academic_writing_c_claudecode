@@ -599,14 +599,20 @@ def journal_list_step(ask):
     except Exception:
         return
     print('\n3. Journal list (optional): the journals of your field in the top half of their category, for '
-          '`manuwright journal suggest --mine`. Built on this computer from the SCIE ranking search (about a minute).')
-    answer = ask(f"  field: {', '.join(tool.PRESETS)}, or a JCR category name; Enter skips: ").strip()
-    if not answer:
-        print('  skipped; later: manuwright journal list --build --preset ortho-neuro')
+          '`manuwright journal suggest --mine`. Built on this computer from the SCIE ranking table (about a minute).')
+    answer = ask(f"  field: Enter = detect from your papers' references; or {', '.join(tool.PRESETS)}; or JCR "
+                 "categories separated by ';' (`manuwright journal list --categories`); - skips: ").strip()
+    if answer == '-':
+        print('  skipped; later: manuwright journal list --build')
         return
-    preset, categories = (answer, []) if answer in tool.PRESETS else ('', [answer])
+    if not answer:
+        settings = {'auto': True}
+    elif answer in tool.PRESETS:
+        settings = {**tool.PRESETS[answer], 'label': answer}
+    else:
+        settings = {'rules': [c.strip() for c in answer.split(';') if c.strip()]}
     try:
-        count, message = tool.build(preset, categories, 50, tool.JCR_SITE)
+        count, message = tool.journal_list.build(settings, target_ta=tool.STYLE_TA)
     except (OSError, ValueError) as exc:
         count, message = 0, f'could not reach the ranking site ({exc}); later: manuwright journal list --build'
     print('  ' + message)
@@ -1039,7 +1045,7 @@ def _create_paper(engine, root):
         listed = journal_tool().my_list()
         print(f'Your journal list ({len(listed)} journals) applies to this paper: `manuwright journal suggest --mine`.'
               if listed else 'No journal list yet (optional, once for all papers): '
-              '`manuwright journal list --build --preset ortho-neuro`.')
+              '`manuwright journal list --build` (detects your field from your references).')
     except Exception:
         pass
     print(f'\nNext: fill drafts/draft_plan.md and data/analysis_plan.md, get approval, then edit '
@@ -1309,7 +1315,7 @@ def check(engine, args):
         listed = None
     if listed is not None:
         rows.append((None, 'Journal list', f'{len(listed)} journals (journal suggest --mine)' if listed else
-                     'none yet (optional): manuwright journal list --build --preset ortho-neuro', None))
+                     'none yet (optional): manuwright journal list --build (detects your field)', None))
     stale = stale_papers(engine)
     rows.append((not stale, 'Paper agent rules', 'all registered papers current' if not stale else
                  f'{len(stale)} out of date: ' + ', '.join(str(p) for p in stale),

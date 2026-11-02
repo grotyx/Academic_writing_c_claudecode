@@ -146,7 +146,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright claim-strength drafts` | 检查引用句的措辞是否强于证据的 `Claim Strength`（speculative、observed、supported、strong） |
 | `manuwright search audit` | 将 evidence.md 每个条目与 PubMed 重新核对：标题/作者/年份/期刊加权匹配、DOI 不一致、撤稿、关注声明、勘误 |
 | `manuwright blind-review packet` / `check` | 在记录判定之前隐藏回复信的修订复审（不受回复信说服） |
-| `manuwright journal fit [期刊]` / `suggest` | 投稿前：是否适合这本期刊（该刊同主题的发表记录、字数和参考文献限制、以该刊编辑视角的评审），或推荐发表类似研究最多的期刊；`journal list --build` 在本机生成本领域前 50% 期刊列表 |
+| `manuwright journal fit [期刊]` / `suggest` | 投稿前：是否适合这本期刊（该刊同主题的发表记录、字数和参考文献限制、以该刊编辑视角的评审），或推荐发表类似研究最多的期刊；`journal list --build` 在本机生成本领域（从参考文献自动识别，或用 `--preset`/`--category` 指定）前 50% 期刊列表 |
 | `manuwright style edits <ai> <edited>` / `--apply` | 从你修改 AI 草稿的方式中学习规则；只有你勾选的规则才进入 `Style/terminology.md` |
 | `manuwright library term` / `note` / `sync [--pull\|--push]` | 跨论文保留用词规则或笔记；同步论文与个人文献库（只追加） |
 | `manuwright guide [name ...]` | 列出或打印规则引用的引擎指南（`docs/<name>.md`） |

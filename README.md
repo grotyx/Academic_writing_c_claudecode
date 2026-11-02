@@ -146,7 +146,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright claim-strength drafts` | Flag cited sentences worded more strongly than the evidence's `Claim Strength` (speculative, observed, supported, strong) |
 | `manuwright search audit` | Re-check every evidence.md entry against PubMed: weighted title/author/year/journal match, DOI mismatch, retractions, expressions of concern, errata |
 | `manuwright blind-review packet` / `check` | Revision re-review with the response letter withheld until the verdicts are recorded (no persuasion by the letter) |
-| `manuwright journal fit [journal]` / `suggest` | Before submitting: does the paper fit this journal (its PubMed record on the topic, word and reference limits, a review by that journal's editor), or which journals publish similar work; `journal list --build` makes your list of top-half journals in your field, on your computer |
+| `manuwright journal fit [journal]` / `suggest` | Before submitting: does the paper fit this journal (its PubMed record on the topic, word and reference limits, a review by that journal's editor), or which journals publish similar work; `journal list --build` makes your list of top-half journals in your field (detected from your references, or set with `--preset`/`--category`), on your computer |
 | `manuwright style edits <ai> <edited>` / `--apply` | Learn rules from how you edited AI drafts; only the rules you tick reach `Style/terminology.md` |
 | `manuwright library term` / `note` / `sync [--pull\|--push]` | Keep a wording rule or a lesson across papers; bring a paper and your library in step (additions only) |
 | `manuwright guide [name ...]` | List the engine guides the rules cite (`docs/<name>.md`), or print them |

@@ -8,8 +8,9 @@
 
 ジャーナル一覧を自分のコンピューターで自動作成する。
 
-- `manuwright journal list --build --preset ortho-neuro` は公開 SCIE ランキングサイトを 1 回検索し（最新年、分野上位 50%；`--top` で変更）、その分野のジャーナルだけを残し（プリセット `ortho-neuro`、`ortho`、`neurosurgery`；他分野は `--category "<JCR 分野>"`）、各ジャーナルの NLM 略称を NLM Catalog で調べて（キャッシュ）ライブラリに保存する。以前の一覧は `list.md.bak` として残し、`--from-html` は保存した結果ページから作る。
-- 一覧はライブラリにあるので、後で `manuwright init` で作る論文も含めてすべての論文が使う。`init` は一覧があるかを知らせる。`manuwright setup` が一度作成を提案し（Enter で省略）、`manuwright check` が表示する。
+- `manuwright journal list --build` は公開 SCIE ランキングサイトを 1 回検索し（最新年）、分野を自動で見つける：自分の論文の `evidence.md` の PMID と投稿先ジャーナルを読み、それらのジャーナルの主な JCR 分野を選び、広い分野（Surgery、Clinical Neurology）では自分のジャーナルのタイトルに共通する語を含むものだけを残す。分野ごとに上位 50% を残し、各ジャーナルの NLM 略称を NLM Catalog で調べる（キャッシュ）。
+- 自分で設定することもできる：`--preset ortho-neuro|ortho|neurosurgery`；`--category "SURGERY:neurosurg,spine"`（任意の分野、タイトル語は任意）；`--exclude`、`--group "Spine=spine,spinal"`、`--top 25`；`--categories neuro` は分野名を表示し、`--add`/`--remove` はジャーナルを 1 誌ずつ変更する。設定は一覧に保存され、次の `--build` も同じ設定で作る。以前の一覧は `list.md.bak` として残り、`--from-html` は保存した結果ページから作る。
+- 一覧はライブラリにあるので、後で `manuwright init` で作る論文も含めてすべての論文が使う。`init` は一覧があるかを知らせる。`manuwright setup` が一度作成を提案し（Enter で分野を自動検出、`-` で省略）、`manuwright check` が表示する。
 - ランキングデータは各ユーザーのコンピューターで取得し、ManuWright には含めて配布しない。
 - マニュアル v2.7.1、critical review protocol v1.2.1、README。
 
