@@ -4,6 +4,19 @@
 
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
+### v1.9.10 (261102)
+
+Journal fit review and journal suggestions; setup picks the reviewers itself.
+
+- `manuwright journal fit [journal]` checks the paper against one journal (default: the one set with `manuwright target`): how many articles on this topic the journal published in the last 5 years, with the recent titles; the manuscript against the limits in the journal's profile (abstract and main-text words, references, tables and figures; OVER flagged); then your saved reviewers judge it as that journal's editor (scope fit, article type, overlap with its recent papers, requirements, what the editor would ask for; FIT / BORDERLINE / NOT A FIT). `--no-review` stops before the reviewers.
+- `manuwright journal suggest` ranks the journals that published the most similar papers (counts, share, latest year) and marks the ones in your `profile/journals.md`; `--review` has the reviewers rank the fit. Impact factors are not used.
+- `manuwright journal list --import <file>` keeps your own journal list (group, category, category percentile) in `~/.manuwright/library/journals/list.md`, on this computer only; `suggest --mine` counts the topic in every listed journal and ranks only those, and `fit`/`suggest` show where a journal sits in the list.
+- `manuwright journal profile <journal> --url <page>` keeps a journal's aims and scope, article types, limits and requirements in `~/.manuwright/library/journals/`, for every paper. The agent reads the official page and fills it; it counts as verified only when the author confirms.
+- In chat, "Spine J 에 맞는지 봐줘", "어느 저널에 투고할까?" or "is it a fit for Spine J?" in a paper folder start this. New `/journal-review` command and `journal` reviewer role. Only the search terms go to PubMed; the manuscript goes only to your chosen reviewers.
+- `manuwright setup` no longer asks you to pick reviewers. Claude writes; Codex and Antigravity review on your subscription when installed (the Muse CLI too); the newest mid-price DeepSeek, Qwen and Meta Muse models review on opencode Go when it offers them, otherwise on OpenRouter (deepseek-v4-pro-0813, qwen3.7-plus, muse-spark-1.3: about $0.08 a review for the three). A later run keeps reviewers you changed unless you accept the new set; `manuwright setup --custom` keeps the menus.
+- `manuwright check` and `setup` no longer tell Windows users to install with a printed line: since v1.9.7 `manuwright update` installs the release itself.
+- Manual v2.7.0 (9c Journal fit, setup), critical review protocol v1.2.0 (section 6), workflow reference v1.2.0, harness guide v1.3.4, READMEs.
+
 ### v1.9.9 (261021)
 
 `manuwright init` explains a folder it cannot use, and setup offers the agent reviewers it finds on this computer.

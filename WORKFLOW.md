@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.9.9)
+# Academic Paper Writing Project (v1.9.10)
 
-## Shared Engine (v1.9.9)
+## Shared Engine (v1.9.10)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -381,6 +381,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 ├── Round 5: Statistical quality — Dr. Statistician (권장)
 ├── Round 6: Critical review — 내부(Dr. Editor + Dr. Statistician) + (선택) /critical-review 외부 멀티모델 (overclaiming/bias/일반화, 권장)
 ├── Round 6.5 (선택): Editorial desk-screen — /editor-review: high-impact 저널 편집장 관점 (임상 타당성·분야 scope fit·추가검증 roadmap·하위저널 추천; advisory, `docs/critical_review_protocol.md` §5)
+├── Journal fit (선택, 투고 전): `manuwright journal fit [저널]` / `suggest` — 특정 저널 scope 적합성(PubMed 게재 기록·profile 제한·그 저널 편집자 리뷰) 또는 저널 추천; "Spine J 에 맞는지"·"어느 저널"에 자동 안내 (`docs/critical_review_protocol.md` §6, advisory)
 ├── Overclaim check: `manuwright claim-strength drafts` (인용 문장의 동사가 근거의 Claim Strength 보다 센지)
 ├── Claim verification (선택): /verify-claims — 인용 문장별 SUPPORTED/PARTIAL/UNSUPPORTED 리포트 (docs/citation_assist_protocol.md; GraphRAG 주, evidence.md 보조)
 ├── Document all rounds in review/qc_log.md

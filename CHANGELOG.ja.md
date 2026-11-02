@@ -4,6 +4,19 @@
 
 - `assets/logo.svg`、`assets/logo-dark.svg`: ロゴマークのベクター版(明るい背景用、暗い背景用)。
 
+### v1.9.10 (261102)
+
+ジャーナル適合性レビューとジャーナル推薦。setup がレビュアーを自動で選ぶ。
+
+- `manuwright journal fit [ジャーナル]` は原稿を 1 つのジャーナルと照らし合わせる（省略時は `manuwright target` で設定したジャーナル）：そのジャーナルが直近 5 年に同じテーマで掲載した論文数と最近のタイトル、ジャーナル profile の制限（抄録・本文の語数、文献数、表・図）と原稿の比較（OVER を表示）、保存したレビュアーがそのジャーナルの編集者として判断する（scope 適合、論文種別、最近の掲載論文との重複、要件、編集者が求めること；FIT / BORDERLINE / NOT A FIT）。`--no-review` はレビュアーの前で止まる。
+- `manuwright journal suggest` は類似論文が最も多く載ったジャーナルの順位（件数、割合、最新年）を示し、`profile/journals.md` にあるジャーナルを表示する。`--review` でレビュアーが適合度順に並べる。Impact Factor は使わない。
+- `manuwright journal list --import <ファイル>` は自分のジャーナル一覧（グループ、分野、分野内パーセンタイル）を `~/.manuwright/library/journals/list.md` にこのコンピューターだけに保存する。`suggest --mine` は一覧の全ジャーナルでテーマの論文数を数えてそれだけを順位付けし、`fit`/`suggest` は一覧での位置を示す。
+- `manuwright journal profile <ジャーナル> --url <ページ>` はジャーナルの aims & scope、論文種別、制限、要件を `~/.manuwright/library/journals/` に保存し、すべての論文で使う。エージェントが公式ページを読んで埋め、著者が確認して初めて verified になる。
+- 論文フォルダで「Spine J に合うか見て」「どのジャーナルに投稿しようか」「is it a fit for Spine J?」と言うとこの手順が始まる。新しい `/journal-review` コマンドと `journal` レビュアー役割。PubMed には検索語だけが送られ、原稿は著者が選んだレビュアーにだけ送られる。
+- `manuwright setup` はレビュアーを選ばせなくなった。原稿は Claude が書き、Codex と Antigravity がインストールされていればサブスクリプションでレビューし（Muse CLI も）、最新の中価格帯の DeepSeek、Qwen、Meta Muse モデルが opencode Go にあればそれで、なければ OpenRouter でレビューする（deepseek-v4-pro-0813、qwen3.7-plus、muse-spark-1.3：3 つでレビュー 1 回約 $0.08）。再実行しても、著者が変えたレビュアーは新しい推薦を受け入れたときだけ変わる。`manuwright setup --custom` は従来どおりメニューで選ぶ。
+- `manuwright check` と `setup` は Windows で「表示された行でインストール」と案内しなくなった。v1.9.7 から `manuwright update` が自分でインストールする。
+- マニュアル v2.7.0（9c ジャーナル適合性、setup）、critical review protocol v1.2.0（6 節）、workflow reference v1.2.0、harness guide v1.3.4、README。
+
 ### v1.9.9 (261021)
 
 `manuwright init` は使えないフォルダを説明し、setup はこのコンピューターで見つかったエージェントのレビュアーを示す。

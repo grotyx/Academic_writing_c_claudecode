@@ -1,4 +1,4 @@
-# Workflow Reference (v1.1.0)
+# Workflow Reference (v1.2.0)
 
 Reference catalogs moved out of `WORKFLOW.md` (v1.7.5) so the always-loaded rules stay short. `WORKFLOW.md` remains authoritative for rules; this file is a lookup index. Commands use `python`; on Windows substitute `py` if needed.
 
@@ -242,6 +242,7 @@ project/
 | `/paper-debate <주제>` | Claude–Codex co-author 토론 (작성 전, `docs/debate_protocol.md`) |
 | `/critical-review <대상>` | 외부 멀티모델 적대적 reviewer 검토 (작성 후, `docs/critical_review_protocol.md`) |
 | `/editor-review <대상>` | high-impact 저널 **편집장 desk-screen** — 임상 타당성·분야 scope fit·추가검증·하위저널 추천 (`docs/critical_review_protocol.md` §5) |
+| `/journal-review [저널]` | **특정 저널** 적합성 리뷰 / 저널 추천 — PubMed 게재 기록 + profile 제한 + 그 저널 편집자 관점 (`manuwright journal fit\|suggest\|profile`, §6) |
 
 ### Drafting
 | Command | Action |
