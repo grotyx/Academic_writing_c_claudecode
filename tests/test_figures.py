@@ -147,7 +147,8 @@ def test_unbound_figures_need_a_reason_outside_draft(project):  # noqa: F811
 def test_provenance_inputs_are_in_the_review_snapshot(drawn):
     project, _ = drawn
     deps = snapshot(*load_project(project))
-    assert 'drafts/figures/figure_1.png.provenance.json' in deps and 'drafts/figures/figure_1.json' in deps
+    keys = {Path(key).as_posix() for key in deps}  # snapshot keys use the platform separator
+    assert 'drafts/figures/figure_1.png.provenance.json' in keys and 'drafts/figures/figure_1.json' in keys
 
 
 def test_specs_and_sidecars_are_not_figures_in_the_folder_inventory(tmp_path):
