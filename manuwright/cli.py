@@ -38,6 +38,7 @@ TOOLS = {
     'evidence-table': ('evidence_table.py', {}),
     'extract-claims': ('extract_claims.py', {}),
     'critical-review': ('critical_review.py', {}),
+    'journal': ('journal_fit.py', {}),
     'compile-response': ('compile_response_docx.py', {}),
 }
 
@@ -63,6 +64,8 @@ Writing and review (in chat you can simply ask: "서론 써줘", "과장 표현 
   claim-strength drafts      cited sentences worded more strongly than their evidence (Claim Strength in evidence.md)
   search audit               check every evidence.md entry against PubMed: details match, retracted, corrected
   blind-review packet|check  revision re-review that hides the response letter until the verdicts are written
+  journal fit [journal]      does the paper fit this journal: PubMed record, limits, an editor's review
+  journal suggest            journals that publish similar work (--review ranks the fit); journal profile <j> --url
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)

@@ -176,6 +176,42 @@ MEMORY_INJECTION = (
 )
 
 
+# "Does this fit Spine J?" / "which journal should I submit to?"
+JOURNAL = re.compile(
+    r"(?:저널|학술지|journal).{0,25}(?:맞|적합|scope|스코프|추천|골라|고르|어울|핏|\bfit\b|suggest|recommend)"
+    r"|(?:어느|어떤|어디|which|what)\s*(?:저널|학술지|journal)|투고\s*(?:할|하면|하기|처|전에)"
+    r"|where\s+(?:to|should\s+i|can\s+i)\s+submit|journal\s+(?:fit|scope|review|suggest)"
+    r"|\b(?:fit|suitable)\s+for\s+(?-i:[A-Z])|submit\s+(?:it\s+)?to\s+(?-i:[A-Z])"
+    r"|(?-i:\b[A-Z][A-Za-z.&]*(?:\s+[A-Z][A-Za-z.&()]*){0,4})\s*(?:에|엔)\s*(?:잘\s*)?"
+    r"(?:맞(?:는|나|을|아)|적합|어울|낼|내도|투고)", re.IGNORECASE)
+JOURNAL_INJECTION = (
+    "[ManuWright journal] The author wants a journal-specific check (scope fit) or journal suggestions. Do this:\n"
+    "1. Build a precise PubMed query from the paper's population, intervention/exposure and outcome (4-8 terms).\n"
+    "2. Fit with one journal (\"Spine J에 맞는지\"): if `manuwright journal fit` reports no profile, create it with "
+    "`manuwright journal profile \"<NLM abbreviation>\" --url <official Aims & Scope or Guide for Authors page>`; "
+    "read the official pages yourself and fill Aims and scope, Article types, Limits (numbers only) and Required; "
+    "show the author what you wrote and set verified_by_author: yes only when they confirm. Then run "
+    "`manuwright journal fit \"<journal>\" --query \"...\"` (it runs the author's saved reviewers; with --no-review, "
+    "review review/journal/<run>/packet.md yourself as a fresh subagent using scripts/critical_prompts/journal.txt).\n"
+    "3. Which journal (\"어느 저널이 좋을까\"): `manuwright journal suggest --query \"...\"`; add --review to have the "
+    "reviewers rank the fit; then offer `journal fit` for the top choices.\n"
+    "4. Report the verdict (FIT / BORDERLINE / NOT A FIT), the most important fixes and the candidates, with the "
+    "counts as evidence. Never state an impact factor, acceptance rate or policy that is not in the profile."
+)
+
+
+def journal_request(prompt: str, cwd: str | None) -> str:
+    text = prompt or ""
+    if not text or len(text) > 600 or META.search(text) or not JOURNAL.search(text):
+        return ""
+    try:
+        if not _academic().in_paper(Path(cwd) if cwd else None):
+            return ""
+    except Exception:
+        return ""
+    return JOURNAL_INJECTION
+
+
 def memory_request(prompt: str, cwd: str | None) -> str:
     """The memory instruction for "기억해" / "공동저자 추가해줘" style requests inside a paper folder."""
     text = prompt or ""
@@ -225,6 +261,9 @@ def evaluate(event: dict) -> str:
     memory = memory_request(prompt, event.get("cwd"))
     if memory:
         parts.append(memory)
+    journal = journal_request(prompt, event.get("cwd"))
+    if journal:
+        parts.append(journal)
     try:
         cards = draft_cards(prompt, event.get("cwd"))
     except Exception:

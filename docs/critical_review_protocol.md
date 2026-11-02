@@ -1,4 +1,4 @@
-# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.1.1)
+# Critical-Review Protocol (외부 멀티모델 적대적 검토) (v1.2.0)
 
 > 완성된 원고/response를 여러 리뷰어가 적대적으로 공격해 허점을 발굴하는 절차의 단일 기준. `/critical-review` command와 `qc_guide.md`는 이 문서를 참조한다. QC Round 6 Critical Review의 외부 멀티모델 강화판.
 > 공개 운영 기준은 이 문서가 원본입니다. 내부 설계 노트 경로는 런타임 의존성으로 두지 않습니다.
@@ -63,6 +63,15 @@
 - **벤치마크 강화(선택):** medical-kag MCP 연결 시 `search`/`compare_interventions`/`best_evidence`로 해당 분야 high-impact 문헌의 설계·n·근거수준을 끌어와 근거화. 미연결 시 LLM 지식 + `search_pubmed.py`.
 - **성격:** grounded 게이트가 **아니라** 판정형 평가(임상·분야 지식 사용). **advisory** — 게이트를 대체하지 않는다. 수치·인용 grounding은 여전히 `check_numbers`/`check_citations` 담당. Phase 6에서 사용.
 - 에러·폴백은 §4와 동일.
+
+## 6. Journal fit review (`journal` role, `/journal-review`, `manuwright journal`)
+
+`/editor-review` 가 분야 최상위 tier 를 기준으로 보는 것과 달리, **저자가 고른 저널 하나**(또는 후보 목록)를 기준으로 본다.
+
+- **근거 3가지:** ① 저널 profile(`~/.manuwright/library/journals/<slug>.md`, 공식 Aims & Scope·Guide for Authors 에서 저자가 옮기고 확인 — `verified_by_author`) ② PubMed 기록(최근 N년 같은 주제 게재 수, 전체 대비 비율, 최근 제목) ③ 제한 비교표(초록·본문 단어, 참고문헌, 표+그림 vs profile Limits, OVER 표시).
+- **프롬프트:** `scripts/critical_prompts/journal.txt` — MODE fit: scope 인용 → 논문 유형·설계 → 그 저널 최근 논문과의 중복 → 요구 사항 → 편집자 요구 → FIT / BORDERLINE / NOT A FIT. MODE suggest: 후보 순위와 저널별 위험.
+- **실행:** `manuwright journal fit [journal] --query ...` 가 packet 을 만들고 저장된 리뷰어(`review.reviewers`)를 `--role journal` 로 돌린다. 리뷰어가 없거나 `--no-review` 면 packet 을 새 서브에이전트가 검토. `journal suggest` 는 PubMed esummary 로 비슷한 논문의 저널을 세어 순위를 만들고 `profile/journals.md` 를 표시, `--review` 로 적합도 순위.
+- **규칙:** profile 에 없는 규정·Impact Factor·채택률은 만들지 않는다. PubMed 에는 검색어만, 원고는 고른 리뷰어에게만. advisory — 게이트를 대체하지 않는다.
 
 ## v1.7.0 provider execution
 

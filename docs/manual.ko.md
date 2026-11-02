@@ -1,4 +1,4 @@
-# ManuWright 사용자 매뉴얼 (v2.6.5)
+# ManuWright 사용자 매뉴얼 (v2.7.0)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.9
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.9
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -340,6 +340,21 @@ manuwright critical-review --target drafts/05_results.md --out review/critical
 
 ![검토자 8명](images/manual/45_multi_reviewer_run.png)
 
+### 9c. 저널 적합성 리뷰와 저널 추천
+
+투고 전에 원고를 특정 저널 하나와 맞춰 보거나, 비슷한 연구가 많이 실린 저널을 찾는다. 채팅에서는 "Spine J 에 맞는지 봐줘", "어느 저널에 투고할까?" 라고 하면 된다.
+
+```sh
+manuwright journal profile "Spine J" --url <저널의 Aims & Scope 페이지>   # 저널마다 한 번
+manuwright journal fit "Spine J" --query "oblique lumbar interbody fusion spondylolisthesis"
+manuwright journal suggest --query "..." [--review]
+```
+
+- **Profile.** 저널의 aims & scope, 논문 유형, 제한(초록 단어 수, 본문 단어 수, 참고문헌 수, 표·그림 수), 요구 사항을 공식 페이지에서 옮겨 `~/.manuwright/library/journals/<저널>.md` 에 두고 모든 논문에서 다시 쓴다. 많은 출판사가 프로그램의 자동 읽기를 막으므로, 에이전트가 페이지를 직접 읽어 채우고 저자에게 보여 준 뒤 저자가 확인했을 때만 `verified_by_author: yes` 로 표시한다. 리뷰어는 저널 규정을 이 profile 에서만 가져온다.
+- **Fit.** `fit`(생략하면 `manuwright target` 으로 정한 저널)은 그 저널이 최근 5년 동안 같은 주제로 실은 논문 수와 최근 제목을 보여 주고, 원고를 profile 의 제한과 비교하며(OVER 표시), 저장해 둔 리뷰어가 그 저널 편집자 입장에서 판단한다: scope 적합성, 논문 유형, 최근 게재 논문과의 중복, 요구 사항, 편집자가 요구할 것, 판정 FIT / BORDERLINE / NOT A FIT. `--no-review` 는 리뷰어 단계 전에서 멈춘다.
+- **Suggest.** `suggest` 는 비슷한 논문이 가장 많이 실린 저널 순위(편수, 비율, 최근 연도)를 보여 주고 `profile/journals.md` 에 있는 저널을 표시한다. `--review` 를 주면 리뷰어가 적합도 순으로 매긴다. 편수는 비슷한 연구가 어디에 실리는지를 보여 줄 뿐 저널 순위가 아니며, Impact Factor 는 쓰지 않는다.
+- 결과는 `review/journal/<run>/` 에 남는다(보고서, packet, 리뷰어별 파일). PubMed 에는 검색어만 가고, 원고는 저자가 고른 리뷰어에게만 간다. critical review 처럼 참고용이다.
+
 ## 10. 제출
 
 ```sh
@@ -465,7 +480,7 @@ codex plugin marketplace list        # 같은 경로
 
 ### 설정
 
-`manuwright setup` 하나로 아래 설정을 차례로 묻는다. 모델은 입력하지 않고 메뉴에서 고른다. 메인 모델은 목록에서 하나(또는 "other"), 에이전트 검토자(Claude Code, Codex, Muse, Antigravity/Gemini: 로그인한 구독으로 실행, API 비용 없음)·OpenRouter 모델(사용량 과금)·opencode 모델(opencode Go 구독)은 체크리스트다. ↑/↓ 이동, Space 선택, Enter 완료, Esc 는 지금 설정 유지, 숫자 키는 추천 세트로 체크리스트를 채운다(OpenRouter: 1 balanced, 2 budget, 3 strong / opencode: 1 Go, 2 Go budget). 목록은 GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo, Meituan LongCat 최신 모델이고, 실시간 목록으로 제공 여부와 검토 1회 예상 비용(대부분 약 $0.002–0.05)을 함께 보여 준다. 대화형 터미널이 아니거나 Windows 에서는 같은 세트를 번호로 고른다. 메인 모델 목록은 각 모델을 실행하는 에이전트 CLI 의 설치 여부("Claude Code installed", "Codex not installed")를 표시하고, 실행할 수 있는 모델을 먼저 보여 준다. 번호를 입력하거나, 목록에 없는 모델은 모델 id 를 입력한다. `claude` 같은 에이전트 이름은 모델이 아니므로 안내와 함께 다시 묻는다. 에이전트 검토자는 이 컴퓨터에서 찾아서 보여 준다(v1.9.9). 설치된 에이전트 CLI 만 고를 수 있고, 고른 에이전트마다 쓸 모델을 그 CLI 가 알려 주는 목록에서 고른다: Claude Code 별칭(opus, sonnet, haiku), `agy models` 가 보여 주는 모델, `~/.codex/config.toml` 의 Codex 기본 모델(Codex 는 목록 명령이 없다), CLI 자체 기본값, 또는 직접 입력. 선택은 `review.<agent>-model` 로 저장되고 `manuwright models` 로도 같은 목록을 볼 수 있다. OpenRouter 모델을 고르면 OpenRouter API 키를 묻는다(입력은 `****` 로 표시, 입력 후 `sk-or-v1...abcd` 형태로 확인 표시, OpenRouter 로 유효성 확인, `~/.manuwright/secrets.json` 에 본인만 읽을 수 있게 저장, Ctrl+V 로 붙여넣고, 붙여넣기가 전달되지 않는 터미널(PowerShell 을 띄운 Windows Terminal)에서는 키를 복사한 뒤 빈 입력에서 Enter 를 누르면 클립보드에서 읽음; `OPENROUTER_API_KEY` 환경 변수가 있으면 그것을 우선 사용). 같은 세트는 `manuwright models` 로 언제든 볼 수 있다. 무료·contributor 등급은 입력을 학습에 쓸 수 있어 뺐다(검토는 미발표 원고를 보낸다). 그리고(Enter 는 그대로, `-` 는 지움), 마지막에 Obsidian 라이브러리를 제안한다. 하나만 바꿀 때는 `manuwright config set <키> <값>`.
+`manuwright setup` 하나로 아래 설정을 차례로 진행한다. 메인 모델과 리뷰어는 setup 이 알아서 고른다(v1.9.10): 글은 Claude 가 쓰고, Codex 와 Antigravity 가 설치돼 있으면 구독으로 검토하며(Muse CLI 도 마찬가지), 최신 중간 가격대의 DeepSeek, Qwen, Meta Muse 모델이 opencode Go 에 있으면 그것으로, 없으면 OpenRouter 로 검토한다(셋 합쳐 검토 1회 약 $0.08, 이때 OpenRouter 키를 묻는다). 다시 실행해도 저자가 바꿔 둔 리뷰어는 새 추천을 받아들일 때만 바뀐다. 직접 고르려면 `manuwright setup --custom` 을 실행한다. 이때는 모델을 입력하지 않고 메뉴에서 고른다. 메인 모델은 목록에서 하나(또는 "other"), 에이전트 검토자(Claude Code, Codex, Muse, Antigravity/Gemini: 로그인한 구독으로 실행, API 비용 없음)·OpenRouter 모델(사용량 과금)·opencode 모델(opencode Go 구독)은 체크리스트다. ↑/↓ 이동, Space 선택, Enter 완료, Esc 는 지금 설정 유지, 숫자 키는 추천 세트로 체크리스트를 채운다(OpenRouter: 1 balanced, 2 budget, 3 strong / opencode: 1 Go, 2 Go budget). 목록은 GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo, Meituan LongCat 최신 모델이고, 실시간 목록으로 제공 여부와 검토 1회 예상 비용(대부분 약 $0.002–0.05)을 함께 보여 준다. 대화형 터미널이 아니거나 Windows 에서는 같은 세트를 번호로 고른다. 메인 모델 목록은 각 모델을 실행하는 에이전트 CLI 의 설치 여부("Claude Code installed", "Codex not installed")를 표시하고, 실행할 수 있는 모델을 먼저 보여 준다. 번호를 입력하거나, 목록에 없는 모델은 모델 id 를 입력한다. `claude` 같은 에이전트 이름은 모델이 아니므로 안내와 함께 다시 묻는다. 에이전트 검토자는 이 컴퓨터에서 찾아서 보여 준다(v1.9.9). 설치된 에이전트 CLI 만 고를 수 있고, 고른 에이전트마다 쓸 모델을 그 CLI 가 알려 주는 목록에서 고른다: Claude Code 별칭(opus, sonnet, haiku), `agy models` 가 보여 주는 모델, `~/.codex/config.toml` 의 Codex 기본 모델(Codex 는 목록 명령이 없다), CLI 자체 기본값, 또는 직접 입력. 선택은 `review.<agent>-model` 로 저장되고 `manuwright models` 로도 같은 목록을 볼 수 있다. OpenRouter 모델을 고르면 OpenRouter API 키를 묻는다(입력은 `****` 로 표시, 입력 후 `sk-or-v1...abcd` 형태로 확인 표시, OpenRouter 로 유효성 확인, `~/.manuwright/secrets.json` 에 본인만 읽을 수 있게 저장, Ctrl+V 로 붙여넣고, 붙여넣기가 전달되지 않는 터미널(PowerShell 을 띄운 Windows Terminal)에서는 키를 복사한 뒤 빈 입력에서 Enter 를 누르면 클립보드에서 읽음; `OPENROUTER_API_KEY` 환경 변수가 있으면 그것을 우선 사용). 같은 세트는 `manuwright models` 로 언제든 볼 수 있다. 무료·contributor 등급은 입력을 학습에 쓸 수 있어 뺐다(검토는 미발표 원고를 보낸다). 그리고(Enter 는 그대로, `-` 는 지움), 마지막에 Obsidian 라이브러리를 제안한다. 하나만 바꿀 때는 `manuwright config set <키> <값>`.
 
 ![manuwright setup](images/manual/50_setup.png)
 

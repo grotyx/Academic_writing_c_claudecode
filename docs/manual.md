@@ -1,4 +1,4 @@
-# ManuWright user manual (v2.6.5)
+# ManuWright user manual (v2.7.0)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.9
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.9
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.10
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -332,6 +332,21 @@ Local reviewers run in an empty temporary folder in read-only or plan modes, so 
 
 ![Eight reviewers](images/manual/45_multi_reviewer_run.png)
 
+### 9c. Journal fit and journal suggestions
+
+Before submitting, check the paper against one journal, or find the journals that publish similar work. In chat: "Spine J 에 맞는지 봐줘", "어느 저널에 투고할까?", "is it a fit for Spine J?".
+
+```sh
+manuwright journal profile "Spine J" --url <the journal's Aims & Scope page>   # once per journal
+manuwright journal fit "Spine J" --query "oblique lumbar interbody fusion spondylolisthesis"
+manuwright journal suggest --query "..." [--review]
+```
+
+- **Profile.** A journal's aims and scope, article types, limits (abstract words, main-text words, references, tables and figures) and requirements, copied from its official pages, are kept in `~/.manuwright/library/journals/<journal>.md` and reused for every paper. Many publishers block automated reads, so your agent reads the page and fills the profile, shows it to you, and marks it `verified_by_author: yes` only when you confirm. Reviewers use only the profile for journal policies.
+- **Fit.** `fit` (default: the journal set with `manuwright target`) counts what the journal published on this topic in the last 5 years and lists the recent titles, compares the manuscript with the profile's limits (OVER is flagged), then your saved reviewers judge it as that journal's editor: scope fit, article type, overlap with its recent papers, requirements, what the editor would ask for, and a verdict FIT / BORDERLINE / NOT A FIT. `--no-review` stops before the reviewers.
+- **Suggest.** `suggest` ranks the journals that published the most similar papers (counts, share, latest year) and marks the ones in your `profile/journals.md`; `--review` asks the reviewers to rank the fit. Counts show where similar work appears, not a journal's rank; impact factors are not used.
+- Results go to `review/journal/<run>/` (report, packet, one file per reviewer). Only the search terms go to PubMed; the manuscript goes only to your chosen reviewers. The check is advisory, like the critical review.
+
 ## 10. Submission
 
 ```sh
@@ -458,7 +473,7 @@ The engine folder can change on reinstall (for example `.../python3.11/site-pack
 
 ### Settings
 
-`manuwright setup` walks through everything below in one pass. Models are chosen from menus, not typed: the main model is picked from a list (or "other"), and the agent reviewers (Claude Code, Codex, Muse, Antigravity/Gemini: run on your subscription, no API cost), OpenRouter models (pay per use) and opencode models (opencode Go subscription) are checklists — ↑/↓ to move, Space to tick, Enter to finish, Esc to keep the current choice, and a number key fills the checklist with a recommended set (OpenRouter: 1 balanced, 2 budget, 3 strong; opencode: 1 Go, 2 Go budget). The lists hold the newest GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo and Meituan LongCat models, checked against the live lists with an estimated cost per review (about $0.002–0.05 for most). Without an interactive terminal (or on Windows) the same sets are offered by number. The main-model list marks which agent CLI runs each model ("Claude Code installed", "Codex not installed") and lists models you can run first; type a number, or a model id for one not listed. An agent name such as `claude` is not a model and is refused with a hint. Agent reviewers are looked up on this computer (v1.9.9): setup says which agent CLIs it found and offers only those, then asks which model each one runs, from what that CLI reports: Claude Code's aliases (opus, sonnet, haiku), the models `agy models` lists, your Codex default from `~/.codex/config.toml` (Codex has no list command), the CLI's own default, or a typed id. The choice is saved as `review.<agent>-model`; `manuwright models` shows the same list. When OpenRouter models are chosen, setup asks for your OpenRouter API key (typed as `****`, then shown as `sk-or-v1...abcd`, checked with OpenRouter, saved owner-only in `~/.manuwright/secrets.json`; Ctrl+V pastes it, and where a terminal does not deliver the paste (Windows Terminal running PowerShell) copy the key and press Enter on the empty prompt to read it from the clipboard; an `OPENROUTER_API_KEY` environment variable takes precedence). `manuwright models` prints the same sets any time. Free and "contributor" tiers are left out because they may keep prompts, and a review sends the unpublished manuscript. It (Enter keeps a value, `-` clears it), then offers the Obsidian library. Use `manuwright config set <key> <value>` for a single change.
+`manuwright setup` walks through everything below in one pass. It picks the main model and the reviewers itself (v1.9.10): Claude writes; Codex and Antigravity review on your subscription when they are installed (the Muse CLI too); and the newest mid-price DeepSeek, Qwen and Meta Muse models review on opencode Go when it offers them, otherwise on OpenRouter (about $0.08 a review for the three; setup then asks for the OpenRouter key). A later run keeps reviewers you changed unless you accept the new set. To choose yourself, run `manuwright setup --custom`, where models are chosen from menus, not typed: the main model is picked from a list (or "other"), and the agent reviewers (Claude Code, Codex, Muse, Antigravity/Gemini: run on your subscription, no API cost), OpenRouter models (pay per use) and opencode models (opencode Go subscription) are checklists — ↑/↓ to move, Space to tick, Enter to finish, Esc to keep the current choice, and a number key fills the checklist with a recommended set (OpenRouter: 1 balanced, 2 budget, 3 strong; opencode: 1 Go, 2 Go budget). The lists hold the newest GLM, Kimi, MiniMax, DeepSeek, Qwen, Xiaomi MiMo and Meituan LongCat models, checked against the live lists with an estimated cost per review (about $0.002–0.05 for most). Without an interactive terminal (or on Windows) the same sets are offered by number. The main-model list marks which agent CLI runs each model ("Claude Code installed", "Codex not installed") and lists models you can run first; type a number, or a model id for one not listed. An agent name such as `claude` is not a model and is refused with a hint. Agent reviewers are looked up on this computer (v1.9.9): setup says which agent CLIs it found and offers only those, then asks which model each one runs, from what that CLI reports: Claude Code's aliases (opus, sonnet, haiku), the models `agy models` lists, your Codex default from `~/.codex/config.toml` (Codex has no list command), the CLI's own default, or a typed id. The choice is saved as `review.<agent>-model`; `manuwright models` shows the same list. When OpenRouter models are chosen, setup asks for your OpenRouter API key (typed as `****`, then shown as `sk-or-v1...abcd`, checked with OpenRouter, saved owner-only in `~/.manuwright/secrets.json`; Ctrl+V pastes it, and where a terminal does not deliver the paste (Windows Terminal running PowerShell) copy the key and press Enter on the empty prompt to read it from the clipboard; an `OPENROUTER_API_KEY` environment variable takes precedence). `manuwright models` prints the same sets any time. Free and "contributor" tiers are left out because they may keep prompts, and a review sends the unpublished manuscript. It (Enter keeps a value, `-` clears it), then offers the Obsidian library. Use `manuwright config set <key> <value>` for a single change.
 
 ![manuwright setup](images/manual/50_setup.png)
 

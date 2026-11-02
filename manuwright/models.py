@@ -30,6 +30,8 @@ OPENROUTER_SETS = {
         'meituan/longcat-2.0']),
     'strong': ('Strongest of each family (several times the cost)', [
         'z-ai/glm-5.3-prime', 'moonshotai/kimi-k3', 'deepseek/deepseek-v4-pro-0813', 'qwen/qwen3.8-max-0902']),
+    'setup': ('What setup picks without asking: DeepSeek, Qwen, Meta Muse', [
+        'deepseek/deepseek-v4-pro-0813', 'qwen/qwen3.7-plus', 'meta/muse-spark-1.3']),
 }
 OPENCODE_SETS = {
     'go': ('opencode Go subscription: newest model of each family', [
@@ -86,6 +88,33 @@ def opencode_models():
 CLAUDE_ALIASES = [('opus', 'opus    strongest Claude model on your plan'),
                   ('sonnet', 'sonnet  balanced'), ('haiku', 'haiku   fastest')]
 MODEL_TOKEN = re.compile(r'[a-z][a-z0-9._:/-]*\d[a-z0-9._:/-]*', re.I)
+
+
+# What setup picks without asking: the subscription agents found (not the one the main model runs on),
+# then the newest mid-price DeepSeek, Qwen and Meta Muse models: on opencode Go when it offers them
+# (subscription), else on OpenRouter (pay per use, about $0.08 a review for the three), the Muse CLI
+# when it is installed. `manuwright setup --custom` chooses by hand.
+AUTO_AGENTS = ['codex', 'agy', 'claude']
+AUTO_MODELS = [  # (family, opencode Go id, OpenRouter id)
+    ('DeepSeek', 'opencode-go/deepseek-v4-pro', 'deepseek/deepseek-v4-pro-0813'),
+    ('Qwen', 'opencode-go/qwen3.8-max', 'qwen/qwen3.7-plus'),
+    ('Muse', None, 'meta/muse-spark-1.3'),
+]
+
+
+def auto_reviewers(found, opencode_known, main_model):
+    """(reviewer specs, OpenRouter model ids) for the recommended set on this computer."""
+    writer = WRITER_AGENT.get((main_model or WRITERS[0]).split('/')[0])
+    reviewers = [a for a in AUTO_AGENTS if a in found and a != writer]
+    openrouter = []
+    for family, opencode, model in AUTO_MODELS:
+        if family == 'Muse' and 'muse' in found:
+            reviewers.append('muse')
+        elif opencode and opencode in opencode_known:
+            reviewers.append(f'opencode:{opencode}')
+        else:
+            openrouter.append(model)
+    return reviewers, openrouter
 
 
 def installed_agents():

@@ -338,7 +338,7 @@ def test_setup_walks_every_setting_then_offers_obsidian(monkeypatch, capsys):
                     'sk-or-good',                     # OpenRouter key, hidden input
                     '9', 'opencode-go/kimi-k3,opencode-go/glm-5.3',  # opencode: out-of-range number, then own ids
                     'maybe', 'on'])          # auto-update, with 1 retry
-    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    assert lifecycle.setup(['--custom'], ask=lambda _: next(answers)) == 0
     data = lifecycle.load('config.json', {})
     assert data['main_model'] == 'claude-opus-5-5'
     assert data['review']['reviewers'] == ['codex', 'openrouter', 'opencode:opencode-go/kimi-k3', 'opencode:opencode-go/glm-5.3']
@@ -363,7 +363,7 @@ def test_setup_main_model_is_a_numbered_choice_with_installed_agents(monkeypatch
     monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/codex' if name == 'codex' else None)
     monkeypatch.setattr(models, 'installed_agents', lambda: ['codex'])
     answers = iter(['claude', '99', '1', '', '0', '0', ''])  # agent name and bad number refused, then 1
-    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    assert lifecycle.setup(['--custom'], ask=lambda _: next(answers)) == 0
     out = capsys.readouterr().out
     first = next(line for line in out.splitlines() if line.startswith('   1. '))
     assert 'openai/' in first and 'Codex installed' in first  # installed agent's models listed first
@@ -381,7 +381,7 @@ def test_setup_picks_a_recommended_set(monkeypatch):
     monkeypatch.setattr(models, 'key_works', lambda key: False)
     monkeypatch.setattr(models, 'installed_agents', lambda: ['codex'])
     answers = iter(['', '-', '1', 'sk-bad', '0', ''])  # a rejected key is not saved
-    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    assert lifecycle.setup(['--custom'], ask=lambda _: next(answers)) == 0
     review = lifecycle.load('config.json', {})['review']
     assert review['reviewers'] == ['openrouter']
     assert review['openrouter_models'] == models.OPENROUTER_SETS['balanced'][1]
@@ -737,13 +737,45 @@ def test_setup_offers_only_agents_found_and_their_models(monkeypatch, tmp_path, 
     assert models.agent_models('agy')[0] == [('gemini-3.8-pro-high', 'gemini-3.8-pro-high'),
                                             ('claude-sonnet-5-5', 'claude-sonnet-5-5')]
     answers = iter(['', 'codex,agy', '2', '3', '0', '0', ''])  # codex: its configured model; agy: second listed
-    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    assert lifecycle.setup(['--custom'], ask=lambda _: next(answers)) == 0
     review = lifecycle.load('config.json', {})['review']
     assert review['reviewers'] == ['codex', 'agy']
     assert review['codex_model'] == 'gpt-6.1-sol' and review['agy_model'] == 'claude-sonnet-5-5'
     out = capsys.readouterr().out
     assert 'Found on this computer: Codex, Antigravity / Gemini; not found: claude, muse' in out
     answers = iter(['', '', '1', '4', 'my-model', '0', '0', ''])  # keep agents; codex default; agy typed id
-    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    assert lifecycle.setup(['--custom'], ask=lambda _: next(answers)) == 0
     review = lifecycle.load('config.json', {})['review']
     assert 'codex_model' not in review and review['agy_model'] == 'my-model'
+
+
+def test_setup_picks_the_reviewers_without_asking(monkeypatch, capsys):
+    from manuwright import obsidian, models
+    monkeypatch.setattr(obsidian, 'offer_connect', lambda: None)
+    monkeypatch.setattr(models, 'installed_agents', lambda: ['claude', 'codex', 'agy'])
+    monkeypatch.setattr(models, 'opencode_models', lambda: {'opencode-go/deepseek-v4-pro'})
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: '/bin/opencode' if name == 'opencode' else None)
+    monkeypatch.setattr(models, 'openrouter_prices', lambda: {'qwen/qwen3.7-plus': (2e-7, 1e-6), 'meta/muse-spark-1.3': (1e-6, 6e-6)})
+    monkeypatch.delenv('OPENROUTER_API_KEY', raising=False)
+    monkeypatch.setattr(models, 'key_works', lambda key: True)
+    answers = iter(['sk-or-ok', ''])  # only the OpenRouter key and auto-update; no reviewer menus
+    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    data = lifecycle.load('config.json', {})
+    assert data['main_model'] == models.WRITERS[0]  # Claude writes, so Claude is not a reviewer
+    assert data['review']['reviewers'] == ['codex', 'agy', 'opencode:opencode-go/deepseek-v4-pro', 'openrouter']
+    assert data['review']['openrouter_models'] == ['qwen/qwen3.7-plus', 'meta/muse-spark-1.3']
+    out = capsys.readouterr().out
+    assert 'recommended reviewers' in out and 'setup --custom' in out
+    # a later run keeps reviewers the author changed unless they accept the new recommendation
+    lifecycle.config(['set', 'review.reviewers', 'codex'])
+    answers = iter(['n', ''])
+    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    assert lifecycle.load('config.json', {})['review']['reviewers'] == ['codex']
+
+
+def test_auto_reviewers_follow_the_main_model_and_installed_clis():
+    from manuwright import models
+    assert models.auto_reviewers([], set(), None) == ([], [m for _, _, m in models.AUTO_MODELS])
+    reviewers, openrouter = models.auto_reviewers(['claude', 'codex', 'muse'], set(), 'openai/gpt-6-astra')
+    assert reviewers == ['claude', 'muse'] and 'meta/muse-spark-1.3' not in openrouter  # Codex writes; Muse CLI used
+    assert models.OPENROUTER_SETS['setup'][1] == [m for _, _, m in models.AUTO_MODELS]

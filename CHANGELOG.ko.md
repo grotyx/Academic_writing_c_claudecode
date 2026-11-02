@@ -2,8 +2,19 @@
 
 ### Unreleased
 
-- `manuwright check` 와 `setup` 이 Windows 에서 더 이상 "출력된 줄로 설치"하라고 하지 않는다. v1.9.7 부터 `manuwright update` 가 직접 설치한다.
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
+
+### v1.9.10 (261102)
+
+저널 적합성 리뷰와 저널 추천. setup 이 리뷰어를 알아서 고른다.
+
+- `manuwright journal fit [저널]` 은 원고를 저널 하나와 맞춰 본다(생략하면 `manuwright target` 으로 정한 저널): 그 저널이 최근 5년 동안 같은 주제로 실은 논문 수와 최근 제목, 저널 profile 의 제한(초록·본문 단어 수, 참고문헌, 표·그림)과 원고 비교(OVER 표시), 그리고 저장해 둔 리뷰어가 그 저널 편집자 입장에서 판단한다(scope 적합성, 논문 유형, 최근 게재 논문과의 중복, 요구 사항, 편집자가 요구할 것; FIT / BORDERLINE / NOT A FIT). `--no-review` 는 리뷰어 전에서 멈춘다.
+- `manuwright journal suggest` 는 비슷한 논문이 가장 많이 실린 저널 순위(편수, 비율, 최근 연도)를 보여 주고 `profile/journals.md` 에 있는 저널을 표시한다. `--review` 는 리뷰어가 적합도 순으로 매긴다. Impact Factor 는 쓰지 않는다.
+- `manuwright journal profile <저널> --url <페이지>` 는 저널의 aims & scope, 논문 유형, 제한, 요구 사항을 `~/.manuwright/library/journals/` 에 두고 모든 논문에서 쓴다. 에이전트가 공식 페이지를 읽어 채우고, 저자가 확인해야 verified 가 된다.
+- 논문 폴더에서 "Spine J 에 맞는지 봐줘", "어느 저널에 투고할까?", "is it a fit for Spine J?" 라고 하면 이 절차가 시작된다. 새 `/journal-review` 명령과 `journal` 리뷰어 역할. PubMed 에는 검색어만 가고, 원고는 저자가 고른 리뷰어에게만 간다.
+- `manuwright setup` 이 더 이상 리뷰어를 고르라고 하지 않는다. 글은 Claude 가 쓰고, Codex 와 Antigravity 가 설치돼 있으면 구독으로 검토하며(Muse CLI 도), 최신 중간 가격대 DeepSeek, Qwen, Meta Muse 모델이 opencode Go 에 있으면 그것으로, 없으면 OpenRouter 로 검토한다(deepseek-v4-pro-0813, qwen3.7-plus, muse-spark-1.3: 셋 합쳐 검토 1회 약 $0.08). 다시 실행해도 저자가 바꿔 둔 리뷰어는 새 추천을 받아들일 때만 바뀐다. `manuwright setup --custom` 은 예전처럼 메뉴로 고른다.
+- `manuwright check` 와 `setup` 이 Windows 에서 더 이상 "출력된 줄로 설치"하라고 하지 않는다. v1.9.7 부터 `manuwright update` 가 직접 설치한다.
+- 매뉴얼 v2.7.0(9c 저널 적합성, setup), critical review protocol v1.2.0(6절), workflow reference v1.2.0, harness guide v1.3.4, README.
 
 ### v1.9.9 (261021)
 

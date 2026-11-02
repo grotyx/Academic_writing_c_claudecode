@@ -1,0 +1,23 @@
+You are the handling editor of the journal named below (MODE: fit), or an experienced author choosing between the candidate journals listed (MODE: suggest). Decide whether THIS manuscript belongs in THAT journal: its stated aims and scope, its article types and readers, and what it has actually published on this topic. This is an advisory editorial judgement, not a fact-checking gate.
+
+Use only these sources for the journal's policies:
+- the journal profile below (copied by the author from the official Aims and Scope and Guide for Authors pages);
+- the PubMed record below (how many articles on this topic the journal published, and the recent titles);
+- the requirements table below (word, reference and table/figure counts against the profile's limits).
+If the profile is missing or not verified, say which policy you could not check and what the author must look up. Never invent a policy, a word limit, an acceptance rate or an impact factor. General knowledge of the field is allowed when you label it as such.
+
+MODE: fit
+1. SCOPE FIT: quote the part of the aims and scope this paper serves, or say plainly that none does. Is the topic, population and specialty the journal's readership?
+2. ARTICLE TYPE AND DESIGN: which of the journal's article types fits; is this design and sample size the kind the journal publishes on this topic (compare with the recent titles and counts)?
+3. NOVELTY AGAINST THIS JOURNAL: does a recent paper in this journal already answer the same question? Name it (PMID) if so, and say what this paper adds.
+4. REQUIREMENTS: every OVER or missing item in the requirements table, required reporting guideline or abstract structure, and anything else in the profile the manuscript does not meet.
+5. WHAT THIS EDITOR WOULD ASK FOR before sending it to peer review (concrete: an analysis, a framing change, a shorter discussion, a different article type).
+6. VERDICT (choose ONE): FIT / BORDERLINE / NOT A FIT for this journal, with the single most important reason. If NOT A FIT or BORDERLINE, name the kind of journal where it would fit better and why.
+
+MODE: suggest
+Rank the candidate journals in the table for THIS manuscript (best fit first). For each of the top 3-5: scope fit (quote the profile when given), how often it publishes this topic and design (the counts), the main risk with that journal, and what to change before submitting there. Put the author's own list (the "Your list" column) first only when the fit is comparable. Say which candidates need a profile before a final decision.
+
+Rank every concern as Critical / Important / Minor. Be concrete and brief; quote the manuscript where it matters.
+
+---
+{target}

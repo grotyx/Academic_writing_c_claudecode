@@ -430,7 +430,7 @@ def setup(args, ask=input, secret=None):
     if secret is None:
         secret = models_masked_input if ask is input else ask
     try:
-        return _setup_steps(data, prompt, ask, secret)
+        return _setup_steps(data, prompt, ask, secret, custom='--custom' in args)
     except (EOFError, KeyboardInterrupt):
         print('\nSetup stopped; settings not saved' + (' (the OpenRouter key you entered was saved).' if KEY_SAVED else '.'))
         return 1
@@ -480,13 +480,48 @@ def agent_model_step(data, agent, ask, models):
         review.pop(key, None)
 
 
-def _setup_steps(data, prompt, ask, secret):
+def auto_reviewer_step(data, ask, secret, models):
+    """Main model and reviewers without menus: Claude writes; the recommended reviewers are set."""
+    review = data.setdefault('review', {})
+    if not data.get('main_model'):
+        data['main_model'] = models.WRITERS[0]
+    found = models.installed_agents()
+    known = models.opencode_models() if shutil.which('opencode') else set()
+    reviewers, openrouter = models.auto_reviewers(found, known, data['main_model'])
+    proposed = reviewers + (['openrouter'] if openrouter else [])
+    current = review.get('reviewers', [])
+    print(f"  main model: {data['main_model']}")
+    print('  recommended reviewers: ' + ', '.join(reviewers + openrouter))
+    if openrouter:
+        prices = models.openrouter_prices()
+        cost = sum(models.review_cost(prices[m]) for m in openrouter if m in prices)
+        print('    on OpenRouter (pay per use' + (f', about ${cost:.2f} a review' if cost else '') + '): '
+              + ', '.join(openrouter))
+        for warning in models.check(openrouter, set(prices)):
+            print(warning + ' Run `manuwright update` for a newer list, or `manuwright setup --custom`.')
+    if current and (current != proposed or review.get('openrouter_models', []) != openrouter):
+        print(f"  your reviewers now: {', '.join(current)}")
+        if ask('  Use the recommended reviewers instead? [Y/n]: ').strip().lower() in ('n', 'no'):
+            return
+    review['reviewers'] = proposed
+    if openrouter:
+        review['openrouter_models'] = openrouter
+        openrouter_key_step(secret, ask)
+    else:
+        review.pop('openrouter_models', None)
+    print('  (`manuwright setup --custom` picks the models and reviewers yourself)')
+
+
+def _setup_steps(data, prompt, ask, secret, custom=False):
     try:
         from manuwright import models
     except ImportError:  # lifecycle loaded from an engine folder (see agents())
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
         from manuwright import models
     print('1. Models and reviewers')
+    if not custom:
+        auto_reviewer_step(data, ask, secret, models)
+        return _setup_rest(data, prompt, ask)
     review = data.setdefault('review', {})
     current = [r.strip() for r in review.get('reviewers', [])]
     local = [r for r in current if r.split(':')[0] in models.AGENTS]
@@ -540,6 +575,10 @@ def _setup_steps(data, prompt, ask, secret):
         review['openrouter_models'] = openrouter
     review['reviewers'] = local + (['openrouter'] if openrouter else []) + [f'opencode:{m}' for m in opencode]
     print(f"  reviewers: {', '.join(review['reviewers']) or 'none'}")
+    return _setup_rest(data, prompt, ask)
+
+
+def _setup_rest(data, prompt, ask):
     print('\n2. Updates')
     if 'auto_update' in data:
         prompt('auto-update')

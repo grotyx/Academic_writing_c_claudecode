@@ -39,8 +39,10 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 PROMPT_DIR = Path(__file__).resolve().parent / "critical_prompts"
 # manuscript = senior peer-reviewer pass; response = reviewer-response pass;
 # editor = high-impact-tier editor desk-screen (clinical validity / scope fit /
-# additional validation), a deliberately higher bar than the target journal.
-ROLES = ("manuscript", "response", "editor")
+# additional validation), a deliberately higher bar than the target journal;
+# journal = the editor of ONE named journal (or a candidate list), judging scope fit from
+# that journal's profile and PubMed record (scripts/journal_fit.py builds the packet).
+ROLES = ("manuscript", "response", "editor", "journal")
 
 # Pseudo model id routing to the local Claude Code CLI reviewer (claude -p).
 CLAUDE_MODEL_ID = "claude-cli"
