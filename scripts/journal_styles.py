@@ -23,11 +23,13 @@ from pathlib import Path
 # pages:   asis | full-hyphen | full-endash | abbrev-hyphen | abbrev-endash
 # doi:     none | prefix ("doi:10...") | url ("https://doi.org/10...")
 # cutoff:  (max listed, kept when over) or None for all authors
+# p_leading_zero: False where the journal follows AMA style ("P = .02"; AMA Manual of Style 11th ed.);
+#          absent means a leading zero ("P = 0.02"). Statistics notation is checked by lint_manuscript.
 STYLES = {
     'vancouver': dict(label='ICMJE / Vancouver (NLM)', cutoff=(6, 6), in_text='bracket', pattern='vancouver',
                       issue=True, pages='asis', doi='none'),
     'ama': dict(label='AMA 11th (JAMA Network)', cutoff=(6, 3), in_text='superscript', pattern='vancouver',
-                issue=True, pages='full-hyphen', doi='prefix', italic=True),
+                issue=True, pages='full-hyphen', doi='prefix', italic=True, p_leading_zero=False),
     'nejm': dict(label='N Engl J Med', cutoff=(6, 3), in_text='superscript', pattern='nejm',
                  issue=False, pages='abbrev-hyphen', doi='none'),
     'lancet': dict(label='Lancet', cutoff=(6, 3), in_text='superscript', pattern='lancet',
@@ -43,9 +45,9 @@ STYLES = {
     'neurospine': dict(label='Neurospine', cutoff=(3, 3), in_text='superscript', pattern='vancouver',
                        issue=True, pages='full-endash', doi='url'),
     'jns-spine': dict(label='J Neurosurg Spine (AMA)', cutoff=(6, 3), in_text='superscript', pattern='vancouver',
-                      issue=True, pages='full-hyphen', doi='prefix', italic=True),
+                      issue=True, pages='full-hyphen', doi='prefix', italic=True, p_leading_zero=False),
     'gsj': dict(label='Global Spine J (AMA)', cutoff=(6, 3), in_text='superscript', pattern='vancouver',
-                issue=True, pages='full-hyphen', doi='prefix', italic=True),
+                issue=True, pages='full-hyphen', doi='prefix', italic=True, p_leading_zero=False),
     'corr': dict(label='Clin Orthop Relat Res', cutoff=(6, 3), in_text='bracket', pattern='vancouver',
                  issue=False, pages='full-hyphen', doi='none', italic=True, order='alphabetical'),
     'asj': dict(label='Asian Spine J', cutoff=(6, 3), in_text='superscript', pattern='vancouver',

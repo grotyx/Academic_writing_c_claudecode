@@ -40,6 +40,8 @@ TOOLS = {
     'critical-review': ('critical_review.py', {}),
     'journal': ('journal_fit.py', {}),
     'compile-response': ('compile_response_docx.py', {}),
+    'bind': ('bind_results.py', {}),
+    'track-changes': ('track_changes.py', {}),
 }
 
 USAGE = f"""usage: manuwright <command> [args]
@@ -62,6 +64,9 @@ Writing and review (in chat you can simply ask: "서론 써줘", "과장 표현 
   style preserve <old> <new> check a style rewrite kept every citation, number, p value and table/figure reference
   style status               writing mode and learned style (style extract|check: metrics against a Style Spec)
   claim-strength drafts      cited sentences worded more strongly than their evidence (Claim Strength in evidence.md)
+  bind [--write]             propose result bindings: each number tied to its results CSV cell (review/bindings_overrides.json
+                             gives the table context and settles numbers found in several cells)
+  track-changes OLD.md NEW.md -o OUT.docx   Word file with the revision as tracked changes (or "tracked_baseline" for build)
   search audit               check every evidence.md entry against PubMed: details match, retracted, corrected
   blind-review packet|check  revision re-review that hides the response letter until the verdicts are written
   journal fit [journal]      does the paper fit this journal: PubMed record, limits, an editor's review

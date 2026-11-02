@@ -1,6 +1,14 @@
 # Changelog
 
-### Unreleased
+### v1.10.0 (261102)
+
+Four things a clinician writing a real paper used to do by hand, designed and reviewed with Codex (gpt-6.1-sol), plus the fixes from the review of v1.9.4-v1.9.11.
+
+- `manuwright bind` proposes `review/result_bindings.json`: each number bound to the one CSV cell that holds it; numbers in several cells are listed with a best guess and settled by an override with a few words of the line; the time point, population, comparison and unit come from per-table defaults in `review/bindings_overrides.json`, never invented. `--write` keeps unchanged sections' bindings and declares the file.
+- `numeric_allow` in project.json exempts a phrase, not a file: only the number inside "12 months" or "Python 3.12" is skipped, each with a reason; `verify` reports the count and fails on an entry that matches nothing.
+- Tracked revisions: with `"tracked_baseline"` (the submitted build's manuscript_*.md) `build` also writes `manuscript_REVn_..._tracked.docx` (Word revisions; Accept all = revision, Reject all = submitted text). `manuwright track-changes OLD.md NEW.md -o OUT.docx` for any pair. Tables are not tracked.
+- P value notation follows the target journal: AMA-based presets (ama, jns-spine, gsj) want `P = .02`, the others `P = 0.02`.
+- Manual v2.8.0, harness guide v1.4.0, READMEs.
 
 Fixes from two independent reviews of v1.9.4-v1.9.11 (Claude and Codex gpt-6.1-sol), merged after discussion.
 

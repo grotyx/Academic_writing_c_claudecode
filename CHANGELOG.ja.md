@@ -1,6 +1,14 @@
 # 変更履歴
 
-### Unreleased
+### v1.10.0 (261102)
+
+実際の論文を書く臨床医が手作業で行っていた四つの作業。Codex(gpt-6.1-sol)と設計・レビューし、v1.9.4〜v1.9.11 のレビュー修正も含む。
+
+- `manuwright bind` が `review/result_bindings.json` を提案する: 数値をその値を持つ CSV セル一つに結び付け、複数セルにある数値は推測付きで一覧にし、その行の数語を書いた指定で確定する。時点・対象・比較・単位は `review/bindings_overrides.json` の表ごとの既定値からのみ取り、作り出さない。
+- project.json の `numeric_allow` はファイルではなく語句を除外する: "12 months" や "Python 3.12" の中の数値だけを除外し、理由が必須。`verify` が件数を示し、どこにも一致しない項目は失敗とする。
+- 変更履歴付き原稿: `"tracked_baseline"` があれば `build` が `manuscript_REVn_..._tracked.docx` も作る(すべて承諾 = 改訂版、すべて元に戻す = 投稿版)。任意の二つは `manuwright track-changes OLD.md NEW.md -o OUT.docx`。表は追跡しない。
+- P 値の表記が投稿先に従う: AMA 系プリセット(ama、jns-spine、gsj)は `P = .02`、その他は `P = 0.02`。
+- マニュアル v2.8.0、harness guide v1.4.0、README。
 
 v1.9.4〜v1.9.11 に対する二つの独立レビュー(Claude、Codex gpt-6.1-sol)を協議して統合した修正。
 

@@ -244,6 +244,10 @@ def build(path):
                 manuscript.add_page_break();append_markdown(manuscript,disclosure,style);merged.append(disclosure)
         manuscript.save(stage/f'manuscript{stamp}.docx')
         (stage/f'manuscript{stamp}.md').write_text('\n\n'.join(merged),encoding='utf-8')
+        if config.get('tracked_baseline'):  # revision: the submitted text against this one, as Word revisions
+            from .tracked import tracked_docx
+            baseline=inside(root,config['tracked_baseline'])
+            tracked_docx(baseline.read_text(encoding='utf-8'),'\n\n'.join(merged),stage/f'manuscript{stamp}_tracked.docx',style)
         for index,value in enumerate(config.get('tables',[]),1):
             text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels,marker)
             table=document(style,False);append_markdown(table,text,style);table.save(stage/f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}{stamp}.docx')

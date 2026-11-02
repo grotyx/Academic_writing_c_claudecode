@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -143,6 +143,8 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright check` | 一次检查版本、代理插件、主模型、密钥、自动更新和需刷新的论文，并给出修复命令 |
 | `manuwright mode academic\|strict\|off` | 学术文体模式：风格卡片 + 每次编辑后的文字检查；`strict` 阻止含 AI 腔文字的写入 |
 | `manuwright style learn <论文>` / `style card <section>` | 测量好论文语料（你的文体、经典论文、目标期刊）/ 显示章节风格卡片 |
+| `manuwright bind [--write]` | 提议结果绑定：把正文中的每个数字绑定到结果 CSV 的单元格；表格语境和出现在多个单元格的数字由 `review/bindings_overrides.json` 指定，绝不猜测 |
+| `manuwright track-changes OLD.md NEW.md -o OUT.docx` | 将修订稿生成 Word 修订（tracked changes）文件（设置 `"tracked_baseline"` 后由 `build` 生成） |
 | `manuwright claim-strength drafts` | 检查引用句的措辞是否强于证据的 `Claim Strength`（speculative、observed、supported、strong） |
 | `manuwright search audit` | 将 evidence.md 每个条目与 PubMed 重新核对：标题/作者/年份/期刊加权匹配、DOI 不一致、撤稿、关注声明、勘误 |
 | `manuwright blind-review packet` / `check` | 在记录判定之前隐藏回复信的修订复审（不受回复信说服） |

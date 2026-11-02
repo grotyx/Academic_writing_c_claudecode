@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import re
 from decimal import ROUND_HALF_UP, Decimal
@@ -170,8 +171,86 @@ def is_structural_number(
     return False
 
 
+# Set by the caller that has already chosen and validated the paper's manifest (harness verify, bind):
+# (root, numeric_allow entries). Then no other project.json is consulted, so a stray manifest in a
+# subfolder can never add exemptions that the hashed one does not list.
+SELECTED: tuple[Path, list] | None = None
+
+
+def select_manifest(root: Path, entries: list) -> None:
+    global SELECTED
+    SELECTED = (Path(root).resolve(), list(entries or []))
+
+
+def _spans_from(folder: Path, entries, artifact: Path) -> list[str]:
+    spans = []
+    for entry in entries if isinstance(entries, list) else []:
+        if not (isinstance(entry, dict) and isinstance(entry.get("text"), str) and entry["text"].strip()
+                and isinstance(entry.get("reason"), str) and entry["reason"].strip()):
+            continue
+        target = entry.get("artifact")
+        if target and (folder / target).resolve() != artifact:
+            continue
+        spans.append(entry["text"].strip().casefold())
+    return spans
+
+
+def allowed_spans(artifact: Path) -> list[str]:
+    """Texts of the paper's project.json "numeric_allow" entries that apply to this artifact (lower case).
+    A number inside one of these texts is not a result ("12 months" follow-up, "Python 3.12"), so it is
+    neither checked against results nor bound; every entry carries a reason and makes reviews stale when
+    edited (project.json is a dependency)."""
+    artifact = Path(artifact).resolve()
+    if SELECTED is not None:
+        root, entries = SELECTED
+        return _spans_from(root, entries, artifact) if artifact.is_relative_to(root) else []
+    # standalone use (`manuwright numbers file.md`): the paper manifest above the file (one with "artifacts")
+    for folder in artifact.parents:
+        manifest = folder / "project.json"
+        if not manifest.is_file():
+            continue
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return []
+        if not isinstance(data, dict) or "artifacts" not in data:
+            continue
+        return _spans_from(folder, data.get("numeric_allow") or [], artifact)
+    return []
+
+
+def allow_report(root: Path, entries: list, artifacts: list[Path]) -> tuple[int, list[str]]:
+    """(numbers exempted, entries that match nothing): a stale numeric_allow rule is reported, not ignored."""
+    exempted, unmatched = 0, []
+    for entry in entries:
+        targets = [Path(root, entry["artifact"]).resolve()] if entry.get("artifact") else artifacts
+        span = entry["text"].strip().casefold()
+        hits = 0
+        for artifact in targets:
+            for line in strip_ignored_text(Path(artifact).read_text(encoding="utf-8")).splitlines():
+                hits += sum(1 for m in NUMBER_RE.finditer(line) if _inside_allowed(line, m.start("num"), [span]))
+        exempted += hits
+        if not hits:
+            unmatched.append(entry["text"])
+    return exempted, unmatched
+
+
+def _inside_allowed(line: str, position: int, spans: list[str]) -> bool:
+    folded = line.casefold()
+    for span in spans:
+        start = folded.find(span)
+        while start != -1:
+            end = start + len(span)
+            bounded = (start == 0 or not folded[start - 1].isalnum()) and (end == len(folded) or not folded[end].isalnum())
+            if bounded and start <= position < end:  # "2 months" never matches inside "12 months"
+                return True
+            start = folded.find(span, start + 1)
+    return False
+
+
 def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
     text = strip_ignored_text(artifact.read_text(encoding="utf-8"))
+    spans = allowed_spans(artifact)
     tokens: list[NumberToken] = []
     p_columns = set()
     lines = text.splitlines()
@@ -192,6 +271,8 @@ def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
             table_comparator = re.search(r'(<=|>=|<|>|=)\s*$', line[:match.start()]) if table_p else None
             value = to_float(raw_number)
             if is_structural_number(line, match.start(), full_token, is_p_value, value):
+                continue
+            if spans and _inside_allowed(line, match.start("num"), spans):
                 continue
             tokens.append(
                 NumberToken(

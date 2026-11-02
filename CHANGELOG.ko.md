@@ -1,6 +1,14 @@
 # 변경 이력
 
-### Unreleased
+### v1.10.0 (261102)
+
+실제 논문을 쓰는 임상의가 손으로 하던 네 가지. Codex(gpt-6.1-sol)와 설계·검토했고, v1.9.4~v1.9.11 리뷰 수정도 포함.
+
+- `manuwright bind` 가 `review/result_bindings.json` 을 제안한다: 숫자를 그 값이 든 CSV 칸 하나에 연결하고, 여러 칸에 있는 숫자는 추측과 함께 목록으로 보여 주며 그 줄의 몇 단어를 적은 지정으로 정한다. 시점·대상·비교·단위는 `review/bindings_overrides.json` 의 표별 기본값에서만 가져오고 지어내지 않는다. `--write` 는 바뀌지 않은 섹션의 연결을 유지하고 파일을 등록한다.
+- project.json 의 `numeric_allow` 는 파일이 아니라 문구를 예외로 둔다: "12 months", "Python 3.12" 안의 숫자만 빠지고 항목마다 이유가 필요하다. `verify` 가 개수를 보여 주고, 어디에도 없는 항목은 실패로 표시한다.
+- 수정 표시 원고: `"tracked_baseline"`(투고 빌드의 manuscript_*.md)이 있으면 `build` 가 `manuscript_REVn_..._tracked.docx` 도 만든다(Word 수정 내용 추적; 모두 수락 = 수정본, 모두 거부 = 투고본). 아무 두 파일이나 `manuwright track-changes OLD.md NEW.md -o OUT.docx`. 표는 추적하지 않는다.
+- P 값 표기가 목표 저널을 따른다: AMA 계열 프리셋(ama, jns-spine, gsj)은 `P = .02`, 나머지는 `P = 0.02`.
+- 매뉴얼 v2.8.0, harness guide v1.4.0, README.
 
 v1.9.4~v1.9.11 에 대한 두 독립 리뷰(Claude, Codex gpt-6.1-sol)를 상의해 합친 수정.
 

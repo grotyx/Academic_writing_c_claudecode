@@ -1,4 +1,4 @@
-# ManuWright 사용자 매뉴얼 (v2.7.2)
+# ManuWright 사용자 매뉴얼 (v2.8.0)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.0
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.0
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -289,7 +289,18 @@ manuwright verify --project project.json --profile draft
 
 ![draft profile PASS](images/manual/20_verify_draft_pass.png)
 
-lint 지적(en dash, `p` 표기, Discussion 의 수치 과밀, 금지어)도 실패로 친다. 본문을 고치고, 용어집을 느슨하게 만들지 않는다.
+lint 지적(en dash, `p` 표기, Discussion 의 수치 과밀, 금지어)도 실패로 친다. 본문을 고치고, 용어집을 느슨하게 만들지 않는다. P 값 표기는 목표 저널을 따른다(v1.10.0): AMA 계열 저널(AMA, J Neurosurg Spine, Global Spine J 프리셋)은 AMA Manual of Style 대로 소수점 앞 0 없이 `P = .02`, 다른 프리셋은 `P = 0.02`. *p* 와 *P* 는 둘 다 된다.
+
+**결과가 아닌 숫자.** 추적 기간("12 months"), 소프트웨어 버전("Python 3.12"), Methods 의 대상자 수는 결과가 아닌데 숫자 검사는 `results/*.csv` 에서 찾는다. 파일 전체가 아니라 그 문구만 예외로 둔다(v1.10.0):
+
+```json
+"numeric_allow": [
+  {"text": "12 months", "reason": "follow-up time point"},
+  {"artifact": "drafts/04_methods.md", "text": "Python 3.12", "reason": "software version"}
+]
+```
+
+정확히 그 문구 안의 숫자만 빠진다. "At 12 months, 12 patients improved" 의 두 번째 12 는 그대로 검사한다. 항목마다 이유가 필요하고, `verify` 가 예외로 뺀 숫자 수를 보여 주며 어디에도 없는 항목은 실패로 표시한다. 목록을 고치면 검토는 stale 이 된다. 서론·고찰의 문헌 수치에는 파일 단위 `numeric_exemptions` 를 그대로 쓴다.
 
 투고 전에 두 가지를 더 돌린다.
 
@@ -377,7 +388,7 @@ manuwright verify --project project.json --profile submission
 
 시험에서 가장 손이 많이 간 부분:
 
-- **바인딩.** 숫자 155개를 연결했다. 대부분은 CSV 칸 하나와만 일치했고, 나머지(여러 개의 `120`, `60`, `p < 0.001` 등)는 문장을 읽고 직접 정했다. 수동 지정은 토큰 순서 번호가 아니라 "파일:줄:숫자:몇 번째" 로 적는다. 순서 번호는 문장이 바뀌면 밀린다. 자동으로 연결된 것도 점검한다: 값이 하나뿐이어도 이름표가 틀릴 수 있다. 합계(예: 전체 120명)는 엉뚱한 칸에 연결하지 말고 결과에 합계 행("All")을 추가한다.
+- **바인딩.** 숫자 155개를 연결했다. 대부분은 CSV 칸 하나와만 일치했고, 나머지(여러 개의 `120`, `60`, `p < 0.001` 등)는 문장을 읽고 직접 정했다. 수동 지정은 토큰 순서 번호가 아니라 "파일:줄:숫자:몇 번째" 로 적는다. 순서 번호는 문장이 바뀌면 밀린다. 자동으로 연결된 것도 점검한다: 값이 하나뿐이어도 이름표가 틀릴 수 있다. 합계(예: 전체 120명)는 엉뚱한 칸에 연결하지 말고 결과에 합계 행("All")을 추가한다. v1.10.0 부터는 `manuwright bind` 가 이 작업을 대신한다: 하나의 숫자만 든 칸 한 곳과 일치하는 숫자는 연결하고, 여러 칸과 일치하는 숫자(추측 포함)와 어느 칸에도 없는 숫자는 목록으로 보여 주며, `--write` 로 `review/result_bindings.json` 을 쓴다. CSV 가 알려 줄 수 없는 정보(시점, 대상, 비교, 단위)는 `review/bindings_overrides.json` 에 결과 파일마다 한 번 적는다. 없으면 그 숫자들은 미해결로 남고, 절대 지어서 채우지 않는다. 여러 칸에 있는 숫자는 "파일·줄·숫자·몇 번째" 와 그 줄의 몇 단어(`line_text`)로 지정해서, 문장이 바뀌면 따라가지 않게 한다(형식은 영문 매뉴얼 10절). 바뀌지 않은 섹션의 기존 연결은 그대로 둔다.
 - **체크리스트.** 현재 공식 체크리스트를 받아(시험에서는 CONSORT-SPIRIT 사이트의 CONSORT 2025) 항목마다 위치나 사유를 적고, 독립 검토자가 확인하게 한다. 검토자는 26번을 두 번 반려했고, 군별 요약과 위험차·위험비의 CI 를 보고한 뒤에 통과했다. 새 분석은 매번 분석 계획 수정안 승인을 받았고 post hoc 로 표시했다.
 - **검토 라운드.** 총 7회였고 마지막 두 번은 지적이 없었다. Rule 9 의 자동 2회를 넘으면 저자의 결정으로만 계속한다.
 
@@ -453,6 +464,8 @@ manuwright verify --project project.json --profile revision
 ```
 
 `response-coverage` 는 모든 코멘트에 응답이 있는지, `revision-claims` 는 `[CHANGE]` 로 고쳤다고 한 내용이 수정본에 실제로 있는지 본다. 시험에서는 둘 다 `PASS` 였다.
+
+5. **수정 표시(tracked changes) 원고 (v1.10.0).** 대부분의 저널이 수정 내역 표시본을 요구한다. `project.json` 의 `"tracked_baseline"` 에 투고했던 빌드의 `manuscript_*.md`(그 `output/<run>/` 폴더 안)를 적으면, `manuwright build` 가 깨끗한 원고 옆에 `manuscript_REVn_..._tracked.docx` 를 만든다. 단락 순서대로 비교해서, 바뀐 단락은 옛 단락 삭제 + 새 단락 삽입으로 보인다. Word 에서 "모두 수락" 하면 수정본, "모두 거부" 하면 투고본이 된다. 표는 별도 파일이라 추적하지 않는다(본문에 표가 있으면 거부). 아무 두 Markdown 파일이나: `manuwright track-changes OLD.md NEW.md -o tracked.docx`. 보내기 전에 Word 로 열어 확인한다.
 
 ![응답서 점검](images/manual/65_revision_checks.png)
 
@@ -576,7 +589,7 @@ manuwright format-references drafts/*.md --journal nejm --fetch   # PubMed 전�
 | Codex 의 `Hooks need review` | plugin hook 이 새로 생기거나 바뀜. 확인 후 ManuWright hook 신뢰 |
 | lint 가 계획에서 정한 용어를 잡음 | 논문 전용 `Style/terminology.md` 를 두고 `project.json` 의 `terminology` 에 지정 |
 | `one or more declared artifacts are missing: ...` | `project.json` 이 아직 없는 섹션을 가리킴. `artifacts` 수정 |
-| Discussion 의 수치가 실패 | 문헌 수치임. `numeric_exemptions` 에 사유를 적고 semantic review 에서 확인 |
+| Discussion 의 수치가 실패 | 문헌 수치임. `numeric_exemptions` 에 사유를 적고 semantic review 에서 확인. 결과가 아닌 숫자 하나("12 months")는 `numeric_allow` 항목(8절) |
 | 검토가 stale 이 됨 | 검토 대상 파일 중 무엇인가 바뀜. packet 을 다시 만들어 재검토 |
 | plugin 과 CLI 버전 경고 | `manuwright agents update` 후 에이전트 재시작 |
 | `Obsidian MCP is unavailable` | Obsidian 에서 vault 를 열고 Settings > Academic Paper Citation Manager > External AI (MCP) 를 켠 뒤 에이전트의 MCP 연결을 다시 시작 |

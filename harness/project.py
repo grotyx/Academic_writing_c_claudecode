@@ -47,6 +47,19 @@ def load_project(path):
     for item in config.get('numeric_artifacts', []):
         if inside(path.parent, item) not in resolved:
             raise ValueError('numeric_artifacts must be in artifacts, tables or supplements')
+    if config.get('tracked_baseline'):  # the submitted manuscript_*.md a revision build is tracked against
+        baseline = inside(path.parent, config['tracked_baseline'])
+        if not baseline.is_file() or baseline.suffix.lower() != '.md':
+            raise ValueError('tracked_baseline must be an existing .md file (the merged manuscript of an earlier build)')
+    # numeric_allow: numbers that are not results ("12 months", "Python 3.12"), each with a reason
+    allow = config.get('numeric_allow', [])
+    if not isinstance(allow, list) or any(
+            not isinstance(e, dict) or not isinstance(e.get('text'), str) or not e['text'].strip()
+            or not re.search(r'\d', e['text']) or not isinstance(e.get('reason'), str) or not e['reason'].strip()
+            or ('artifact' in e and (not isinstance(e['artifact'], str) or inside(path.parent, e['artifact']) not in resolved))
+            for e in allow):
+        raise ValueError('numeric_allow entries need "text" (with a number), a nonempty "reason" and, if given, '
+                         'an "artifact" listed in artifacts, tables or supplements')
     number_of = re.compile(r'table[_\- ]?(\d+)', re.I)
     seen = {}
     for item in config.get('tables', []):
@@ -77,7 +90,7 @@ def snapshot(path, config):
     for key in ('artifacts', 'tables', 'supplements', 'figures', 'dependencies'):
         files.update(inside(root, item) for item in config.get(key, []))
     for key in ('evidence', 'draft_plan', 'analysis_plan', 'result_bindings', 'abstract',
-                'response', 'comments', 'ai_usage', 'checklist', 'terminology', 'style_spec'):
+                'response', 'comments', 'ai_usage', 'checklist', 'terminology', 'style_spec', 'tracked_baseline'):
         if config.get(key):
             record = inside(root, config[key])
             # Submission records are written late; before they exist a draft profile must still
@@ -307,7 +320,21 @@ def verify(path, profile='draft'):
         run(key, validate_plan)
     numeric = config.get('numeric_artifacts', [])
     cn = checker('check_numbers')
+    cn.select_manifest(root, config.get('numeric_allow', []))  # only this hashed, validated manifest exempts
     run('numeric_scope', lambda: numeric_scope(root, config, artifacts, cn))
+    if config.get('numeric_allow'):
+        def allowed():
+            count, unmatched = cn.allow_report(root, config['numeric_allow'], artifacts)
+            if unmatched:
+                return 'numeric_allow text found nowhere (remove or fix it): ' + '; '.join(unmatched)
+            record('numeric_allow', 'PASS', f'{count} number(s) exempted as non-results (see project.json reasons)')
+            return 'recorded'
+        try:
+            outcome = allowed()
+            if outcome != 'recorded':
+                record('numeric_allow', 'FAIL', outcome)
+        except (OSError, ValueError, KeyError) as exc:
+            record('numeric_allow', 'BLOCKED', str(exc))
     if numeric:
         run('number_tokens', lambda: explain(cn.check_numbers([inside(root, item) for item in numeric],
             results_dir=inside(root, config['results']))))

@@ -1,4 +1,4 @@
-# ManuWright user manual (v2.7.2)
+# ManuWright user manual (v2.8.0)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.0
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.0
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -284,7 +284,18 @@ manuwright verify --project project.json --profile draft
 
 ![Draft profile PASS](images/manual/20_verify_draft_pass.png)
 
-Lint findings count as failures (en dashes, `p` formatting, too many numbers in the Discussion, forbidden terms). Fix them in the text; do not weaken the registry.
+Lint findings count as failures (en dashes, `p` formatting, too many numbers in the Discussion, forbidden terms). Fix them in the text; do not weaken the registry. The P value notation follows the target journal (v1.10.0): AMA-style journals (AMA, J Neurosurg Spine, Global Spine J presets) write `P = .02` with no zero before the decimal point, as the AMA Manual of Style requires; the other presets write `P = 0.02`. *p* and *P* are both fine.
+
+**Numbers that are not results.** A follow-up time point ("12 months"), a software version ("Python 3.12") or the cohort size in Methods is not a result, but the number check would look for it in `results/*.csv`. Exempt the phrase, not the whole file (v1.10.0):
+
+```json
+"numeric_allow": [
+  {"text": "12 months", "reason": "follow-up time point"},
+  {"artifact": "drafts/04_methods.md", "text": "Python 3.12", "reason": "software version"}
+]
+```
+
+Only a number inside that exact phrase is skipped: in "At 12 months, 12 patients improved" the second 12 is still checked. Every entry needs a reason; `verify` lists how many numbers were exempted and fails on an entry that matches nothing, and editing the list makes reviews stale. File-wide `numeric_exemptions` remain for literature values in the Introduction and Discussion.
 
 Before submission, run two more checks.
 
@@ -370,7 +381,16 @@ Submission additionally needs:
 
 In the demo these took most of the effort:
 
-- **Bindings.** 155 numbers were bound. Most matched exactly one CSV cell; the rest (for example several `120`s, `60`s and `p < 0.001`s) were assigned by reading each sentence. Keep an explicit override table keyed by file, line, number and occurrence (not by token index, which shifts when a sentence changes), and audit the automatic matches too: a unique value can still carry the wrong label. Add summary rows (for example an "All" row with n = 120) to the results instead of binding a total to an unrelated cell.
+- **Bindings.** 155 numbers were bound. Most matched exactly one CSV cell; the rest (for example several `120`s, `60`s and `p < 0.001`s) were assigned by reading each sentence. Since v1.10.0 `manuwright bind` does the bookkeeping: it binds every number found in exactly one single-number cell, lists the numbers found in several cells (with a best guess) and the numbers found in none, and writes `review/result_bindings.json` with `--write`. What a CSV cannot say (time point, population, comparison, unit) comes from `review/bindings_overrides.json`, once per results file; without it those numbers stay unresolved, never filled in. A number in several cells is settled by a `numbers` entry keyed by file, line, number and occurrence, with a few words of the line (`line_text`) so it never follows an edited sentence:
+
+```json
+{"tables": {"results/table2_outcomes.csv": {"timepoint": "during surgery", "population": "all patients",
+                                           "comparison": "MIS-TLIF vs open TLIF", "unit": {"p": "none", "*": "mL"}}},
+ "numbers": [{"artifact": "drafts/05_results.md", "line": 5, "number": "60", "occurrence": 1,
+              "line_text": "Each group had 60", "cell": "results/table2_outcomes.csv:2:MIS_n"}]}
+```
+
+  Audit the automatic matches too: a unique value can still carry the wrong label, and the semantic data review checks the meaning. Add summary rows (for example an "All" row with n = 120) to the results instead of binding a total to an unrelated cell. Bindings of a section that has not changed since are kept.
 - **Checklist.** Download the current official checklist (CONSORT 2025 from the CONSORT-SPIRIT website in the demo), map every item to a location or a reason, and let the independent reviewer check it. The reviewer rejected item 26 twice until group summaries, a risk difference and a risk ratio with CIs were reported. Each new analysis needed an approved analysis-plan amendment and was labelled post hoc.
 - **Review rounds.** Seven rounds in total; the last two were clean. Beyond the two automatic rounds of Rule 9, continue only with the author's decision.
 
@@ -446,6 +466,8 @@ manuwright verify --project project.json --profile revision
 ```
 
 `response-coverage` checks that every comment has a response; `revision-claims` checks that each change claimed in a `[CHANGE]` block is really in the revised section. Both returned `PASS` in testing.
+
+5. **Tracked-changes manuscript (v1.10.0).** Most journals ask for a marked copy. Set `"tracked_baseline"` in `project.json` to the merged `manuscript_*.md` of the build you submitted (in its `output/<run>/` folder); `manuwright build` then writes `manuscript_REVn_..._tracked.docx` beside the clean manuscript. Paragraphs are compared in order: a changed paragraph shows as the old one deleted and the new one inserted, so Accept all changes gives the revision and Reject all the submitted text. Tables are separate files and are not tracked (a manuscript with a table in the main text is refused). Any two Markdown files: `manuwright track-changes OLD.md NEW.md -o tracked.docx`. Open it in Word before sending.
 
 ![Response checks](images/manual/65_revision_checks.png)
 
@@ -569,7 +591,7 @@ Presets: `vancouver`, `ama` (JAMA), `nejm`, `lancet`, `spine`, `spine-j`, `bjj`,
 | `Hooks need review` in Codex | New or changed plugin hooks. Review, then trust the ManuWright hooks. |
 | Lint flags a term your plan chose | Give the paper its own `Style/terminology.md` and set `terminology` in `project.json`. |
 | `one or more declared artifacts are missing: ...` | `project.json` lists sections that do not exist yet. Edit `artifacts`. |
-| Numbers in Discussion fail | Literature values: add a `numeric_exemptions` reason and have the semantic review check them. |
+| Numbers in Discussion fail | Literature values: add a `numeric_exemptions` reason and have the semantic review check them. A single non-result number ("12 months"): a `numeric_allow` entry (section 8). |
 | Review became stale | Something in its dependencies changed. Rebuild the packet and review again. |
 | Plugin/CLI version warning | Run `manuwright agents update`, then restart the agent. |
 | `Obsidian MCP is unavailable` | Open the vault in Obsidian and turn on Settings > Academic Paper Citation Manager > External AI (MCP); restart the agent's MCP connection. |

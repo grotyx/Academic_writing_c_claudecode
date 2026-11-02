@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -143,6 +143,8 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright check` | 버전·에이전트 플러그인·메인 모델·키·자동 업데이트·갱신할 논문을 한 번에 점검하고 고치는 명령 제시 |
 | `manuwright mode academic\|strict\|off` | 학술 문체 모드: 스타일 카드 + 편집마다 문장 검사; `strict` 는 AI 말투가 든 쓰기를 차단 |
 | `manuwright style learn <논문들>` / `style card <section>` | 좋은 논문 코퍼스(내 문체, landmark, 목표 저널) 측정 / 섹션 스타일 카드 출력 |
+| `manuwright bind [--write]` | 수치 연결 제안: 본문 숫자마다 결과 CSV 칸을 연결. 표의 맥락과 여러 칸에 있는 숫자는 `review/bindings_overrides.json` 으로 정하고, 추측해 채우지 않음 |
+| `manuwright track-changes OLD.md NEW.md -o OUT.docx` | 수정본을 Word 수정 내용 추적(tracked changes) 파일로 (`"tracked_baseline"` 이 있으면 `build` 가 만듦) |
 | `manuwright claim-strength drafts` | 인용 문장의 표현이 근거의 `Claim Strength`(speculative, observed, supported, strong)보다 센지 검사 |
 | `manuwright search audit` | evidence.md 항목을 PubMed 와 다시 대조: 제목·저자·연도·저널 가중 일치도, DOI 불일치, 철회, 우려 표명, 정정 |
 | `manuwright blind-review packet` / `check` | 응답 편지를 가린 채 먼저 판정을 기록하는 revision 재검토 (편지의 설득에 끌려가지 않음) |

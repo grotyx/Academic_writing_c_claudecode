@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.9.11
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.0
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -143,6 +143,8 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright check` | バージョン・エージェントプラグイン・メインモデル・キー・自動更新・更新が必要な論文をまとめて点検し、修正コマンドを表示 |
 | `manuwright mode academic\|strict\|off` | 学術文体モード: スタイルカード + 編集ごとの文章チェック。`strict` は AI 的な文章の書き込みをブロック |
 | `manuwright style learn <論文>` / `style card <section>` | 良い論文のコーパス（自分の文体、landmark、投稿先誌）を測定 / セクションのスタイルカードを表示 |
+| `manuwright bind [--write]` | 結果バインディングの提案: 本文の数値を結果 CSV のセルに結び付ける。表の文脈と複数セルにある数値は `review/bindings_overrides.json` で指定し、推測では埋めない |
+| `manuwright track-changes OLD.md NEW.md -o OUT.docx` | 改訂を Word の変更履歴ファイルに（`"tracked_baseline"` があれば `build` が作成） |
 | `manuwright claim-strength drafts` | 引用文の表現が根拠の `Claim Strength`（speculative、observed、supported、strong）より強すぎないか検査 |
 | `manuwright search audit` | evidence.md の各項目を PubMed と再照合：タイトル・著者・年・誌名の加重一致度、DOI 不一致、撤回、懸念表明、訂正 |
 | `manuwright blind-review packet` / `check` | 回答書を伏せたまま先に判定を記録する revision 再査読（回答書の説得に引きずられない） |

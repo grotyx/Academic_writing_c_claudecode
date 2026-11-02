@@ -1,6 +1,14 @@
 # 变更记录
 
-### Unreleased
+### v1.10.0 (261102)
+
+撰写真实论文的临床医生过去需手工完成的四件事,与 Codex(gpt-6.1-sol)共同设计和审查,并包含对 v1.9.4–v1.9.11 审查的修复。
+
+- `manuwright bind` 提议 `review/result_bindings.json`:把每个数字绑定到含有该值的唯一 CSV 单元格;出现在多个单元格的数字附带猜测列出,并通过写明该行几个词的覆盖项确定;时间点、人群、比较和单位只取自 `review/bindings_overrides.json` 的按表默认值,绝不编造。
+- project.json 中的 `numeric_allow` 豁免的是短语而非文件:只跳过 "12 months"、"Python 3.12" 中的数字,每条都需要理由;`verify` 报告数量,找不到匹配的条目判为失败。
+- 修订追踪稿:设置 `"tracked_baseline"`(投稿构建的 manuscript_*.md)后,`build` 还会生成 `manuscript_REVn_..._tracked.docx`(全部接受 = 修订稿,全部拒绝 = 投稿稿)。任意两个文件可用 `manuwright track-changes OLD.md NEW.md -o OUT.docx`。表格不追踪。
+- P 值写法遵循目标期刊:AMA 系预设(ama、jns-spine、gsj)为 `P = .02`,其余为 `P = 0.02`。
+- 手册 v2.8.0、harness guide v1.4.0、README。
 
 对 v1.9.4–v1.9.11 的两份独立审查(Claude、Codex gpt-6.1-sol)经讨论后合并的修复。
 

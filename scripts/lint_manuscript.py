@@ -8,6 +8,7 @@ section-specific style issues. Uses only the Python standard library.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -54,9 +55,40 @@ RESULTS_INTERPRETATION_TERMS = [
 STAT_STYLE_PATTERNS = [
     (re.compile(r"(?<![A-Za-z])\*?[Pp]\*?\s*=\s*0\.000\b"), "Use p < 0.001, not p = 0.000."),
     (re.compile(r"(?<![A-Za-z])\*?[Pp]\*?\s*=\s*NS\b", re.IGNORECASE), "Use exact p-values or state not significant in text."),
-    (re.compile(r"(?<![A-Za-z])\*?p\*?\s*[<=>]\s*\.\d+"), "Use a leading zero for p-values, e.g., p = 0.023."),
+    (LEADING_ZERO := re.compile(r"(?<![A-Za-z])\*?[pP]\*?\s*(?:<=|>=|[<=>\u2264\u2265])\s*\.\d+"),
+     "Use a leading zero for p-values, e.g., p = 0.023."),
     (re.compile(r"(?<![A-Za-z*])p\s*[<=>]"), "Use formatted *p* in final manuscript text."),
 ]
+
+
+# AMA-style journals (journal_styles p_leading_zero False) write P = .02: a leading zero is the finding there.
+AMA_ZERO = re.compile(r"(?<![A-Za-z])\*?[pP]\*?\s*(?:<=|>=|[<=>\u2264\u2265])\s*0\.\d+")
+
+
+def paper_journal(path: Path) -> str:
+    """The "journal" preset of the paper this file belongs to (nearest project.json), or ''."""
+    for folder in Path(path).resolve().parents:
+        manifest = folder / "project.json"
+        if manifest.is_file():
+            try:
+                value = json.loads(manifest.read_text(encoding="utf-8")).get("journal") or ""
+            except (OSError, ValueError, AttributeError):
+                return ""
+            return value if isinstance(value, str) else ""
+    return ""
+
+
+def journal_preset(journal: str) -> dict:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import journal_styles
+    except ImportError:
+        return {}
+    return journal_styles.STYLES.get(journal, {})
+
+
+def p_leading_zero(journal: str) -> bool:
+    return journal_preset(journal).get("p_leading_zero", True)
 
 
 def load_forbidden_terms(path: Path) -> dict[str, str]:
@@ -194,6 +226,8 @@ def lint_file(path: Path, forbidden_terms: dict[str, str]) -> list[tuple[str, Pa
     if is_abstract_file(path, text):
         issues.extend(find_keywords_issues(path, text))
 
+    journal = paper_journal(path)
+    zero = p_leading_zero(journal)
     for line_no, line in line_collections(text):
         stripped = line.strip()
         if not stripped or stripped.startswith("<!--"):
@@ -216,8 +250,14 @@ def lint_file(path: Path, forbidden_terms: dict[str, str]) -> list[tuple[str, Pa
                 add_issue(issues, "OVERCLAIM", path, line_no, f'Potential overstatement: "{term}".')
 
         for pattern, message in STAT_STYLE_PATTERNS:
+            if pattern is LEADING_ZERO and not zero:
+                continue
             if pattern.search(line):
                 add_issue(issues, "STAT_FORMAT", path, line_no, message)
+        if not zero and AMA_ZERO.search(line):
+            add_issue(issues, "STAT_FORMAT", path, line_no,
+                      f"{journal_preset(journal).get('label', journal)} follows AMA style: no zero before the decimal point of a P value "
+                      "(P = .02, P < .001).")
 
         if "—" in line:
             add_issue(issues, "DASH", path, line_no, "Avoid em dash in running manuscript text.")
