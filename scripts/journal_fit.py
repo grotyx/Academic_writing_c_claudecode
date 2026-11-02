@@ -3,7 +3,8 @@
 
     journal_fit.py profile <journal> [--url URL] [--from FILE]   journal profile: aims & scope, limits
     journal_fit.py fit [<journal>] [--query Q] [--years 5] [--reviewers ...] [--no-review]
-    journal_fit.py suggest [--query Q] [--years 5] [--top 10] [--review] [--reviewers ...]
+    journal_fit.py suggest [--query Q] [--years 5] [--top 10] [--mine] [--review] [--reviewers ...]
+    journal_fit.py list [--import FILE]        your journal list (group, category percentile)
 
 `fit` checks one journal: what it published on this topic in PubMed (counts, recent titles), the
 manuscript against the limits in its profile (abstract and main-text words, references, tables and
@@ -137,7 +138,7 @@ def page_text(url: str) -> str:
 
 def nlm_abbreviation(journal: str, search=None) -> tuple[str, str]:
     """(NLM title abbreviation, full title) as PubMed knows the journal; ('', '') when not found/offline."""
-    search = search or pubmed.search_pubmed
+    search = search or patient(pubmed.search_pubmed)
     try:
         for term in (f'"{journal}"[ta]', f'"{journal}"[jour]'):
             ids, _ = search(term, 1)
@@ -247,13 +248,26 @@ def manuscript(root: Path) -> str:
 
 # --- PubMed ----------------------------------------------------------------------
 
+def patient(call):
+    """Retry a PubMed call that NCBI rate-limited (HTTP 429), waiting longer each time."""
+    def wrapped(*args, **kwargs):
+        for wait in (1, 2, 4, 8, None):
+            try:
+                return call(*args, **kwargs)
+            except urllib.error.HTTPError as exc:
+                if exc.code != 429 or wait is None:
+                    raise
+                time.sleep(wait)
+    return wrapped
+
+
 def since(years: int) -> str:
     return f'("{datetime.now().year - years + 1}"[dp] : "3000"[dp])'
 
 
 def journal_evidence(query: str, ta: str, years: int, search=None, fetch=None) -> dict:
     """What the journal published on this topic: counts and recent titles ({'error'} when offline)."""
-    search, fetch = search or pubmed.search_pubmed, fetch or pubmed.fetch_articles
+    search, fetch = search or patient(pubmed.search_pubmed), fetch or patient(pubmed.fetch_articles)
     try:
         ids, on_topic_here = search(f'({query}) AND "{ta}"[ta] AND {since(years)}', 8, 'pub_date')
         time.sleep(pubmed.RATE_LIMIT_DELAY)
@@ -279,7 +293,7 @@ def summaries(ids: list[str]) -> list[dict]:
     out = []
     for i in range(0, len(ids), 100):
         params = urllib.parse.urlencode({'db': 'pubmed', 'id': ','.join(ids[i:i + 100]), 'retmode': 'json'})
-        result = pubmed._fetch_json(f'{pubmed.BASE_URL}/esummary.fcgi?{params}').get('result', {})
+        result = patient(pubmed._fetch_json)(f'{pubmed.BASE_URL}/esummary.fcgi?{params}').get('result', {})
         out += [result[u] for u in result.get('uids', []) if u in result]
         time.sleep(pubmed.RATE_LIMIT_DELAY)
     return out
@@ -293,6 +307,55 @@ def own_list(root: Path | None) -> list[tuple[str, str]]:
             found = re.findall(r'(?m)^##\s+([^(\n]+?)\s*(?:\(([^)\n]+)\))?\s*(?:✓)?\s*$', path.read_text(encoding='utf-8'))
             return [(n.strip(), a.strip()) for n, a in found if not re.search(r'[가-힣]|principle', n, re.I)]
     return []
+
+
+LIST_HEADER = '| Group | Journal (NLM) | Full title | Category | Category %rank | IF |'
+
+
+def list_path() -> Path:
+    return library_journals() / 'list.md'
+
+
+def my_list() -> dict:
+    """{normalised NLM abbreviation: row} from the author's journal list (library/journals/list.md)."""
+    path = list_path()
+    if not path.is_file():
+        return {}
+    rows = {}
+    for line in path.read_text(encoding='utf-8').splitlines():
+        cells = [c.strip() for c in line.strip().strip('|').split('|')]
+        if len(cells) >= 5 and cells[1] and not set(cells[1]) <= set('-: ') and cells[1] != 'Journal (NLM)':
+            rows[norm(cells[1])] = {'group': cells[0], 'journal': cells[1], 'title': cells[2],
+                                    'category': cells[3], 'rank': cells[4]}
+    return rows
+
+
+def list_note(entry: dict | None) -> str:
+    return f"{entry['group']}: top {entry['rank']}% {entry['category'].title()}" if entry else ''
+
+
+def cmd_list(args) -> int:
+    path = list_path()
+    if args.import_file:
+        text = Path(args.import_file).read_text(encoding='utf-8')
+        if LIST_HEADER not in text:
+            print(f'journal list: {args.import_file} is not a journal list (needs the table header {LIST_HEADER}).',
+                  file=sys.stderr)
+            return 2
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.is_file() and path.read_text(encoding='utf-8') != text:
+            path.with_name('list.md.bak').write_bytes(path.read_bytes())
+        path.write_text(text, encoding='utf-8')
+        print(f'saved {len(my_list())} journals to {path} (kept on this computer)')
+        return 0
+    rows = my_list()
+    if not rows:
+        print(f'No journal list yet ({path}). Import one: manuwright journal list --import <file>')
+        return 0
+    for row in sorted(rows.values(), key=lambda r: (r['group'], float(r['rank'] or 100))):
+        print(f"{row['group']:<14} {row['journal']:<34} top {row['rank']:>5}% {row['category'].title()}")
+    print(f'\n{len(rows)} journals in {path}')
+    return 0
 
 
 def norm(text: str) -> str:
@@ -390,6 +453,9 @@ def cmd_fit(args, search=None, fetch=None) -> int:
             report.append(f"{journal} published {ev['here']} articles on this topic (of {ev['topic']} on the topic in "
                           f"all journals; {share} of its {ev['journal_total']} articles).")
             report += [f"- {a['year']} {a['title']} (PMID {a['pmid']}; {a['design']})" for a in ev['recent']]
+    entry = my_list().get(norm(journal))
+    if entry:
+        report.append(f'In your journal list: {list_note(entry)}.')
     report += ['', '## Requirements check', *limits_table(measure(root), profile.get('limits', {}))]
     if not profile:
         report += ['', f'No journal profile yet: `manuwright journal profile "{journal}" --url <Aims & Scope page>`, '
@@ -409,6 +475,22 @@ def cmd_fit(args, search=None, fetch=None) -> int:
     return 0
 
 
+def mine_counts(query: str, mine: dict, years: int, search=None) -> list[dict]:
+    """Articles on the topic in each journal of the author's list, most first (journals with none left out)."""
+    search = search or patient(pubmed.search_pubmed)
+    rows = []
+    for entry in mine.values():
+        _, count = search(f'({query}) AND "{entry["journal"]}"[ta] AND {since(years)}', 0)
+        time.sleep(pubmed.RATE_LIMIT_DELAY)
+        if count:
+            rows.append({'journal': entry['journal'], 'full': entry['title'], 'count': count, 'latest': '-',
+                         'yours': None})
+    total = sum(r['count'] for r in rows) or 1
+    for row in rows:
+        row['share'] = round(100 * row['count'] / total)
+    return sorted(rows, key=lambda r: (-r['count'], r['journal']))
+
+
 def cmd_suggest(args) -> int:
     root = paper_root(Path.cwd())
     if not root:
@@ -420,19 +502,34 @@ def cmd_suggest(args) -> int:
               file=sys.stderr)
         return 2
     try:
-        ids, count = pubmed.search_pubmed(f'({query}) AND {since(args.years)}', 300)
+        ids, count = patient(pubmed.search_pubmed)(f'({query}) AND {since(args.years)}', 300)
         records = summaries(ids)
     except (OSError, ValueError) as exc:
         print(f'journal suggest: PubMed could not be reached ({exc}).', file=sys.stderr)
         return 1
-    rows = rank_journals(records, own_list(root), args.top)
+    mine = my_list()
+    if args.mine and not mine:
+        print('journal suggest --mine: no journal list yet; import one with `manuwright journal list --import <file>`.',
+              file=sys.stderr)
+        return 2
+    if args.mine:  # every journal in the list, counted directly (not only those in the 300 most relevant)
+        try:
+            rows = mine_counts(query, mine, args.years)
+        except (OSError, ValueError) as exc:
+            print(f'journal suggest: PubMed could not be reached ({exc}).', file=sys.stderr)
+            return 1
+        rows = rows[:args.top]
+    else:
+        rows = rank_journals(records, own_list(root), args.top)
     report = [f'# Journal suggestions', '', f'PubMed query: `{query}`, last {args.years} years: {count} articles '
               f'({len(records)} most relevant counted).', '',
+              ('Only journals in your list (`journal list`).\n' if args.mine else ''),
               '| # | Journal | Articles | Share | Latest | Your list | Profile |', '|---|---|---|---|---|---|---|']
     for i, row in enumerate(rows, 1):
         has = 'yes' if read_profile(profile_path(row['journal'], root)) else '-'
+        yours = list_note(mine.get(norm(row['journal']))) or ('#' + str(row['yours']) if row['yours'] else '-')
         report.append(f"| {i} | {row['journal']} | {row['count']} | {row['share']}% | {row['latest']} | "
-                      f"{'#' + str(row['yours']) if row['yours'] else '-'} | {has} |")
+                      f"{yours} | {has} |")
     report += ['', 'Counts show where similar work is published, not journal rank; impact factors are not used.',
                'Next: `manuwright journal fit "<journal>"` for the ones you consider.']
     run_dir = new_run(root, 'suggest')
@@ -461,13 +558,16 @@ def main(argv=None) -> int:
     s = sub.add_parser('suggest', help='journals that publish similar work')
     s.add_argument('--top', type=int, default=10)
     s.add_argument('--review', action='store_true', help='also ask the reviewers to rank the fit')
+    s.add_argument('--mine', action='store_true', help='only journals in your journal list')
+    li = sub.add_parser('list', help='your journal list (group, category percentile), kept on this computer')
+    li.add_argument('--import', dest='import_file', help='save this list file to your library')
     for q in (f, s):
         q.add_argument('--query', help='PubMed terms for the topic (default: words of the title)')
         q.add_argument('--years', type=int, default=5)
         q.add_argument('--reviewers', help='reviewer specs as in critical review (default: your saved reviewers)')
     f.add_argument('--no-review', action='store_true', help='only the PubMed and requirements part')
     args = parser.parse_args(argv)
-    return {'profile': cmd_profile, 'fit': cmd_fit, 'suggest': cmd_suggest}[args.command](args)
+    return {'profile': cmd_profile, 'fit': cmd_fit, 'suggest': cmd_suggest, 'list': cmd_list}[args.command](args)
 
 
 if __name__ == '__main__':

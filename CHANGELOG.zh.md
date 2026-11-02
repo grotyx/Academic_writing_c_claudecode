@@ -10,6 +10,7 @@
 
 - `manuwright journal fit [期刊]` 将稿件与一本期刊对照（省略时为 `manuwright target` 设定的期刊）：该刊近 5 年同主题发表的文章数和最近的标题；稿件与期刊 profile 中限制（摘要和正文字数、参考文献、表和图）的比较（标出 OVER）；再由你保存的审稿人以该刊编辑的身份判断（scope 适合度、文章类型、与其近期文章的重复、要求、编辑会要求什么；FIT / BORDERLINE / NOT A FIT）。`--no-review` 在审稿人之前停止。
 - `manuwright journal suggest` 按发表类似文章最多的期刊排序（篇数、比例、最近年份），并标出你 `profile/journals.md` 中的期刊；`--review` 让审稿人按适合度排序。不使用影响因子。
+- `manuwright journal list --import <文件>` 将你自己的期刊列表（分组、学科、学科内百分位）保存在 `~/.manuwright/library/journals/list.md`，仅在本机；`suggest --mine` 统计列表中每本期刊的同主题文章数并只对它们排序，`fit`/`suggest` 显示期刊在列表中的位置。
 - `manuwright journal profile <期刊> --url <页面>` 将期刊的 aims & scope、文章类型、限制和要求保存在 `~/.manuwright/library/journals/`，供所有论文使用。由代理阅读官方页面填写，作者确认后才算 verified。
 - 在论文文件夹中说“看看适不适合 Spine J”、“投哪本期刊好？”或“is it a fit for Spine J?”即可启动。新增 `/journal-review` 命令和 `journal` 审稿角色。PubMed 只收到检索词，稿件只发给你选定的审稿人。
 - `manuwright setup` 不再让你挑选审稿人：由 Claude 写作；已安装时 Codex 和 Antigravity 用订阅审稿（Muse CLI 也是）；最新的中等价位 DeepSeek、Qwen、Meta Muse 模型若 opencode Go 提供则用它，否则用 OpenRouter（deepseek-v4-pro-0813、qwen3.7-plus、muse-spark-1.3：三个合计每次评审约 $0.08）。再次运行时，只有你接受新推荐才会替换你改过的审稿人；`manuwright setup --custom` 保留原来的菜单。

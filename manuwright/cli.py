@@ -65,7 +65,8 @@ Writing and review (in chat you can simply ask: "서론 써줘", "과장 표현 
   search audit               check every evidence.md entry against PubMed: details match, retracted, corrected
   blind-review packet|check  revision re-review that hides the response letter until the verdicts are written
   journal fit [journal]      does the paper fit this journal: PubMed record, limits, an editor's review
-  journal suggest            journals that publish similar work (--review ranks the fit); journal profile <j> --url
+  journal suggest            journals that publish similar work (--mine: only your list; --review ranks the fit)
+  journal profile <j> --url  a journal's aims, limits and requirements; journal list [--import FILE]: your journal list
   approve <plan> --kind analysis|draft --approved-by NAME --quote "..."
                              record the author's approval given in chat (ticks the box, hashed receipt)
   rules [keyword|--path]     print the workflow rules (or one section)

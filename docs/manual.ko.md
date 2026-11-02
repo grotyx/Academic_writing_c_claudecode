@@ -353,6 +353,7 @@ manuwright journal suggest --query "..." [--review]
 - **Profile.** 저널의 aims & scope, 논문 유형, 제한(초록 단어 수, 본문 단어 수, 참고문헌 수, 표·그림 수), 요구 사항을 공식 페이지에서 옮겨 `~/.manuwright/library/journals/<저널>.md` 에 두고 모든 논문에서 다시 쓴다. 많은 출판사가 프로그램의 자동 읽기를 막으므로, 에이전트가 페이지를 직접 읽어 채우고 저자에게 보여 준 뒤 저자가 확인했을 때만 `verified_by_author: yes` 로 표시한다. 리뷰어는 저널 규정을 이 profile 에서만 가져온다.
 - **Fit.** `fit`(생략하면 `manuwright target` 으로 정한 저널)은 그 저널이 최근 5년 동안 같은 주제로 실은 논문 수와 최근 제목을 보여 주고, 원고를 profile 의 제한과 비교하며(OVER 표시), 저장해 둔 리뷰어가 그 저널 편집자 입장에서 판단한다: scope 적합성, 논문 유형, 최근 게재 논문과의 중복, 요구 사항, 편집자가 요구할 것, 판정 FIT / BORDERLINE / NOT A FIT. `--no-review` 는 리뷰어 단계 전에서 멈춘다.
 - **Suggest.** `suggest` 는 비슷한 논문이 가장 많이 실린 저널 순위(편수, 비율, 최근 연도)를 보여 주고 `profile/journals.md` 에 있는 저널을 표시한다. `--review` 를 주면 리뷰어가 적합도 순으로 매긴다. 편수는 비슷한 연구가 어디에 실리는지를 보여 줄 뿐 저널 순위가 아니며, Impact Factor 는 쓰지 않는다.
+- **내 저널 목록.** `manuwright journal list --import <파일>` 은 내가 정한 저널 목록(그룹, 분야, 분야 내 백분위)을 `~/.manuwright/library/journals/list.md` 에 이 컴퓨터에만 둔다. 그러면 `suggest --mine` 이 목록의 모든 저널에서 같은 주제 논문 수를 세어 그 저널들만 순위를 매기고, `fit` 과 `suggest` 가 그 저널이 목록에서 어디인지 보여 준다("Spine: top 9.88% Orthopedics"). `manuwright journal list` 로 목록을 본다.
 - 결과는 `review/journal/<run>/` 에 남는다(보고서, packet, 리뷰어별 파일). PubMed 에는 검색어만 가고, 원고는 저자가 고른 리뷰어에게만 간다. critical review 처럼 참고용이다.
 
 ## 10. 제출
