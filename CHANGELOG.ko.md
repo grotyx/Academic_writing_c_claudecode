@@ -2,6 +2,19 @@
 
 ### Unreleased
 
+v1.9.4~v1.9.11 에 대한 두 독립 리뷰(Claude, Codex gpt-6.1-sol)를 상의해 합친 수정.
+
+- setup 이 추천 리뷰어를 저장하기 전에 묻고, 원고가 어디로 가는지(각 에이전트 회사, OpenRouter 의 해당 모델) 알려 준다. 비워 둔 리뷰어 목록(검토 끔)은 y 를 입력해야만 켜진다.
+- Windows 업데이트 창: 기다린 뒤에도 ManuWright 가 실행 중이면 설치하지 않는다(uv 가 환경을 지운 뒤 잠긴 파일에서 실패하던 위험). `--no-agents` 도 그 창에서 지켜진다.
+- `journal list --build` 는 기존 목록을 `--replace` 없이 바꾸지 않는다. 목록과 용어 파일의 백업은 덮어쓰지 않는다(이전의 다른 백업은 날짜 이름으로 보존).
+- 분야 감지용 참고문헌 PMID 는 저자가 동의할 때만 NCBI 로 보낸다(터미널·setup 질문, 또는 `--send-pmids`). 논문 폴더 안에서는 그 논문의 참고문헌만 읽는다. `journal fit`/`suggest` 는 제목에서 뽑은 검색어를 검색 전에 보여 준다.
+- `journal fit` 은 `project.json` 이 지정한 섹션·표를 잰다(여러 논문, revision 구조). 원고가 없으면 검색·검토 전에 멈춘다.
+- 라이브러리 동기화: 새 문구 규칙이 동기화 표 안에 들어간다(표 뒤 글 때문에 안 읽히거나 세션마다 중복되던 문제). 논문 폴더 밖 용어 파일에는 쓰지 않는다.
+- PubMed 요청 30초 시간 제한. 순위 사이트의 줄바꿈이나 상대 주소가 달라도 정상으로 읽는다. PubMed 빈 응답에 `journal profile` 이 멈추지 않는다.
+- "CONSORT에 맞는지" 같은 보고 지침·인용 양식·체크리스트 요청이 저널 적합성 검토를 시작하지 않는다.
+- `journal profile "The Spine Journal"` 과 `journal fit "The Spine Journal"` 이 같은 profile 을 찾는다(별칭을 라이브러리에 저장).
+- 매뉴얼 v2.7.2.
+
 - `assets/logo.svg`, `assets/logo-dark.svg`: 로고 마크의 벡터 버전(밝은 배경용, 어두운 배경용).
 
 ### v1.9.11 (261102)

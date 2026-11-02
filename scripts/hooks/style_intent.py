@@ -184,6 +184,12 @@ JOURNAL = re.compile(
     r"|\b(?:fit|suitable)\s+for\s+(?-i:[A-Z])|submit\s+(?:it\s+)?to\s+(?-i:[A-Z])"
     r"|(?-i:\b[A-Z][A-Za-z.&]*(?:\s+[A-Z][A-Za-z.&()]*){0,4})\s*(?:에|엔)\s*(?:잘\s*)?"
     r"(?:맞(?:는|나|을|아)|적합|어울|낼|내도|투고)", re.IGNORECASE)
+# "CONSORT에 맞는지", "AMA 양식에 맞나": reporting guidelines, reference styles and checklists are not journals.
+NOT_A_JOURNAL = re.compile(
+    r"(?<![A-Za-z])(?-i:CONSORT|STROBE|PRISMA|CARE|STARD|TRIPOD|SPIRIT|SRQR|COREQ|CHEERS|ARRIVE|SQUIRE|AGREE|MOOSE|RECORD|ICMJE"
+    r"|AMA|APA|MLA|Vancouver|Harvard|CSE)(?![A-Za-z])|체크리스트|checklist|가이드라인|guideline|양식|형식|규정|스타일",
+    re.IGNORECASE)
+JOURNAL_CUE = re.compile(r"저널|학술지|journal|투고|submit|게재|publish", re.IGNORECASE)
 JOURNAL_INJECTION = (
     "[ManuWright journal] The author wants a journal-specific check (scope fit) or journal suggestions. Do this:\n"
     "1. Build a precise PubMed query from the paper's population, intervention/exposure and outcome (4-8 terms).\n"
@@ -204,6 +210,8 @@ JOURNAL_INJECTION = (
 def journal_request(prompt: str, cwd: str | None) -> str:
     text = prompt or ""
     if not text or len(text) > 600 or META.search(text) or not JOURNAL.search(text):
+        return ""
+    if NOT_A_JOURNAL.search(text) and not JOURNAL_CUE.search(text):
         return ""
     try:
         if not _academic().in_paper(Path(cwd) if cwd else None):

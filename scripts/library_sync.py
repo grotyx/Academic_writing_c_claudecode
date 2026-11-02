@@ -25,7 +25,7 @@ import json
 import re
 import shutil
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -73,12 +73,38 @@ def is_template(root: Path) -> bool:
         return (root / 'scripts' / 'hooks').is_dir()
 
 
-def paper_terminology(root: Path) -> Path:
+def paper_terminology(root: Path) -> Path | None:
+    """The paper's wording registry, or None when project.json points outside the paper folder: the library
+    only writes inside a paper, never into a shared file it does not own."""
     try:
         declared = json.loads((root / 'project.json').read_text(encoding='utf-8')).get('terminology')
     except (OSError, ValueError, AttributeError):
         declared = None
-    return root / (declared or 'Style/terminology.md')
+    path = root / (declared or 'Style/terminology.md')
+    try:
+        path.resolve().relative_to(root.resolve())
+    except ValueError:
+        return None
+    return path
+
+
+OUTSIDE = 'project.json "terminology" points outside the paper folder; its wording rules are not synced'
+
+
+def keep_backup(path: Path) -> None:
+    """Copy to name.bak; an earlier, different .bak is kept under a dated name (never overwritten)."""
+    backup = path.with_name(path.name + '.bak')
+    if backup.exists() and backup.read_bytes() != path.read_bytes():
+        stamp, n = datetime.now().strftime('%Y%m%d-%H%M%S'), 0
+        while True:  # never overwrite: a second backup in the same second gets -1, -2, ...
+            backup = path.with_name(f"{path.name}.{stamp}{'-' + str(n) if n else ''}.bak")
+            try:
+                with open(backup, 'xb') as out:
+                    out.write(path.read_bytes())
+                return
+            except FileExistsError:
+                n += 1
+    shutil.copyfile(path, backup)
 
 
 # --- wording rules -------------------------------------------------------------------
@@ -121,6 +147,24 @@ def seed_registry(target: Path) -> None:
     target.write_text(engine.read_text(encoding='utf-8') if engine.is_file() else '# Terminology\n', encoding='utf-8')
 
 
+def _insert_rows(text: str, rows: list[str]) -> str:
+    """Rows go at the end of the synced table itself, not at the end of the file: text the author put
+    after the table must not swallow them (a row below a heading is not part of any table)."""
+    lines = text.splitlines()
+    if SECTION in lines:
+        start = lines.index(SECTION)
+        head = next((i for i in range(start + 1, len(lines)) if lines[i].startswith('|')
+                     and 'preferred term' in lines[i].lower()), None)
+        if head is not None:
+            end = head + 1
+            while end < len(lines) and lines[end].lstrip().startswith('|'):
+                end += 1
+            return '\n'.join(lines[:end] + rows + lines[end:]) + '\n'
+    body = text.rstrip('\n')
+    intro = '' if SECTION in lines else f'\n\n{SECTION}\n\nAdded by `manuwright library` (additions only; edit freely).'
+    return body + intro + '\n\n' + TABLE_HEAD + '\n'.join(rows) + '\n'
+
+
 def add_rules(target: Path, new: dict[str, tuple[str, str, str]], context: str) -> tuple[list[str], list[str]]:
     """Append the rules `target` lacks; returns (added rows, conflicts). Never edits an existing row."""
     if new:
@@ -136,13 +180,8 @@ def add_rules(target: Path, new: dict[str, tuple[str, str, str]], context: str) 
         added.append(f'{avoided} -> {preferred}')
     if rows:
         text = target.read_text(encoding='utf-8')
-        backup = target.with_name(target.name + '.bak')
-        shutil.copyfile(target, backup)
-        if SECTION not in text:
-            text = text.rstrip('\n') + f'\n\n{SECTION}\n\nAdded by `manuwright library` (additions only; edit freely).\n\n' + TABLE_HEAD
-        elif not text.endswith('\n'):
-            text += '\n'
-        target.write_text(text + '\n'.join(rows) + '\n', encoding='utf-8')
+        keep_backup(target)
+        target.write_text(_insert_rows(text, rows), encoding='utf-8')
     return added, conflicts
 
 
@@ -157,7 +196,10 @@ def remember_term(prefer: str, avoid: str, context: str, project: Path | None) -
     targets = [('library', library_terminology())]
     root = paper_root(project)
     if root and not is_template(root):
-        targets.append(('paper', paper_terminology(root)))
+        if paper_terminology(root) is None:
+            report.append(f'paper: {OUTSIDE}')
+        else:
+            targets.append(('paper', paper_terminology(root)))
     for label, path in targets:
         added, conflicts = add_rules(path, rule, context or 'remembered in chat')
         if label == 'paper' and added:
@@ -231,7 +273,10 @@ def sync(root: Path, direction: str | None) -> dict:
     """direction None: report only; 'pull': library -> paper; 'push': paper -> library."""
     result = {'added_rules': [], 'copied': [], 'conflicts': [], 'differs': [], 'missing_here': [], 'missing_there': []}
     paper_terms, lib_terms = paper_terminology(root), library_terminology()
-    lib_rules, paper_rules = rules(lib_terms), rules(paper_terms)
+    if paper_terms is None:
+        result['conflicts'].append(OUTSIDE)
+    lib_rules = rules(lib_terms) if paper_terms is not None else {}
+    paper_rules = rules(paper_terms) if paper_terms is not None else {}
     pull_rules = {k: v for k, v in lib_rules.items() if k not in paper_rules}
     push_rules = {k: v for k, v in paper_rules.items() if k not in lib_rules}
     result['conflicts'] += [f'"{v[1]}": paper prefers "{v[0]}", library "{lib_rules[k][0]}"'
@@ -273,10 +318,14 @@ def _declare(root: Path, key: str, path: Path) -> None:
         data = json.loads(manifest.read_text(encoding='utf-8'))
     except (OSError, ValueError):
         return
-    relative = path.relative_to(root).as_posix()
-    if isinstance(data, dict) and not data.get(key):
-        data[key] = relative
-        manifest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    if not isinstance(data, dict) or data.get(key):
+        return
+    try:
+        relative = path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return
+    data[key] = relative
+    manifest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
 
 
 def session_sync(folder: Path | None) -> str:

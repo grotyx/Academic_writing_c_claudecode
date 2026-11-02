@@ -138,8 +138,10 @@ def install_command(tag):
     return [sys.executable, '-m', 'pip', 'install', '--upgrade', source]
 
 
-def windows_update_line(command):
+def windows_update_line(command, refresh=True):
     """The one line a Windows user pastes into PowerShell when the update window cannot be opened."""
+    if not refresh:  # --no-agents: install only
+        return ' '.join(command)
     return f'{" ".join(command)}; if ($?) {{ manuwright agents update; manuwright init --refresh-rules --all --auto }}'
 
 
@@ -147,10 +149,13 @@ def _ps(text):
     return "'" + str(text).replace("'", "''") + "'"
 
 
-def windows_update_script(current, target, command):
-    """PowerShell for the update window: wait until no process runs from this install, install, refresh."""
+def windows_update_script(current, target, command, refresh=True):
+    """PowerShell for the update window: wait until no process runs from this install, install, refresh.
+    If ManuWright is still running after the wait, nothing is installed: uv would delete the environment
+    and fail to replace the locked files, leaving a broken install."""
     exe = shutil.which('manuwright') or ''
     install = '& ' + ' '.join(_ps(part) for part in command)
+    refresh_block = ('  & manuwright agents update\n  & manuwright init --refresh-rules --all --auto\n' if refresh else '')
     return f"""$Host.UI.RawUI.WindowTitle = 'ManuWright update'
 $envDir = {_ps(os.path.join(sys.prefix, ''))}
 $exe = {_ps(exe)}
@@ -161,23 +166,26 @@ while ((Busy).Count -gt 0 -and $waited -lt 120) {{
   if ($waited -eq 5) {{ Write-Host 'Waiting for ManuWright to close. If this does not finish, close Claude Code / Codex sessions.' }}
   Start-Sleep -Seconds 1; $waited++
 }}
+if ((Busy).Count -gt 0) {{
+  Write-Host ''; Write-Host 'ManuWright is still running, so nothing was installed. Close Claude Code / Codex sessions, then run `manuwright update` again.'
+  Read-Host 'Press Enter to close'
+  exit 1
+}}
 {install}
 if ($LASTEXITCODE -eq 0) {{
-  & manuwright agents update
-  & manuwright init --refresh-rules --all --auto
-  Write-Host ''; Write-Host 'ManuWright {target} is installed. You can close this window.'
+{refresh_block}  Write-Host ''; Write-Host 'ManuWright {target} is installed. You can close this window.'
 }} else {{
   Write-Host ''; Write-Host 'The install did not finish (see above). Close Claude Code / Codex sessions, then run this line here:'
-  Write-Host {_ps(windows_update_line(command))}
+  Write-Host {_ps(windows_update_line(command, refresh))}
 }}
 Read-Host 'Press Enter to close'
 """
 
 
-def launch_windows_update(current, target, command):
+def launch_windows_update(current, target, command, refresh=True):
     """Open the update window (its own console, so it outlives this process). False when it cannot start."""
     import base64
-    script = windows_update_script(current, target, command)
+    script = windows_update_script(current, target, command, refresh)
     encoded = base64.b64encode(script.encode('utf-16-le')).decode('ascii')
     try:
         subprocess.Popen(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded],
@@ -230,13 +238,15 @@ def update(engine, args):
         # uv deletes the tool environment before reinstalling, and Windows cannot replace a running
         # manuwright.exe: installing from this process left a half-removed install. A separate PowerShell
         # window waits until no manuwright process is running, then installs and refreshes everything.
-        line = windows_update_line(command)
+        refresh = '--no-agents' not in args
+        line = windows_update_line(command, refresh)
         if auto:  # never pop a window from a session hook
             print(f'ManuWright {target} available: run `manuwright update`.')
             return 0
-        if launch_windows_update(current, target, command):
+        if launch_windows_update(current, target, command, refresh):
             print(f'ManuWright {current} -> {target}: a PowerShell window opened. It waits for ManuWright to close, '
-                  'installs the new version, then refreshes the agent adapters and the agent rules of your papers; '
+                  'installs the new version' + (', then refreshes the agent adapters and the agent rules of your papers'
+                                                if refresh else ' (no refresh: --no-agents)') + '; '
                   'follow it there. If no window appeared, close agent sessions (Claude Code, Codex, ...) and paste '
                   f'this line into a new PowerShell window:\n  {line}')
         else:
@@ -499,9 +509,25 @@ def auto_reviewer_step(data, ask, secret, models):
               + ', '.join(openrouter))
         for warning in models.check(openrouter, set(prices)):
             print(warning + ' Run `manuwright update` for a newer list, or `manuwright setup --custom`.')
-    if current and (current != proposed or review.get('openrouter_models', []) != openrouter):
-        print(f"  your reviewers now: {', '.join(current)}")
-        if ask('  Use the recommended reviewers instead? [Y/n]: ').strip().lower() in ('n', 'no'):
+    if not proposed:
+        return
+    # Reviewers receive the whole draft, so nothing is saved without a yes. An empty list that was saved
+    # on purpose is an opt-out: it stays unless the author types y.
+    print('  The reviewers read the whole draft: each agent sends it to its own provider on your plan'
+          + (', and OpenRouter sends it to the listed models' if openrouter else '') + '.')
+    if 'reviewers' in review and current == proposed and review.get('openrouter_models', []) == openrouter:
+        return
+    if 'reviewers' in review and not current:
+        print('  your reviewers now: none (you turned review off)')
+        if ask('  Turn on the recommended reviewers? [y/N]: ').strip().lower() not in ('y', 'yes'):
+            return
+    else:
+        if current:
+            print(f"  your reviewers now: {', '.join(current)}")
+        question = '  Use the recommended reviewers instead? [Y/n]: ' if current else '  Use these reviewers? [Y/n]: '
+        if ask(question).strip().lower() in ('n', 'no'):
+            if 'reviewers' not in review:
+                review['reviewers'] = []  # remembered as a choice, so the next setup asks again rather than assumes
             return
     review['reviewers'] = proposed
     if openrouter:
@@ -611,8 +637,11 @@ def journal_list_step(ask):
         settings = {**tool.PRESETS[answer], 'label': answer}
     else:
         settings = {'rules': [c.strip() for c in answer.split(';') if c.strip()]}
+    def consent(n_pmids, n_papers):
+        return ask(f'  Look up the journals of {n_pmids} reference PMIDs from {n_papers} registered paper(s) at NCBI '
+                   'PubMed to detect your field? Only the PMID numbers are sent. [Y/n]: ').strip().lower() not in ('n', 'no')
     try:
-        count, message = tool.journal_list.build(settings, target_ta=tool.STYLE_TA)
+        count, message = tool.journal_list.build(settings, target_ta=tool.STYLE_TA, confirm=consent)
     except (OSError, ValueError) as exc:
         count, message = 0, f'could not reach the ranking site ({exc}); later: manuwright journal list --build'
     print('  ' + message)
@@ -833,7 +862,15 @@ def _backup(path):
     """Copy the file's bytes to name.bak; an earlier, different .bak is kept under a dated name."""
     backup = path.with_name(path.name + '.bak')
     if backup.exists() and backup.read_bytes() != path.read_bytes():
-        backup = path.with_name(f"{path.name}.{datetime.now().strftime('%Y%m%d-%H%M%S')}.bak")
+        stamp, n = datetime.now().strftime('%Y%m%d-%H%M%S'), 0
+        while True:  # never overwrite: a second backup in the same second gets -1, -2, ...
+            backup = path.with_name(f"{path.name}.{stamp}{'-' + str(n) if n else ''}.bak")
+            try:
+                with open(backup, 'xb') as out:
+                    out.write(path.read_bytes())
+                return
+            except FileExistsError:
+                n += 1
     shutil.copyfile(path, backup)
 
 

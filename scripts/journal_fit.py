@@ -69,11 +69,32 @@ def slug(name: str) -> str:
     return re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-') or 'journal'
 
 
+def aliases() -> dict:
+    try:
+        return json.loads((library_journals() / 'aliases.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+
+
+def remember_alias(typed: str, ta: str) -> None:
+    """"The Spine Journal" -> spine-j: `journal profile` names the file after the NLM abbreviation; fit
+    finds it again from the name as typed, offline too."""
+    if slug(typed) == slug(ta):
+        return
+    known = aliases()
+    known[slug(typed)] = slug(ta)
+    library_journals().mkdir(parents=True, exist_ok=True)
+    (library_journals() / 'aliases.json').write_text(json.dumps(known, indent=1, ensure_ascii=False), encoding='utf-8')
+
+
 def profile_path(journal: str, root: Path | None) -> Path:
     """The paper's own profile (profile/journals/<slug>.md) if present, else the library's."""
-    if root and (root / 'profile' / 'journals' / f'{slug(journal)}.md').is_file():
-        return root / 'profile' / 'journals' / f'{slug(journal)}.md'
-    return library_journals() / f'{slug(journal)}.md'
+    names = list(dict.fromkeys([slug(journal), aliases().get(slug(journal), slug(journal))]))
+    for folder in ([root / 'profile' / 'journals'] if root else []) + [library_journals()]:  # the paper's first
+        for name in names:
+            if (folder / f'{name}.md').is_file():
+                return folder / f'{name}.md'
+    return library_journals() / f'{aliases().get(slug(journal), slug(journal))}.md'
 
 
 def read_profile(path: Path) -> dict:
@@ -140,8 +161,9 @@ def nlm_abbreviation(journal: str, search=None) -> tuple[str, str]:
     try:
         for term in (f'"{journal}"[ta]', f'"{journal}"[jour]'):
             ids, _ = search(term, 1)
-            if ids:
-                article = pubmed.fetch_articles(ids)[0]
+            articles = pubmed.fetch_articles(ids) if ids else []
+            if articles:
+                article = articles[0]
                 return article.get('medline_ta') or article.get('journal_abbr') or journal, article.get('journal', '')
     except (OSError, ValueError):
         pass
@@ -152,6 +174,8 @@ def cmd_profile(args) -> int:
     root = paper_root(Path.cwd())
     ta, full = nlm_abbreviation(args.journal)
     name = full or args.journal
+    if ta:
+        remember_alias(args.journal, ta)
     path = profile_path(ta or args.journal, root)
     if not path.is_file():
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -194,9 +218,32 @@ def words(text: str) -> int:
     return len(WORD_RE.findall(plain(EVID_RE.sub(' ', text))))
 
 
+def declared(root: Path) -> dict:
+    """{'02_abstract': path, ..., 'tables': [paths]} from project.json (artifacts, abstract, tables), so a
+    paper with sections in drafts/paper1_x/ or a revision folder is measured, not read as empty."""
+    try:
+        data = json.loads((root / 'project.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        data = {}
+    data = data if isinstance(data, dict) else {}
+    found: dict = {}
+    if isinstance(data.get('abstract'), str) and data['abstract']:
+        found['02_abstract'] = root / data['abstract']  # the abstract by its role, whatever the file is called
+    for item in list(data.get('artifacts') or []):
+        if isinstance(item, str) and item:
+            stem = re.sub(r'_REV\d+$', '', Path(item).stem, flags=re.I)
+            found.setdefault(stem, root / item)
+    found['tables'] = [root / t for t in data.get('tables') or [] if isinstance(t, str)]
+    return found
+
+
+def section_path(root: Path, name: str) -> Path:
+    return declared(root).get(Path(name).stem) or root / 'drafts' / name
+
+
 def read(root: Path, name: str) -> str:
-    path = root / 'drafts' / name
-    return path.read_text(encoding='utf-8') if path.is_file() else ''
+    path = section_path(root, name)
+    return path.read_text(encoding='utf-8', errors='replace') if path.is_file() else ''
 
 
 def title_of(root: Path) -> str:
@@ -221,7 +268,9 @@ def measure(root: Path) -> dict:
     if not references:
         references = len(set(EVID_RE.findall(''.join(read(root, n) for n in BODY))))
     figures = len(set(re.findall(r'(?i)\bfig(?:ure)?\.?\s*(\d+)', read(root, '09_figure_legends.md'))))
-    tables = len(list((root / 'drafts').glob('table_*.md')))
+    declared_tables = declared(root)['tables']
+    tables = (len([t for t in declared_tables if t.is_file()]) if declared_tables
+              else len([t for t in (root / 'drafts').glob('table_*.md') if re.fullmatch(r'table_\d+', t.stem)]))
     return {'abstract_words': words(read(root, '02_abstract.md')),
             'main_text_words': sum(words(read(root, n)) for n in BODY),
             'references': references, 'tables_figures': tables + figures}
@@ -367,6 +416,13 @@ def cmd_fit(args, search=None, fetch=None) -> int:
               '`manuwright target`).', file=sys.stderr)
         return 2
     query = args.query or default_query(root)
+    if query and not args.query:
+        print(f'PubMed search terms (from the title; only these words are sent, --query replaces them): {query}',
+              flush=True)
+    if not manuscript(root).strip():
+        print('journal fit: no manuscript sections found (project.json artifacts, or drafts/0X_*.md); '
+              'nothing to measure or review.', file=sys.stderr)
+        return 2
     profile = read_profile(profile_path(journal, root))
     report = [f'# Journal fit: {journal}', '',
               f'PubMed query: `{query or "(none: pass --query)"}`, last {args.years} years.']
@@ -383,6 +439,10 @@ def cmd_fit(args, search=None, fetch=None) -> int:
     if entry:
         report.append(f'In your journal list: {list_note(entry)}.')
     report += ['', '## Requirements check', *limits_table(measure(root), profile.get('limits', {}))]
+    missing = [str(p.relative_to(root)) for k, v in declared(root).items() for p in (v if k == 'tables' else [v])
+               if not p.is_file()]
+    if missing:
+        report.append('Declared in project.json but missing (counted as 0): ' + ', '.join(missing))
     if not profile:
         report += ['', f'No journal profile yet: `manuwright journal profile "{journal}" --url <Aims & Scope page>`, '
                    'then fill it from the official pages. Without it the review cannot check journal policies.']
@@ -423,6 +483,9 @@ def cmd_suggest(args) -> int:
         print('journal suggest: run it inside a paper folder (project.json).', file=sys.stderr)
         return 2
     query = args.query or default_query(root)
+    if query and not args.query:
+        print(f'PubMed search terms (from the title; only these words are sent, --query replaces them): {query}',
+              flush=True)
     if not query:
         print('journal suggest: pass --query "<population intervention outcome terms>" (no title found).',
               file=sys.stderr)

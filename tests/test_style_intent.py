@@ -99,3 +99,13 @@ class MainStdinTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_reporting_guidelines_are_not_journal_requests(tmp_path):
+    si = load_module()
+    def fires(text):
+        return bool(si.JOURNAL.search(text)) and not (si.NOT_A_JOURNAL.search(text) and not si.JOURNAL_CUE.search(text))
+    for text in ('CONSORT에 맞는지 확인해줘', 'STROBE에 맞나 봐줘', 'AMA 양식에 맞나', 'PRISMA 체크리스트에 맞는지'):
+        assert not fires(text), text
+    for text in ('Spine J에 맞는지 봐줘', '어느 저널에 투고할까?', 'is it a fit for Spine J? I care about scope'):
+        assert fires(text), text

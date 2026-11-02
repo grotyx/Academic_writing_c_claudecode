@@ -974,6 +974,10 @@ def _main(argv: list[str] | None = None) -> int:
             import library_sync  # the paper's registry (project.json "terminology"), seeded from the engine's
             root = library_sync.paper_root(Path.cwd()) or Path.cwd()
             registry = library_sync.paper_terminology(root)
+            if registry is None:
+                print(f'error: {library_sync.OUTSIDE}; point it at a file inside the paper. The ticked rules stay '
+                      f'in {PENDING}.', file=sys.stderr)
+                return 2
             waiting = [l for l in PENDING.read_text(encoding='utf-8').splitlines()
                        if re.match(r'-\s*\[[xX]\]\s*P\d', l.strip()) and '(applied)' not in l]
             if waiting:  # nothing ticked: create nothing

@@ -2,6 +2,19 @@
 
 ### Unreleased
 
+Fixes from two independent reviews of v1.9.4-v1.9.11 (Claude and Codex gpt-6.1-sol), merged after discussion.
+
+- Setup asks before saving the reviewers it recommends, and says where the draft goes (each agent's provider; OpenRouter's listed models). A reviewer list you emptied (review off) stays off unless you type y.
+- Windows update window: if ManuWright is still running after the wait, nothing is installed (uv would delete the environment and fail on locked files); `--no-agents` now skips the refresh there too.
+- `journal list --build` never replaces an existing list without `--replace`; backups of the list and of wording registries are never overwritten (an older, different copy gets a dated name).
+- Reference PMIDs go to NCBI for field detection only with your yes (terminal or setup question, or `--send-pmids`), and inside a paper only that paper's references are read. `journal fit`/`suggest` print the title-derived search terms before searching.
+- `journal fit` measures and reviews the sections and tables `project.json` declares (multi-paper and revision layouts), and stops before any search or review when no manuscript is found.
+- Library sync: a new wording rule goes into the synced table itself (text after the table no longer hides it or makes it repeat each session); a terminology file outside the paper folder is not written.
+- PubMed requests time out after 30 seconds; a ranking page with different line breaks or a relative form address is read correctly; an empty PubMed reply no longer crashes `journal profile`.
+- "CONSORT에 맞는지" and other reporting guidelines, reference styles and checklists no longer start a journal-fit review.
+- `journal profile "The Spine Journal"` and `journal fit "The Spine Journal"` find the same profile (aliases kept in the library).
+- Manual v2.7.2.
+
 - `assets/logo.svg` and `assets/logo-dark.svg`: vector versions of the logo mark (for light and dark backgrounds).
 
 ### v1.9.11 (261102)

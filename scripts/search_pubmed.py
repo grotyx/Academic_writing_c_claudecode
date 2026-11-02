@@ -320,13 +320,16 @@ def format_evidence_batch(articles, start_num=1):
 
 # ─── Helpers ─────────────────────────────────────────────────────
 
+TIMEOUT = 30  # seconds: a stalled connection must not hang setup or a build
+
+
 def _fetch_json(url):
-    with urllib.request.urlopen(url) as resp:
+    with urllib.request.urlopen(url, timeout=TIMEOUT) as resp:
         return json.loads(resp.read())
 
 
 def _fetch_bytes(url):
-    with urllib.request.urlopen(url) as resp:
+    with urllib.request.urlopen(url, timeout=TIMEOUT) as resp:
         return resp.read()
 
 

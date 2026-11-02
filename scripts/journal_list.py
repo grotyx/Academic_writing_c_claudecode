@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import difflib
 import hashlib
-import html
+from html.parser import HTMLParser
 import json
 import re
 import sys
@@ -112,11 +112,27 @@ def saved_settings() -> dict:
     return {}
 
 
+def keep_backup(path: Path) -> None:
+    """Copy to name.bak; an earlier, different .bak is never overwritten (dated name, -1, -2 in one second)."""
+    backup = path.with_name(path.name + '.bak')
+    if backup.exists() and backup.read_bytes() != path.read_bytes():
+        stamp, n = datetime.now().strftime('%Y%m%d-%H%M%S'), 0
+        while True:  # never overwrite: a second backup in the same second gets -1, -2, ...
+            backup = path.with_name(f"{path.name}.{stamp}{'-' + str(n) if n else ''}.bak")
+            try:
+                with open(backup, 'xb') as out:
+                    out.write(path.read_bytes())
+                return
+            except FileExistsError:
+                n += 1
+    backup.write_bytes(path.read_bytes())
+
+
 def save_list(text: str) -> Path:
     path = list_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.is_file() and path.read_text(encoding='utf-8') != text:
-        path.with_name('list.md.bak').write_bytes(path.read_bytes())
+        keep_backup(path)
     path.write_text(text, encoding='utf-8')
     return path
 
@@ -183,15 +199,56 @@ def resolve_ta(row: dict, cache: dict) -> str:
 
 # --- the ranking table -------------------------------------------------------------
 
+class _Cells(HTMLParser):
+    """Table rows as lists of cell texts, whatever the line breaks (<br> becomes ' ; ')."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.rows, self.row, self.cell = [], None, None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'tr':
+            self._close_row()
+            self.row = []
+        elif tag in ('td', 'th'):
+            self._close_cell()
+            if self.row is None:
+                self.row = []
+            self.cell = []
+        elif tag == 'br' and self.cell is not None:
+            self.cell.append(' ; ')
+
+    def handle_endtag(self, tag):
+        if tag in ('td', 'th'):
+            self._close_cell()
+        elif tag in ('tr', 'table'):
+            self._close_row()
+
+    def handle_data(self, data):
+        if self.cell is not None:
+            self.cell.append(data)
+
+    def _close_cell(self):
+        if self.cell is not None and self.row is not None:
+            self.row.append(' '.join(''.join(self.cell).split()))
+        self.cell = None
+
+    def _close_row(self):
+        self._close_cell()
+        if self.row:
+            self.rows.append(self.row)
+        self.row = None
+
+
 def site_rows(page: str) -> list[dict]:
     """Journals from the ranking table: title, ISSNs, IF and {category: %rank} (top category first)."""
+    parser = _Cells()
+    parser.feed(page)
+    parser.close()
+    parser._close_row()
     rows = []
-    for line in page.splitlines():
-        if not re.match(r'\s*(?:<tr>)?\s*<td>\d+</td>', line):
-            continue
-        cells = [' '.join(html.unescape(re.sub(r'<[^>]+>', ' ', re.sub(r'<br\s*/?>', ' ; ', c))).split())
-                 for c in re.findall(r'<td[^>]*>(.*?)</td>', line)]
-        if len(cells) < 8:
+    for cells in parser.rows:
+        if len(cells) < 8 or not cells[0].isdigit():
             continue
         cats = {cells[5]: cells[6]}
         for m in re.finditer(r'([A-Z][A-Z ,&\-()/]+?)\s*:\s*([\d.]+)', cells[7]):
@@ -210,7 +267,8 @@ def fetch_site(source: str) -> str:
     agent = {'User-Agent': 'Mozilla/5.0 (ManuWright journal list; one download per build)'}
     with urllib.request.urlopen(urllib.request.Request(source, headers=agent), timeout=60) as response:
         form = response.read().decode('utf-8', errors='replace')
-    action = (re.search(r'<form[^>]+action="([^"]+)"', form) or [None, urllib.parse.urljoin(source, 'getJournalResult.php')])[1]
+    found = re.search(r'<form[^>]+action="([^"]+)"', form)
+    action = urllib.parse.urljoin(source, found.group(1) if found else 'getJournalResult.php')  # relative actions too
     years = re.findall(r'name="(year(\d{4}))"\s+value="(\d+)"', form)
     fields = {'check_submit': '1', 'title': '', 'i_f': '', 'rank': '100'}
     if years:
@@ -265,8 +323,11 @@ def select(rows: list[dict], settings: dict) -> list[dict]:
 
 
 def paper_folders(root: Path | None) -> list[Path]:
+    """Inside a paper: that paper only. Elsewhere (setup): every registered paper."""
     import academic_style
-    folders = [root] if root else []
+    if root:
+        return [root]
+    folders = []
     try:
         known = json.loads((academic_style.home() / 'projects.json').read_text(encoding='utf-8'))
         folders += [Path(p).parent for p in known if isinstance(p, str)]
@@ -275,8 +336,10 @@ def paper_folders(root: Path | None) -> list[Path]:
     return [f for f in dict.fromkeys(folders) if f and f.is_dir()]
 
 
-def your_journals(root: Path | None, target_ta: dict) -> Counter:
-    """{(issn, essn): weight}: the journals of your references (evidence.md PMIDs) and target journals."""
+def your_journals(root: Path | None, target_ta: dict, confirm=None) -> Counter:
+    """{(issn, essn): weight}: the journals of your references (evidence.md PMIDs) and target journals.
+    The reference PMIDs are sent to NCBI only when `confirm(n_pmids, n_papers)` says yes; without it only the
+    target journals count."""
     weights: Counter = Counter()
     pmids, targets = [], []
     for folder in paper_folders(root):
@@ -292,7 +355,11 @@ def your_journals(root: Path | None, target_ta: dict) -> Counter:
                 targets.append(target_ta[key])
         except (OSError, ValueError):
             pass
-    for record in summaries(list(dict.fromkeys(pmids))[:400]):
+    pmids = list(dict.fromkeys(pmids))[:400]
+    papers = len([f for f in paper_folders(root) if (f / 'knowledge' / 'evidence.md').is_file()])
+    if pmids and not (confirm and confirm(len(pmids), papers)):
+        pmids = []
+    for record in summaries(pmids):
         weights[(record.get('issn', ''), record.get('essn', ''))] += 1
     for ta in dict.fromkeys(targets):
         record = journal_issns(ta)
@@ -365,9 +432,12 @@ def list_text(picked: list[dict], settings: dict, label: str) -> str:
 
 
 def build(settings: dict, page: str | None = None, root: Path | None = None, target_ta: dict | None = None,
-          weights: Counter | None = None) -> tuple[int, str]:
+          weights: Counter | None = None, confirm=None, replace: bool = False) -> tuple[int, str]:
     """Build and save the list from settings ({'rules', 'groups', 'exclude', 'top', 'source'}, or
     {'auto': True}); (journals saved, message)."""
+    if list_path().is_file() and not replace:
+        return 0, (f'you already have a journal list ({list_path()}); a build replaces it, including your edits. '
+                   'Run again with --replace to do that (the current list is kept as a .bak copy)')
     settings = dict(settings)
     settings.setdefault('source', JCR_SITE)
     settings.setdefault('top', 50)
@@ -378,7 +448,7 @@ def build(settings: dict, page: str | None = None, root: Path | None = None, tar
         return 0, 'the ranking page had no journal table (the site may have changed); nothing saved'
     label = settings.pop('label', '')
     if settings.pop('auto', False):
-        rules, notes = detect(rows, weights if weights is not None else your_journals(root, target_ta or {}))
+        rules, notes = detect(rows, weights if weights is not None else your_journals(root, target_ta or {}, confirm))
         if not rules:
             return 0, ('could not tell your field: no references with a PMID or target journal found in your papers. '
                        'Choose one: --preset ortho-neuro|ortho|neurosurgery, or --category "<JCR category>" '
@@ -490,7 +560,8 @@ def cmd_list(args, root: Path | None = None, target_ta: dict | None = None) -> i
             return 0
         if args.build:
             page = Path(args.from_html).read_text(encoding='utf-8', errors='replace') if args.from_html else None
-            count, message = build(settings_from(args), page, root, target_ta)
+            count, message = build(settings_from(args), page, root, target_ta, confirm=pmid_consent(args),
+                                   replace=getattr(args, 'replace', False))
             print(message, file=sys.stdout if count else sys.stderr)
             return 0 if count else 1
         if args.add:
@@ -531,6 +602,24 @@ def cmd_list(args, root: Path | None = None, target_ta: dict | None = None) -> i
     return 0
 
 
+def pmid_consent(args):
+    """Ask before reference PMIDs go to NCBI (terminal), or accept --send-pmids (agents, scripts)."""
+    def confirm(n_pmids, n_papers):
+        where = 'this paper' if n_papers <= 1 else f'{n_papers} registered papers'
+        if getattr(args, 'send_pmids', False):
+            print(f'Looking up the journals of {n_pmids} reference PMIDs from {where} at NCBI PubMed '
+                  '(only the PMID numbers are sent).', flush=True)
+            return True
+        if not sys.stdin.isatty():
+            print(f'Not sending {n_pmids} reference PMIDs to NCBI without consent; using target journals only. '
+                  'Add --send-pmids to include them.', flush=True)
+            return False
+        answer = input(f'Look up the journals of {n_pmids} reference PMIDs from {where} at NCBI PubMed to '
+                       'detect your field? Only the PMID numbers are sent. [Y/n]: ').strip().lower()
+        return answer not in ('n', 'no')
+    return confirm
+
+
 def add_arguments(parser) -> None:
     parser.add_argument('--import', dest='import_file', help='save this list file to your library')
     parser.add_argument('--build', action='store_true', help='build the list from the SCIE ranking table')
@@ -548,6 +637,9 @@ def add_arguments(parser) -> None:
     parser.add_argument('--remove', help='remove one journal')
     parser.add_argument('--source', default=JCR_SITE, help='ranking search page')
     parser.add_argument('--from-html', help='a saved ranking result page instead of downloading it')
+    parser.add_argument('--replace', action='store_true', help='let --build replace an existing list (a .bak copy is kept)')
+    parser.add_argument('--send-pmids', action='store_true',
+                        help='with --auto: send your reference PMIDs to NCBI without asking (to detect the field)')
 
 
 def finish_arguments(args) -> None:

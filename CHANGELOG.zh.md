@@ -2,6 +2,19 @@
 
 ### Unreleased
 
+对 v1.9.4–v1.9.11 的两份独立审查(Claude、Codex gpt-6.1-sol)经讨论后合并的修复。
+
+- setup 在保存推荐审稿者之前先询问,并说明稿件发往何处。已清空的审稿者列表(关闭审稿)除非输入 y 否则保持关闭。
+- Windows 更新窗口:等待后 ManuWright 仍在运行时不安装;`--no-agents` 在该窗口中同样生效。
+- `journal list --build` 没有 `--replace` 时不会替换已有列表;列表和术语文件的备份不会被覆盖(更早的不同备份以日期命名保留)。
+- 用于识别领域的参考文献 PMID 只有在同意后才发送到 NCBI(终端或 setup 提问,或 `--send-pmids`);在论文文件夹内只读取该论文的参考文献。`journal fit`/`suggest` 在检索前显示由标题生成的检索词。
+- `journal fit` 读取 `project.json` 声明的章节和表格;找不到稿件时在检索和审稿之前停止。
+- 资料库同步:新的措辞规则写入同步表格本身;不写入论文文件夹之外的术语文件。
+- PubMed 请求 30 秒超时;排名页面换行或相对地址变化时仍能正确读取;PubMed 空响应不再使 `journal profile` 崩溃。
+- “CONSORT에 맞는지”等报告规范、引文格式和清单请求不再触发期刊适配审查。
+- `journal profile` 与 `journal fit` 使用期刊全名时能找到同一份资料(别名保存在资料库中)。
+- 手册 v2.7.2。
+
 - `assets/logo.svg`、`assets/logo-dark.svg`:标志的矢量版本(用于浅色和深色背景)。
 
 ### v1.9.11 (261102)

@@ -42,7 +42,8 @@ ABBR = {'1529-9430': 'Spine J', '0022-3085': 'J Neurosurg', '1836-9553': 'J Phys
 
 def args(**kw):
     base = dict(import_file=None, build=True, auto=False, preset=None, category=[], exclude=None, group=[], top=None,
-                categories=None, add=None, remove=None, source='https://site', from_html=None)
+                categories=None, add=None, remove=None, source='https://site', from_html=None, replace=True,
+                send_pmids=True)
     base.update(kw)
     parsed = argparse.Namespace(**base)
     jl.finish_arguments(parsed)
@@ -59,11 +60,11 @@ def test_presets_categories_title_words_exclusions_and_groups():
     assert listed['jphysiother']['group'] == 'Orthopedics'
     assert jl.saved_settings()['rules'][0] == 'ORTHOPEDICS'
     jl.build({'rules': ['SURGERY', 'UROLOGY & NEPHROLOGY'], 'exclude': ['maxillofacial'], 'top': 80,
-              'groups': ['Neurosurgery=neurosurg']}, PAGE)
+              'groups': ['Neurosurgery=neurosurg']}, PAGE, replace=True)
     listed = jl.my_list()
     assert set(listed) == {'worldneurosurg', 'jurol'} and listed['worldneurosurg']['group'] == 'Neurosurgery'
     assert jl.list_path().with_name('list.md.bak').is_file()  # the earlier list is kept
-    count, message = jl.build({'rules': ['UROLOGY']}, PAGE)
+    count, message = jl.build({'rules': ['UROLOGY']}, PAGE, replace=True)
     assert count == 0 and 'did you mean UROLOGY & NEPHROLOGY?' in message
 
 
@@ -78,9 +79,9 @@ def test_field_is_detected_from_the_journals_you_cite_and_target():
         jl.BROAD = monkey_broad
     assert rules[0] == 'CLINICAL NEUROLOGY:spine,neurosurgery' or rules[0].startswith('CLINICAL NEUROLOGY:')
     assert 'ORTHOPEDICS' in rules and '2 of your journals found' in notes[0]
-    count, message = jl.build({'auto': True}, PAGE, weights=weights)
+    count, message = jl.build({'auto': True}, PAGE, weights=weights, replace=True)
     assert count >= 2 and 'detected' in open(jl.list_path(), encoding='utf-8').read()
-    assert jl.build({'auto': True}, PAGE, weights=Counter())[1].startswith('could not tell your field')
+    assert jl.build({'auto': True}, PAGE, weights=Counter(), replace=True)[1].startswith('could not tell your field')
 
 
 def test_your_journals_reads_pmids_and_target_journals(tmp_path, monkeypatch):
@@ -91,7 +92,7 @@ def test_your_journals_reads_pmids_and_target_journals(tmp_path, monkeypatch):
     seen = []
     monkeypatch.setattr(jl, 'summaries', lambda ids: seen.append(ids) or [{'issn': '1529-9430', 'essn': ''} for _ in ids])
     monkeypatch.setattr(jl, 'journal_issns', lambda ta: {'issn': '1529-9430', 'essn': '', 'source': ta})
-    weights = jl.your_journals(paper, jf.STYLE_TA)
+    weights = jl.your_journals(paper, jf.STYLE_TA, confirm=lambda *a: True)
     assert seen[0] == ['111', '222'] and weights[('1529-9430', '')] == 2 + 5
 
 
@@ -187,3 +188,25 @@ def test_the_starter_example_pmid_is_not_a_reference(tmp_path, monkeypatch):
     seen = []
     monkeypatch.setattr(jl, 'summaries', lambda ids: seen.append(ids) or [])
     assert jl.your_journals(tmp_path, {}) == Counter() and seen == [[]]
+
+
+def test_build_keeps_an_existing_list_and_reference_pmids_need_consent(tmp_path, monkeypatch):
+    jl.save_list('# mine\n\n' + jl.LIST_HEADER + '\n|---|---|---|---|---|---|\n| Spine | Spine J | x | y | 1 | 1 |\n')
+    count, message = jl.build({**jl.PRESETS['ortho-neuro'], 'label': 'ortho-neuro'}, PAGE)
+    assert count == 0 and '--replace' in message and 'Spine J' in jl.list_path().read_text(encoding='utf-8')
+    jl.build({**jl.PRESETS['ortho-neuro'], 'label': 'ortho-neuro'}, PAGE, replace=True)
+    jl.build({'rules': ['UROLOGY & NEPHROLOGY']}, PAGE, replace=True)
+    assert len(list(jl.list_path().parent.glob('list.md*.bak'))) == 2  # the hand-made list survives as a dated copy
+    paper = tmp_path / 'paper'
+    (paper / 'knowledge').mkdir(parents=True)
+    (paper / 'knowledge' / 'evidence.md').write_text('- **PMID:** 111\n', encoding='utf-8')
+    sent = []
+    monkeypatch.setattr(jl, 'summaries', lambda ids: sent.append(ids) or [])
+    jl.your_journals(paper, {})  # no consent: nothing sent
+    jl.your_journals(paper, {}, confirm=lambda n, papers: False)
+    assert sent == [[], []]
+
+
+def test_ranking_rows_do_not_depend_on_line_breaks():
+    one_line = PAGE.replace('\n', '')
+    assert len(jl.site_rows(one_line)) == len(jl.site_rows(PAGE)) == len(jl.site_rows(PAGE.replace('<td', '\n<td')))

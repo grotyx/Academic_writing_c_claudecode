@@ -749,7 +749,7 @@ def test_setup_offers_only_agents_found_and_their_models(monkeypatch, tmp_path, 
     assert 'codex_model' not in review and review['agy_model'] == 'my-model'
 
 
-def test_setup_picks_the_reviewers_without_asking(monkeypatch, capsys):
+def test_setup_proposes_the_reviewers_and_asks_once(monkeypatch, capsys):
     from manuwright import obsidian, models
     monkeypatch.setattr(obsidian, 'offer_connect', lambda: None)
     monkeypatch.setattr(models, 'installed_agents', lambda: ['claude', 'codex', 'agy'])
@@ -758,14 +758,14 @@ def test_setup_picks_the_reviewers_without_asking(monkeypatch, capsys):
     monkeypatch.setattr(models, 'openrouter_prices', lambda: {'qwen/qwen3.7-plus': (2e-7, 1e-6), 'meta/muse-spark-1.3': (1e-6, 6e-6)})
     monkeypatch.delenv('OPENROUTER_API_KEY', raising=False)
     monkeypatch.setattr(models, 'key_works', lambda key: True)
-    answers = iter(['sk-or-ok', '', '-'])  # only the OpenRouter key, auto-update and journal list; no reviewer menus
+    answers = iter(['', 'sk-or-ok', '', '-'])  # accept the proposal, OpenRouter key, auto-update, journal list
     assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
     data = lifecycle.load('config.json', {})
     assert data['main_model'] == models.WRITERS[0]  # Claude writes, so Claude is not a reviewer
     assert data['review']['reviewers'] == ['codex', 'agy', 'opencode:opencode-go/deepseek-v4-pro', 'openrouter']
     assert data['review']['openrouter_models'] == ['qwen/qwen3.7-plus', 'meta/muse-spark-1.3']
     out = capsys.readouterr().out
-    assert 'recommended reviewers' in out and 'setup --custom' in out
+    assert 'recommended reviewers' in out and 'setup --custom' in out and 'read the whole draft' in out
     # a later run keeps reviewers the author changed unless they accept the new recommendation
     lifecycle.config(['set', 'review.reviewers', 'codex'])
     answers = iter(['n', '', '-'])
@@ -779,3 +779,32 @@ def test_auto_reviewers_follow_the_main_model_and_installed_clis():
     reviewers, openrouter = models.auto_reviewers(['claude', 'codex', 'muse'], set(), 'openai/gpt-6-astra')
     assert reviewers == ['claude', 'muse'] and 'meta/muse-spark-1.3' not in openrouter  # Codex writes; Muse CLI used
     assert models.OPENROUTER_SETS['setup'][1] == [m for _, _, m in models.AUTO_MODELS]
+
+
+def test_setup_keeps_an_explicit_reviewer_opt_out(monkeypatch):
+    from manuwright import obsidian, models
+    monkeypatch.setattr(obsidian, 'offer_connect', lambda: None)
+    monkeypatch.setattr(models, 'installed_agents', lambda: [])
+    monkeypatch.setattr(lifecycle.shutil, 'which', lambda name: None)
+    monkeypatch.setattr(models, 'openrouter_prices', lambda: {})
+    lifecycle.save('config.json', {'review': {'reviewers': []}})
+    answers = iter(['', '', '-'])  # Enter at "Turn on the recommended reviewers? [y/N]" keeps review off
+    assert lifecycle.setup([], ask=lambda _: next(answers)) == 0
+    assert lifecycle.load('config.json', {})['review']['reviewers'] == []
+
+
+def test_windows_update_window_installs_nothing_while_busy_and_honours_no_agents(fake_release, monkeypatch, capsys):
+    import base64
+    script = lifecycle.windows_update_script('1.0.0', '1.0.1', ['uv', 'tool', 'install', '--force', 'x@v1.0.1'])
+    # after the wait, a still-busy install exits before uv deletes the environment
+    assert script.index("if ((Busy).Count -gt 0) {") < script.index("& 'uv' 'tool' 'install'")
+    assert 'exit 1' in script
+    engine, calls = fake_release
+    monkeypatch.setattr(lifecycle, 'install_command', lambda tag: ['uv', 'tool', 'install', '--force', f'x@v{tag}'])
+    monkeypatch.setattr(lifecycle, 'on_windows', lambda: True)
+    opened = []
+    monkeypatch.setattr(lifecycle.subprocess, 'Popen', lambda argv, **kw: opened.append(argv))
+    assert lifecycle.update(engine, ['--no-agents']) == 0
+    sent = base64.b64decode(opened[0][opened[0].index('-EncodedCommand') + 1]).decode('utf-16-le')
+    assert 'agents update' not in sent and 'refresh-rules' not in sent
+    assert 'agents update' not in capsys.readouterr().out  # the fallback line installs only

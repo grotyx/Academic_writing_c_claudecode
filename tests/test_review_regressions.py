@@ -282,3 +282,116 @@ def test_capital_p_is_accepted(tmp_path):
     draft = tmp_path / '05_results.md'
     draft.write_text('# Results\n\nThe difference was significant (*P* < 0.001).\n', encoding='utf-8')
     assert not [i for i in m.lint_file(draft, {}) if i[0] == 'STAT_FORMAT']
+
+
+# --- 2026-11-02 review of v1.9.4..v1.9.11 (Claude and Codex) ---------------------------------
+
+def test_journal_fit_reads_the_sections_project_json_declares(tmp_path):
+    import json
+    m = module('journal_fit')
+    (tmp_path / 'drafts' / 'paper1').mkdir(parents=True)
+    (tmp_path / 'drafts' / 'paper1' / '02_abstract.md').write_text('# Abstract\n\n' + 'word ' * 300, encoding='utf-8')
+    (tmp_path / 'drafts' / 'paper1' / 'table_1.md').write_text('| a |\n', encoding='utf-8')
+    (tmp_path / 'project.json').write_text(json.dumps({
+        'abstract': 'drafts/paper1/02_abstract.md', 'artifacts': ['drafts/paper1/02_abstract.md'],
+        'tables': ['drafts/paper1/table_1.md']}), encoding='utf-8')
+    counts = m.measure(tmp_path)
+    assert counts['abstract_words'] == 300 and counts['tables_figures'] == 1
+    assert 'word word' in m.manuscript(tmp_path)
+
+
+def test_journal_profile_alias_is_found_by_the_typed_name(tmp_path, monkeypatch):
+    m = module('journal_fit')
+    monkeypatch.setattr(m, 'library_journals', lambda: tmp_path)
+    (tmp_path / 'spine-j.md').write_text('# Spine J\n', encoding='utf-8')
+    m.remember_alias('The Spine Journal', 'Spine J')
+    assert m.profile_path('The Spine Journal', None) == tmp_path / 'spine-j.md'
+
+
+def test_nlm_lookup_survives_an_empty_article_list(monkeypatch):
+    m = module('journal_fit')
+    monkeypatch.setattr(m.pubmed, 'fetch_articles', lambda ids: [])
+    assert m.nlm_abbreviation('Spine J', search=lambda term, n: (['123'], 1)) == ('', '')
+
+
+def test_library_rule_lands_in_the_synced_table_once_and_backups_are_kept(tmp_path, monkeypatch):
+    monkeypatch.setenv('MANUWRIGHT_HOME', str(tmp_path / 'home'))
+    m = module('library_sync')
+    terms = tmp_path / 'terminology.md'
+    terms.write_text(f'# T\n\n{m.SECTION}\n\n{m.TABLE_HEAD}| used | utilized | x |\n\n## Local exceptions\n\nprose\n',
+                     encoding='utf-8')
+    for _ in range(3):
+        m.add_rules(terms, {'demonstrated': ('showed', 'demonstrated', '')}, 'c')
+    assert terms.read_text(encoding='utf-8').count('| showed | demonstrated |') == 1
+    assert 'demonstrated' in m.rules(terms) and terms.read_text(encoding='utf-8').rstrip().endswith('prose')
+    terms.write_text(terms.read_text(encoding='utf-8') + 'edited\n', encoding='utf-8')
+    m.add_rules(terms, {'leverage': ('use', 'leverage', '')}, 'c')
+    assert len(list(tmp_path.glob('terminology.md*.bak'))) == 2  # the earlier copy is not overwritten
+
+
+def test_library_does_not_write_a_terminology_file_outside_the_paper(tmp_path, monkeypatch):
+    import json
+    monkeypatch.setenv('MANUWRIGHT_HOME', str(tmp_path / 'home'))
+    m = module('library_sync')
+    outside = tmp_path / 'shared_terms.md'
+    paper = tmp_path / 'paper'
+    paper.mkdir()
+    (paper / 'project.json').write_text(json.dumps({'artifacts': [], 'terminology': str(outside)}), encoding='utf-8')
+    assert m.paper_terminology(paper) is None
+    report = m.remember_term('used', 'utilized', '', paper)
+    assert any('outside the paper' in line for line in report) and not outside.exists()
+
+
+def test_pubmed_requests_have_a_timeout():
+    m = module('search_pubmed')
+    assert m.TIMEOUT and 'timeout=TIMEOUT' in (ROOT / 'scripts' / 'search_pubmed.py').read_text(encoding='utf-8')
+
+
+def test_backups_in_the_same_second_all_survive(tmp_path, monkeypatch):
+    monkeypatch.setenv('MANUWRIGHT_HOME', str(tmp_path / 'home'))
+    m = module('library_sync')
+    target = tmp_path / 'terms.md'
+    for content in 'ABCD':
+        target.write_text(content, encoding='utf-8')
+        m.keep_backup(target)
+    assert sorted(p.read_text(encoding='utf-8') for p in tmp_path.glob('terms.md*.bak')) == list('ABCD')
+
+
+def test_journal_fit_finds_the_abstract_by_its_role_and_names_missing_files(tmp_path):
+    import json
+    m = module('journal_fit')
+    (tmp_path / 'drafts').mkdir()
+    (tmp_path / 'drafts' / 'abstract.md').write_text('word ' * 300, encoding='utf-8')
+    (tmp_path / 'project.json').write_text(json.dumps({'abstract': 'drafts/abstract.md',
+                                                       'artifacts': ['drafts/abstract.md', 'drafts/05_results.md']}),
+                                           encoding='utf-8')
+    assert m.measure(tmp_path)['abstract_words'] == 300 and 'word word' in m.manuscript(tmp_path)
+
+
+def test_paper_profile_wins_over_library_profile_under_either_name(tmp_path, monkeypatch):
+    m = module('journal_fit')
+    lib = tmp_path / 'lib'
+    lib.mkdir()
+    monkeypatch.setattr(m, 'library_journals', lambda: lib)
+    m.remember_alias('The Spine Journal', 'Spine J')
+    (lib / 'the-spine-journal.md').write_text('library', encoding='utf-8')
+    paper = tmp_path / 'paper'
+    (paper / 'profile' / 'journals').mkdir(parents=True)
+    (paper / 'profile' / 'journals' / 'spine-j.md').write_text('paper', encoding='utf-8')
+    assert m.profile_path('The Spine Journal', paper).read_text(encoding='utf-8') == 'paper'
+
+
+def test_style_edits_apply_refuses_an_outside_registry(tmp_path):
+    import json
+    import subprocess
+    paper = tmp_path / 'paper'
+    (paper / 'Style').mkdir(parents=True)
+    (paper / 'project.json').write_text(json.dumps({'artifacts': [], 'terminology': str(tmp_path / 'shared.md')}),
+                                        encoding='utf-8')
+    (paper / 'Style' / 'pending_style_rules.md').write_text('- [x] P0 replace "utilized" with "used" (2x)\n',
+                                                           encoding='utf-8')
+    done = subprocess.run([sys.executable, str(ROOT / 'scripts' / 'academic_style.py'), 'edits', '--apply'], cwd=paper,
+                          capture_output=True, text=True, encoding='utf-8',
+                          env={**os.environ, 'MANUWRIGHT_HOME': str(tmp_path / 'home')})
+    assert done.returncode == 2 and 'outside the paper' in done.stderr and 'Traceback' not in done.stderr
+    assert not (tmp_path / 'shared.md').exists()
