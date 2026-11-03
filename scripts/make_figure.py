@@ -49,7 +49,16 @@ KINDS = {'forest': ({'label', 'estimate', 'low', 'high'}, {'reference', 'log'}),
          'bar': ({'x', 'y'}, {'series', 'low', 'high'}),
          'line': ({'x', 'y'}, {'series', 'low', 'high'})}
 STYLE_DEFAULTS = {'single_mm': 85.0, 'double_mm': 174.0, 'dpi': 600, 'font': ['Arial', 'Helvetica', 'DejaVu Sans'],
-                  'font_pt': 8.0}
+                  'font_pt': 8.0, 'preset': 'prism'}
+# Looks only: colours, line weights, ticks, grid. The plotted numbers never depend on the preset.
+PRESETS = {
+    'nejm': {'colors': ['#0072B5', '#BC3C29', '#E18727', '#20854E', '#7876B1', '#6F99AD'], 'ink': '#0072B5',
+             'axis': 0.6, 'tick': 2.5, 'grid': True, 'edge': None, 'offset': 0, 'labelweight': 'normal'},
+    'prism': {'colors': ['#4A7DB5', '#D9644A', '#5FA35B', '#8E6BB5', '#E0A43A', '#808080'], 'ink': 'black',
+              'axis': 1.0, 'tick': 4.0, 'grid': False, 'edge': 'black', 'offset': 4, 'labelweight': 'bold'},
+    'grey': {'colors': ['0.1', '0.55', '0.8', '0.35'], 'ink': 'black',
+             'axis': 0.6, 'tick': 3.5, 'grid': False, 'edge': 'black', 'offset': 0, 'labelweight': 'normal'},
+}
 
 
 def sha(data: bytes) -> str:
@@ -85,6 +94,8 @@ def resolve_style(config: dict) -> dict:
         style['font'] = [style['font']]
     if not isinstance(style['font'], list) or not style['font'] or not all(isinstance(f, str) and f for f in style['font']):
         raise ValueError('figure_style.font must be a font name or a list of them')
+    if style['preset'] not in PRESETS:
+        raise ValueError('figure_style.preset must be one of: ' + ', '.join(PRESETS))
     return style
 
 
@@ -270,23 +281,27 @@ def render(spec: dict, records: list[dict], style: dict, target: Path, fmt: str)
     matplotlib.use('Agg')
     from matplotlib import font_manager, pyplot as plt
     font = next((f for f in style['font'] if _has_font(font_manager, f)), 'DejaVu Sans')
+    look = PRESETS[style['preset']]
     plt.rcParams.update({'font.family': font, 'font.size': style['font_pt'], 'text.parse_math': False,
-                         'axes.linewidth': 0.6, 'xtick.major.width': 0.6, 'ytick.major.width': 0.6,
+                         'axes.linewidth': look['axis'], 'xtick.major.width': look['axis'],
+                         'ytick.major.width': look['axis'], 'xtick.major.size': look['tick'],
+                         'ytick.major.size': look['tick'], 'xtick.direction': 'out', 'ytick.direction': 'out',
+                         'axes.labelweight': look['labelweight'], 'legend.handlelength': 1.2,
                          'svg.hashsalt': 'manuwright', 'pdf.fonttype': 42, 'ps.fonttype': 42})
     width = {'single': style['single_mm'], 'double': style['double_mm']}.get(spec.get('width', 'single'), spec.get('width'))
     kind = spec['kind']
     count = len(records)
     height = spec.get('height') or (max(35.0, 12 + 6.5 * count) if kind == 'forest' else width * 0.72)
     fig, ax = plt.subplots(figsize=(width / 25.4, height / 25.4), layout='constrained')
-    greys, markers = ['0.1', '0.55', '0.8', '0.35'], ['o', 's', '^', 'D']
+    colors, markers = look['colors'], ['o', 's', '^', 'D']
     if kind == 'forest':
         ys = list(range(count, 0, -1))
         est = [r['values'][spec['estimate']] for r in records]
         lo = [r['values'][spec['low']] for r in records]
         hi = [r['values'][spec['high']] for r in records]
         ax.errorbar(est, ys, xerr=[[e - l for e, l in zip(est, lo)], [h - e for e, h in zip(est, hi)]],
-                    fmt='s', color='black', markersize=3.5, elinewidth=0.8, capsize=0)
-        ax.axvline(spec.get('reference', 1), color='0.4', linewidth=0.6, linestyle='--')
+                    fmt='s', color=look['ink'], markersize=4, elinewidth=look['axis'] + 0.3, capsize=0)
+        ax.axvline(spec.get('reference', 1), color='0.35', linewidth=look['axis'], linestyle='--', zorder=0)
         if spec.get('log'):
             _log_axis(ax.xaxis, ax.set_xscale)
         ax.set_yticks(ys, [r['cells'][spec['label']] for r in records])
@@ -310,12 +325,15 @@ def render(spec: dict, records: list[dict], style: dict, target: Path, fmt: str)
                        [r['values'][spec['high']] - y for y, r in zip(ys, ordered)]]
             if kind == 'bar':
                 pos = [i - 0.4 + step * (n + 0.5) for i in range(len(xs))]
-                ax.bar(pos, ys, step * 0.9, color=greys[n % 4], edgecolor='black', linewidth=0.5,
-                       yerr=err, capsize=2, error_kw={'elinewidth': 0.6}, label=name or None)
+                ax.bar(pos, ys, step * 0.85, color=colors[n % len(colors)], edgecolor=look['edge'] or 'none',
+                       linewidth=look['axis'], yerr=err, capsize=2.5,
+                       error_kw={'elinewidth': look['axis'], 'capthick': look['axis']}, label=name or None)
             else:
                 pos = [i + (n - (len(series) - 1) / 2) * 0.06 for i in range(len(xs))]  # small dodge: bars stay readable
-                ax.errorbar(pos, ys, yerr=err, color=greys[n % 4] if n else 'black', marker=markers[n % 4],
-                            markersize=3.5, linewidth=0.9, capsize=2, elinewidth=0.6, label=name or None)
+                ax.errorbar(pos, ys, yerr=err, color=colors[n % len(colors)], marker=markers[n % 4],
+                            markersize=4, linewidth=look['axis'] + 0.6, capsize=2.5, elinewidth=look['axis'],
+                            capthick=look['axis'], markeredgecolor=look['edge'] or colors[n % len(colors)],
+                            markeredgewidth=look['axis'] * 0.8, label=name or None)
             if spec.get('annotate'):
                 for p, y, r in zip(pos, ys, ordered):
                     ax.annotate(r['cells'][spec['annotate']], (p, y), textcoords='offset points', xytext=(0, 4),
@@ -328,6 +346,11 @@ def render(spec: dict, records: list[dict], style: dict, target: Path, fmt: str)
     ax.set_xlabel(spec.get('xlabel', ''))
     ax.set_ylabel(spec.get('ylabel', ''))
     ax.spines[['top', 'right']].set_visible(False)
+    if look['offset']:
+        ax.spines[['left', 'bottom']].set_position(('outward', look['offset']))
+    if look['grid']:
+        ax.grid(axis='x' if kind == 'forest' else 'y', color='0.88', linewidth=0.5)
+        ax.set_axisbelow(True)
     options = {'format': fmt, 'dpi': style['dpi']}
     if fmt == 'tiff':
         options['pil_kwargs'] = {'compression': 'tiff_lzw'}
@@ -344,12 +367,20 @@ def render(spec: dict, records: list[dict], style: dict, target: Path, fmt: str)
 
 
 def _log_axis(axis, set_scale) -> None:
-    """Log scale with plain tick labels (0.5, 1, 2), not 10^0 mathtext, which parse_math=False would print raw."""
+    """Log scale with plain, readable ticks (0.5, 0.75, 1, 1.5), not 10^0 mathtext, which parse_math=False
+    would print raw. Ticks come from a fixed ladder thinned to at most 7 inside the view, so a narrow
+    interval (0.55 to 1.12) still gets more than one label."""
     from matplotlib import ticker
     set_scale('log')
-    axis.set_major_locator(ticker.LogLocator(base=10, subs=(1.0, 2.0, 5.0)))
-    axis.set_major_formatter(ticker.FuncFormatter(lambda value, _: f'{value:g}'))
-    axis.set_minor_formatter(ticker.NullFormatter())
+    low, high = sorted(axis.get_view_interval())
+    ladder = [m * 10 ** e for e in range(-4, 5) for m in (1, 1.5, 2, 3, 5, 7.5)]
+    ladder = [t for t in ladder if low <= t <= high]
+    while len(ladder) > 7:
+        ladder = ladder[ladder.index(1) % 2 if 1 in ladder else 0::2]  # keep the null line labelled
+    axis.set_major_locator(ticker.FixedLocator(ladder) if len(ladder) > 1 else
+                           ticker.LogLocator(base=10, subs=(1.0, 2.0, 5.0)))
+    axis.set_major_formatter(ticker.FuncFormatter(lambda value, _: f'{value:.4g}'))
+    axis.set_minor_locator(ticker.NullLocator())
 
 
 def _has_font(font_manager, name: str) -> bool:

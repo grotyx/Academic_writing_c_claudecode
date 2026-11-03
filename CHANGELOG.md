@@ -1,5 +1,13 @@
 # Changelog
 
+### v1.10.2 (261103)
+
+Figure presets.
+
+- `"figure_style": {"preset": ...}` picks the look of `manuwright figure`: `prism` (new default: bold axes set slightly apart, coloured bars with black outlines), `nejm` (thin axes, light grid, muted colours) or `grey` (the v1.10.1 look). Presets change colours and lines only, never the plotted values. Figures drawn with v1.10.1 report `figure_style changed` until redrawn.
+- Log axes label more ticks (0.5, 0.75, 1, 1.5, 2 ...), so a narrow interval no longer shows a single tick.
+- Manual v2.9.1, harness guide v1.5.1.
+
 ### v1.10.1 (261103)
 
 Figures drawn from the results, designed and reviewed with Codex (gpt-6.1-sol).

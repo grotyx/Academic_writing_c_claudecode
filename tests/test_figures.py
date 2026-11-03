@@ -211,3 +211,24 @@ def test_a_sidecar_that_is_a_directory_fails_the_figure_without_crashing(drawn):
     side.mkdir()
     snapshot(*load_project(project))
     assert figure_check(verify(project))['status'] == 'FAIL'
+
+
+def test_style_presets_render_every_kind_and_unknown_presets_are_refused(tmp_path):
+    pytest.importorskip('matplotlib')
+    fig = module()
+    assert fig.STYLE_DEFAULTS['preset'] == 'prism'
+    with pytest.raises(ValueError, match='preset'):
+        fig.resolve_style({'figure_style': {'preset': 'nature'}})
+    put(tmp_path / 'results/or.csv', 'variable,or,lo,hi,text\nA,0.3,0.08,1.1,x\nB,2.5,1.2,9.0,y\n')
+    put(tmp_path / 'results/pain.csv', 'time,arm,vas,lo,hi\nPre,E,7.1,6.5,7.7\nPre,M,7.0,6.4,7.6\n'
+                                      '6 wk,E,3.0,2.4,3.6\n6 wk,M,3.6,3.0,4.2\n')
+    for preset in fig.PRESETS:
+        config = {'paper_id': 'f', 'results': 'results', 'figure_style': {'preset': preset}}
+        put(tmp_path / 'project.json', config)
+        for kind, extra in [('forest', {}), ('bar', {}), ('line', {})]:
+            spec = dict(FOREST, out=f'fig/{preset}_{kind}.png') if kind == 'forest' else \
+                {'kind': kind, 'csv': 'results/pain.csv', 'x': 'time', 'y': 'vas', 'series': 'arm', 'low': 'lo',
+                 'high': 'hi', 'out': f'fig/{preset}_{kind}.png'}
+            put(tmp_path / f'{preset}_{kind}.json', spec)
+            fig.draw(tmp_path, config, tmp_path / f'{preset}_{kind}.json')
+            assert fig.check(tmp_path, config, tmp_path / spec['out'])[0] == 'ok'
