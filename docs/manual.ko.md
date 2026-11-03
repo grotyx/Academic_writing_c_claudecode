@@ -1,4 +1,4 @@
-# ManuWright 사용자 매뉴얼 (v2.9.1)
+# ManuWright 사용자 매뉴얼 (v2.9.2)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.2
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.2
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -170,7 +170,7 @@ manuwright figure drafts/figures/figure_2.json          # figure_2.tiff + figure
 manuwright figure --check drafts/figures/figure_2.json  # 아직 최신인지
 ```
 
-막대·선그래프는 `x`, `y`, 선택적으로 `series` 와 `low`/`high` 를 쓴다. `rows` 로 행을 고르고 순서를 정한다. CSV 값만 그린다(통계 계산·반올림 없음). `annotate` 는 CSV 열을 적힌 그대로 표시한다. 크기·해상도·글꼴은 project.json 의 `"figure_style"` 을 따른다(기본 1단 85 mm, 2단 174 mm, 600 dpi, Arial 8 pt. 기본값일 뿐 저널 규정이 아니다). `"preset"` 으로 모양을 고른다: `prism`(기본, 굵은 축을 살짝 띄우고 검은 테두리의 색 막대), `nejm`(가는 축, 옅은 격자, 차분한 색), `grey`(흑백 인쇄용 검정·회색). 프리셋은 색과 선만 바꾸고 그리는 값은 바꾸지 않는다. 형식은 파일 확장자를 따른다(.tiff LZW, .png, .pdf, .eps). 그림을 `"figures"` 에 올리면 `verify` 가 CSV·spec·그림 스타일·이미지가 그린 뒤 바뀌었을 때 실패로 잡는다. 결과에서 그리지 않은 그림(흐름도, 분석 스크립트가 그린 Kaplan-Meier 곡선, 사진)은 revision·submission 에서 `"figures_unbound"` 에 이유를 적어야 한다. 그림은 직접 눈으로 확인한다: 검사는 값이 어디서 왔는지를 증명할 뿐, 그림이 맞는 말을 하는지는 증명하지 않는다.
+막대·선그래프는 `x`, `y`, 선택적으로 `series` 와 `low`/`high` 를 쓴다. `rows` 로 행을 고르고 순서를 정한다. CSV 값만 그린다(통계 계산·반올림 없음). `annotate` 는 CSV 열을 적힌 그대로 표시한다. 크기·해상도·글꼴은 project.json 의 `"figure_style"` 을 따른다(기본 1단 85 mm, 2단 174 mm, 600 dpi, Arial 8 pt. 기본값일 뿐 저널 규정이 아니다). `"preset"` 으로 모양을 고른다: `prism`(기본, 굵은 축을 살짝 띄우고 검은 테두리의 색 막대), `nejm`(가는 축, 옅은 격자, 차분한 색), `grey`(흑백 인쇄용 검정·회색). 프리셋은 모양만 바꾸고 그리는 값은 바꾸지 않는다. 프리셋을 바꾸거나 v1.10.1(프리셋 없음)에서 올라오면 다시 그릴 때까지 `verify` 가 `figure_style changed` 로 표시한다. 형식은 파일 확장자를 따른다(.tiff LZW, .png, .pdf, .eps). 그림을 `"figures"` 에 올리면 `verify` 가 CSV·spec·그림 스타일·이미지가 그린 뒤 바뀌었을 때 실패로 잡는다. 결과에서 그리지 않은 그림(흐름도, 분석 스크립트가 그린 Kaplan-Meier 곡선, 사진)은 revision·submission 에서 `"figures_unbound"` 에 이유를 적어야 한다. 그림은 직접 눈으로 확인한다: 검사는 값이 어디서 왔는지를 증명할 뿐, 그림이 맞는 말을 하는지는 증명하지 않는다.
 
 ## 5. 원고 계획과 승인
 

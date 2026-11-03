@@ -217,8 +217,9 @@ def test_style_presets_render_every_kind_and_unknown_presets_are_refused(tmp_pat
     pytest.importorskip('matplotlib')
     fig = module()
     assert fig.STYLE_DEFAULTS['preset'] == 'prism'
-    with pytest.raises(ValueError, match='preset'):
-        fig.resolve_style({'figure_style': {'preset': 'nature'}})
+    for bad in ('nature', [], {}, None, 3):
+        with pytest.raises(ValueError, match='preset'):
+            fig.resolve_style({'figure_style': {'preset': bad}})
     put(tmp_path / 'results/or.csv', 'variable,or,lo,hi,text\nA,0.3,0.08,1.1,x\nB,2.5,1.2,9.0,y\n')
     put(tmp_path / 'results/pain.csv', 'time,arm,vas,lo,hi\nPre,E,7.1,6.5,7.7\nPre,M,7.0,6.4,7.6\n'
                                       '6 wk,E,3.0,2.4,3.6\n6 wk,M,3.6,3.0,4.2\n')
@@ -232,3 +233,23 @@ def test_style_presets_render_every_kind_and_unknown_presets_are_refused(tmp_pat
             put(tmp_path / f'{preset}_{kind}.json', spec)
             fig.draw(tmp_path, config, tmp_path / f'{preset}_{kind}.json')
             assert fig.check(tmp_path, config, tmp_path / spec['out'])[0] == 'ok'
+
+
+@pytest.mark.parametrize('low, high', [(1.0001, 1.0009), (1e-12, 1e12), (1e6, 1e12), (0.9, 1.1), (0.99, 1.01),
+                                       (1e-20, 1e-6), (1e6, 1e20), (0.55, 1.12), (0.07, 9.5), (2.1, 9.9)])
+def test_log_ticks_stay_inside_the_view_few_distinct_and_keep_one(low, high):
+    pytest.importorskip('matplotlib')
+    fig = module()
+    ticks = fig._log_ticks(low, high)
+    labels = list(fig._tick_labels(ticks).values())
+    assert 2 <= len(ticks) <= 7 and all(low <= t <= high for t in ticks)
+    assert len(set(labels)) == len(labels)
+    assert (1.0 in ticks) == (low <= 1 <= high)
+
+
+def test_a_malformed_preset_is_a_configuration_error_not_a_crash(drawn, capsys):
+    project, fig = drawn
+    config = json.loads(project.read_text(encoding='utf-8'))
+    put(project, dict(config, figure_style={'preset': []}))
+    assert fig.main([str(project.parent / 'drafts/figures/figure_1.json')]) == 2
+    assert 'preset' in capsys.readouterr().err

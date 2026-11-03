@@ -1,10 +1,20 @@
 # Changelog
 
+### v1.10.3 (261104)
+
+Figure fixes from Codex (gpt-6.1-sol) review of v1.10.2.
+
+- Log axes: every view now gets 2 to 7 ticks inside it, 1 kept when visible, and labels precise enough that different ticks never read the same (a 1.0001-1.0009 interval no longer shows five ticks labelled 1; views under a decade or across 20 decades are labelled).
+- NEJM forest plots draw no grid, so the dashed null line stays visible; the null line sits above any grid.
+- Line charts use a 1.2 pt connecting line in every preset.
+- A non-text `figure_style.preset` is a configuration error (exit 2), not a crash.
+- Manual v2.9.2 and harness guide v1.5.2 note that figures drawn with v1.10.1 need a redraw.
+
 ### v1.10.2 (261103)
 
 Figure presets.
 
-- `"figure_style": {"preset": ...}` picks the look of `manuwright figure`: `prism` (new default: bold axes set slightly apart, coloured bars with black outlines), `nejm` (thin axes, light grid, muted colours) or `grey` (the v1.10.1 look). Presets change colours and lines only, never the plotted values. Figures drawn with v1.10.1 report `figure_style changed` until redrawn.
+- `"figure_style": {"preset": ...}` picks the look of `manuwright figure`: `prism` (new default: bold axes set slightly apart, coloured bars with black outlines), `nejm` (thin axes, light grid, muted colours) or `grey` (a greyscale preset). Presets change colours and lines only, never the plotted values. Figures drawn with v1.10.1 report `figure_style changed` until redrawn.
 - Log axes label more ticks (0.5, 0.75, 1, 1.5, 2 ...), so a narrow interval no longer shows a single tick.
 - Manual v2.9.1, harness guide v1.5.1.
 

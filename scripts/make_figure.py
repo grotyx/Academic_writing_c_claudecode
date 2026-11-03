@@ -94,7 +94,7 @@ def resolve_style(config: dict) -> dict:
         style['font'] = [style['font']]
     if not isinstance(style['font'], list) or not style['font'] or not all(isinstance(f, str) and f for f in style['font']):
         raise ValueError('figure_style.font must be a font name or a list of them')
-    if style['preset'] not in PRESETS:
+    if not isinstance(style['preset'], str) or style['preset'] not in PRESETS:
         raise ValueError('figure_style.preset must be one of: ' + ', '.join(PRESETS))
     return style
 
@@ -301,7 +301,7 @@ def render(spec: dict, records: list[dict], style: dict, target: Path, fmt: str)
         hi = [r['values'][spec['high']] for r in records]
         ax.errorbar(est, ys, xerr=[[e - l for e, l in zip(est, lo)], [h - e for e, h in zip(est, hi)]],
                     fmt='s', color=look['ink'], markersize=4, elinewidth=look['axis'] + 0.3, capsize=0)
-        ax.axvline(spec.get('reference', 1), color='0.35', linewidth=look['axis'], linestyle='--', zorder=0)
+        ax.axvline(spec.get('reference', 1), color='0.35', linewidth=look['axis'], linestyle='--', zorder=1)  # above the grid, below the estimates
         if spec.get('log'):
             _log_axis(ax.xaxis, ax.set_xscale)
         ax.set_yticks(ys, [r['cells'][spec['label']] for r in records])
@@ -331,7 +331,7 @@ def render(spec: dict, records: list[dict], style: dict, target: Path, fmt: str)
             else:
                 pos = [i + (n - (len(series) - 1) / 2) * 0.06 for i in range(len(xs))]  # small dodge: bars stay readable
                 ax.errorbar(pos, ys, yerr=err, color=colors[n % len(colors)], marker=markers[n % 4],
-                            markersize=4, linewidth=look['axis'] + 0.6, capsize=2.5, elinewidth=look['axis'],
+                            markersize=4, linewidth=1.2, capsize=2.5, elinewidth=look['axis'],
                             capthick=look['axis'], markeredgecolor=look['edge'] or colors[n % len(colors)],
                             markeredgewidth=look['axis'] * 0.8, label=name or None)
             if spec.get('annotate'):
@@ -348,8 +348,8 @@ def render(spec: dict, records: list[dict], style: dict, target: Path, fmt: str)
     ax.spines[['top', 'right']].set_visible(False)
     if look['offset']:
         ax.spines[['left', 'bottom']].set_position(('outward', look['offset']))
-    if look['grid']:
-        ax.grid(axis='x' if kind == 'forest' else 'y', color='0.88', linewidth=0.5)
+    if look['grid'] and kind != 'forest':  # a forest keeps only its dashed null line
+        ax.grid(axis='y', color='0.88', linewidth=0.5)
         ax.set_axisbelow(True)
     options = {'format': fmt, 'dpi': style['dpi']}
     if fmt == 'tiff':
@@ -367,20 +367,43 @@ def render(spec: dict, records: list[dict], style: dict, target: Path, fmt: str)
 
 
 def _log_axis(axis, set_scale) -> None:
-    """Log scale with plain, readable ticks (0.5, 0.75, 1, 1.5), not 10^0 mathtext, which parse_math=False
-    would print raw. Ticks come from a fixed ladder thinned to at most 7 inside the view, so a narrow
-    interval (0.55 to 1.12) still gets more than one label."""
+    """Log scale with plain tick labels (0.5, 0.75, 1, 1.5), not 10^0 mathtext, which parse_math=False would
+    print raw. Every view gets 2 to 7 ticks inside it, 1 kept when visible, and labels precise enough that
+    different ticks never read the same."""
     from matplotlib import ticker
     set_scale('log')
     low, high = sorted(axis.get_view_interval())
-    ladder = [m * 10 ** e for e in range(-4, 5) for m in (1, 1.5, 2, 3, 5, 7.5)]
-    ladder = [t for t in ladder if low <= t <= high]
-    while len(ladder) > 7:
-        ladder = ladder[ladder.index(1) % 2 if 1 in ladder else 0::2]  # keep the null line labelled
-    axis.set_major_locator(ticker.FixedLocator(ladder) if len(ladder) > 1 else
-                           ticker.LogLocator(base=10, subs=(1.0, 2.0, 5.0)))
-    axis.set_major_formatter(ticker.FuncFormatter(lambda value, _: f'{value:.4g}'))
+    ticks = _log_ticks(low, high)
+    labels = _tick_labels(ticks)
+    axis.set_major_locator(ticker.FixedLocator(ticks))
+    axis.set_major_formatter(ticker.FuncFormatter(lambda value, _: labels.get(value, '')))
     axis.set_minor_locator(ticker.NullLocator())
+
+
+def _log_ticks(low: float, high: float, most: int = 7) -> list[float]:
+    from matplotlib import ticker
+    first, last = math.floor(math.log10(low)), math.ceil(math.log10(high))
+    steps = (1, 1.5, 2, 3, 5, 7.5) if last - first <= 3 else (1,)  # wide views: decades only
+    ticks = [m * 10.0 ** e for e in range(first, last + 1) for m in steps]
+    ticks = [t for t in ticks if low <= t <= high]
+    if len(ticks) < 3:  # under a decade wide: evenly spaced round numbers, as on a linear axis
+        ticks = [t for t in ticker.MaxNLocator(nbins=4, steps=[1, 2, 2.5, 5, 10]).tick_values(low, high)
+                 if t > 0 and low <= t <= high]
+        if low <= 1 <= high and 1 not in ticks:
+            ticks = sorted(ticks + [1.0])
+    while len(ticks) > most:
+        step = math.ceil(len(ticks) / most)
+        start = ticks.index(1.0) % step if 1.0 in ticks else 0  # keep the null line labelled
+        ticks = ticks[start::step]
+    return ticks
+
+
+def _tick_labels(ticks: list[float]) -> dict:
+    for digits in range(2, 16):
+        labels = [f'{t:.{digits}g}' for t in ticks]
+        if len(set(labels)) == len(labels):
+            return dict(zip(ticks, labels))
+    return {t: repr(t) for t in ticks}
 
 
 def _has_font(font_manager, name: str) -> bool:

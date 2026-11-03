@@ -1,4 +1,4 @@
-# ManuWright user manual (v2.9.1)
+# ManuWright user manual (v2.9.2)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.2
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.2
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -165,7 +165,7 @@ manuwright figure drafts/figures/figure_2.json          # draws figure_2.tiff + 
 manuwright figure --check drafts/figures/figure_2.json  # still current?
 ```
 
-Bar and line charts take `x`, `y`, optional `series` and `low`/`high`; `rows` picks and orders rows. Only CSV values are plotted (no statistics, no rounding); `annotate` prints a CSV column as written. Size, resolution and font come from `"figure_style"` in project.json (defaults 85 mm single column, 174 mm double, 600 dpi, Arial 8 pt: defaults, not a journal's rule). `"preset"` sets the look: `prism` (default: bold axes set slightly apart, filled bars with black outlines), `nejm` (thin axes, light grid, muted colours) or `grey` (black and greys for greyscale print). The preset changes colours and lines only, never the plotted values. The format follows the file suffix (.tiff LZW, .png, .pdf, .eps). List the image under `"figures"`; `verify` then fails it when the CSV, the spec, the figure style or the image changed after drawing. A figure not drawn from results (flow diagram, Kaplan-Meier curve from the analysis script, photograph) needs a reason in `"figures_unbound"` for revision and submission. Look at every figure yourself: the check proves where the values came from, not that the chart says the right thing.
+Bar and line charts take `x`, `y`, optional `series` and `low`/`high`; `rows` picks and orders rows. Only CSV values are plotted (no statistics, no rounding); `annotate` prints a CSV column as written. Size, resolution and font come from `"figure_style"` in project.json (defaults 85 mm single column, 174 mm double, 600 dpi, Arial 8 pt: defaults, not a journal's rule). `"preset"` sets the look: `prism` (default: bold axes set slightly apart, filled bars with black outlines), `nejm` (thin axes, light grid, muted colours) or `grey` (black and greys for greyscale print). The preset changes appearance only, never the plotted values. Changing the preset, or upgrading from v1.10.1 (which had no presets), makes `verify` report `figure_style changed` until you redraw. The format follows the file suffix (.tiff LZW, .png, .pdf, .eps). List the image under `"figures"`; `verify` then fails it when the CSV, the spec, the figure style or the image changed after drawing. A figure not drawn from results (flow diagram, Kaplan-Meier curve from the analysis script, photograph) needs a reason in `"figures_unbound"` for revision and submission. Look at every figure yourself: the check proves where the values came from, not that the chart says the right thing.
 
 ## 5. Draft plan and approval
 
