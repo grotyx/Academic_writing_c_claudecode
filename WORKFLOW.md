@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.10.3)
+# Academic Paper Writing Project (v1.10.4)
 
-## Shared Engine (v1.10.3)
+## Shared Engine (v1.10.4)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -389,6 +389,7 @@ Phase 6: QC (3 rounds CRITICAL, 6 rounds RECOMMENDED)
 
 Phase 7: Finalize
 ├── Read docs/docx_guide.md (DOCX 변환 규칙 확인)
+├── AI disclosure: `manuwright disclose` (선언문·Methods·캡션 문구 제안) → 저자가 검토한 문구를 ai_usage 의 disclosure 에 기록, `--check`
 ├── Compile to DOCX (docs/docx_guide.md 규칙대로)
 │   ├── output/title_page_YYMMDD.docx (별도)
 │   ├── output/manuscript_YYMMDD.docx (본문 병합, 테이블 제외)

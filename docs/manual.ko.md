@@ -1,4 +1,4 @@
-# ManuWright 사용자 매뉴얼 (v2.9.2)
+# ManuWright 사용자 매뉴얼 (v2.9.3)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -24,7 +24,7 @@
 ## 빠른 시작
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. 설치와 점검
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -399,7 +399,7 @@ manuwright verify --project project.json --profile submission
 - `result_bindings`: 수치 파일의 모든 숫자를 결과, 군, 시점, 단위와 함께 CSV 칸에 연결한 기록
 - `semantic_review`: status PASS 이고 남은 지적이 없는 검토
 - `human_signoff`: 실제 사람의 결정과 그 근거
-- `ai_usage`: 어떤 AI 가 무엇을 했는지, 사람이 확인한 기록
+- `ai_usage`: 어떤 AI 가 무엇을 했는지, 사람이 확인한 기록. v1.10.4 부터 도구마다 `use`(writing, references, research, figure, grammar), `purpose`, `version`, `developer`, 프롬프트 기록 `prompts`(`dependencies` 에 올림, 검토 패킷과 빌드에는 넣지 않음)를 적을 수 있다. `manuwright disclose` 는 저자가 검토할 문구를 제안한다: 고지문(Elsevier·Lancet 방식대로 원고 끝, 참고문헌 바로 앞에 빌드됨), 연구에 쓴 AI 마다 Methods 문장, AI 도움을 받은 설명용 그림마다 캡션 문구. 단순 문법 교정은 Elsevier 정책상 고지하지 않아도 된다(저널마다 확인). `manuwright disclose --check` 는 기록의 구조와 경로를 검사한다. 고지가 충분한지는 독립 검토와 사람의 서명이 판단한다. 예시: `docs/ai_usage.example.json`.
 - `checklist`: 보고 체크리스트(CONSORT, STROBE, PRISMA, CARE)와 항목별 위치
 
 시험에서 가장 손이 많이 간 부분:

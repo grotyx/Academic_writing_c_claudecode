@@ -1,0 +1,30 @@
+{
+  "used": true,
+  "reviewed_by": "Named human reviewer",
+  "disclosure": "During the preparation of this work the authors used Example Model (version X; Example Developer) in order to improve the clarity of the Discussion. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.",
+  "tools": [
+    {
+      "tool": "Example Model",
+      "role": "Language revision",
+      "use": "writing",
+      "purpose": "improve the clarity of the Discussion",
+      "version": "version X",
+      "developer": "Example Developer",
+      "prompts": "review/ai_prompts/session_1.md"
+    },
+    {
+      "tool": "Example Model",
+      "role": "Analysis code",
+      "use": "research",
+      "purpose": "draft the regression code, which the authors checked and ran",
+      "version": "version X",
+      "developer": "Example Developer"
+    },
+    {
+      "tool": "Example Spell Checker",
+      "role": "Spelling",
+      "use": "grammar",
+      "purpose": "basic spelling and grammar checks"
+    }
+  ]
+}

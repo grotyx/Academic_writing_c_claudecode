@@ -234,14 +234,14 @@ def build(path):
                 title=document(style,False);append_markdown(title,text,style);title.save(stage/f'title_page{stamp}.docx');continue
             if section_count: manuscript.add_page_break()
             append_markdown(manuscript,text,style);merged.append(text);section_count+=1
+        if config.get('ai_usage'):  # Elsevier/Lancet: a separate section at the end, immediately before the references
+            ai=json.loads(inside(root,config['ai_usage']).read_text(encoding='utf-8'))
+            if ai.get('used') and str(ai.get('disclosure') or '').strip():
+                disclosure='# '+checker('ai_disclosure').DECLARATION_TITLE+'\n\n'+ai['disclosure'].strip()
+                manuscript.add_page_break();append_markdown(manuscript,disclosure,style);merged.append(disclosure)
         if references.references:
             bibliography='# References\n\n'+'\n\n'.join(references.references)
             manuscript.add_page_break();append_markdown(manuscript,bibliography,style);merged.append(bibliography)
-        if config.get('ai_usage'):
-            ai=json.loads(inside(root,config['ai_usage']).read_text(encoding='utf-8'))
-            if ai.get('used'):
-                disclosure='# AI assistance disclosure\n\n'+ai['disclosure']
-                manuscript.add_page_break();append_markdown(manuscript,disclosure,style);merged.append(disclosure)
         manuscript.save(stage/f'manuscript{stamp}.docx')
         (stage/f'manuscript{stamp}.md').write_text('\n\n'.join(merged),encoding='utf-8')
         if config.get('tracked_baseline'):  # revision: the submitted text against this one, as Word revisions

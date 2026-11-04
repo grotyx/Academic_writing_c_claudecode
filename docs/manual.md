@@ -1,4 +1,4 @@
-# ManuWright user manual (v2.9.2)
+# ManuWright user manual (v2.9.3)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -24,7 +24,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 ## Quickstart
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -45,7 +45,7 @@ manuwright build --project project.json
 ## 1. Install and check
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -392,7 +392,7 @@ Submission additionally needs:
 - `result_bindings`: every number in the numeric artifacts bound to a CSV cell with its outcome, group, time point and unit.
 - `semantic_review` with status PASS and no open findings.
 - `human_signoff`: a real person's decision, with a reference.
-- `ai_usage`: which AI tools did what, reviewed by a person.
+- `ai_usage`: which AI tools did what, reviewed by a person. Since v1.10.4 each tool can carry `use` (writing, references, research, figure, grammar), `purpose`, `version`, `developer` and a `prompts` log (listed under `dependencies`; never copied into the packet or the build). `manuwright disclose` prints proposed wording for the author: the declaration (built at the end of the manuscript, immediately before the references, as Elsevier and the Lancet ask), a Methods sentence for each research use and a caption note for each AI-assisted explanatory figure. Grammar-only use needs no declaration under the Elsevier policy; check your journal. `manuwright disclose --check` checks the record's structure and paths; whether the disclosure is adequate is for the independent review and the human signoff. Example: `docs/ai_usage.example.json`.
 - `checklist`: the reporting checklist (CONSORT, STROBE, PRISMA, CARE) with item locations.
 
 In the demo these took most of the effort:

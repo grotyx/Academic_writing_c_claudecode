@@ -176,17 +176,8 @@ def completion_problem(key, value):
     if not isinstance(value, dict) or not str(value.get('reviewed_by') or '').strip():
         return f'{key}: object with nonempty reviewed_by required'
     if key == 'ai_usage':
-        if type(value.get('used')) is not bool:
-            return 'ai_usage: used must be true or false'
-        if value['used'] is False:
-            return None
-        tools = value.get('tools')
-        if not str(value.get('disclosure') or '').strip() or not isinstance(tools, list) or not tools:
-            return 'ai_usage: disclosure and a nonempty tools list are required when used'
-        for tool in tools:
-            if not isinstance(tool, dict) or not all(str(tool.get(f) or '').strip() for f in ('tool', 'role')):
-                return 'ai_usage: every tools entry needs nonempty tool and role'
-        return None
+        problems = checker('ai_disclosure').record_problems(value)
+        return ' | '.join(problems) if problems else None
     for field in ('guideline', 'version', 'source_url'):
         if not str(value.get(field) or '').strip():
             return f'checklist: missing {field}'
@@ -435,7 +426,13 @@ def verify(path, profile='draft'):
         run('human_signoff', lambda: receipt_problem(inside(root, config['human_signoff']), initial, human=True))
         def required_json(key):
             return completion_problem(key, json.loads(inside(root, config[key]).read_text(encoding='utf-8')))
-        run('ai_disclosure', lambda: required_json('ai_usage'))
+        def ai_disclosure():
+            failures, blocked = checker('ai_disclosure').check(root, config)
+            if failures:
+                return ' | '.join(failures)
+            if blocked:
+                raise ValueError(' | '.join(blocked))
+        run('ai_disclosure', ai_disclosure)
         run('reporting_checklist', lambda: required_json('checklist'))
     if snapshot(path, config) != initial:
         record('snapshot', 'FAIL', 'inputs changed during verification')

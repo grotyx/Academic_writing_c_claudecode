@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.3
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -146,6 +146,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright bind [--write]` | Propose result bindings: each number tied to its results CSV cell; the table context and numbers found in several cells come from `review/bindings_overrides.json`, never guessed |
 | `manuwright track-changes OLD.md NEW.md -o OUT.docx` | The revision as a Word tracked-changes file (`"tracked_baseline"` makes `build` write it) |
 | `manuwright figure SPEC.json [--check]` | Draw a forest, bar or line figure from a results CSV, with a provenance file; `verify` fails a figure whose CSV, spec, style or image changed |
+| `manuwright disclose [--check]` | Propose AI-use wording from the `ai_usage` record (declaration before the references, Methods sentences, caption notes) and check the record |
 | `manuwright claim-strength drafts` | Flag cited sentences worded more strongly than the evidence's `Claim Strength` (speculative, observed, supported, strong) |
 | `manuwright search audit` | Re-check every evidence.md entry against PubMed: weighted title/author/year/journal match, DOI mismatch, retractions, expressions of concern, errata |
 | `manuwright blind-review packet` / `check` | Revision re-review with the response letter withheld until the verdicts are recorded (no persuasion by the letter) |

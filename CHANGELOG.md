@@ -1,5 +1,14 @@
 # Changelog
 
+### v1.10.4 (261104)
+
+AI-use disclosure, designed and reviewed with Codex (gpt-6.1-sol), following the Elsevier generative AI policy (June 2026; publisher of The Lancet) and ICMJE.
+
+- `manuwright disclose` proposes wording from the `ai_usage` record for the author to review: the declaration (Elsevier template), a Methods sentence for each research use and a caption note for each AI-assisted explanatory figure. It writes nothing. `--check` checks the record's structure, prompt-log paths and figure paths.
+- `ai_usage` tool entries may carry `use` (writing, references, research, figure, grammar), `purpose`, `version`, `developer`, `prompts` and `figures`. Old records stay valid. Grammar-only use needs no disclosure; `used: false` with tools or a disclosure fails; prompt logs must be listed under `dependencies` and are never copied into the packet or build.
+- Build places the declaration immediately before the references (it was after them), under "Declaration of generative AI and AI-assisted technologies in the manuscript preparation process".
+- Manual v2.9.3, harness guide v1.5.3, `docs/ai_usage.example.json`, READMEs.
+
 ### v1.10.3 (261104)
 
 Figure fixes from Codex (gpt-6.1-sol) review of v1.10.2.
