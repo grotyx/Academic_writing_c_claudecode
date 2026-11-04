@@ -5,7 +5,7 @@
 AI 使用の開示。Elsevier の生成 AI ポリシー(2026 年 6 月、Lancet の出版社)と ICMJE に沿って Codex(gpt-6.1-sol)と設計・レビュー。
 
 - `manuwright disclose` は `ai_usage` 記録から著者が確認する文案を出す: 宣言文(Elsevier の書式)、研究に使った AI ごとの Methods の文、AI の助けを得た説明図ごとのキャプション。何も書き込まない。`--check` は記録の構造、プロンプト記録と図のパスを検査する。
-- `ai_usage` のツール項目に `use`(writing, references, research, figure, grammar)、`purpose`、`version`、`developer`、`prompts`、`figures` を書ける。既存の記録もそのまま通る。文法チェックのみなら宣言は不要。`used: false` なのにツールや宣言があると失敗。プロンプト記録は `dependencies` に載せ、レビューパケットやビルドには含めない。
+- `ai_usage` のツール項目に `use`(writing, references, research, figure, grammar)、`purpose`、`version`、`developer`、`prompts`、`figures` を書ける。既存の記録もそのまま通る。文法チェックのみなら宣言は不要。`used: false` なのにツールや宣言があると失敗。プロンプト記録は `dependencies` に載せ、ビルドには含めず、レビューパケットには `review_sources` で選んだときだけ入る。
 - ビルドで宣言を参考文献の後ではなく直前に "Declaration of generative AI and AI-assisted technologies in the manuscript preparation process" の見出しで置く。
 - マニュアル v2.9.3、harness guide v1.5.3、`docs/ai_usage.example.json`、README。
 

@@ -5,7 +5,7 @@
 AI 사용 고지. Elsevier 생성형 AI 정책(2026년 6월, Lancet 출판사)과 ICMJE 를 따라 Codex(gpt-6.1-sol)와 설계·검토.
 
 - `manuwright disclose` 는 `ai_usage` 기록으로 저자가 검토할 문구를 제안한다: 고지문(Elsevier 양식), 연구에 쓴 AI 마다 Methods 문장, AI 도움을 받은 설명용 그림마다 캡션 문구. 아무것도 쓰지 않는다. `--check` 는 기록 구조, 프롬프트 기록 경로, 그림 경로를 검사한다.
-- `ai_usage` 도구 항목에 `use`(writing, references, research, figure, grammar), `purpose`, `version`, `developer`, `prompts`, `figures` 를 적을 수 있다. 기존 기록도 그대로 통과한다. 문법 교정만 썼다면 고지문이 없어도 되고, `used: false` 인데 도구나 고지문이 있으면 실패한다. 프롬프트 기록은 `dependencies` 에 올려야 하며 검토 패킷과 빌드에는 넣지 않는다.
+- `ai_usage` 도구 항목에 `use`(writing, references, research, figure, grammar), `purpose`, `version`, `developer`, `prompts`, `figures` 를 적을 수 있다. 기존 기록도 그대로 통과한다. 문법 교정만 썼다면 고지문이 없어도 되고, `used: false` 인데 도구나 고지문이 있으면 실패한다. 프롬프트 기록은 `dependencies` 에 올려야 하며 빌드에는 넣지 않고, 검토 패킷에는 `review_sources` 로 고를 때만 들어간다.
 - 빌드에서 고지문을 참고문헌 뒤가 아니라 바로 앞에 "Declaration of generative AI and AI-assisted technologies in the manuscript preparation process" 제목으로 넣는다.
 - 매뉴얼 v2.9.3, harness guide v1.5.3, `docs/ai_usage.example.json`, README.
 

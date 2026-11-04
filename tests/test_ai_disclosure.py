@@ -35,6 +35,13 @@ def ai_check(project):  # noqa: F811
     ({'used': True, 'reviewed_by': 'R', 'disclosure': 'x', 'tools': [dict(WRITING, figures=['f.png'])]}, 'only for use'),
     ({'used': True, 'reviewed_by': 'R', 'disclosure': 'x',
       'tools': [dict(WRITING, use='figure', figures=['f.png', 'f.png'])]}, 'distinct'),
+    ({'used': True, 'reviewed_by': 'R', 'tools': [dict(WRITING, use='grammar')], 'disclosure': ['x']}, 'must be text'),
+    ({'used': True, 'reviewed_by': 'R', 'tools': [dict(WRITING, use='grammar')], 'disclosure': 'Voluntary.'}, None),
+    ({'used': False, 'reviewed_by': 'R', 'disclosure': ['lost']}, 'must be text'),
+    ({'used': False, 'reviewed_by': 'R', 'tools': {}}, 'must be a list'),
+    ({'used': True, 'reviewed_by': 'R', 'disclosure': 'x', 'tools': [dict(WRITING, use=None)]}, '.use: expected'),
+    ({'used': True, 'reviewed_by': 'R', 'disclosure': 'x', 'tools': [dict(WRITING, use='research', figures=None)]},
+     'distinct figure paths'),
 ])
 def test_record_shape(record, message):
     problems = AI.record_problems(record)
@@ -100,22 +107,63 @@ def test_cli_needs_a_paper_folder(tmp_path, monkeypatch, capsys):
     assert AI.main([]) == 2 and 'paper folder' in capsys.readouterr().err
 
 
-def test_build_puts_the_declaration_immediately_before_the_references(project):  # noqa: F811
+def cite(project):  # noqa: F811
+    put(project.parent / 'knowledge/evidence.md', '# Evidence\n\n### [1] Zed 2020\n- **Evidence ID:** zed_2020\n'
+        '- **Citation:** Zed A, Young B. Later trial. Spine. 2020;45(1):1-9.\n- **Source Status:** verified\n')
+    put(project.parent / 'drafts/03_introduction.md',
+        '# Introduction\n\nAn important clinical question remains unresolved [EVID:zed_2020].\n')
+
+
+def test_build_puts_the_declaration_between_the_body_and_the_references(project):  # noqa: F811
     root = project.parent
+    cite(project)
     put(root / 'review/ai.json', {'used': True, 'reviewed_by': 'R', 'disclosure': 'Approved declaration text.',
                                   'tools': [WRITING]})
     sign(project)
     out = build(project)
     text = next(out.glob('manuscript_*.md')).read_text(encoding='utf-8')
-    assert text.count(AI.DECLARATION_TITLE) == 1 and 'Approved declaration text.' in text
+    assert text.count(AI.DECLARATION_TITLE) == 1
+    assert text.index('Mean age') < text.index(AI.DECLARATION_TITLE) < text.index('Approved declaration text.') \
+        < text.index('# References') < text.index('Zed A, Young B')
     from docx import Document
     paragraphs = [p.text for p in Document(next(out.glob('manuscript_*.docx'))).paragraphs]
     title = paragraphs.index(AI.DECLARATION_TITLE)
     assert paragraphs[title + 1] == 'Approved declaration text.'
-    if 'References' in paragraphs:
-        assert paragraphs.index('References') > title
-    else:
-        assert all('Mean age' not in p for p in paragraphs[title:])  # declaration follows the body
+    assert max(i for i, p in enumerate(paragraphs) if 'Mean age' in p) < title < paragraphs.index('References')
+
+
+def test_tracked_baseline_shows_the_declaration_move_and_stays_unchanged(project):  # noqa: F811
+    root = project.parent
+    cite(project)
+    put(root / 'review/ai.json', {'used': True, 'reviewed_by': 'R', 'disclosure': 'Approved declaration text.',
+                                  'tools': [WRITING]})
+    baseline = put(root / 'output/submitted/manuscript.md', '# Introduction\n\nAn important clinical question remains '
+                   'unresolved.\n\n# Results\n\nMean age was 54 years.\n\n# References\n\nZed A.\n\n'
+                   '# AI assistance disclosure\n\nApproved declaration text.\n')
+    before = baseline.read_bytes()
+    config = json.loads(project.read_text(encoding='utf-8'))
+    config['tracked_baseline'] = 'output/submitted/manuscript.md'
+    put(project, config)
+    sign(project)
+    out = build(project)
+    assert list(out.glob('manuscript_*_tracked.docx')) and baseline.read_bytes() == before
+
+
+def test_cli_reports_a_malformed_manifest_as_input_error(project, capsys):  # noqa: F811
+    root = project.parent
+    put(root / 'review/ai.json', {'used': True, 'reviewed_by': 'R', 'disclosure': 'x', 'tools': [WRITING]})
+    config = json.loads(project.read_text(encoding='utf-8'))
+    put(project, dict(config, figures=None))
+    assert AI.main(['--project', str(project), '--check']) == 2 and '"figures" must be a list' in capsys.readouterr().err
+    put(project, '[]')
+    assert AI.main(['--project', str(project), '--check']) == 2 and 'JSON object' in capsys.readouterr().err
+
+
+def test_figure_captions_remind_missing_version_and_developer():
+    tool = {'tool': 'Diagram model', 'role': 'flow chart', 'use': 'figure', 'purpose': 'draw the flow chart',
+            'figures': ['drafts/figures/figure_1.png']}
+    text = AI.preview({'used': True, 'reviewed_by': 'R', 'disclosure': 'x', 'tools': [tool]})
+    assert 'figure_1.png: Created with the assistance of Diagram model (draw the flow chart).  [record the version and developer]' in text
 
 
 def test_grammar_only_without_disclosure_builds_no_section(project):  # noqa: F811

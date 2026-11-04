@@ -45,12 +45,16 @@ def record_problems(value) -> list[str]:
         return ['ai_usage: object with nonempty reviewed_by required']
     if type(value.get('used')) is not bool:
         return ['ai_usage: used must be true or false']
-    tools = value.get('tools')
+    if 'disclosure' in value and not isinstance(value['disclosure'], str):
+        return ['ai_usage.disclosure: must be text']
+    if 'tools' in value and not isinstance(value['tools'], list):
+        return ['ai_usage.tools: must be a list']
+    tools = value.get('tools') or []
     if value['used'] is False:
         if tools or _text(value.get('disclosure')):
             return ['ai_usage: used=false conflicts with recorded tools or disclosure']
         return []
-    if not isinstance(tools, list) or not tools:
+    if not tools:
         return ['ai_usage: a nonempty tools list is required when used']
     problems = []
     for n, tool in enumerate(tools):
@@ -59,15 +63,15 @@ def record_problems(value) -> list[str]:
             problems.append('ai_usage: every tools entry needs nonempty tool and role')
             continue
         use = tool.get('use')
-        if use is not None and use not in USES:
+        if 'use' in tool and use not in USES:
             problems.append(f'{where}.use: expected writing, references, research, figure or grammar')
-        if use is not None and not _text(tool.get('purpose')):
+        if 'use' in tool and not _text(tool.get('purpose')):
             problems.append(f'{where}.purpose: nonempty string required when use is set')
         for field in ('purpose', 'version', 'developer', 'reviewed_by', 'prompts'):
             if field in tool and not _text(tool[field]):
                 problems.append(f'{where}.{field}: nonempty string required')
         figures = tool.get('figures')
-        if figures is not None:
+        if 'figures' in tool:
             if use not in ('research', 'figure'):
                 problems.append(f'{where}.figures: only for use research or figure')
             elif not isinstance(figures, list) or not figures or not all(_text(f) for f in figures) \
@@ -124,6 +128,11 @@ def path_problems(root: Path, config: dict, value: dict) -> tuple[list[str], lis
 
 def check(root: Path, config: dict) -> tuple[list[str], list[str]]:
     """Read the record named by config["ai_usage"]: (failures, blocked)."""
+    if not isinstance(config, dict):
+        return [], ['project.json: expected a JSON object']
+    for key in ('figures', 'dependencies'):
+        if key in config and not isinstance(config[key], list):
+            return [], [f'project.json: "{key}" must be a list of paths']
     name = config.get('ai_usage')
     if not name:
         return [], ['ai_usage: project.json names no AI-use record']
@@ -171,9 +180,11 @@ def preview(value: dict) -> str:
     out += ['', '3. Figure captions (explanatory images made with AI help; say so in each caption):']
     if groups['figure']:
         for tool in groups['figure']:
+            missing = [k for k in ('version', 'developer') if not _text(tool.get(k))]
             for figure in tool.get('figures') or []:
                 out.append(f'   {figure}: Created with the assistance of {_name(tool)} '
-                           f'({tool["purpose"].strip().rstrip(".")}).')
+                           f'({tool["purpose"].strip().rstrip(".")}).'
+                           + (f'  [record the {" and ".join(missing)}]' if missing else ''))
     else:
         out.append('   (no figure use recorded)')
     if groups['grammar']:
@@ -183,7 +194,8 @@ def preview(value: dict) -> str:
         out += ['', 'Unclassified (add "use" and "purpose" to get section-specific wording): '
                 + ', '.join(_name(t) if _text(t.get('tool')) else '?' for t in unclassified if isinstance(t, dict))]
     out += ['', 'Also state the AI use in the cover letter (ICMJE). AI tools are never authors. Keep prompt logs '
-            'local; they are not added to the review packet or the build.']
+            'local; they are not copied into the build, nor into the review packet unless you select them in '
+            'review_sources.']
     return '\n'.join(out)
 
 

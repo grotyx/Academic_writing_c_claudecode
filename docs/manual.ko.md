@@ -399,7 +399,7 @@ manuwright verify --project project.json --profile submission
 - `result_bindings`: 수치 파일의 모든 숫자를 결과, 군, 시점, 단위와 함께 CSV 칸에 연결한 기록
 - `semantic_review`: status PASS 이고 남은 지적이 없는 검토
 - `human_signoff`: 실제 사람의 결정과 그 근거
-- `ai_usage`: 어떤 AI 가 무엇을 했는지, 사람이 확인한 기록. v1.10.4 부터 도구마다 `use`(writing, references, research, figure, grammar), `purpose`, `version`, `developer`, 프롬프트 기록 `prompts`(`dependencies` 에 올림, 검토 패킷과 빌드에는 넣지 않음)를 적을 수 있다. `manuwright disclose` 는 저자가 검토할 문구를 제안한다: 고지문(Elsevier·Lancet 방식대로 원고 끝, 참고문헌 바로 앞에 빌드됨), 연구에 쓴 AI 마다 Methods 문장, AI 도움을 받은 설명용 그림마다 캡션 문구. 단순 문법 교정은 Elsevier 정책상 고지하지 않아도 된다(저널마다 확인). `manuwright disclose --check` 는 기록의 구조와 경로를 검사한다. 고지가 충분한지는 독립 검토와 사람의 서명이 판단한다. 예시: `docs/ai_usage.example.json`.
+- `ai_usage`: 어떤 AI 가 무엇을 했는지, 사람이 확인한 기록. v1.10.4 부터 도구마다 `use`(writing, references, research, figure, grammar), `purpose`, `version`, `developer`, 프롬프트 기록 `prompts`(`dependencies` 에 올림, 빌드에는 넣지 않고, 검토 패킷에는 `review_sources` 로 직접 고를 때만 들어감)를 적을 수 있다. `manuwright disclose` 는 저자가 검토할 문구를 제안한다: 고지문([Elsevier 정책](https://www.elsevier.com/about/policies-and-standards/generative-ai-policies-for-journals)대로 원고 끝, 참고문헌 바로 앞에 빌드됨. 투고할 저널의 최신 지침도 확인), 연구에 쓴 AI 마다 Methods 문장, AI 도움을 받은 설명용 그림마다 캡션 문구. 단순 문법 교정은 Elsevier 정책상 고지하지 않아도 된다(저널마다 확인). `manuwright disclose --check` 는 기록의 구조와 경로를 검사한다. 고지가 충분한지는 독립 검토와 사람의 서명이 판단한다. 예시: `docs/ai_usage.example.json`.
 - `checklist`: 보고 체크리스트(CONSORT, STROBE, PRISMA, CARE)와 항목별 위치
 
 시험에서 가장 손이 많이 간 부분:

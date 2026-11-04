@@ -5,7 +5,7 @@
 AI 使用声明。依据 Elsevier 生成式 AI 政策（2026 年 6 月，The Lancet 的出版商）和 ICMJE，与 Codex（gpt-6.1-sol）共同设计和评审。
 
 - `manuwright disclose` 根据 `ai_usage` 记录给出供作者审阅的文字：声明（Elsevier 模板）、每项研究用途的 Methods 句子、每张 AI 辅助说明图的图注。不写入任何文件。`--check` 检查记录结构、提示词记录路径和图路径。
-- `ai_usage` 工具条目可填写 `use`（writing、references、research、figure、grammar）、`purpose`、`version`、`developer`、`prompts`、`figures`。旧记录仍然有效。仅语法检查无需声明；`used: false` 却有工具或声明时判为失败；提示词记录须列入 `dependencies`，且不会复制到评审包或构建产物中。
+- `ai_usage` 工具条目可填写 `use`（writing、references、research、figure、grammar）、`purpose`、`version`、`developer`、`prompts`、`figures`。旧记录仍然有效。仅语法检查无需声明；`used: false` 却有工具或声明时判为失败；提示词记录须列入 `dependencies`，不会复制到构建产物中，只有在 `review_sources` 中选择时才进入评审包。
 - 构建时把声明放在参考文献正前方（原在其后），标题为 "Declaration of generative AI and AI-assisted technologies in the manuscript preparation process"。
 - 手册 v2.9.3、harness guide v1.5.3、`docs/ai_usage.example.json`、README。
 

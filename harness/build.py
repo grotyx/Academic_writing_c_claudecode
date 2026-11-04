@@ -234,7 +234,7 @@ def build(path):
                 title=document(style,False);append_markdown(title,text,style);title.save(stage/f'title_page{stamp}.docx');continue
             if section_count: manuscript.add_page_break()
             append_markdown(manuscript,text,style);merged.append(text);section_count+=1
-        if config.get('ai_usage'):  # Elsevier/Lancet: a separate section at the end, immediately before the references
+        if config.get('ai_usage'):  # Elsevier policy (June 2026): a separate section at the end, immediately before the references
             ai=json.loads(inside(root,config['ai_usage']).read_text(encoding='utf-8'))
             if ai.get('used') and str(ai.get('disclosure') or '').strip():
                 disclosure='# '+checker('ai_disclosure').DECLARATION_TITLE+'\n\n'+ai['disclosure'].strip()
