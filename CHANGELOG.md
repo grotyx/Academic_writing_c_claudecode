@@ -1,5 +1,13 @@
 # Changelog
 
+### v1.10.6 (261107)
+
+Listing readiness.
+
+- Optional PyPI publishing in the release workflow (trusted publishing, no stored token); it stays off until the owner sets the repository variable `PYPI_PUBLISH` after registering the pending publisher on pypi.org. `manuwright update` still installs from git tags.
+- GitHub Actions pinned to commit SHAs; the tests workflow runs with read-only permissions.
+- `SECURITY.md` with private vulnerability reporting; `requirements-lock.txt` pins the test dependencies.
+
 ### v1.10.5 (261107)
 
 Licence and citation files.

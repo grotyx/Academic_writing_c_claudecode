@@ -1,5 +1,13 @@
 # 変更履歴
 
+### v1.10.6 (261107)
+
+リスト掲載の準備。
+
+- リリースワークフローに任意の PyPI 公開を追加(trusted publishing、トークン保存なし)。所有者が pypi.org に pending publisher を登録し、リポジトリ変数 `PYPI_PUBLISH` を有効にするまで動かない。`manuwright update` は引き続き git タグからインストールする。
+- GitHub Actions をコミット SHA で固定し、tests ワークフローは読み取り権限のみ。
+- 非公開の脆弱性報告を案内する `SECURITY.md` と、テスト依存を固定した `requirements-lock.txt` を追加。
+
 ### v1.10.5 (261107)
 
 ライセンスと引用ファイル。

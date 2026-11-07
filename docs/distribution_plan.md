@@ -97,6 +97,8 @@ Target agents: Claude Code, Codex, Antigravity CLI (`agy`, Gemini), opencode, Mu
 
 Dropped from v1.8.0: WORKFLOW-to-skills prose generator, blind command-text rewriting, CLI-vs-bundled-engine fallback, custom updater, PyPI publishing, automated deletion of copied engine files.
 
+v1.10.6 adds optional PyPI publishing for discovery (`pip install manuwright`), without changing the update channel: `manuwright update` still installs the newest git tag. The release workflow publishes through PyPI trusted publishing (no stored token) only when the repository variable `PYPI_PUBLISH` is `true`; the owner sets it after registering the pending publisher on pypi.org (project `manuwright`, workflow `release.yml`, environment `pypi`). An existing tag can be published by hand with the workflow's `workflow_dispatch` input.
+
 ## 7. Migration (opt-in, non-destructive)
 
 1. Back up the paper folder; note local edits to engine files.

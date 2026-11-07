@@ -1,5 +1,13 @@
 # 变更记录
 
+### v1.10.6 (261107)
+
+为上架做准备。
+
+- 发布工作流新增可选的 PyPI 发布（trusted publishing，不存储令牌）；在所有者于 pypi.org 登记 pending publisher 并设置仓库变量 `PYPI_PUBLISH` 之前不会运行。`manuwright update` 仍从 git 标签安装。
+- GitHub Actions 固定到提交 SHA；tests 工作流仅使用只读权限。
+- 新增说明私密漏洞报告方式的 `SECURITY.md`，以及固定测试依赖的 `requirements-lock.txt`。
+
 ### v1.10.5 (261107)
 
 许可证与引用文件。

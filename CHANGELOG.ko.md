@@ -1,5 +1,13 @@
 # 변경 이력
 
+### v1.10.6 (261107)
+
+목록 등록 준비.
+
+- 릴리스 워크플로에 PyPI 배포를 선택 기능으로 추가했다(trusted publishing, 토큰 저장 없음). 소유자가 pypi.org 에 pending publisher 를 등록하고 저장소 변수 `PYPI_PUBLISH` 를 켤 때까지는 동작하지 않는다. `manuwright update` 는 계속 git 태그에서 설치한다.
+- GitHub Actions 를 커밋 SHA 로 고정하고, tests 워크플로는 읽기 권한만 쓴다.
+- 비공개 취약점 신고를 안내하는 `SECURITY.md`, 테스트 의존성을 고정한 `requirements-lock.txt` 추가.
+
 ### v1.10.5 (261107)
 
 라이선스와 인용 파일.
