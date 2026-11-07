@@ -1,5 +1,13 @@
 # 変更履歴
 
+### v1.10.5 (261107)
+
+ライセンスと引用ファイル。
+
+- CC BY 4.0 の全文を収めた `LICENSE` を追加(README には既に記載)。パッケージ情報にも `CC-BY-4.0` を記載。
+- `CITATION.cff` を追加: GitHub に「Cite this repository」が表示され、Zenodo などのアーカイブが著者と題名を取り込む。
+- 検索用のリポジトリトピックを追加。Gemini CLI 拡張ギャラリー用の `gemini-cli-extension` を含む。
+
 ### v1.10.4 (261104)
 
 AI 使用の開示。Elsevier の生成 AI ポリシー(2026 年 6 月、Lancet の出版社)と ICMJE に沿って Codex(gpt-6.1-sol)と設計・レビュー。

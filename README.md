@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. Installed engine.** One CLI for all your papers, plus adapters for each agent.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.5
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -213,4 +213,4 @@ Full rules: [WORKFLOW.md](WORKFLOW.md). Everything that used to live in this REA
 
 ## License
 
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital. Share and adapt for any purpose with attribution.
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital. Share and adapt for any purpose with attribution. Full text: [LICENSE](LICENSE). To cite ManuWright, use [CITATION.cff](CITATION.cff) (GitHub "Cite this repository").

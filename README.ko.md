@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 설치형 엔진.** 모든 논문에 CLI 하나, 그리고 에이전트별 어댑터.
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.5
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -213,4 +213,4 @@ manuwright evidence import-obsidian <citekey>
 
 ## 라이선스
 
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원. 출처를 밝히면 어떤 목적으로든 공유·수정할 수 있다.
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Copyright (c) 2026 박상민, 서울대학교 분당서울대학교병원. 출처를 밝히면 어떤 목적으로든 공유·수정할 수 있다. 전문: [LICENSE](LICENSE). 인용할 때는 [CITATION.cff](CITATION.cff)(GitHub 의 "Cite this repository")를 쓴다.

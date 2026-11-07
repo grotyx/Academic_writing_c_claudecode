@@ -9,6 +9,8 @@ name = "manuwright"
 dynamic = ["version"]
 description = "Verification engine for AI-assisted medical manuscript writing"
 readme = "README.md"
+license = "CC-BY-4.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = ["python-docx>=1.1.0", "requests>=2.31.0", "pypdf>=4.0"]
 

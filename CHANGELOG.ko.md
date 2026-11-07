@@ -1,5 +1,13 @@
 # 변경 이력
 
+### v1.10.5 (261107)
+
+라이선스와 인용 파일.
+
+- CC BY 4.0 전문을 담은 `LICENSE` 추가(README 에는 이미 적혀 있었다). 패키지 정보에도 `CC-BY-4.0` 을 적었다.
+- `CITATION.cff` 추가: GitHub 에 "Cite this repository" 가 나오고, Zenodo 같은 보관소가 저자와 제목을 가져간다.
+- 검색용 저장소 태그 추가. Gemini CLI 확장 갤러리용 `gemini-cli-extension` 포함.
+
 ### v1.10.4 (261104)
 
 AI 사용 고지. Elsevier 생성형 AI 정책(2026년 6월, Lancet 출판사)과 ICMJE 를 따라 Codex(gpt-6.1-sol)와 설계·검토.

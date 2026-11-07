@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. インストール型エンジン。** すべての論文で使う CLI 1 つと、エージェントごとのアダプター。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.5
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -213,4 +213,4 @@ vault は文献を探す場所で、引用できるのは `knowledge/evidence.md
 
 ## ライセンス
 
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital。出典を明記すれば、どのような目的でも共有・改変できる。
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital。出典を明記すれば、どのような目的でも共有・改変できる。 全文: [LICENSE](LICENSE)。引用には [CITATION.cff](CITATION.cff)(GitHub の「Cite this repository」)を使う。

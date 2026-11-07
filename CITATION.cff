@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use ManuWright in your work, please cite it as below."
+title: "ManuWright: an evidence-bound medical manuscript engine for AI agents"
+type: software
+authors:
+  - family-names: Park
+    given-names: Sang-Min
+    affiliation: "Seoul National University Bundang Hospital"
+license: CC-BY-4.0
+repository-code: "https://github.com/grotyx/Academic_writing_c_claudecode"
+url: "https://github.com/grotyx/Academic_writing_c_claudecode/blob/main/docs/manual.md"
+version: 1.10.5
+date-released: 2026-11-07
+keywords:
+  - academic writing
+  - medical writing
+  - manuscript
+  - claude code
+  - research tools

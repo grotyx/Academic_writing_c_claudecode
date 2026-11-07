@@ -1,5 +1,13 @@
 # Changelog
 
+### v1.10.5 (261107)
+
+Licence and citation files.
+
+- `LICENSE` with the full CC BY 4.0 text (the README already named the licence); the package metadata now declares `CC-BY-4.0`.
+- `CITATION.cff`, so GitHub shows "Cite this repository" and archives such as Zenodo pick up the author and title.
+- Repository topics for discovery, including `gemini-cli-extension` for the Gemini CLI extension gallery.
+
 ### v1.10.4 (261104)
 
 AI-use disclosure, designed and reviewed with Codex (gpt-6.1-sol), following the Elsevier generative AI policy (June 2026; publisher of The Lancet) and ICMJE.

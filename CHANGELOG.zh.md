@@ -1,5 +1,13 @@
 # 变更记录
 
+### v1.10.5 (261107)
+
+许可证与引用文件。
+
+- 新增包含 CC BY 4.0 全文的 `LICENSE`（README 中已注明）；包元数据也声明 `CC-BY-4.0`。
+- 新增 `CITATION.cff`：GitHub 显示 "Cite this repository"，Zenodo 等存档可读取作者和标题。
+- 添加便于检索的仓库主题，包括用于 Gemini CLI 扩展库的 `gemini-cli-extension`。
+
 ### v1.10.4 (261104)
 
 AI 使用声明。依据 Elsevier 生成式 AI 政策（2026 年 6 月，The Lancet 的出版商）和 ICMJE，与 Codex（gpt-6.1-sol）共同设计和评审。

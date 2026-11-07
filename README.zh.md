@@ -115,7 +115,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.4
+uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.5
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -213,4 +213,4 @@ vault 用于查找文献，只有登记在 `knowledge/evidence.md` 中的条目�
 
 ## 许可证
 
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital。注明出处即可出于任何目的共享和改编。
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。Copyright (c) 2026 Sang-Min Park, Seoul National University Bundang Hospital。注明出处即可出于任何目的共享和改编。 全文：[LICENSE](LICENSE)。引用时请使用 [CITATION.cff](CITATION.cff)（GitHub 的 "Cite this repository"）。
