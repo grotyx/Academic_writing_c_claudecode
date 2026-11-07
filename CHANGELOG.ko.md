@@ -1,5 +1,12 @@
 # 변경 이력
 
+### v1.10.7 (261107)
+
+PyPI 설치.
+
+- ManuWright 가 PyPI 에 올라갔다: `uv tool install manuwright` 또는 `pip install manuwright`. README 와 매뉴얼의 첫 설치 줄을 이것으로 바꿨다. 특정 git 태그로 설치하는 방법도 그대로 된다. `manuwright update` 는 어느 쪽으로 설치했든 최신 릴리스 태그를 설치한다.
+- 릴리스 워크플로가 새 릴리스마다 PyPI 에도 올린다(배포 액션 v1.14.3, metadata 2.5 지원).
+
 ### v1.10.6 (261107)
 
 목록 등록 준비.

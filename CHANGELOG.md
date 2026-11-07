@@ -1,5 +1,12 @@
 # Changelog
 
+### v1.10.7 (261107)
+
+Install from PyPI.
+
+- ManuWright is on PyPI: `uv tool install manuwright` or `pip install manuwright`. The READMEs and the manual lead with it; a pinned git tag still works. `manuwright update` keeps installing the newest release tag either way.
+- The release workflow publishes each new release to PyPI (publish action v1.14.3, which reads core metadata 2.5).
+
 ### v1.10.6 (261107)
 
 Listing readiness.

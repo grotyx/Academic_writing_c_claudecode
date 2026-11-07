@@ -1,5 +1,12 @@
 # 変更履歴
 
+### v1.10.7 (261107)
+
+PyPI からのインストール。
+
+- ManuWright を PyPI に公開: `uv tool install manuwright` または `pip install manuwright`。README とマニュアルの最初のインストール行をこれに変更。特定の git タグからのインストールも引き続き使える。`manuwright update` はどちらでも最新のリリースタグをインストールする。
+- リリースワークフローが新しいリリースごとに PyPI にも公開する(公開アクション v1.14.3、metadata 2.5 対応)。
+
 ### v1.10.6 (261107)
 
 リスト掲載の準備。

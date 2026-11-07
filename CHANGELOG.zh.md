@@ -1,5 +1,12 @@
 # 变更记录
 
+### v1.10.7 (261107)
+
+从 PyPI 安装。
+
+- ManuWright 已发布到 PyPI：`uv tool install manuwright` 或 `pip install manuwright`。README 和手册的首个安装命令改为此方式；按 git 标签安装仍然可用。无论哪种方式安装，`manuwright update` 都安装最新发布标签。
+- 发布工作流在每次新发布时同时上传 PyPI（发布 action v1.14.3，支持 metadata 2.5）。
+
 ### v1.10.6 (261107)
 
 为上架做准备。

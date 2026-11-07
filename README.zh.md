@@ -115,7 +115,8 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 **B. 安装式引擎。** 所有论文共用一个 CLI，外加每个智能体的适配器。
 
 ```sh
-uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.6
+uv tool install manuwright
+# 或: pip install manuwright  |  指定标签: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.7
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
