@@ -25,7 +25,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 
 ```sh
 uv tool install manuwright
-# or: pip install manuwright  |  a pinned tag: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.7
+# or: pip install manuwright  |  a pinned tag: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.8
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -47,7 +47,7 @@ manuwright build --project project.json
 
 ```sh
 uv tool install manuwright
-# or: pip install manuwright  |  a pinned tag: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.7
+# or: pip install manuwright  |  a pinned tag: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.8
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse

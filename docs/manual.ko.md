@@ -25,7 +25,7 @@
 
 ```sh
 uv tool install manuwright
-# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.7
+# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.8
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -47,7 +47,7 @@ manuwright build --project project.json
 
 ```sh
 uv tool install manuwright
-# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.7
+# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.8
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse

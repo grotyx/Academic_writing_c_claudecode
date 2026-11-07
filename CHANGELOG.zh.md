@@ -1,5 +1,12 @@
 # 变更记录
 
+### v1.10.8 (261107)
+
+PyPI 页面。
+
+- PyPI 项目页显示作者、关键词、分类以及仓库、手册、更新日志和 Issue 链接。
+- README 中的相对链接和图片在 PyPI 上指向 GitHub（构建时由 hatch-fancy-pypi-readme 替换，README 文件本身不变）。
+
 ### v1.10.7 (261107)
 
 从 PyPI 安装。

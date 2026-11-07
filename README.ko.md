@@ -116,7 +116,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 
 ```sh
 uv tool install manuwright
-# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.7
+# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.8
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper

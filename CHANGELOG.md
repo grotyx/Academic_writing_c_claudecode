@@ -1,5 +1,12 @@
 # Changelog
 
+### v1.10.8 (261107)
+
+PyPI page.
+
+- The PyPI project page now shows the author, keywords, classifiers and links to the repository, manual, changelog and issues.
+- Relative links and images in the README point at GitHub on PyPI (build-time rewrite with hatch-fancy-pypi-readme; the README itself is unchanged).
+
 ### v1.10.7 (261107)
 
 Install from PyPI.
