@@ -186,6 +186,9 @@ def test_adapter_references_exist():
     from manuwright.cli import HOOKS
     assert names == set(HOOKS)
     assert all((ENGINE / 'scripts/hooks' / script).is_file() for script in HOOKS.values())
+    codex = json.loads((ENGINE / '.codex-plugin/plugin.json').read_text(encoding='utf-8'))
+    icon = ENGINE / codex['interface']['composerIcon']
+    assert codex['repository'] and codex['license'] and icon.is_file() and icon.stat().st_size <= 51200
     assert (ENGINE / json.loads((ENGINE / 'gemini-extension.json').read_text(encoding='utf-8'))['contextFileName']).is_file()
     for skill in (ENGINE / 'skills').iterdir():
         head = (skill / 'SKILL.md').read_text(encoding='utf-8').split('---')[1]
