@@ -331,11 +331,27 @@ PROTECTED = re.compile(r'\[EVID:[^\]]+\]|(?:Table|Fig(?:ure)?\.?|Supplementary (
 
 def protected_tokens(text: str) -> Counter:
     """Citations, table/figure references, p values and numbers: what a style rewrite must not change."""
+    return Counter(protected_sequence(text))
+
+
+def protected_sequence(text: str) -> list:
     # italics, P/p and the minus glyph are formatting, not content: "P = 0.04" and "*p* = 0.04" are the same value
     def norm(tok: str) -> str:
         tok = re.sub(r'[\s*_]+', '', tok).replace('\u2212', '-').replace('\u2013', '-')
         return 'p' + tok[1:] if tok[:1] == 'P' else tok
-    return Counter(m.group(0) if m.group(0).startswith('[EVID:') else norm(m.group(0)) for m in PROTECTED.finditer(text))
+    return [m.group(0) if m.group(0).startswith('[EVID:') else norm(m.group(0)) for m in PROTECTED.finditer(text)]
+
+
+def order_problem(before: str, after: str) -> str | None:
+    """Same protected tokens in a different order: "Group A had 10 deaths, group B 20" rewritten with 10 and 20
+    exchanged keeps every token and reverses the finding. Not always wrong (sentences can move), so it is
+    reported for the author to confirm."""
+    old, new = protected_sequence(before), protected_sequence(after)
+    if old == new or Counter(old) != Counter(new):
+        return None
+    first = next(i for i, (a, b) in enumerate(zip(old, new)) if a != b)
+    return (f'protected values appear in a different order from {old[first]!r} (now {new[first]!r}); '
+            'confirm each number and citation still belongs to the same group, outcome and claim')
 
 
 def preserve_problems(before: str, after: str) -> list[str]:
@@ -1027,12 +1043,17 @@ def _main(argv: list[str] | None = None) -> int:
 
     if args.action == 'preserve':
         read = lambda name: Path(name).read_text(encoding='utf-8', errors='replace')  # noqa: E731
-        problems = preserve_problems(read(args.before), read(args.after))
+        before, after = read(args.before), read(args.after)
+        problems = preserve_problems(before, after)
+        moved = None if problems else order_problem(before, after)
         for problem in problems:
             print(f'CHANGED: {problem}')
+        if moved:
+            print(f'REVIEW: {moved}')
         print('FAIL: the rewrite changed protected content; restore it.' if problems
-              else 'OK: every [EVID:id], number, p value and table/figure reference is unchanged.')
-        return 1 if problems else 0
+              else 'REVIEW: same protected content in a new order; check it, then accept.' if moved
+              else 'OK: every [EVID:id], number, p value and table/figure reference is unchanged, in the same order.')
+        return 1 if problems or moved else 0
 
     if args.action == 'core':
         print(core_card(Path.cwd()))

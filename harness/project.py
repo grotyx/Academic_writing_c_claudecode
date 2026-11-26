@@ -421,6 +421,10 @@ def verify(path, profile='draft'):
         result = refs.build(artifacts, evidence_path=inside(root, config['evidence']), style='numbered',
                             journal=config.get('journal'))
         problems = result.unknown + result.missing_citation + result.incomplete_authors + result.unparsed
+        if config.get('response'):  # the response letter gets its own reference list at build
+            letter = refs.build([inside(root, config['response'])], evidence_path=inside(root, config['evidence']),
+                                style='numbered')
+            problems += [f'{i} (response letter)' for i in letter.unknown + letter.missing_citation]
         return True if not problems else 'bibliography incomplete for ' + ', '.join(problems)
     run('bibliography', bibliography)
     if profile == 'revision' or config.get('response'):

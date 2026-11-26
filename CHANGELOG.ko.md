@@ -1,5 +1,22 @@
 # 변경 이력
 
+### v1.10.11 (261126)
+
+독립 리뷰의 나머지 지적 사항.
+
+- 수정 주장 검사: drafts 폴더를 가장 안쪽 `revision/REV<n>/` 에서 찾고, 없으면 현재 폴더의 `drafts/` 를 쓴다. 엔진의 템플릿 원고를 기준으로 삼지 않고, 논문 밖의 섹션 파일은 읽지 않는다.
+- 게이트 기록: 기록된 artifact 해시를 `--verify-hash` 없이도 항상 확인한다. `round` 가 숫자가 아니면 실패하고, 숫자 live 재검사는 results 폴더가 있어야 한다.
+- 빌드: 출력 이름이 같은 두 파일(`supp_table_1.md` 와 `supplementary_table_1.md`)이 있으면 하나가 덮이지 않고 빌드가 멈춘다. 제출 참고문헌 검사가 답변서도 보므로 PASS 뒤에 빌드가 실패하지 않는다.
+- 교차 참조: "Supplementary Table 2" 를 본문 Table 2 로 보지 않는다. "Table 2-1" 은 두 번호를 모두 세고, 지나치게 큰 범위는 잘라 본다.
+- `style preserve`: 숫자·인용은 같은데 순서가 바뀌면(군별 값 뒤바뀜) 검토 대상으로 알린다(exit 1).
+- 블라인드 재심사: packet 에 수정된 표·보충자료를 넣고, REV2 는 REV1 본문과 비교한다. PARTIALLY→FULLY 도 `final_anchor` 가 필요하고, 인용한 anchor 문장은 그 수정 파일에 있어야 한다.
+- binding 은 CSV·원고를 한 번씩만 읽고, CSV 열 이름이 중복되면 거부한다.
+- `manuwright update` 는 PyPI 에 그 버전이 있으면 PyPI(`manuwright==X.Y.Z`)에서 설치하므로 git 이 필요 없다. git 태그는 대체 경로로 남는다.
+- 릴리스 워크플로: 수동 PyPI 실행은 그 버전의 vX.Y.Z 태그만 받고, 릴리스 단계가 실패한 뒤 다시 돌리면 같은 커밋의 릴리스를 마무리하며, 태그 작업이 실패하면 배포하지 않는다.
+- 세션 시작 라이브러리 동기화는 검토·서명 기록이 있는 논문에는 가져오지 않는다(기록이 stale 이 된다).
+- lint 훅이 Codex 패치의 모든 파일을 본다. `lint` 는 여러 줄 HTML 주석·코드 블록을 건너뛰고 project.json 이 지정한 용어집을 쓴다. 답변 커버리지 검사가 Markdown 제목("# Reviewer 1")을 읽는다. 값이 빠진 옵션(`update --to`)은 사용법을 보여 준다. `style --help` 가 모든 하위 명령을 보여 준다.
+- 훅 실행기: macOS/Linux 는 python3 우선(py 는 Windows 에서만). `claude -p` 리뷰는 논문 폴더가 아닌 빈 폴더에서 돈다. Obsidian citekey 는 올바른 Evidence ID 로 바뀌고 references 폴더는 vault 안으로 제한된다.
+
 ### v1.10.10 (261126)
 
 경로나 표기로 plan-first 와 승인 기록을 우회하던 길을 막음 (독립 리뷰 2부).

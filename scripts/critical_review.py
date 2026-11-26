@@ -141,14 +141,16 @@ def call_claude_cli(prompt: str, timeout: int = 240, model: str | None = None) -
     adversarial review by shelling out to `claude -p`. The prompt is piped via
     stdin to avoid command-length limits on large manuscripts.
     """
-    proc = subprocess.run(
-        ["claude", "-p", "--bare", "--tools", "", "--disallowedTools", "mcp__*"] + (["--model", model] if model else []),
-        input=prompt,
-        text=True,
-        encoding="utf-8",
-        capture_output=True,
-        timeout=timeout,
-    )
+    with tempfile.TemporaryDirectory(prefix="review-") as tmp:  # never the paper folder (its CLAUDE.md, hooks, data)
+        proc = subprocess.run(
+            ["claude", "-p", "--bare", "--tools", "", "--disallowedTools", "mcp__*"] + (["--model", model] if model else []),
+            input=prompt,
+            text=True,
+            encoding="utf-8",
+            capture_output=True,
+            timeout=timeout,
+            cwd=tmp,
+        )
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr.strip() or f"claude CLI exited {proc.returncode}")
     out = proc.stdout.strip()

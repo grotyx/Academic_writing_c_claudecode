@@ -228,7 +228,10 @@ def lint_file(path: Path, forbidden_terms: dict[str, str]) -> list[tuple[str, Pa
 
     journal = paper_journal(path)
     zero = p_leading_zero(journal)
-    for line_no, line in line_collections(text):
+    # Author notes in multi-line HTML comments and code fences are not manuscript text; blank them
+    # line-preservingly so the reported line numbers stay right.
+    text_for_lines = re.sub(r"<!--.*?-->|```.*?```", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)
+    for line_no, line in line_collections(text_for_lines):
         stripped = line.strip()
         if not stripped or stripped.startswith("<!--"):
             continue

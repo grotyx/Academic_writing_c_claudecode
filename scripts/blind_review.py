@@ -75,12 +75,24 @@ def comment_ids(comments: Path) -> list[str]:
     return [f'R{r}-C{c}' for r, c in sorted(parse_original_comments(comments.read_text(encoding='utf-8')))]
 
 
+SECTION_GLOBS = ('0[1-9]_*.md', 'table_*.md', 'supp*.md')  # sections, revised tables and supplements
+
+
+def manuscript_files(folder: Path) -> list[Path]:
+    return sorted({p for pattern in SECTION_GLOBS for p in folder.glob(pattern)})
+
+
 def packet(comments: Path, original: Path, revised: Path, out: Path) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(comments, out / 'reviewer_comments.md')
-    originals = {section_key(p): p for p in sorted(original.glob('0[1-9]_*.md'))}
+    originals = {section_key(p): p for p in manuscript_files(original)}
+    # REV2 is reviewed against the submitted REV1 text: overlay the earlier revision folders on the original
+    number = re.fullmatch(r'REV(\d+)', revised.name, flags=re.IGNORECASE)
+    if number and revised.parent.name.lower() == 'revision':
+        for earlier in range(1, int(number.group(1))):
+            originals.update({section_key(p): p for p in manuscript_files(revised.parent / f'REV{earlier}')})
     files = []
-    for new in sorted(revised.glob('0[1-9]_*.md')):
+    for new in manuscript_files(revised):
         if is_letter(new):
             continue
         key = section_key(new)
@@ -127,6 +139,20 @@ def parse_record(text: str) -> dict:
     return record
 
 
+def quote_problem(folder: Path, anchor: str) -> str | None:
+    """An anchor written as file: "quoted text" must quote text that is in that revised file of the packet."""
+    match = re.fullmatch(r'\s*(?:revised/)?([^\s:"]+\.md)\s*:\s*["\u201c](.+?)["\u201d]\s*', anchor or '')
+    if not match:
+        return None  # free-text anchors stay allowed; only a checkable quote is checked
+    target = folder / 'revised' / match.group(1)
+    if not target.is_file():
+        return f'names {match.group(1)}, which is not in revised/'
+    flat = lambda t: ' '.join(t.split()).casefold()  # noqa: E731
+    if flat(match.group(2)) not in flat(target.read_text(encoding='utf-8')):
+        return f'quotes text that is not in revised/{match.group(1)}'
+    return None
+
+
 def check(verdicts: Path) -> list[str]:
     folder = verdicts.parent
     problems = []
@@ -162,6 +188,10 @@ def check(verdicts: Path) -> list[str]:
             problems.append(f'{cid}: blind_verdict must be one of {", ".join(VERDICTS)}')
         elif blind != 'CANNOT_VERIFY' and not entry.get('anchor'):
             problems.append(f'{cid}: blind verdict {blind} needs an anchor in the revised manuscript')
+        for field in ('anchor', 'final_anchor'):
+            missing = quote_problem(folder, entry.get(field, ''))
+            if missing:
+                problems.append(f'{cid}: {field} {missing}')
         if final not in VERDICTS:
             problems.append(f'{cid}: final_verdict must be one of {", ".join(VERDICTS)}')
         elif blind in VERDICTS and final != blind and entry.get('basis', '').split(':')[0].strip() not in BASES:
@@ -169,7 +199,7 @@ def check(verdicts: Path) -> list[str]:
                             f'({", ".join(BASES)})')
         elif final not in PASSING:
             problems.append(f'{cid}: final verdict {final}')
-        elif blind in VERDICTS and blind not in PASSING and not entry.get('final_anchor'):
+        elif blind in VERDICTS and VERDICTS.index(final) < VERDICTS.index(blind) and not entry.get('final_anchor'):
             # the letter convinced the reviewer: the change must still be visible in the revised text
             problems.append(f'{cid}: upgraded {blind} -> {final} after the letter needs final_anchor (revised file and '
                             'quoted text); a change that is only in the letter is a ghost revision')

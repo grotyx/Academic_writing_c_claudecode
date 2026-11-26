@@ -401,7 +401,14 @@ def summary_sections(body):
 
 def references_folder(vault):
     data = read_json(Path(vault) / '.obsidian' / 'plugins' / PLUGIN_ID / 'data.json') or {}
-    return Path(vault) / data.get('referencesFolder', 'References')
+    folder = (Path(vault) / str(data.get('referencesFolder') or 'References')).resolve()
+    # a setting such as "../.." must not turn the search into a scan of the whole disk
+    return folder if folder.is_relative_to(Path(vault).resolve()) else Path(vault) / 'References'
+
+
+def evidence_id(citekey):
+    """The Evidence ID for a citekey: characters [EVID:id] accepts (smith:2020 -> smith_2020)."""
+    return re.sub(r'[^A-Za-z0-9_.-]+', '_', citekey).strip('_') or 'citekey'
 
 
 def find_note(vault, citekey):
@@ -420,7 +427,7 @@ def evidence_entry(citekey, note):
     background, methods, results, conclusions = summary_sections(body)
     design = fm.get('design') or 'not recorded in the Obsidian note'
     return f"""### {first.get('family', citekey)} et al., {year}
-- **Evidence ID:** {citekey}
+- **Evidence ID:** {evidence_id(citekey)}
 - **Citation:** {citation}
 - **DOI:** {fm.get('DOI', '')}
 - **PMID:** {str(fm.get('PMID', '')).strip('"')}
@@ -456,7 +463,7 @@ def import_evidence(args):
     existing = evidence.read_text(encoding='utf-8') if evidence.exists() else '# Evidence\n'
     added, missing = [], []
     for key in keys:
-        if re.search(rf'\*\*Evidence ID:\*\*\s*{re.escape(key)}\s*$', existing, re.M):
+        if re.search(rf'\*\*Evidence ID:\*\*\s*{re.escape(evidence_id(key))}\s*$', existing, re.M):
             print(f'{key}: already in {evidence}; skipped')
             continue
         note = find_note(vault, key)
@@ -464,7 +471,7 @@ def import_evidence(args):
             missing.append(key)
             continue
         existing = existing.rstrip('\n') + '\n\n' + evidence_entry(key, note)
-        added.append(key)
+        added.append(evidence_id(key))
     if added:
         evidence.parent.mkdir(parents=True, exist_ok=True)
         evidence.write_text(existing, encoding='utf-8')

@@ -40,7 +40,8 @@ timestamp: 2026-06-18T10:30:00+09:00
 ```
 
 > Note (v1.10.9): `status: PASS` beside any recorded check other than `PASS` or `N/A` fails, even when
-> the command names no `--require` check.
+> the command names no `--require` check. Since v1.10.11 a recorded `provenance.artifact` hash is always
+> compared with the declared artifact (no `--verify-hash` needed), and `round` must be a whole number.
 >
 > Note: `check_gate.py` parses `status`, `artifact`, `round`, the `checks.*` keys, and the
 > `provenance.*` keys. `blocking_failures`, `verifier_model`, and `timestamp` are human-audit

@@ -47,6 +47,7 @@ MENTION_RE = re.compile(
     r"(\d+(?:[A-Za-z])?(?:\s*(?:[-–,]|and|&)\s*\d+(?!\d|\s*%|\.\d)(?:[A-Za-z])?)*)",
     re.IGNORECASE,
 )
+SUPPLEMENT_RE = re.compile(r"(?:Supplementar(?:y|ies)|Supplemental|Suppl\.?|Online|Appendix)\s*$", re.IGNORECASE)
 RANGE_RE = re.compile(r"(\d+)\s*[-–]\s*(\d+)")
 TABLE_FILE_RE = re.compile(r"table[_\- ]?(\d+)", re.IGNORECASE)
 TABLE_TITLE_RE = re.compile(r"(?im)^#+\s*Table\s+(\d+)\b")
@@ -84,7 +85,11 @@ def blank_non_prose(text: str) -> str:
 
 def expand_numbers(numstr: str) -> list[int]:
     """'1 and 2' -> [1, 2]; '2-4' -> [2, 3, 4]; '1A' -> [1]."""
-    numbers = [int(a) + offset for a, b in RANGE_RE.findall(numstr) for offset in range(int(b) - int(a) + 1)]
+    numbers = []
+    for a, b in RANGE_RE.findall(numstr):
+        low, high = sorted((int(a), int(b)))
+        # "Table 2-1" is two numbers, and a typo such as "Figure 1-99999" must not expand into a huge list
+        numbers.extend(range(low, high + 1) if high - low <= 50 else (low, high))
     rest = RANGE_RE.sub(" ", numstr)
     numbers.extend(int(n) for n in re.findall(r"\d+", rest))
     return numbers
@@ -94,6 +99,8 @@ def find_mentions(artifact: Path) -> list[Mention]:
     text = blank_non_prose(artifact.read_text(encoding="utf-8"))
     mentions: list[Mention] = []
     for match in MENTION_RE.finditer(text):
+        if SUPPLEMENT_RE.search(text[max(0, match.start() - 30):match.start()]):
+            continue  # "Supplementary Table 2" is its own numbering, not main Table 2
         kind = "table" if match.group(1).lower().startswith("tab") else "figure"
         line = text.count("\n", 0, match.start()) + 1
         snippet = " ".join(match.group(0).split())[:60]

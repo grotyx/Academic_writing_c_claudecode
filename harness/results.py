@@ -29,6 +29,22 @@ def validate_bindings(root, manifest, paper_id, artifacts, checker, results_dir=
     """results_dir: when given, every bound CSV must be a regular file inside it (not a copy elsewhere)."""
     data = json.loads(manifest.read_text(encoding='utf-8'))
     records = {}
+    digests, tables = {}, {}  # one read per file, however many results or bindings point at it
+
+    def cached_digest(path):
+        if path not in digests:
+            digests[path] = digest(path)
+        return digests[path]
+
+    def csv_rows(path):
+        if path not in tables:
+            with path.open(encoding='utf-8-sig', newline='') as stream:
+                reader = csv.DictReader(stream)
+                names = reader.fieldnames or []
+                if len(names) != len(set(names)):
+                    raise ValueError(f'duplicate column names in {path.name}: a binding could read the wrong one')
+                tables[path] = list(reader)
+        return tables[path]
     for record in data['results']:
         key = record['result_id']
         if key in records:
@@ -42,10 +58,9 @@ def validate_bindings(root, manifest, paper_id, artifacts, checker, results_dir=
         if results_dir is not None and (not path.is_relative_to(Path(results_dir).resolve()) or not path.is_file()
                                         or (Path(root) / source['file']).is_symlink()):
             raise ValueError(f'bound CSV is not a regular file in the results directory: {source["file"]}')
-        if digest(path) != source['sha256']:
+        if cached_digest(path) != source['sha256']:
             raise ValueError(f'stale CSV source: {key}')
-        with path.open(encoding='utf-8-sig', newline='') as stream:
-            rows = list(csv.DictReader(stream))
+        rows = csv_rows(path)
         row = source['row']
         if type(row) is not int or row < 2 or row - 2 >= len(rows):
             raise ValueError(f'invalid CSV row: {key}')
@@ -70,7 +85,7 @@ def validate_bindings(root, manifest, paper_id, artifacts, checker, results_dir=
             if type(index) is not int or index < 0 or index >= len(tokens) or index in seen:
                 raise ValueError(f'duplicate/invalid token index in {path.name}')
             seen.add(index)
-            if digest(path) != binding['artifact_sha256']:
+            if cached_digest(path) != binding['artifact_sha256']:
                 raise ValueError(f'stale numeric binding: {path.name}')
             record, cell = records[binding['result_id']]
             if any(binding['context'].get(k) != record[k] for k in CONTEXT):

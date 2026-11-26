@@ -1,5 +1,22 @@
 # 变更记录
 
+### v1.10.11 (261126)
+
+独立评审的其余问题。
+
+- 修订声明检查: 从最内层的 `revision/REV<n>/` 找到 drafts 文件夹,否则使用当前文件夹的 `drafts/`;不再以引擎的模板稿件为基准,也不读取论文之外的章节。
+- 门控记录: 已记录的 artifact 哈希无需 `--verify-hash` 也始终核对;非数字的 `round` 失败;数字实时复核需要存在的 results 文件夹。
+- 构建: 两个声明文件会生成同名输出 (`supp_table_1.md` 与 `supplementary_table_1.md`) 时停止构建,而不是一个覆盖另一个;提交时的参考文献检查包括回复信,PASS 之后构建不再失败。
+- 交叉引用: "Supplementary Table 2" 不再算作正文 Table 2;"Table 2-1" 计入两个编号;超大范围被限制。
+- `style preserve`: 数字和引用相同但顺序改变 (组间数值互换) 时报告以供核对 (exit 1)。
+- 盲审复核: packet 包含修订的表格和补充材料,REV2 与 REV1 文本比较;PARTIALLY→FULLY 也需要 `final_anchor`,引用的 anchor 必须在该修订文件中。
+- binding 每个 CSV 和稿件只读一次,并拒绝重复的 CSV 列名。
+- `manuwright update` 在 PyPI 已有该版本时从 PyPI 安装 (`manuwright==X.Y.Z`),不再需要 git;git 标签作为备用。
+- 发布工作流: 手动 PyPI 运行只接受该版本的 vX.Y.Z 标签;发布步骤失败后重跑会为同一提交补完发布;标签任务失败时不发布。
+- 会话开始时的库同步不会拉取到已有评审或签署记录的论文 (否则记录会过期)。
+- lint 钩子读取 Codex 补丁的每个文件;`lint` 忽略多行 HTML 注释和代码块,并使用 project.json 指定的术语表;回复覆盖检查识别 Markdown 标题 ("# Reviewer 1");缺少值的选项 (`update --to`) 显示用法;`style --help` 列出全部子命令。
+- 钩子启动器: macOS/Linux 优先 python3 (py 仅用于 Windows);`claude -p` 评审在空文件夹而非论文文件夹中运行;Obsidian citekey 转为有效的 Evidence ID,references 文件夹限制在 vault 内。
+
 ### v1.10.10 (261126)
 
 堵住通过路径或写法绕过 plan-first 和批准记录的途径 (独立评审第二部分)。

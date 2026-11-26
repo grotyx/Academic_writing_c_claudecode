@@ -1,5 +1,22 @@
 # Changelog
 
+### v1.10.11 (261126)
+
+The remaining findings of the independent reviews.
+
+- Revision claims: the drafts folder comes from the innermost `revision/REV<n>/`, otherwise `drafts/` of the current folder; the engine's own template drafts are never the baseline, and no section outside the paper is read.
+- Gate ledgers: a recorded artifact hash is always checked (no `--verify-hash` needed); a non-numeric `round` fails; a live numbers cross-check needs an existing results folder.
+- Build: two declared files that would produce the same output (`supp_table_1.md` and `supplementary_table_1.md`) stop the build instead of one replacing the other; the submission bibliography check covers the response letter, so a build no longer fails after a PASS.
+- Cross-references: "Supplementary Table 2" is not main Table 2; "Table 2-1" counts both numbers; huge ranges are capped.
+- `style preserve`: the same numbers and citations in a different order (group values swapped) are reported for review (exit 1).
+- Blind re-review: the packet includes revised tables and supplements, REV2 is compared with the REV1 text, a PARTIALLY->FULLY upgrade needs `final_anchor`, and a quoted anchor must be in that revised file.
+- Bindings read each CSV and manuscript once and refuse duplicate CSV column names.
+- `manuwright update` installs from PyPI (`manuwright==X.Y.Z`) when PyPI has the release, so git is no longer needed; the git tag stays the fallback.
+- Release workflow: a manual PyPI run accepts only a vX.Y.Z tag of that version; a rerun after a failed release step finishes the release for the same commit; a failed tag job never publishes.
+- Session library sync does not pull into a paper with review or signoff records (it would make them stale).
+- The lint hook reads every file of a Codex patch; `lint` ignores multi-line HTML comments and code fences and uses the terminology registry named in project.json; response coverage reads Markdown headings ("# Reviewer 1"); a value flag without a value (`update --to`) prints usage; `style --help` lists every subcommand.
+- Hook launcher: python3 first on macOS/Linux (py only on Windows); `claude -p` reviews run in an empty folder, not the paper; Obsidian citekeys become valid Evidence IDs and the references folder stays inside the vault.
+
 ### v1.10.10 (261126)
 
 Plan-first and approval records can no longer be bypassed by path or wording (independent reviews, second part).

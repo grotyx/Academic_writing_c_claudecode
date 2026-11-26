@@ -38,8 +38,9 @@ from typing import NamedTuple
 
 ROOT = Path(__file__).resolve().parents[1]
 
-REVIEWER_RE = re.compile(r"^\s*(?:\*{1,2})?\s*Reviewer\s*#?\s*(\d+)\s*:?", re.IGNORECASE)
-COMMENT_RE = re.compile(r"^\s*(?:\*{1,2})?\s*Comment\s+(\d+)\s*[).:\]]", re.IGNORECASE)
+# Markdown headings ("# Reviewer 1", "### Comment 2.") count like bold or plain labels.
+REVIEWER_RE = re.compile(r"^\s*(?:#{1,6}\s*)?(?:\*{1,2})?\s*Reviewer\s*#?\s*(\d+)\s*:?", re.IGNORECASE)
+COMMENT_RE = re.compile(r"^\s*(?:#{1,6}\s*)?(?:\*{1,2})?\s*Comment\s+(\d+)\s*(?:[).:\]]|$)", re.IGNORECASE)
 RESPONSE_RE = re.compile(r"^\s*(?:\*{1,2})?\s*Response\s*:\s*(.*)$", re.IGNORECASE)
 # Structural lines that terminate a response body.
 BOUNDARY_RE = re.compile(

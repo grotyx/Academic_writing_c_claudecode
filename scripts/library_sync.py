@@ -328,6 +328,17 @@ def _declare(root: Path, key: str, path: Path) -> None:
     manifest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
 
 
+def signed_off(root: Path) -> bool:
+    """The paper has a semantic review or human signoff record: an automatic edit of its registry or manifest
+    would make those records stale, so the session hook leaves it alone."""
+    try:
+        data = json.loads((root / 'project.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return False
+    return isinstance(data, dict) and any(
+        isinstance(data.get(key), str) and (root / data[key]).is_file() for key in ('semantic_review', 'human_signoff'))
+
+
 def session_sync(folder: Path | None) -> str:
     """SessionStart: pull the library's additions into this paper (auto) or say what is waiting (ask)."""
     try:
@@ -335,8 +346,12 @@ def session_sync(folder: Path | None) -> str:
         mode = sync_mode()
         if not root or mode == 'off' or is_template(root) or not library().is_dir():
             return ''
-        result = sync(root, 'pull' if mode == 'auto' else None)
+        signed = signed_off(root)
+        result = sync(root, 'pull' if mode == 'auto' and not signed else None)
         lines = []
+        if signed and mode == 'auto':
+            lines.append('LIBRARY: this paper has review or signoff records, so the library was not pulled '
+                         '(a change would make them stale); `manuwright library sync --pull` adds it on purpose.')
         if result['added_rules'] or result['copied']:
             lines.append('LIBRARY SYNC: added from your personal library to this paper (additions only): '
                          + '; '.join(result['added_rules'] + result['copied']) + '. Tell the author in one line.')

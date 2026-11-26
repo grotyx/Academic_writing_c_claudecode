@@ -143,11 +143,16 @@ def evaluate(event: dict) -> tuple[int, str]:
     if event.get("tool_name") not in WRITE_TOOLS:
         return 0, ""
     tool_input = event.get("tool_input") or {}
+    # Codex apply_patch: every file of the patch ("command" or "patch"), not only the first
     patched = re.findall(r"^\*\*\* (?:Add File|Update File|Move to): (.+?)\s*$",
-                         str(tool_input.get("command") or ""), re.M)
-    raw_path = tool_input.get("file_path") or next(iter(patched), "")
-    if not raw_path:
-        return 0, ""
+                         str(tool_input.get("command") or tool_input.get("patch") or ""), re.M)
+    paths = [tool_input["file_path"]] if tool_input.get("file_path") else list(dict.fromkeys(patched))
+    results = [evaluate_path(event, raw_path) for raw_path in paths]
+    messages = [message for _, message in results if message]
+    return (2, "".join(messages)) if messages else (0, "")
+
+
+def evaluate_path(event: dict, raw_path: str) -> tuple[int, str]:
     cwd = (event.get("cwd") or ".").replace("\\", "/")
     target = Path(raw_path)
     if not target.is_absolute():

@@ -85,7 +85,10 @@ def test_blind_packet_withholds_the_letter_and_the_record_needs_every_phase(tmp_
     assert any('without a basis' in p for p in record(good, swayed))
     pointed = swayed.replace('basis:', 'basis: author_pointer: Discussion para 5')
     assert any('ghost revision' in p for p in record(good, pointed))  # the letter alone is not enough
-    assert record(good, pointed + '\nfinal_anchor: 06_discussion_REV1.md: "selection bias"') == []
+    # v1.10.11: a quoted anchor must quote a file that is in the packet's revised/ folder
+    assert any('not in revised/' in p for p in record(good, pointed + '\nfinal_anchor: 06_discussion_REV1.md: "selection bias"'))
+    assert any('quotes text' in p for p in record(good, pointed + '\nfinal_anchor: 05_results_REV1.md: "selection bias"'))
+    assert record(good, pointed + '\nfinal_anchor: 05_results_REV1.md: "95% CI 1-2"') == []
     assert any('regression' in p for p in record(good, good.replace('new_issue: none', 'new_issue: regression: CI wrong')))
     assert any('must be none' in p for p in record(good, good.replace('new_issue: none', 'new_issue: typo')))
 

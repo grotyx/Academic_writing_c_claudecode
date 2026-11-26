@@ -1,4 +1,4 @@
-# Revision & Reviewer Response Guide (v0.6.0)
+# Revision & Reviewer Response Guide (v0.6.1)
 
 > v1.7.0 update: REVn now compares each section with its latest earlier revision, falling back to the initial draft only if unchanged in all previous revisions. Keep previous submissions immutable. The shared manifest explicitly lists the effective revised manuscript in publication order; see `docs/harness_guide.md`.
 
@@ -114,7 +114,9 @@ manuwright blind-review packet --comments review/reviewer_comments_REV1.md --ori
 # 1단계: review/blind_REV1/verdicts.md 의 expectation 을 revised/ 를 열기 전에 채운다 (완전 반영이면 원고가 어떻게 바뀌어야 하는가)
 # 2A단계: original/, revised/, diffs/ 만 보고 blind_verdict (FULLY | PARTIALLY | NOT_ADDRESSED | MADE_WORSE | CANNOT_VERIFY) + anchor
 # 2B단계: 그다음 응답 편지를 읽고 final_verdict. 판정이 바뀌면 basis (author_pointer | valid_rebuttal | scope_correction) 필수,
-#        판정이 올라가면 final_anchor (수정 원고의 위치와 인용) 필수: 편지에만 있는 변경은 ghost revision
+#        판정이 올라가면(PARTIALLY→FULLY 포함) final_anchor (수정 원고의 위치와 인용) 필수: 편지에만 있는 변경은 ghost revision
+#        (v1.10.11) `파일.md: "인용"` 형식의 anchor 는 packet 의 revised/ 에 그 파일과 그 문장이 있어야 통과.
+#        packet 은 표(table_*.md)·보충자료(supp*.md)도 담고, REV2 는 REV1 위에 겹친 원본과 비교한다
 # 새 문제는 new_issue: regression: ... (수정이 만든 문제) 또는 previously_missed: ... (결정을 바꾸지 못함)
 manuwright blind-review check review/blind_REV1/verdicts.md
 ```

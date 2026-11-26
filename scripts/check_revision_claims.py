@@ -146,13 +146,15 @@ def infer_revision_id(response_path: Path) -> str:
 
 
 def infer_draft_root(response_path: Path) -> Path:
+    """The drafts folder above the response's revision/REV<n>/ folder (the innermost one, so a folder named
+    revision above the paper is ignored). Without that layout: drafts/ of the current folder, never the
+    engine's own template drafts."""
     parts = list(response_path.resolve().parts)
     lowered = [part.lower() for part in parts]
-    if "revision" in lowered:
-        revision_index = lowered.index("revision")
-        if revision_index > 0:
-            return Path(*parts[:revision_index])
-    return ROOT / "drafts"
+    for index in range(len(parts) - 2, 0, -1):
+        if lowered[index] == "revision" and REV_RE.fullmatch(parts[index + 1]):
+            return Path(*parts[:index])
+    return Path.cwd() / "drafts"
 
 
 def dedupe_paths(paths: list[Path]) -> list[Path]:
@@ -189,7 +191,7 @@ def resolve_revised_section_path(claim: ChangeClaim, response_path: Path, draft_
             [
                 response_path.parent / section_path,
                 draft_root / section_path,
-                ROOT / section_path,
+                draft_root.parent / section_path,
             ]
         )
     else:
@@ -209,8 +211,9 @@ def resolve_revised_section_path(claim: ChangeClaim, response_path: Path, draft_
             ]
         )
 
+    paper = draft_root.resolve().parent
     for candidate in dedupe_paths(candidates):
-        if candidate.exists():
+        if candidate.exists() and candidate.resolve().is_relative_to(paper):  # never a file outside the paper
             return candidate
     return None
 
@@ -248,8 +251,9 @@ def resolve_original_section_path(claim: ChangeClaim, response_path: Path, draft
     else:
         candidates.append(draft_root / f"{base_stem}.md")
 
+    paper = draft_root.resolve().parent
     for candidate in dedupe_paths(candidates):
-        if candidate.exists():
+        if candidate.exists() and candidate.resolve().is_relative_to(paper):  # never a file outside the paper
             return candidate
     return None
 

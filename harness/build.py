@@ -225,13 +225,17 @@ def build(path):
     final=destination/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'_'+uuid4().hex[:8])
     with tempfile.TemporaryDirectory(prefix='.building-',dir=destination) as tmp:
         stage=Path(tmp);manuscript=document(style);merged=[];section_count=0
+        def out(name):  # two sources must never write the same output file (one would silently replace the other)
+            if (stage/name).exists():
+                raise ValueError(f'two declared files would both be built as {name}; rename one')
+            return stage/name
         for value in config['artifacts']:
             source=inside(root,value)
             text=formatter.convert_text(source.read_text(encoding='utf-8'),references.labels,marker)
             if source.name.startswith('08_references'):
                 continue  # bibliography is generated below from actual first appearances
             if source.name.startswith('01_title'):
-                title=document(style,False);append_markdown(title,text,style);title.save(stage/f'title_page{stamp}.docx');continue
+                title=document(style,False);append_markdown(title,text,style);title.save(out(f'title_page{stamp}.docx'));continue
             if section_count: manuscript.add_page_break()
             append_markdown(manuscript,text,style);merged.append(text);section_count+=1
         if config.get('ai_usage'):  # Elsevier policy (June 2026): a separate section at the end, immediately before the references
@@ -250,13 +254,13 @@ def build(path):
             tracked_docx(baseline.read_text(encoding='utf-8'),'\n\n'.join(merged),stage/f'manuscript{stamp}_tracked.docx',style)
         for index,value in enumerate(config.get('tables',[]),1):
             text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels,marker)
-            table=document(style,False);append_markdown(table,text,style);table.save(stage/f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}{stamp}.docx')
+            table=document(style,False);append_markdown(table,text,style);table.save(out(f'table_{checker("check_crossrefs").TABLE_FILE_RE.search(Path(value).stem).group(1)}{stamp}.docx'))
         for value in config.get('supplements',[]):  # separate files, never numbered as main tables
             text=formatter.convert_text(inside(root,value).read_text(encoding='utf-8'),references.labels,marker)
             supplement=document(style,False);append_markdown(supplement,text,style)
-            supplement.save(stage/f'supplementary_{re.sub(r"^supp(?:lementary)?[_-]?","",Path(value).stem,flags=re.I)}{stamp}.docx')
+            supplement.save(out(f'supplementary_{re.sub(r"^supp(?:lementary)?[_-]?","",Path(value).stem,flags=re.I)}{stamp}.docx'))
         for index,value in enumerate(config.get('figures',[]),1):
-            source=inside(root,value);shutil.copyfile(source,stage/f'figure_{checker("check_crossrefs").FIGURE_FILE_RE.search(source.stem).group(1)}{source.suffix}')
+            source=inside(root,value);shutil.copyfile(source,out(f'figure_{checker("check_crossrefs").FIGURE_FILE_RE.search(source.stem).group(1)}{source.suffix}'))
         if config.get('response'):
             response=checker('compile_response_docx')
             source=inside(root,config['response'])

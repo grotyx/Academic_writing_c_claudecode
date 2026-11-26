@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -48,6 +49,31 @@ def engine_api(engine):
 # --- project registry -------------------------------------------------------
 
 def register(manifest):
+    """Add a paper to ~/.manuwright/projects.json. Read-merge-replace runs under a lock file, so two agent
+    sessions registering different papers at once both keep their entry."""
+    home().mkdir(parents=True, exist_ok=True)
+    lock = home() / 'projects.lock'
+    for _ in range(50):  # up to about 5 s
+        try:
+            os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            break
+        except FileExistsError:
+            try:
+                if time.time() - lock.stat().st_mtime > 30:  # left by a crashed process
+                    lock.unlink(missing_ok=True)
+                    continue
+            except OSError:
+                pass
+            time.sleep(0.1)
+    else:
+        return  # registry is a convenience; never block a command on it
+    try:
+        _register(manifest)
+    finally:
+        lock.unlink(missing_ok=True)
+
+
+def _register(manifest):
     path = str(Path(manifest).resolve())
     registry = home() / 'projects.json'
     if registry.exists():
@@ -131,8 +157,19 @@ def on_windows():
     return os.name == 'nt'
 
 
+def on_pypi(tag):
+    """True when PyPI already serves manuwright==tag (the release job publishes it a few minutes after the tag)."""
+    import urllib.request
+    try:
+        with urllib.request.urlopen(f'https://pypi.org/pypi/manuwright/{tag}/json', timeout=10) as response:
+            return response.status == 200
+    except (OSError, ValueError):
+        return False
+
+
 def install_command(tag):
-    source = f'git+{REPO_URL}@v{tag}'
+    # PyPI first: no git needed, and the same files as the tag. The git tag is the fallback while PyPI catches up.
+    source = f'manuwright=={tag}' if on_pypi(tag) else f'git+{REPO_URL}@v{tag}'
     if shutil.which('uv') and 'uv' in Path(sys.prefix).parts:
         return ['uv', 'tool', 'install', '--force', source]
     return [sys.executable, '-m', 'pip', 'install', '--upgrade', source]

@@ -495,20 +495,17 @@ class FreshnessTests(unittest.TestCase):
             self.assertIn("provenance_verified: artifact", out)
 
     def test_pass_output_flags_unverified_provenance(self) -> None:
-        # A gate that records provenance but is checked WITHOUT --verify-hash
-        # still passes, but the output must surface the un-checked freshness.
+        # Since v1.10.11 a recorded artifact hash is checked even WITHOUT --verify-hash;
+        # other recorded labels (no path known) are still surfaced as unverified.
         module = load_module()
 
         with tempfile.TemporaryDirectory() as tmp:
             gate_path = Path(tmp) / "phase_04_draft.GATE.md"
             gate_path.write_text(self._gate_with_provenance("0" * 64), encoding="utf-8")
 
-            result = module.check_gate(gate_path, required_checks=["constraint"])
-            self.assertTrue(result.passed)
-
-            out = module.format_result(result, gate_path)
-            self.assertIn("provenance_verified: none", out)
-            self.assertIn("provenance_unverified: artifact", out)
+            result = module.check_gate(gate_path, required_checks=["constraint"], base_dir=Path(tmp))
+            self.assertFalse(result.passed)
+            self.assertTrue(any(f.field == "provenance.artifact" for f in result.failures))
 
     def test_compute_hash_on_directory_errors_without_traceback(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

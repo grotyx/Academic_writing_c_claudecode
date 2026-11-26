@@ -102,6 +102,7 @@ Obsidian (Academic Paper Citation Manager plugin):
 
 
 HELP_FLAGS = {'-h', '--help'}
+VALUE_FLAGS = {'--to', '--only', '--vault', '--evidence', '--journal', '--name', '--project', '--import', '--kind'}
 # Commands handled here, not by a script with its own argparse: `<command> --help` must print usage and
 # stop, never run (init --help created a "--help" paper folder; update --help ran an update).
 OWN_HELP = {'init', 'rules', 'guide', 'check', 'mode', 'update', 'config', 'setup', 'agents', 'target', 'project',
@@ -146,6 +147,13 @@ def project_defaults(args, defaults, cwd):
         if any(a == flag or a.startswith(flag + '=') for a in args):
             continue
         target = cwd / relative
+        if flag == '--terminology':  # the registry the paper's project.json names comes first
+            try:
+                named = json.loads((cwd / 'project.json').read_text(encoding='utf-8')).get('terminology')
+            except (OSError, ValueError, AttributeError):
+                named = None
+            if isinstance(named, str) and named and (cwd / named).resolve().is_relative_to(cwd.resolve()):
+                target = cwd / named
         if flag == '--terminology' and not target.is_file():
             continue  # no project registry: keep the engine's
         extra += [flag, str(target)]
@@ -234,6 +242,9 @@ def main(argv=None):
     if command in OWN_HELP and HELP_FLAGS & set(rest[:1] if command == 'run' else rest):  # run: later args are the script's
         print(command_help(command))
         return 0
+    if command in OWN_HELP and command != 'run' and rest and rest[-1] in VALUE_FLAGS:
+        print(f'manuwright {command}: {rest[-1]} needs a value\n\n{command_help(command)}', file=sys.stderr)
+        return 2
     if command in {'obsidian', 'evidence'}:
         if not __package__:
             sys.path.insert(0, str(HERE.parent))
@@ -260,6 +271,8 @@ def main(argv=None):
             sys.path.insert(0, str(HERE.parent))
         from manuwright import models
         return models.main(rest)
+    if command == 'style' and rest[:1] and rest[0] in HELP_FLAGS:  # the academic subcommands, then extract|check
+        print(command_help('style') + '\n\nstyle extract|check (Style Spec metrics):', flush=True)
     if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status', 'preserve', 'edits'):
         return subprocess.call([sys.executable, str(ENGINE / 'scripts' / 'academic_style.py'), *rest])
     if command in {'init', 'rules', 'guide', 'check', 'mode', 'update', 'config', 'setup', 'agents', 'target', 'project'}:

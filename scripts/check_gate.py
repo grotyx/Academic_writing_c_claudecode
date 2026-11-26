@@ -137,6 +137,8 @@ def run_live_check(
     if label == "numbers":
         module = _load_sibling("check_numbers")
         rd = resolve(results_dir) if results_dir else base / "results"
+        if not rd.is_dir():  # a missing source cannot support a live PASS, even for prose without numbers
+            raise FileNotFoundError(f"results directory not found: {rd}")
         return module.check_numbers([art], results_dir=rd).passed
     if label == "revision_claims":
         module = _load_sibling("check_revision_claims")
@@ -331,8 +333,11 @@ def check_gate(
         try:
             round_number = int(raw_round)
         except ValueError:
-            round_number = 0
-        if round_number > max_round:
+            round_number = None
+        if raw_round and round_number is None:
+            failures.append(GateIssue(gate_path, "round", f"round is not a whole number: {raw_round}",
+                                      "Record round as 1, 2, ... (the fix/re-verify attempt number)."))
+        elif round_number is not None and round_number > max_round:
             failures.append(
                 GateIssue(
                     gate_path,
@@ -386,7 +391,13 @@ def check_gate(
     # gate stored under `provenance:`. A mismatch means the file changed after the
     # PASS (stale gate) -- the verifiers must run again.
     verified: list[str] = []
-    for label, file_path in verify_hashes or []:
+    verify_hashes = list(verify_hashes or [])
+    # A recorded artifact hash is always checked against the declared artifact, with or without
+    # --verify-hash: an edited section must not keep its old PASS just because the flag was left off.
+    if (entry.provenance.get("artifact") and declared
+            and not any(normalize_key(label) == "artifact" for label, _ in verify_hashes)):
+        verify_hashes.append(("artifact", Path(declared)))
+    for label, file_path in verify_hashes:
         prov_key = normalize_key(label)
         recorded = entry.provenance.get(prov_key)
         if not recorded:  # missing key or blank value -- nothing to compare against
