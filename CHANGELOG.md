@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.10.13 (261126)
+
+- `manuwright gate --max-round` accepts only 1 or more. `--max-round 0` used to switch the Rule 9 round limit off silently, so `round: 5` passed; it now stops with a usage error (exit 2).
+
 ### v1.10.12 (261126)
 
 Learn the logical structure of your papers, not only their words.

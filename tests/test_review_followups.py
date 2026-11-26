@@ -153,3 +153,17 @@ def test_learned_flow_reaches_the_card(tmp_path, monkeypatch):
             encoding='utf-8')
     profile = acad.learn([corpus], tmp_path / 'profile')
     assert profile['sections']['discussion']['flow']['typical'][:2] == ['principal', 'comparison']
+
+
+def test_max_round_must_be_a_real_limit(tmp_path):
+    import subprocess
+    import sys
+    gate = tmp_path / 'g.GATE.md'
+    gate.write_text('artifact: paper.md\nstatus: PASS\nround: 5\n', encoding='utf-8')
+    for bad in (0, -1):
+        with pytest.raises(ValueError, match='1 or more'):
+            GATE.check_gate(gate, max_round=bad)
+    assert any('exceeds max 2' in f.reason for f in GATE.check_gate(gate, max_round=2).failures)
+    script = Path(__file__).resolve().parents[1] / 'scripts' / 'check_gate.py'
+    done = subprocess.run([sys.executable, str(script), str(gate), '--max-round', '0'], capture_output=True, text=True)
+    assert done.returncode == 2 and '1 or more' in done.stderr and 'Traceback' not in done.stderr

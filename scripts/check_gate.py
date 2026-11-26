@@ -221,6 +221,16 @@ def phase_code_from_path(gate_path: Path) -> str:
     return normalize_key(stem).upper()
 
 
+def positive_round(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError:
+        number = 0
+    if number < 1:
+        raise argparse.ArgumentTypeError(f"must be a whole number of 1 or more (got {value!r})")
+    return number
+
+
 def check_gate(
     gate_path: Path,
     *,
@@ -234,6 +244,9 @@ def check_gate(
     base_dir: Path | None = None,
 ) -> GateCheckResult:
     failures: list[GateIssue] = []
+    if not isinstance(max_round, int) or max_round < 1:
+        # 0 used to switch the round limit off silently (`if max_round:`); a limit must be a real limit
+        raise ValueError(f"max_round must be a whole number of 1 or more, not {max_round!r}")
     if not gate_path.exists():
         return GateCheckResult(
             False,
@@ -328,24 +341,23 @@ def check_gate(
                 )
             )
 
-    if max_round:
-        raw_round = entry.fields.get("round", "")
-        try:
-            round_number = int(raw_round)
-        except ValueError:
-            round_number = None
-        if raw_round and round_number is None:
-            failures.append(GateIssue(gate_path, "round", f"round is not a whole number: {raw_round}",
-                                      "Record round as 1, 2, ... (the fix/re-verify attempt number)."))
-        elif round_number is not None and round_number > max_round:
-            failures.append(
-                GateIssue(
-                    gate_path,
-                    "round",
-                    f"round {round_number} exceeds max {max_round}",
-                    "Escalate to the user after the allowed fix/re-verify attempts.",
-                )
+    raw_round = entry.fields.get("round", "")
+    try:
+        round_number = int(raw_round)
+    except ValueError:
+        round_number = None
+    if raw_round and round_number is None:
+        failures.append(GateIssue(gate_path, "round", f"round is not a whole number: {raw_round}",
+                                  "Record round as 1, 2, ... (the fix/re-verify attempt number)."))
+    elif round_number is not None and round_number > max_round:
+        failures.append(
+            GateIssue(
+                gate_path,
+                "round",
+                f"round {round_number} exceeds max {max_round}",
+                "Escalate to the user after the allowed fix/re-verify attempts.",
             )
+        )
 
     for required_check in required_checks or []:
         check_key = normalize_key(required_check)
@@ -605,7 +617,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Required check name that must be recorded as PASS. Repeat for multiple checks.",
     )
     parser.add_argument("--artifact", help="Artifact path that must match the gate artifact field.")
-    parser.add_argument("--max-round", type=int, default=2, help="Maximum allowed fix/re-verify round.")
+    parser.add_argument("--max-round", type=positive_round, default=2,
+                        help="Maximum allowed fix/re-verify round (1 or more; default 2, CLAUDE.md Rule 9).")
     parser.add_argument(
         "--verify-hash",
         action="append",
