@@ -65,6 +65,7 @@ Writing and review (in chat you can simply ask: "서론 써줘", "과장 표현 
   style learn <folder>       learn the style of 3+ good papers (yours, landmark, target journal; PDF/DOCX/MD/TXT)
   style edits <ai> <edited>  learn rules from how you edited AI drafts (--git REV; you approve each rule; --apply)
   style preserve <old> <new> check a style rewrite kept every citation, number, p value and table/figure reference
+  style flow <file>          the draft's paragraph order (gap, aim; finding, comparison, limitation ...) vs your papers
   style status               writing mode and learned style (style extract|check: metrics against a Style Spec)
   claim-strength drafts      cited sentences worded more strongly than their evidence (Claim Strength in evidence.md)
   bind [--write]             propose result bindings: each number tied to its results CSV cell (review/bindings_overrides.json
@@ -273,7 +274,7 @@ def main(argv=None):
         return models.main(rest)
     if command == 'style' and rest[:1] and rest[0] in HELP_FLAGS:  # the academic subcommands, then extract|check
         print(command_help('style') + '\n\nstyle extract|check (Style Spec metrics):', flush=True)
-    if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status', 'preserve', 'edits'):
+    if command == 'style' and rest[:1] and rest[0] in ('learn', 'card', 'core', 'status', 'preserve', 'edits', 'flow'):
         return subprocess.call([sys.executable, str(ENGINE / 'scripts' / 'academic_style.py'), *rest])
     if command in {'init', 'rules', 'guide', 'check', 'mode', 'update', 'config', 'setup', 'agents', 'target', 'project'}:
         lifecycle = load_lifecycle()

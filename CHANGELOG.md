@@ -1,5 +1,12 @@
 # Changelog
 
+### v1.10.12 (261126)
+
+Learn the logical structure of your papers, not only their words.
+
+- `manuwright style learn` records, per section, the usual order of paragraph moves in your corpus (Introduction: background, gap, aim; Methods: design, participants, intervention, outcomes, statistics; Results: participants, primary, secondary, subgroup, safety; Discussion: principal finding, comparison, mechanism, strength, limitation, implication, conclusion) and how many papers keep that order. The section card shows it next to sentence length, phrases and model paragraphs.
+- `manuwright style flow <file>` lists a draft's paragraph moves and reports missing moves and pairs out of the learned order (the core order when no corpus was learned). Advisory: moves are found from word cues, and no gate uses them.
+
 ### v1.10.11 (261126)
 
 The remaining findings of the independent reviews.

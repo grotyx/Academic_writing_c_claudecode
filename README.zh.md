@@ -116,7 +116,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 
 ```sh
 uv tool install manuwright
-# 或: pip install manuwright  |  指定标签: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.11
+# 或: pip install manuwright  |  指定标签: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.12
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -153,6 +153,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright blind-review packet` / `check` | 在记录判定之前隐藏回复信的修订复审（不受回复信说服） |
 | `manuwright journal fit [期刊]` / `suggest` | 投稿前：是否适合这本期刊（该刊同主题的发表记录、字数和参考文献限制、以该刊编辑视角的评审），或推荐发表类似研究最多的期刊；`journal list --build` 在本机生成本领域（从参考文献自动识别，或用 `--preset`/`--category` 指定）前 50% 期刊列表 |
 | `manuwright style edits <ai> <edited>` / `--apply` | 从你修改 AI 草稿的方式中学习规则；只有你勾选的规则才进入 `Style/terminology.md` |
+| `manuwright style flow <file>` | 将稿件的段落顺序 (背景、空白、目的;主要发现、比较、局限 ...) 与从你的论文学到的顺序 (没有则用常见顺序) 比较 |
 | `manuwright library term` / `note` / `sync [--pull\|--push]` | 跨论文保留用词规则或笔记；同步论文与个人文献库（只追加） |
 | `manuwright guide [name ...]` | 列出或打印规则引用的引擎指南（`docs/<name>.md`） |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 运行该阶段的全部检查 |

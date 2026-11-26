@@ -116,7 +116,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 
 ```sh
 uv tool install manuwright
-# または: pip install manuwright  |  特定のタグ: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.11
+# または: pip install manuwright  |  特定のタグ: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.12
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -153,6 +153,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright blind-review packet` / `check` | 回答書を伏せたまま先に判定を記録する revision 再査読（回答書の説得に引きずられない） |
 | `manuwright journal fit [ジャーナル]` / `suggest` | 投稿前：このジャーナルに合うか（同じテーマの掲載記録、語数・文献数の制限、そのジャーナルの編集者の視点でのレビュー）、または同様の研究が多く載るジャーナルの推薦；`journal list --build` は自分の分野（参考文献から自動検出、または `--preset`/`--category`）の上位 50% ジャーナル一覧を自分のコンピューターに作る |
 | `manuwright style edits <ai> <edited>` / `--apply` | AI 草稿を自分が直した方法から規則を学習；チェックした規則だけが `Style/terminology.md` に入る |
+| `manuwright style flow <file>` | 原稿の段落の順序 (背景・ギャップ・目的、主な結果・比較・限界 ...) を自分の論文から学んだ順序 (なければ一般的な順序) と比較 |
 | `manuwright library term` / `note` / `sync [--pull\|--push]` | 用語規則やメモを論文をまたいで保持；論文と個人ライブラリを同期（追加のみ） |
 | `manuwright guide [name ...]` | 規則が引用するエンジンのガイド（`docs/<name>.md`）の一覧または内容を表示 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | その段階のすべての検査を実行 |

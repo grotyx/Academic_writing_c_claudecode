@@ -122,3 +122,34 @@ def test_lint_hook_reads_every_file_of_a_patch(tmp_path, monkeypatch):
     patch = '*** Begin Patch\n*** Update File: drafts/03_introduction.md\n+a\n*** Add File: drafts/05_results.md\n+b\n*** End Patch\n'
     module.evaluate({'tool_name': 'apply_patch', 'tool_input': {'patch': patch}})
     assert seen == ['drafts/03_introduction.md', 'drafts/05_results.md']
+
+
+DISCUSSION = ('In this trial, endoscopic decompression was associated with less leg pain at 12 months. The difference was small.\n\n'
+              'These results are consistent with previous studies that reported similar outcomes. Other trials agreed.\n\n'
+              'This may be explained by less muscle injury, because the approach spares the multifidus. It is plausible.\n\n'
+              'This study has limitations. Selection bias cannot be excluded in a two-centre cohort of this size.\n\n'
+              'In conclusion, endoscopic decompression was associated with less pain. Further trials are needed.\n')
+
+
+def test_paragraph_flow_is_measured_and_compared():
+    acad = checker('academic_style')
+    assert acad.flow_of('discussion', DISCUSSION) == ['principal', 'comparison', 'mechanism', 'limitation', 'conclusion']
+    assert any('Flow matches' in line for line in acad.flow_report('discussion', DISCUSSION, None))
+    parts = DISCUSSION.strip().split('\n\n')
+    moved = '\n\n'.join([parts[0], parts[3], parts[1], parts[2], parts[4]])
+    assert any('limitation comes before comparison' in line for line in acad.flow_report('discussion', moved, None))
+    learned = acad.learn_flow('discussion', [DISCUSSION, DISCUSSION, moved])
+    assert learned['papers'] == 3 and learned['kept'] == 2 and learned['typical'][0] == 'principal'
+
+
+def test_learned_flow_reaches_the_card(tmp_path, monkeypatch):
+    acad = checker('academic_style')
+    corpus = tmp_path / 'corpus'
+    corpus.mkdir()
+    for i in range(3):
+        (corpus / f'paper{i}.md').write_text(
+            '# Introduction\n\n' + 'Back pain is common and costly for many patients in clinics. ' * 12 + '\n\n'
+            '# Discussion\n\n' + DISCUSSION + '\n' + 'Patients improved in both groups over the follow-up period. ' * 8,
+            encoding='utf-8')
+    profile = acad.learn([corpus], tmp_path / 'profile')
+    assert profile['sections']['discussion']['flow']['typical'][:2] == ['principal', 'comparison']

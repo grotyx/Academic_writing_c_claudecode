@@ -1,4 +1,4 @@
-# ManuWright 사용자 매뉴얼 (v2.9.3)
+# ManuWright 사용자 매뉴얼 (v2.9.4)
 
 빈 폴더에서 서명된 DOCX 패키지까지 논문 하나를 따라가는 매뉴얼이다. 합성 임상시험 데이터로 실제로 돌려 본 end-to-end 시험(2026-09-30)의 명령과 출력을 그대로 썼다. 학술 문체 모드(6절), 근거 강도와 참고문헌 재점검(3절), revision 블라인드 재검토(11절)는 v1.9.0 기능이다. 규칙은 [WORKFLOW.md](../WORKFLOW.md), 명령 세부는 [harness_guide.md](harness_guide.md), 영어판은 [manual.md](manual.md).
 
@@ -25,7 +25,7 @@
 
 ```sh
 uv tool install manuwright
-# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.11
+# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.12
 manuwright agents install                       # 에이전트별 plugin/skill. Obsidian 도 제안
 manuwright init my-paper && cd my-paper
 manuwright target                              # 이 논문: 목표 저널 + Word 스타일 (메뉴)
@@ -47,7 +47,7 @@ manuwright build --project project.json
 
 ```sh
 uv tool install manuwright
-# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.11
+# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.12
 manuwright doctor                  # python_supported, hooks.ok, warnings 확인
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -251,6 +251,10 @@ manuwright style edits --git HEAD~1          # git 을 쓸 때. 아니면: manuw
 반복된 단어 바꾸기와 지우기가 `Style/pending_style_rules.md` 에 제안된다(P0 = 2번 이상). 저자가 체크한 규칙만 `manuwright style edits --apply` 로 `Style/terminology.md` 에 들어가고, 그다음부터 검사가 강제한다. 채팅으로 "demonstrated 규칙은 써"라고 승인하면 에이전트가 그 규칙 하나만 체크한다. 에이전트가 스스로 고르지는 않는다.
 
 **문체를 고쳐도 사실은 그대로.** `manuwright style preserve 원문.md 수정본.md` 는 `[EVID:id]`, 숫자, *p* 값, Table/Figure 참조가 하나라도 바뀌면 실패한다. `/style-pass` 가 섹션마다 실행한다.
+
+**자리가 바뀐 값.** v1.10.11 부터 숫자·인용은 같은데 순서가 바뀌면("A군 10, B군 20" 을 10 과 20 을 맞바꿔 다시 쓴 경우) REVIEW(exit 1)로 알린다. 각 값이 원래 군에 붙어 있는지 확인한 뒤 받아들인다.
+
+**문단 흐름.** `manuwright style learn` 은 내 논문의 문단 역할 순서도 잰다(서론: 배경, 공백, 목적. 고찰: 주요 결과, 선행연구 비교, 기전, 강점, 한계, 의의, 결론). 섹션 카드에 "principal -> comparison -> mechanism -> limitation -> conclusion (5편 중 4편이 이 순서)" 처럼 나오고, `manuwright style flow drafts/06_discussion.md` 는 원고의 문단 역할, 빠진 역할, 순서가 뒤바뀐 쌍을 보여 준다. 배운 논문이 없으면 기본 순서와 비교한다. 단어 단서로 판단하는 조언이며 게이트가 아니다.
 
 ## 7. 여러 에이전트로 초고 쓰기
 

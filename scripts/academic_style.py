@@ -24,6 +24,9 @@ that comes back.
                               deletions, counted (P0 = 2+ times), written to Style/pending_style_rules.md;
                               --apply moves the rules the author ticked into Style/terminology.md
   status                      writing mode and learned profile
+  flow <file> [--section S]   the draft's paragraph moves (background, gap, aim; principal finding,
+                              comparison, mechanism, limitation, ...) against the order learned from
+                              your corpus, or the usual order when none was learned (advisory)
 
 Writing mode (`manuwright mode academic|strict|off`, or MANUWRIGHT_WRITING_MODE): academic shows
 the cards and reports findings after each edit; strict also blocks a write to a manuscript
@@ -579,6 +582,130 @@ def _measure(sentences: list[str], blocks: list[str]) -> dict:
     }
 
 
+# --- paragraph flow (logical structure) ---------------------------------------------
+# The rhetorical job of each paragraph, in the usual order for the section. A paragraph gets the move whose cues it
+# matches most often (ties: the earlier move). These are cues, not understanding: the flow is a measured habit to
+# show the writer, never a gate.
+MOVES = {
+    'introduction': [
+        ('background', r'\b(?:common|prevalen\w*|incidence|burden|leading cause|affects?|is (?:a|an|the)|are (?:a|an|the)|'
+                       r'standard (?:treatment|care)|treatment options?|widely used)\b'),
+        ('gap', r'\b(?:however|remains? (?:unclear|unknown|uncertain|controversial|debated)|little is known|few (?:studies|trials)|'
+                r'no (?:study|trial|consensus)|lack(?:s|ing)?|limited (?:evidence|data)|unanswered|conflicting)\b'),
+        ('aim', r'\b(?:we (?:aimed|sought|hypothesi[sz]ed|conducted|performed|compared|investigated|evaluated)|'
+                r'(?:the )?(?:aim|purpose|objective|goal)s? of (?:this|the present)|this (?:study|trial) (?:aimed|was designed)|'
+                r'therefore,? we)\b'),
+    ],
+    'methods': [
+        ('design', r'\b(?:design|setting|registered|registration|approv\w+|ethic\w*|consent|declaration of helsinki|reported (?:according|following))\b'),
+        ('participants', r'\b(?:eligib\w+|inclusion|exclusion|enrolled|recruited|patients (?:were|who)|participants|cohort)\b'),
+        ('intervention', r'\b(?:procedure|surgery|surgical|operat\w+|technique|interventions?|randomi[sz]\w+|allocat\w+|treatment)\b'),
+        ('outcomes', r'\b(?:outcomes?|endpoints?|measured|assessed|scores?|questionnaire|follow-up visits?)\b'),
+        ('statistics', r'\b(?:statistical|analy[sz]ed|regression|sample size|power|tests?|software|stata|spss|version \d|'
+                       r'confidence intervals?|significance)\b'),
+    ],
+    'results': [
+        ('participants', r'\b(?:screened|enrolled|included|excluded|flow|baseline characteristics|were randomi[sz]ed|lost to follow-up)\b'),
+        ('primary', r'\b(?:primary (?:outcome|end ?point|analysis))\b'),
+        ('secondary', r'\b(?:secondary (?:outcomes?|end ?points?)|other outcomes)\b'),
+        ('subgroup', r'\b(?:subgroups?|sensitivity analys[ie]s|adjusted|interaction|per-protocol)\b'),
+        ('safety', r'\b(?:adverse|complications?|safety|reoperations?|revision surgery|deaths?|mortality)\b'),
+    ],
+    'discussion': [
+        ('principal', r'\b(?:(?:principal|main|key) findings?|in this (?:study|trial|cohort)|this (?:study|trial) (?:showed|found)|'
+                      r'we found|our (?:results|findings|study) (?:show|suggest|indicate))\b'),
+        ('comparison', r'\b(?:previous(?:ly)?|prior (?:studies|reports|trials)|consistent with|in line with|similar to|in contrast|'
+                       r'other (?:studies|trials|authors)|earlier (?:studies|reports)|meta-analys[ie]s|reported)\b'),
+        ('mechanism', r'\b(?:mechanisms?|may (?:be (?:explained|due|related)|reflect)|explanations?|attribut\w+|because|'
+                      r'could (?:reflect|explain)|likely (?:due|because))\b'),
+        ('strength', r'\b(?:strengths?)\b'),
+        ('limitation', r'\b(?:limitations?|selection bias|confound\w*|generali[sz]ab\w+|should be interpreted with caution)\b'),
+        ('implication', r'\b(?:clinical (?:implications?|practice|relevance)|clinicians|implications?|future (?:research|studies|trials)|'
+                        r'further (?:research|studies|trials))\b'),
+        ('conclusion', r'\b(?:in conclusion|in summary|to conclude|taken together|collectively)\b'),
+    ],
+}
+MOVES['conclusion'] = [('conclusion', r'.')]
+# The moves nearly every paper has, in order: the "usual order" when no corpus was learned.
+CORE_MOVES = {'introduction': ['background', 'gap', 'aim'], 'methods': ['design', 'participants', 'outcomes', 'statistics'],
+              'results': ['participants', 'primary'], 'discussion': ['principal', 'comparison', 'limitation', 'conclusion'],
+              'conclusion': ['conclusion']}
+
+
+def _paragraphs_for_flow(text: str) -> list[str]:
+    """Real paragraphs (blank-line separated, 2+ sentences, 8+ words); text without them (PDF extraction) is cut into
+    windows of 4 sentences so a flow can still be measured."""
+    paragraphs = []
+    for block in re.split(r'\n\s*\n', text):
+        joined = ' '.join(ln.strip() for ln in block.splitlines() if ln.strip() and not ln.strip().startswith(('#', '|')))
+        if len(joined.split()) >= 8 and len([x for x in split_sentences(joined) if x.strip()]) >= 2:
+            paragraphs.append(joined)
+    if len(paragraphs) >= 3:
+        return paragraphs
+    sentences = [x for x in split_sentences(' '.join(text.split())) if x.strip()]
+    return [' '.join(sentences[i:i + 4]) for i in range(0, len(sentences), 4)] if len(sentences) >= 8 else paragraphs
+
+
+def paragraph_move(section: str, paragraph: str) -> str:
+    """The rhetorical move a paragraph most likely makes in this section ('other' when no cue matches)."""
+    # a cue in the opening sentence ("In conclusion, ...", "This study has limitations.") counts three times
+    opening = next((x for x in split_sentences(paragraph) if x.strip()), paragraph)
+    scores = [(len(re.findall(cue, paragraph, _I)) + 2 * len(re.findall(cue, opening, _I)), -i, name)
+              for i, (name, cue) in enumerate(MOVES.get(section, []))]
+    best = max(scores, default=(0, 0, 'other'))
+    return best[2] if best[0] else 'other'
+
+
+def flow_of(section: str, text: str) -> list[str]:
+    """Moves in order, consecutive repeats collapsed: ['principal', 'comparison', 'limitation', 'conclusion']."""
+    moves = [paragraph_move(section, p) for p in _paragraphs_for_flow(text)]
+    return [m for i, m in enumerate(moves) if m != 'other' and (i == 0 or m != moves[i - 1])]
+
+
+def learn_flow(section: str, texts: list[str]) -> dict | None:
+    """The corpus's usual order of moves: moves found in at least half of the papers, by mean relative position,
+    and how many papers keep that order."""
+    flows = [f for f in (flow_of(section, t) for t in texts) if len(f) >= 2]
+    if len(flows) < 2:
+        return None
+    positions: dict = {}
+    for flow in flows:
+        for index, move in enumerate(dict.fromkeys(flow)):
+            positions.setdefault(move, []).append(index / max(len(flow) - 1, 1))
+    typical = sorted((m for m, p in positions.items() if len(p) >= len(flows) / 2),
+                     key=lambda m: statistics.mean(positions[m]))
+    kept = sum(1 for f in flows if _order_kept(typical, f))
+    counts = [len(_paragraphs_for_flow(t)) for t in texts]
+    return {'typical': typical, 'papers': len(flows), 'kept': kept,
+            'paragraphs': round(statistics.median(counts)) if counts else None}
+
+
+def _order_kept(typical: list[str], flow: list[str]) -> bool:
+    first = {m: flow.index(m) for m in typical if m in flow}
+    present = [m for m in typical if m in first]
+    return all(first[a] < first[b] for a, b in zip(present, present[1:]))
+
+
+def flow_report(section: str, text: str, typical: list[str] | None) -> list[str]:
+    """Lines comparing a draft's paragraph flow with the learned (or the usual) order. Advisory."""
+    expected = typical or CORE_MOVES.get(section, [])
+    moves = [paragraph_move(section, p) for p in _paragraphs_for_flow(text)]
+    lines = [f'Paragraph moves ({section}, {len(moves)} paragraphs): ' + (' -> '.join(moves) or 'none found')]
+    draft = flow_of(section, text)
+    missing = [m for m in expected if m not in draft]
+    if missing:
+        lines.append('Not found: ' + ', '.join(missing) + ' (add them if the paper needs them; the cues are words such as '
+                     'those in the section card)')
+    first = {m: draft.index(m) for m in expected if m in draft}
+    present = [m for m in expected if m in first]
+    swapped = [(a, b) for a, b in zip(present, present[1:]) if first[a] > first[b]]
+    for a, b in swapped:
+        lines.append(f'Order: {b} comes before {a}; the {"learned" if typical else "usual"} order puts {a} first')
+    if not missing and not swapped:
+        lines.append(f'Flow matches the {"learned" if typical else "usual"} order: ' + ' -> '.join(expected))
+    return lines
+
+
 def learn(paths: list[Path], out: Path) -> dict:
     """Measure a corpus per section; write style_profile.json and exemplars/<section>.md into out."""
     docs, skipped = [], []
@@ -616,6 +743,9 @@ def learn(paths: list[Path], out: Path) -> dict:
         else:
             phrases = _top_phrases(Counter(g for s in per_doc[0][1] for g in _ngrams([s])), 3)
         entry['phrases'] = [[g, c] for g, c in phrases]
+        flow = learn_flow(section, [parts[section] for _, parts in docs if section in parts])
+        if flow:
+            entry['flow'] = flow
         profile['sections'][section] = entry
         _write_exemplars(out / 'exemplars' / f'{section}.md', section, entry, per_doc)
     (out / 'style_profile.json').write_text(json.dumps(profile, indent=2, ensure_ascii=False), encoding='utf-8')
@@ -735,6 +865,11 @@ def _profile_block(section: str, project: Path | None) -> str:
         out.append('- Typical sentence openers: ' + '; '.join(f'"{o} ..."' for o, _ in entry['openers'][:6]))
     if entry.get('transitions'):
         out.append('- Transitions used: ' + ', '.join(f'{t} ({c})' for t, c in entry['transitions']))
+    flow = entry.get('flow')
+    if flow and flow.get('typical'):
+        out.append(f"- Paragraph flow in your papers: {' -> '.join(flow['typical'])} (that order in {flow['kept']} of "
+                   f"{flow['papers']} papers" + (f"; about {flow['paragraphs']} paragraphs" if flow.get('paragraphs') else '')
+                   + f"). Follow it unless this paper needs another; `manuwright style flow <file>` compares a draft.")
     exemplars = folder / 'exemplars' / f'{section}.md' if folder else None
     if exemplars and exemplars.is_file():
         body = exemplars.read_text(encoding='utf-8').split('\n', 2)[-1].strip()
@@ -957,6 +1092,10 @@ def _main(argv: list[str] | None = None) -> int:
     ck.add_argument('files', nargs='+')
     ck.add_argument('--strict', action='store_true', help='fail on medium findings too')
     sub.add_parser('status', help='writing mode and learned profile')
+    fl = sub.add_parser('flow', help="a draft's paragraph moves against the learned (or usual) order")
+    fl.add_argument('file')
+    fl.add_argument('--section', type=section_name, help='default: from the file name')
+    fl.add_argument('--project', default='.')
     pv = sub.add_parser('preserve', help='did a rewrite keep every citation, number, p value and table/figure reference?')
     pv.add_argument('before')
     pv.add_argument('after')
@@ -1055,6 +1194,17 @@ def _main(argv: list[str] | None = None) -> int:
               else 'OK: every [EVID:id], number, p value and table/figure reference is unchanged, in the same order.')
         return 1 if problems or moved else 0
 
+    if args.action == 'flow':
+        path = Path(args.file)
+        section = args.section or section_of(path.name)
+        if section not in MOVES:
+            print('manuwright style flow: name the section with --section (introduction, methods, results, discussion)',
+                  file=sys.stderr)
+            return 2
+        profile, _ = load_profile(Path(args.project).resolve())
+        typical = (((profile.get('sections') or {}).get(section) or {}).get('flow') or {}).get('typical')
+        print('\n'.join(flow_report(section, path.read_text(encoding='utf-8', errors='replace'), typical)))
+        return 0
     if args.action == 'core':
         print(core_card(Path.cwd()))
         return 0

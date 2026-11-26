@@ -1,4 +1,4 @@
-# ManuWright user manual (v2.9.3)
+# ManuWright user manual (v2.9.4)
 
 This manual walks through one paper from an empty folder to a signed DOCX package, using the commands and outputs of a real end-to-end run on synthetic trial data (2026-09-30). Academic writing mode (section 6), evidence strength and the reference audit (section 3) and the letter-blind revision re-review (section 11) are v1.9.0 features. Rules live in [WORKFLOW.md](../WORKFLOW.md); command details in [harness_guide.md](harness_guide.md). Korean: [manual.ko.md](manual.ko.md).
 
@@ -25,7 +25,7 @@ Screenshots are renders of the terminals' text captured during that run (the ses
 
 ```sh
 uv tool install manuwright
-# or: pip install manuwright  |  a pinned tag: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.11
+# or: pip install manuwright  |  a pinned tag: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.12
 manuwright agents install                       # plugins/skills for your agents; offers Obsidian
 manuwright init my-paper && cd my-paper
 manuwright target                              # this paper: target journal + Word style (menus)
@@ -47,7 +47,7 @@ manuwright build --project project.json
 
 ```sh
 uv tool install manuwright
-# or: pip install manuwright  |  a pinned tag: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.11
+# or: pip install manuwright  |  a pinned tag: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.12
 manuwright doctor                  # python_supported, hooks.ok, warnings
 manuwright agents install --dry-run
 manuwright agents install          # Claude Code, Codex, Antigravity, opencode, Muse
@@ -246,6 +246,10 @@ manuwright style edits --git HEAD~1          # with git; otherwise: manuwright s
 Repeated word substitutions and deletions are proposed in `Style/pending_style_rules.md` (P0 = 2 or more times). Only the rules you tick move into `Style/terminology.md` with `manuwright style edits --apply`, and the checks enforce them from then on. Approve one in chat ("keep the demonstrated rule") and the agent ticks exactly that rule; it never picks on its own.
 
 **Rewriting keeps the facts.** `manuwright style preserve original.md rewritten.md` fails if any `[EVID:id]`, number, *p* value or Table/Figure reference changed. `/style-pass` runs it for every section.
+
+**Values that change places.** Since v1.10.11 the same numbers and citations in a new order ("group A 10, group B 20" rewritten with 10 and 20 exchanged) are reported as REVIEW (exit 1): check that each value still belongs to its group, then accept.
+
+**Paragraph flow.** `manuwright style learn` also measures the order of paragraph moves in your papers (Introduction: background, gap, aim; Discussion: principal finding, comparison, mechanism, strength, limitation, implication, conclusion). The section card shows it, for example "principal -> comparison -> mechanism -> limitation -> conclusion (that order in 4 of 5 papers)", and `manuwright style flow drafts/06_discussion.md` lists the draft's moves, what is missing and which pair is out of order. Without a learned corpus it compares with the core order. It is advice from word cues, not a gate.
 
 ## 7. Drafting with several agents
 

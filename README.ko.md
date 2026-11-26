@@ -116,7 +116,7 @@ git clone https://github.com/grotyx/Academic_writing_c_claudecode my-paper
 
 ```sh
 uv tool install manuwright
-# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.11
+# 또는: pip install manuwright  |  특정 태그: uv tool install git+https://github.com/grotyx/Academic_writing_c_claudecode@v1.10.12
 manuwright agents install --dry-run     # preview, then run without --dry-run
 manuwright setup                        # picks the main model and reviewers for you; updates, Obsidian
 manuwright init my-paper
@@ -153,6 +153,7 @@ manuwright target                      # inside the paper: target journal + Word
 | `manuwright blind-review packet` / `check` | 응답 편지를 가린 채 먼저 판정을 기록하는 revision 재검토 (편지의 설득에 끌려가지 않음) |
 | `manuwright journal fit [저널]` / `suggest` | 투고 전: 이 저널에 맞는지(그 저널의 같은 주제 게재 기록, 단어·참고문헌 제한, 그 저널 편집자 관점 리뷰), 또는 비슷한 연구가 많이 실린 저널 추천; `journal list --build` 는 내 분야(참고문헌에서 자동 감지, 또는 `--preset`/`--category`) 상위 50% 저널 목록을 내 컴퓨터에 만든다 |
 | `manuwright style edits <ai> <edited>` / `--apply` | AI 초안을 내가 고친 방식에서 규칙을 배움; 내가 체크한 규칙만 `Style/terminology.md` 에 반영 |
+| `manuwright style flow <file>` | 원고의 문단 순서(배경·공백·목적, 주요 결과·비교·한계 ...)를 내 논문에서 배운 순서(없으면 일반적 순서)와 비교 |
 | `manuwright library term` / `note` / `sync [--pull\|--push]` | 용어 규칙이나 메모를 모든 논문에 남김; 논문과 개인 라이브러리를 맞춤(추가만, 덮어쓰지 않음) |
 | `manuwright guide [name ...]` | 규칙이 인용하는 엔진 가이드(`docs/<name>.md`) 목록 또는 내용 출력 |
 | `manuwright verify --project project.json --profile draft\|revision\|submission` | 그 단계의 모든 검사 실행 |

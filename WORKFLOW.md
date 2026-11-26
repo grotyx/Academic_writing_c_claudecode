@@ -1,6 +1,6 @@
-# Academic Paper Writing Project (v1.10.11)
+# Academic Paper Writing Project (v1.10.12)
 
-## Shared Engine (v1.10.11)
+## Shared Engine (v1.10.12)
 
 This file contains the runtime-independent workflow. Read `docs/harness_guide.md` for manifest-based draft/revision/submission checks, plan approval hashes, numerical bindings, review packets and gated builds. Its explicit profile rules supersede legacy command examples below. Legacy phase/model examples remain descriptive, not model requirements. Human approvals must reflect an actual decision; never generate an approval to bypass a gate. The public template is not a safe place for private manuscript work: use a separate private project.
 
@@ -339,7 +339,8 @@ Phase 3: Draft Plan (원고 구성 계획) — Opus 권장
 
 Phase 4: Draft (in this order)
 ├── Read docs/drafting_protocol.md + docs/section_templates.md before drafting
-├── Load the section card before each section: `manuwright style card <section>` (moves, phrasebank, model paragraphs, learned corpus style; auto-injected on "서론 써줘")
+├── Load the section card before each section: `manuwright style card <section>` (moves, phrasebank, model paragraphs, learned corpus style incl. your paragraph flow; auto-injected on "서론 써줘")
+├── After drafting a section (advisory): `manuwright style flow <file>` — paragraph order vs the order learned from your papers
 ├── Apply Style/terminology.md and relevant Style anchors during drafting
 ├── (선택) /paper-debate — 핵심 섹션 논증 골격을 논리 담당 공동 저자(Codex)와 토론 후 작성
 ├── 04_methods.md      → establishes framework
