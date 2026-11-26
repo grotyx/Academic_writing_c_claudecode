@@ -445,6 +445,9 @@ def draw(root: Path, config: dict, spec_path: Path) -> str:
 
 def paper_python(config: dict) -> Path | None:
     """The paper's analysis environment (manuwright env), which installs matplotlib by default."""
+    paper_id = config.get('paper_id')
+    if not isinstance(paper_id, str) or paper_id in ('', '.', '..') or any(c in paper_id for c in '/\\:'):
+        return None  # only a plain folder name selects ~/.manuwright/envs/<paper_id>
     home = Path(os.environ.get('MANUWRIGHT_HOME') or Path.home() / '.manuwright')
     python = home / 'envs' / str(config.get('paper_id', '')) / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
     return python if config.get('paper_id') and python.exists() else None

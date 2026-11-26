@@ -218,6 +218,13 @@ def words(text: str) -> int:
     return len(WORD_RE.findall(plain(EVID_RE.sub(' ', text))))
 
 
+def _inside(root: Path, item: str) -> Path:
+    """A project.json path; one that leaves the paper folder becomes a path that does not exist, so its file is
+    never read into the measurement or the packet sent to external reviewers."""
+    path = (root / item.replace('\\', '/')).resolve()
+    return path if path.is_relative_to(root.resolve()) else root / '.outside-the-paper-folder'
+
+
 def declared(root: Path) -> dict:
     """{'02_abstract': path, ..., 'tables': [paths]} from project.json (artifacts, abstract, tables), so a
     paper with sections in drafts/paper1_x/ or a revision folder is measured, not read as empty."""
@@ -228,12 +235,12 @@ def declared(root: Path) -> dict:
     data = data if isinstance(data, dict) else {}
     found: dict = {}
     if isinstance(data.get('abstract'), str) and data['abstract']:
-        found['02_abstract'] = root / data['abstract']  # the abstract by its role, whatever the file is called
+        found['02_abstract'] = _inside(root, data['abstract'])  # the abstract by its role, whatever the file is called
     for item in list(data.get('artifacts') or []):
         if isinstance(item, str) and item:
             stem = re.sub(r'_REV\d+$', '', Path(item).stem, flags=re.I)
-            found.setdefault(stem, root / item)
-    found['tables'] = [root / t for t in data.get('tables') or [] if isinstance(t, str)]
+            found.setdefault(stem, _inside(root, item))
+    found['tables'] = [_inside(root, t) for t in data.get('tables') or [] if isinstance(t, str)]
     return found
 
 

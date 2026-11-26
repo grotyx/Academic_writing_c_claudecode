@@ -1,5 +1,20 @@
 # 변경 이력
 
+### v1.10.10 (261126)
+
+경로나 표기로 plan-first 와 승인 기록을 우회하던 길을 막음 (독립 리뷰 2부).
+
+- plan-first 훅: 번호 없는 섹션 파일(`drafts/results.md`), `..` 경로(`drafts/revision/../05_results.md`), R 스크립트, 노트북, `data/` 바로 아래 스크립트도 승인된 계획이 있어야 한다. 논문 위쪽 폴더 이름이 `revision` 이어도 더는 예외가 아니며 `drafts/.../revision/` 만 예외다. HTML 주석이나 코드 블록 안의 체크된 승인 줄은 승인이 아니다.
+- `manuwright run` 은 분석 계획이 완성·승인되기 전에는 분석 스크립트를 실행하지 않는다(훅과 같은 검사).
+- 템플릿 저장소에서 설치된 훅이 모든 이벤트를 건너뛰어 Codex `apply_patch` 가 검사되지 않았다. 이제 템플릿의 Claude 훅이 처리하는 Write/Edit/MultiEdit 만 건너뛴다.
+- 설치된 `manuwright verify` 는 논문 폴더 안의 `harness/` 폴더가 아니라 항상 엔진의 harness 를 불러온다.
+- `paper_id` 는 경로 구분자가 없는 이름이어야 한다. 절대경로나 `..` 로 `~/.manuwright/envs/` 밖의 Python 을 고를 수 없다.
+- 결과 binding 은 results 폴더 안의 일반 CSV 를 가리켜야 한다. results/ 밖을 가리키는 심볼릭 링크 CSV 는 숫자 출처가 아니다.
+- 원고 등 입력 파일과 같은 `state` 경로는 거부한다(verify 가 덮어썼다).
+- 검토자·승인자·결정 근거가 공백이거나 문자열이 아니면 실패한다.
+- `journal fit` 은 논문 폴더 밖을 가리키는 project.json 경로를 읽지 않는다(리뷰 묶음으로 나갈 수 있었다).
+- Codex 아이콘이 PyPI wheel·sdist 에 포함된다.
+
 ### v1.10.9 (261126)
 
 틀린 원고가 통과할 수 있던 검사 수정 (독립 리뷰 두 건에서 발견).

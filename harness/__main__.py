@@ -118,7 +118,7 @@ def main():
             text=plan.read_text(encoding='utf-8')
             missing=m.validate_plan_content(text,args.kind)
             import re
-            if missing or not re.search(r'-\s*\[[xX]\]\s*(?:\*\*)?사용자 승인 완료',text):
+            if missing or not m.has_checked_approval(text):
                 raise ValueError('complete the plan and record the actual human approval checkbox first')
             if not args.approved_by.strip() or not args.decision_reference.strip():
                 raise ValueError('reviewer and decision reference cannot be blank')

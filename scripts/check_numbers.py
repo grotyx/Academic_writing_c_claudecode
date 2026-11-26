@@ -122,7 +122,10 @@ def load_result_numbers(results_dir: Path) -> list[ResultNumber]:
     if not results_dir.exists():
         return numbers
 
+    base = results_dir.resolve()
     for csv_path in sorted(results_dir.rglob("*.csv")):
+        if not csv_path.resolve().is_relative_to(base) or not csv_path.resolve().is_file():
+            continue  # a symlink out of results/ is not a result source
         with csv_path.open(newline="", encoding="utf-8-sig") as handle:
             reader = csv.DictReader(handle)
             for row_index, row in enumerate(reader, start=2):

@@ -25,7 +25,8 @@ def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def validate_bindings(root, manifest, paper_id, artifacts, checker):
+def validate_bindings(root, manifest, paper_id, artifacts, checker, results_dir=None):
+    """results_dir: when given, every bound CSV must be a regular file inside it (not a copy elsewhere)."""
     data = json.loads(manifest.read_text(encoding='utf-8'))
     records = {}
     for record in data['results']:
@@ -38,6 +39,9 @@ def validate_bindings(root, manifest, paper_id, artifacts, checker):
             raise ValueError(f'incomplete result context: {key}')
         source = record['source']
         path = inside(root, source['file'])
+        if results_dir is not None and (not path.is_relative_to(Path(results_dir).resolve()) or not path.is_file()
+                                        or (Path(root) / source['file']).is_symlink()):
+            raise ValueError(f'bound CSV is not a regular file in the results directory: {source["file"]}')
         if digest(path) != source['sha256']:
             raise ValueError(f'stale CSV source: {key}')
         with path.open(encoding='utf-8-sig', newline='') as stream:

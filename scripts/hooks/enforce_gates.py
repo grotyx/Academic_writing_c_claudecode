@@ -26,12 +26,13 @@ must never wedge the user's workflow because of a hook bug.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from plan_validation import validate_plan_content, approval_problem, describe_missing
+from plan_validation import HIDDEN_RE, validate_plan_content, approval_problem, describe_missing
 
 # Tools that can create or modify files in Claude Code.
 WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "apply_patch")  # apply_patch = Codex
@@ -40,7 +41,9 @@ WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "apply_patch")  # apply_patch = Cod
 # anchored on a leading slash so e.g. draft_plan.md / table_1.md never match).
 SECTION_RE = re.compile(r"/0[1-9]_[^/]*\.md$", re.IGNORECASE)
 # Analysis scripts: .../data/py/x.py or .../data/<paper>/py/x.py
-ANALYSIS_SCRIPT_RE = re.compile(r"/data/(?:[^/]+/)?py/[^/]*\.py$", re.IGNORECASE)
+# Since v1.10.10 also R scripts, notebooks and scripts directly in data/ or data/<paper>/.
+ANALYSIS_SCRIPT_RE = re.compile(r"/data/(?:[^/]+/)?(?:(?:py|r|scripts|code)/)?[^/]*\.(?:py|r|ipynb)$", re.IGNORECASE)
+SCRIPT_FOLDERS = {"py", "r", "scripts", "code"}
 PLACEHOLDER_RE = re.compile(
     r"\[[^\]]*(?:작성|기술|입력|기준|변수|검정법|선택 근거|목적|내용|키워드|"
     r"필요|설명|filename|n rows|n columns|var|fig_|Bar/Box|Additional Analysis|"
@@ -80,7 +83,8 @@ def plan_problem(plan: Path) -> str | None:
         line = text.count("\n", 0, placeholder.start()) + 1
         return (f"unresolved template: line {line} still has the placeholder "
                 f"\"{placeholder.group(0).strip()[:60]}\"; replace every [...] placeholder with this paper's content")
-    if UNCHECKED_APPROVAL_RE.search(text) or not CHECKED_APPROVAL_RE.search(text):
+    visible = HIDDEN_RE.sub("", text)  # an approval inside an HTML comment or code fence is not an approval
+    if UNCHECKED_APPROVAL_RE.search(visible) or not CHECKED_APPROVAL_RE.search(visible):
         return ("not approved yet: the author has not ticked `- [x] 사용자 승인 완료` "
                 "(or approved it in chat for `manuwright approve`)")
     kind = "analysis" if plan.name == "analysis_plan.md" else "draft"
@@ -169,11 +173,23 @@ def strict_style(event: dict, raw_path: str) -> str | None:
     )
 
 
+def in_revision(target: Path) -> bool:
+    """A revision copy: a "revision" folder below the paper's drafts/ folder (drafts/revision/REV1/,
+    drafts/paper1/revision/REV1/). A folder named revision above the paper does not count."""
+    parts = [p.lower() for p in target.parts]
+    if "drafts" not in parts:
+        return False
+    below = parts[len(parts) - 1 - parts[::-1].index("drafts") + 1:-1]
+    return "revision" in below
+
+
 def decide_path(event_cwd: str, raw_path: str) -> str | None:
     cwd = _norm(event_cwd)
     target = Path(_norm(raw_path))
     if not target.is_absolute():
         target = Path(cwd) / target
+    # "drafts/revision/../05_results.md" is drafts/05_results.md: resolve dot segments before any check.
+    target = Path(_norm(os.path.normpath(str(target))))
     # Force a single leading slash so the slash-anchored dir checks below
     # ("/drafts/", "/data/.../py/") fire even when cwd is relative/missing and
     # the path normalizes to e.g. "drafts/03_results.md" (no leading slash).
@@ -182,7 +198,7 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
 
     # Rule 8 — drafting a section requires a completed draft plan.
     # Revisions (Phase 8) revise an existing manuscript and are exempt.
-    if "/drafts/" in spath and "/revision/" not in spath and SECTION_RE.search(spath):
+    if "/drafts/" in spath and not in_revision(target) and (SECTION_RE.search(spath) or is_prose_file(spath)):
         plan = target.parent / "draft_plan.md"
         problem = plan_problem(plan)
         if problem:
@@ -202,7 +218,8 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
 
     # Rule 7 — generating an analysis script requires an approved analysis plan.
     if ANALYSIS_SCRIPT_RE.search(spath):
-        plan = target.parent.parent / "analysis_plan.md"
+        folder = target.parent.parent if target.parent.name.lower() in SCRIPT_FOLDERS else target.parent
+        plan = folder / "analysis_plan.md"
         problem = plan_problem(plan)
         if problem:
             if problem == "missing":

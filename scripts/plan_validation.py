@@ -72,6 +72,19 @@ def validate_plan_content(text: str, kind: str) -> list[str]:
     return missing
 
 
+APPROVED_LINE_RE = re.compile(r'-\s*\[[xX]\]\s*(?:\*\*)?사용자 승인 완료')
+HIDDEN_RE = re.compile(r'<!--.*?-->|```.*?```', re.S)
+
+
+def has_checked_approval(text: str) -> bool:
+    """A ticked approval line in the visible plan; one inside an HTML comment or code fence does not count."""
+    return bool(APPROVED_LINE_RE.search(HIDDEN_RE.sub('', text)))
+
+
+def nonblank(value) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
 def plan_hash(plan: Path) -> str:
     return hashlib.sha256(plan.read_bytes()).hexdigest()
 
@@ -82,7 +95,8 @@ def approval_problem(plan: Path, *, required: bool = False) -> str | None:
         return 'missing approval receipt' if required else None
     try:
         data = json.loads(receipt.read_text(encoding='utf-8'))
-        if data.get('status') != 'approved' or not data.get('approved_by') or not data.get('decision_reference'):
+        if data.get('status') != 'approved' or not nonblank(data.get('approved_by')) \
+                or not nonblank(data.get('decision_reference')):
             return 'incomplete approval receipt'
         if data.get('sha256') != plan_hash(plan):
             return 'stale approval: plan changed after approval'

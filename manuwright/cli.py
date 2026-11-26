@@ -7,6 +7,7 @@ pass them, so an installed engine never reads its own install folder as the
 paper (docs/distribution_plan.md, section 2).
 """
 from __future__ import annotations
+import json
 import os
 import subprocess
 import sys
@@ -121,6 +122,18 @@ def command_help(command):
     return 'usage: manuwright\n' + '\n'.join(out) if out else USAGE
 
 
+# `python -m harness` from a paper folder puts that folder first on sys.path, so a folder named harness/
+# there would run instead of the installed verifier. The child drops the current folder and imports the
+# engine's package by its absolute path.
+HARNESS_RUNNER = ("import runpy, sys; engine = sys.argv[1]; "
+                  "sys.path[:] = [engine] + [p for p in sys.path if p not in ('', '.')]; "
+                  "sys.argv = ['harness'] + sys.argv[2:]; runpy.run_module('harness', run_name='__main__', alter_sys=True)")
+
+
+def harness_command(*args):
+    return [sys.executable, '-c', HARNESS_RUNNER, str(ENGINE), *args]
+
+
 def version():
     text = (ENGINE / 'harness' / '__init__.py').read_text(encoding='utf-8')
     return text.split("__version__ = '")[1].split("'")[0]
@@ -151,13 +164,25 @@ def hook(args):
     project = Path(os.environ.get('CLAUDE_PROJECT_DIR') or Path.cwd())
     settings = project / '.claude' / 'settings.json'
     try:
-        if 'scripts/hooks/' in settings.read_text(encoding='utf-8'):
-            return 0  # template checkout: its own hooks already run; never fire twice
+        template = 'scripts/hooks/' in settings.read_text(encoding='utf-8')
     except OSError:
-        pass
+        template = False
     script = [sys.executable, str(ENGINE / 'scripts' / 'hooks' / HOOKS[args[0]])]
+    if args[0] in ('gate', 'lint'):
+        event = sys.stdin.buffer.read()
+        try:
+            tool = json.loads(event or b'{}').get('tool_name')
+        except (ValueError, AttributeError):
+            tool = None
+        # A template checkout's own Claude hooks cover Write/Edit/MultiEdit only. Every other event (Codex
+        # apply_patch) still needs this gate; skipping it on the settings file alone turned the Codex gate off.
+        if template and tool in ('Write', 'Edit', 'MultiEdit'):
+            return 0
+        return subprocess.run(script, input=event).returncode  # hook event JSON passes through on stdin
+    if template:
+        return 0  # template checkout: its own session, prompt and subagent hooks already run; never fire twice
     if args[0] != 'session':
-        return subprocess.call(script)  # hook event JSON passes through on stdin
+        return subprocess.call(script)
     subprocess.call(script + [str(project)])
     print('- TOOLS: manuwright verify --project project.json | manuwright citations|numbers|gate ... | '
           'manuwright rules <section>')
@@ -243,8 +268,7 @@ def main(argv=None):
             return getattr(lifecycle, command)(rest)
         return getattr(lifecycle, command)(ENGINE, rest)
     if command in HARNESS_COMMANDS and HELP_FLAGS & set(rest):  # argparse help; no paper folder needed
-        env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, [str(ENGINE), os.environ.get('PYTHONPATH')])))
-        return subprocess.call([sys.executable, '-m', 'harness', command, '--help'], env=env)
+        return subprocess.call(harness_command(command, '--help'))
     if command in HARNESS_COMMANDS:
         if command in {'status', 'verify', 'packet', 'build'} and '--project' not in rest:
             manifest = load_lifecycle().find_manifest([])  # inside a paper folder: its project.json
@@ -259,8 +283,7 @@ def main(argv=None):
                 lifecycle.register(rest[rest.index('--project') + 1])
             except OSError:
                 pass  # registry is a convenience for update safety checks
-        env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, [str(ENGINE), os.environ.get('PYTHONPATH')])))
-        return subprocess.call([sys.executable, '-m', 'harness', command, *rest], env=env)
+        return subprocess.call(harness_command(command, *rest))
     if command not in TOOLS:
         print(f'manuwright: unknown command {command!r}\n\n{USAGE}', file=sys.stderr)
         return 2

@@ -1,5 +1,20 @@
 # Changelog
 
+### v1.10.10 (261126)
+
+Plan-first and approval records can no longer be bypassed by path or wording (independent reviews, second part).
+
+- Plan-first hook: unnumbered section files (`drafts/results.md`), dot segments (`drafts/revision/../05_results.md`), R scripts, notebooks and scripts directly in `data/` now need the approved plan. A folder named `revision` above the paper no longer exempts it; only `drafts/.../revision/` does. A ticked approval inside an HTML comment or code fence is not an approval.
+- `manuwright run` refuses to run an analysis script until the analysis plan is complete and approved (same check as the hook).
+- In a template checkout the installed hook skipped every event, so Codex `apply_patch` was never gated; it now skips only the Write/Edit/MultiEdit events that the template's own Claude hooks handle.
+- The installed `manuwright verify` always imports the engine's own harness, never a `harness/` folder in the paper folder.
+- `paper_id` must be a plain name: an absolute or `..` value can no longer pick a Python outside `~/.manuwright/envs/`.
+- Result bindings must point at a regular CSV inside the results directory; a CSV symlinked from outside results/ is not a number source.
+- A `state` path that is also a manuscript or other input is refused (verify used to overwrite it).
+- Blank or non-text reviewer, approver and decision reference fields fail.
+- `journal fit` no longer reads project.json paths outside the paper folder (they could reach the review packet).
+- The Codex composer icon is included in the PyPI wheel and sdist.
+
 ### v1.10.9 (261126)
 
 Checks that could pass a wrong manuscript (found by two independent reviews).

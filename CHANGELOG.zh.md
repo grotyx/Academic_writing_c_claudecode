@@ -1,5 +1,20 @@
 # 变更记录
 
+### v1.10.10 (261126)
+
+堵住通过路径或写法绕过 plan-first 和批准记录的途径 (独立评审第二部分)。
+
+- plan-first 钩子: 无编号的章节文件 (`drafts/results.md`)、含 `..` 的路径 (`drafts/revision/../05_results.md`)、R 脚本、notebook 以及直接位于 `data/` 下的脚本也需要已批准的计划。论文上层文件夹名为 `revision` 不再豁免,只有 `drafts/.../revision/` 豁免。HTML 注释或代码块中勾选的批准行不算批准。
+- `manuwright run` 在分析计划完成并批准前不运行分析脚本 (与钩子相同的检查)。
+- 在模板检出中,已安装的钩子跳过所有事件,Codex `apply_patch` 从未被检查;现在只跳过模板自身 Claude 钩子处理的 Write/Edit/MultiEdit。
+- 已安装的 `manuwright verify` 始终加载引擎自己的 harness,而不是论文文件夹中的 `harness/` 文件夹。
+- `paper_id` 必须是不含路径分隔符的名称;绝对路径或 `..` 不能再选中 `~/.manuwright/envs/` 之外的 Python。
+- 结果 binding 必须指向 results 目录内的普通 CSV;从 results/ 外链接进来的 CSV 不是数字来源。
+- 与稿件等输入相同的 `state` 路径被拒绝 (verify 曾覆盖它)。
+- 审稿人、批准人和决定依据为空白或不是文本时失败。
+- `journal fit` 不再读取指向论文文件夹之外的 project.json 路径 (它们可能进入评审包)。
+- Codex 图标包含在 PyPI wheel 和 sdist 中。
+
 ### v1.10.9 (261126)
 
 修复可能让错误稿件通过的检查 (两份独立评审发现)。

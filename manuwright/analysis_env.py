@@ -28,6 +28,8 @@ openpyxl
 
 
 def env_dir(paper_id):
+    if not isinstance(paper_id, str) or paper_id in ('', '.', '..') or any(c in paper_id for c in '/\\:'):
+        raise ValueError(f'paper_id must be a plain folder name, not {paper_id!r}')
     return Path(os.environ.get('MANUWRIGHT_HOME') or Path.home() / '.manuwright') / 'envs' / paper_id
 
 
@@ -85,6 +87,26 @@ def main(args):
     return 0
 
 
+def plan_problem(root):
+    """Why this paper's analysis plan does not allow running analysis, else None (the same check as the hook)."""
+    from manuwright.cli import ENGINE
+    config = json.loads((root / 'project.json').read_text(encoding='utf-8'))
+    name = config.get('analysis_plan') or 'data/analysis_plan.md'
+    plan = (root / str(name)).resolve()
+    if not plan.is_relative_to(root.resolve()):
+        return f'analysis_plan escapes the paper folder: {name}'
+    sys.path.insert(0, str(ENGINE / 'scripts' / 'hooks'))
+    sys.path.insert(0, str(ENGINE / 'scripts'))
+    try:
+        from enforce_gates import plan_problem as check
+    finally:
+        del sys.path[:2]
+    problem = check(plan)
+    if problem == 'missing':
+        return f'{name} does not exist; write it and get the author\'s approval first'
+    return f'{name}: {problem}' if problem else None
+
+
 def run_script(args):
     """manuwright run <script.py> [args...]: run an analysis script with this paper's environment."""
     if not args:
@@ -95,6 +117,10 @@ def run_script(args):
         args = [str(script.resolve()), *args[1:]]  # the script runs from the paper folder
     try:
         root, paper_id = paper([])
+        problem = plan_problem(root)
+        if problem:
+            print(f'manuwright run: BLOCKED (Rule 7): {problem}', file=sys.stderr)
+            return 2
         python = python_of(env_dir(paper_id))
         if not python.exists():
             build(root, paper_id)

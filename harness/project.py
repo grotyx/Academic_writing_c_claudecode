@@ -23,6 +23,9 @@ def load_project(path):
     config = json.loads(path.read_text(encoding='utf-8'))
     if config.get('schema_version') != 1 or not config.get('paper_id'):
         raise ValueError('project requires schema_version: 1 and paper_id')
+    pid = config['paper_id']
+    if not isinstance(pid, str) or pid.strip() in ('.', '..') or any(c in pid for c in '/\\:'):
+        raise ValueError('paper_id must be a plain name (no path separators)')
     if config.get('study_type') not in STUDY_TYPES:
         raise ValueError('unsupported study_type')
     artifacts = config.get('artifacts')
@@ -40,6 +43,14 @@ def load_project(path):
     for key in ('evidence', 'draft_plan'):
         if not inside(path.parent, config[key]).is_file():
             raise ValueError(f'missing {key}')
+    if 'state' in config:  # verify overwrites this file: it must never be an input
+        state = inside(path.parent, config['state'])
+        inputs = set(resolved) | {path} | {inside(path.parent, config[k]) for k in (
+            'evidence', 'draft_plan', 'analysis_plan', 'result_bindings', 'response', 'comments', 'ai_usage',
+            'checklist', 'terminology', 'style_spec', 'tracked_baseline') if isinstance(config.get(k), str) and config[k]}
+        if (not state.is_relative_to((path.parent / 'review').resolve()) or state.suffix.lower() != '.json'
+                or state in inputs or state.with_suffix('.approval.json') in inputs):
+            raise ValueError('state must be a .json file under review/ that is not also a project input')
     if not config.get('analysis_plan') and not config.get('analysis_not_applicable'):
         raise ValueError('provide analysis_plan or an explicit analysis_not_applicable reason')
     if config['study_type'] == 'original_research' and not config.get('analysis_plan'):
@@ -204,12 +215,13 @@ def completion_problem(key, value):
 def receipt_problem(path, dependencies, *, human=False):
     data = json.loads(path.read_text(encoding='utf-8'))
     expected = 'approved' if human else 'PASS'
-    if data.get('status') != expected or not data.get('reviewer'):
+    blank = lambda key: not (isinstance(data.get(key), str) and data[key].strip())  # noqa: E731
+    if data.get('status') != expected or blank('reviewer'):
         return 'missing reviewer or successful status'
     if data.get('dependencies') != dependencies:
         return 'stale/incomplete review dependencies'
     if human:
-        if not data.get('decision_reference'):
+        if blank('decision_reference'):
             return 'missing human decision reference'
     else:
         if data.get('method') not in {'independent', 'human'}:
@@ -313,7 +325,7 @@ def verify(path, profile='draft'):
             missing = plan_module.validate_plan_content(text, kind)
             if missing:
                 return 'missing/empty sections: ' + plan_module.describe_missing(missing)
-            if not __import__('re').search(r'-\s*\[[xX]\]\s*(?:\*\*)?사용자 승인 완료', text):
+            if not plan_module.has_checked_approval(text):
                 return 'missing checked approval line'
             return plan_module.approval_problem(plan, required=profile != 'draft')
         run(key, validate_plan)
@@ -339,7 +351,8 @@ def verify(path, profile='draft'):
             results_dir=inside(root, config['results']))))
         if config.get('result_bindings'):
             def bound():
-                validate_bindings(root, inside(root, config['result_bindings']), config['paper_id'], numeric, cn)
+                validate_bindings(root, inside(root, config['result_bindings']), config['paper_id'], numeric, cn,
+                                  results_dir=inside(root, config['results']) if config.get('results') else None)
             run('result_bindings', bound)
         else:
             record('result_bindings', 'BLOCKED' if profile != 'draft' else 'NOT_APPLICABLE',
