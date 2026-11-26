@@ -1,4 +1,4 @@
-# Style Transformation Protocol (v0.3.0)
+# Style Transformation Protocol (v0.3.1)
 
 > Turn a rough draft into bound academic/journal style — reliably, without repeating the
 > same style note. Triggered by `/style-pass`, or automatically when you ask to "make it
@@ -48,7 +48,9 @@ Conclusion → Abstract → Title):
 ### Step 3 — Verify each section (auto-fix loop)
 First **preservation**: `manuwright style preserve <before> <after>` must print OK. A style rewrite
 may not drop, add or change any `[EVID:id]`, number, *p* value or Table/Figure reference; on FAIL
-restore them before anything else. Then the **measurable layer**: `python scripts/check_style.py check <section> --spec drafts/style_spec.md`
+restore them before anything else. REVIEW (v1.10.11, also exit 1) means the same protected values now
+appear in a different order: when sentences were moved on purpose, check that each number and citation still
+belongs to its group, outcome and claim, then accept; when not, restore the order. Then the **measurable layer**: `python scripts/check_style.py check <section> --spec drafts/style_spec.md`
 flags metric deviations (word count, mean sentence length, paragraphs, citation density) from
 the Spec targets. Then the **Style-Conformance Verifier** (`docs/verifier_prompt_templates.md`)
 on the section against the Style Spec + exemplar for the qualitative layer (flow, claim

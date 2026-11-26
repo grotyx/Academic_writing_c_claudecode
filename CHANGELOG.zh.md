@@ -1,5 +1,21 @@
 # 变更记录
 
+### v1.10.14 (261126)
+
+来自 v1.10.9–v1.10.13 代码评审和第二次独立评审 (Gemini 4 Carbon) 的修复。
+
+- 数字: 年份大小的整数除非处于日期语境,否则按计数检查。"Total enrollment was 2024."、"| Total | 2024 |"、"2024 MRI-confirmed patients"、"In Korea, 2024 patients"、"in 2019 patients" 会检查;"in 2018–2022"、"a 2020 meta-analysis"、"Smith et al., 2020"、"Smith (2020)"、"the 2016 WHO classification"、"2021/03/12" 不检查。数字前的单独 en dash ("–2.5") 是负号。"Tables 1 and 2"、"Figures 1–3" 是结构。"*p value* < 0.05"、"Adjusted *P* value"、"P for trend" 是 p 值。
+- 计划批准: 统一为一条规则。HTML 注释 (包括未闭合的)、``` 或 ~~~ 代码块、行内代码中的勾选不算批准,与未勾选的批准行并存的勾选也不算;`[ x ]` 在钩子、verify 和 approve 中一致认可。`manuwright approve` 不会勾选注释中的示例复选框。`manuwright run` 把改名的分析计划仍按分析计划检查。
+- plan-first 钩子: 检查 `data/` 下任意深度的脚本以及 R Markdown/Quarto 文件,并向上到 `data/` 使用最近的已批准分析计划;只拦截以章节命名的文件 (`drafts/results.md`),不拦截 `drafts/table_2_results.md`、`drafts/discussion_notes.md`;忽略论文上层名为 drafts 的文件夹。strict 文风检查和 lint 钩子正确读取含 `..` 的路径。在 Codex 会话中,模板检出里的会话、提示和子代理钩子也会运行。
+- `state` 不能是评审回执、批准回执、dependency 或 review source (verify 会覆盖它)。
+- 修订声明检查: 多论文布局能解析项目相对的章节路径,verify 和 gate 传入论文的 drafts 文件夹,没有 drafts/ 的论文也不能读取外部文件。
+- 构建: 加载项目时 (评审前) 即检测输出文件名冲突;注释掉的引用既不检查也不编号 (此前会使印刷的参考文献编号错位);"(EVID:id)" 作为格式错误失败;回复信的参考文献跳过 [CHANGE] 块。
+- 交叉引用: "As shown in Table 1, 12 patients"、"In Figure 2, 30-day mortality" 只引用 Table 1 和 Figure 2;"Extended Data"、"Supplemental Digital Content" 视为补充材料。
+- 回复覆盖: 用 Markdown 标题 ("# Reviewer 1"、"### Comment 2") 写的回复信逐条解析。
+- 门控: `round` 必须为 1 或以上;没有 `artifact:` 而记录的 artifact 哈希会失败。盲审复核: anchor 引文必须在 revised/ 内,提升的判定需要可核对的引文,比对时忽略强调标记,`--revised .` 也会叠加此前的修订。
+- `manuwright update` 从 PyPI 查找最新版本 (git 可选),版本位置出现选项时拒绝 (`--to --no-agents`)。`manuwright bind` 采用与验证器相同的 CSV 符号链接、重复列和印刷符号规则。
+- `style preserve` 把 "1,250" 读作一个数字,把 "<="、">=" 读作比较符号,多行 HTML 注释不按正文检查。段落流程保留单句的目的和结论段落,先去掉标题、注释和代码,不再把 "is a" 当作背景线索;`style flow` 在 drafts/ 下运行也能找到论文学到的风格。`engine_api` 先于当前文件夹加载引擎的 harness;取消的手动发布不会发布。
+
 ### v1.10.13 (261126)
 
 - `manuwright gate --max-round` 只接受 1 或以上。`--max-round 0` 曾悄悄关闭 Rule 9 的修正轮数上限,使 `round: 5` 也能通过;现在以用法错误 (exit 2) 停止。

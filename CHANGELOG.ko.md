@@ -1,5 +1,21 @@
 # 변경 이력
 
+### v1.10.14 (261126)
+
+v1.10.9–v1.10.13 코드리뷰와 두 번째 독립 리뷰(Gemini 4 Carbon)에서 나온 수정.
+
+- 숫자: 연도 크기의 정수는 날짜 문맥이 아니면 숫자로 검사한다. "Total enrollment was 2024.", "| Total | 2024 |", "2024 MRI-confirmed patients", "In Korea, 2024 patients", "in 2019 patients" 는 검사하고, "in 2018–2022", "a 2020 meta-analysis", "Smith et al., 2020", "Smith (2020)", "the 2016 WHO classification", "2021/03/12" 는 제외한다. 숫자 앞의 단독 en dash("–2.5")는 빼기 기호다. "Tables 1 and 2", "Figures 1–3" 은 구조다. "*p value* < 0.05", "Adjusted *P* value", "P for trend" 는 p 값이다.
+- 계획 승인: 판정 규칙을 하나로 통일. HTML 주석(닫히지 않은 것 포함), ``` 또는 ~~~ 코드 블록, 인라인 코드 안의 체크는 승인이 아니고, 체크 안 된 승인 줄이 함께 있어도 승인이 아니다. `[ x ]` 는 훅·verify·approve 모두에서 인정한다. `manuwright approve` 는 주석 안의 예시 체크박스를 건드리지 않는다. `manuwright run` 은 이름을 바꾼 분석 계획도 분석 계획으로 검사한다.
+- plan-first 훅: `data/` 아래 깊이와 상관없이 스크립트와 R Markdown·Quarto 파일을 검사하고, `data/` 까지 올라가며 가장 가까운 승인된 분석 계획을 쓴다. 섹션 이름 그대로인 파일(`drafts/results.md`)만 막고 `drafts/table_2_results.md`, `drafts/discussion_notes.md` 는 막지 않으며, 논문 위쪽의 drafts 폴더는 무시한다. strict 문체 검사와 lint 훅이 `..` 경로를 바르게 읽는다. Codex 세션에서는 템플릿 저장소에서도 세션·프롬프트·서브에이전트 훅이 돈다.
+- `state` 는 리뷰 영수증, 승인 영수증, dependency, review source 가 될 수 없다(verify 가 덮어썼다).
+- 수정 주장 검사: 여러 논문 구조에서 프로젝트 기준 섹션 경로를 찾고, verify 와 gate 가 논문의 drafts 폴더를 넘기며, drafts/ 가 없는 논문도 밖의 파일을 읽지 못한다.
+- 빌드: 출력 이름 충돌을 프로젝트를 읽을 때(검토 전) 잡는다. 주석 처리한 인용은 검사도 번호 매기기도 하지 않는다(인쇄된 참고문헌 번호가 밀렸다). "(EVID:id)" 는 형식 오류로 실패한다. 답변서 참고문헌은 [CHANGE] 블록을 제외한다.
+- 교차 참조: "As shown in Table 1, 12 patients", "In Figure 2, 30-day mortality" 는 Table 1, Figure 2 만 인용한다. "Extended Data", "Supplemental Digital Content" 는 보충자료로 본다.
+- 답변 커버리지: Markdown 제목("# Reviewer 1", "### Comment 2")으로 쓴 답변서를 항목별로 읽는다.
+- 게이트: `round` 는 1 이상이어야 하고, `artifact:` 없이 기록된 artifact 해시는 실패한다. 블라인드 재심사: anchor 인용은 revised/ 안에 있어야 하고, 올라간 판정에는 확인 가능한 인용이 필요하며, 인용 대조 때 강조 표시는 무시하고, `--revised .` 도 이전 revision 을 겹친다.
+- `manuwright update` 는 PyPI 에서 최신 릴리스를 찾고(git 선택 사항), 버전 자리에 옵션이 오면(`--to --no-agents`) 거부한다. `manuwright bind` 는 검증기와 같은 CSV 심볼릭 링크·중복 열·인쇄 기호 규칙을 쓴다.
+- `style preserve` 는 "1,250" 을 한 숫자로, "<=", ">=" 를 비교 기호로 읽고, 여러 줄 HTML 주석은 문장으로 검사하지 않는다. 문단 흐름은 한 문장짜리 목적·결론 문단을 살리고, 제목·주석·코드를 먼저 지우며, "is a" 를 배경 단서로 보지 않는다. `style flow` 는 drafts/ 에서 실행해도 논문의 학습 스타일을 찾는다. `engine_api` 는 엔진 harness 를 현재 폴더보다 먼저 불러오고, 취소된 수동 릴리스는 배포하지 않는다.
+
 ### v1.10.13 (261126)
 
 - `manuwright gate --max-round` 는 1 이상만 받는다. `--max-round 0` 은 Rule 9 의 수정 횟수 제한을 조용히 꺼서 `round: 5` 도 통과했다. 이제 사용법 오류(exit 2)로 멈춘다.

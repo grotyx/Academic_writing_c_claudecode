@@ -69,7 +69,7 @@ def parser():
     return p
 
 
-APPROVAL_LINE=r'-\s*\[[ xX]\]\s*(?:\*\*)?사용자 승인 완료(?:\*\*)?'
+APPROVAL_LINE=r'(?m)^[ \t]*-\s*\[\s*[xX]?\s*\]\s*(?:\*\*)?사용자 승인 완료(?:\*\*)?'
 
 
 def approve_in_chat(plan,kind,by,quote):
@@ -84,8 +84,10 @@ def approve_in_chat(plan,kind,by,quote):
         raise ValueError('approved-by and quote cannot be blank')
     when=datetime.now(timezone.utc)
     note=f'- [x] 사용자 승인 완료 — {by}, {when.strftime("%Y-%m-%d %H:%M UTC")}, 채팅 승인: "{quote.strip()}"'
-    if re.search(APPROVAL_LINE,text):
-        text=re.sub(APPROVAL_LINE+r'[^\n]*',lambda _:note,text,count=1)
+    hidden=m.hidden_spans(text)  # never tick an example box inside a comment or code block
+    line=next((x for x in re.finditer(APPROVAL_LINE+r'[^\n]*',text) if not any(a<=x.start()<b for a,b in hidden)),None)
+    if line:
+        text=text[:line.start()]+note+text[line.end():]
     else:
         text=text.rstrip('\n')+'\n\n'+note+'\n'
     plan.write_text(text,encoding='utf-8')

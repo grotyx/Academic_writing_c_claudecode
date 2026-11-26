@@ -206,9 +206,11 @@ FLAT_SECTIONS = ('introduction', 'discussion', 'conclusion')
 def _prose_lines(text: str):
     """(line number, line) for running prose: no headings, tables, comments, code or keyword lines."""
     fence = False
+    # author notes in HTML comments, also over several lines, are not prose (blanked keeping line numbers)
+    text = re.sub(r'<!--.*?(?:-->|\Z)', lambda m: '\n' * m.group(0).count('\n'), text, flags=re.S)
     for number, line in enumerate(text.splitlines(), start=1):
         stripped = line.strip()
-        if stripped.startswith('```'):
+        if stripped.startswith(('```', '~~~')):
             fence = not fence
             continue
         if (fence or not stripped or stripped[0] in '#|>' or stripped.startswith('<!--')
@@ -327,9 +329,10 @@ def reference_profile() -> dict:
 
 
 PROTECTED = re.compile(r'\[EVID:[^\]]+\]|(?:Table|Fig(?:ure)?\.?|Supplementary (?:Table|Figure))\s*S?\d+[A-Za-z]?'
-                       r'|\*?\b[pP]\*?\s*[<=>\u2264\u2265]\s*0?\.\d+'
-                       # a number keeps its sign and comparator: "-1.2" -> "1.2" or "\u226565" -> "<65" is a new fact
-                       r'|(?:[<>\u2264\u2265]\s*)?(?:(?<![\w.])[-\u2212\u2013])?\d+(?:\.\d+)?\s*%?')
+                       r'|\*?\b[pP]\*?\s*(?:<=|>=|[<=>\u2264\u2265])\s*0?\.\d+'
+                       # a number keeps its sign and comparator: "-1.2" -> "1.2" or "\u226565" -> "<65" is a new fact;
+                       # "1,250" is one number
+                       r'|(?:(?:<=|>=|[<>\u2264\u2265])\s*)?(?:(?<![\w.])[-\u2212\u2013])?\d+(?:,\d{3})*(?:\.\d+)?\s*%?')
 
 
 def protected_tokens(text: str) -> Counter:
@@ -340,7 +343,8 @@ def protected_tokens(text: str) -> Counter:
 def protected_sequence(text: str) -> list:
     # italics, P/p and the minus glyph are formatting, not content: "P = 0.04" and "*p* = 0.04" are the same value
     def norm(tok: str) -> str:
-        tok = re.sub(r'[\s*_]+', '', tok).replace('\u2212', '-').replace('\u2013', '-')
+        tok = re.sub(r'[\s*_,]+', '', tok).replace('\u2212', '-').replace('\u2013', '-')
+        tok = tok.replace('\u2264', '<=').replace('\u2265', '>=')
         return 'p' + tok[1:] if tok[:1] == 'P' else tok
     return [m.group(0) if m.group(0).startswith('[EVID:') else norm(m.group(0)) for m in PROTECTED.finditer(text)]
 
@@ -588,7 +592,7 @@ def _measure(sentences: list[str], blocks: list[str]) -> dict:
 # show the writer, never a gate.
 MOVES = {
     'introduction': [
-        ('background', r'\b(?:common|prevalen\w*|incidence|burden|leading cause|affects?|is (?:a|an|the)|are (?:a|an|the)|'
+        ('background', r'\b(?:common|prevalen\w*|incidence|burden|leading cause|affects?|'
                        r'standard (?:treatment|care)|treatment options?|widely used)\b'),
         ('gap', r'\b(?:however|remains? (?:unclear|unknown|uncertain|controversial|debated)|little is known|few (?:studies|trials)|'
                 r'no (?:study|trial|consensus)|lack(?:s|ing)?|limited (?:evidence|data)|unanswered|conflicting)\b'),
@@ -633,16 +637,19 @@ CORE_MOVES = {'introduction': ['background', 'gap', 'aim'], 'methods': ['design'
 
 
 def _paragraphs_for_flow(text: str) -> list[str]:
-    """Real paragraphs (blank-line separated, 2+ sentences, 8+ words); text without them (PDF extraction) is cut into
+    """Prose paragraphs (blank-line separated, 8+ words; a one-sentence aim or conclusion counts). Headings, tables,
+    comments and code are removed first. Only text with no paragraph breaks at all (PDF extraction) is cut into
     windows of 4 sentences so a flow can still be measured."""
-    paragraphs = []
+    text = re.sub(r'<!--.*?(?:-->|\Z)|```.*?(?:```|\Z)|~~~.*?(?:~~~|\Z)', '\n\n', text, flags=re.S)
+    blocks = []
     for block in re.split(r'\n\s*\n', text):
         joined = ' '.join(ln.strip() for ln in block.splitlines() if ln.strip() and not ln.strip().startswith(('#', '|')))
-        if len(joined.split()) >= 8 and len([x for x in split_sentences(joined) if x.strip()]) >= 2:
-            paragraphs.append(joined)
-    if len(paragraphs) >= 3:
+        if joined:
+            blocks.append(joined)
+    paragraphs = [b for b in blocks if len(b.split()) >= 8]
+    if len(blocks) > 1:
         return paragraphs
-    sentences = [x for x in split_sentences(' '.join(text.split())) if x.strip()]
+    sentences = [x for x in split_sentences(' '.join(blocks)) if x.strip()]
     return [' '.join(sentences[i:i + 4]) for i in range(0, len(sentences), 4)] if len(sentences) >= 8 else paragraphs
 
 
@@ -658,24 +665,28 @@ def paragraph_move(section: str, paragraph: str) -> str:
 
 def flow_of(section: str, text: str) -> list[str]:
     """Moves in order, consecutive repeats collapsed: ['principal', 'comparison', 'limitation', 'conclusion']."""
-    moves = [paragraph_move(section, p) for p in _paragraphs_for_flow(text)]
-    return [m for i, m in enumerate(moves) if m != 'other' and (i == 0 or m != moves[i - 1])]
+    moves = [m for m in (paragraph_move(section, p) for p in _paragraphs_for_flow(text)) if m != 'other']
+    return [m for i, m in enumerate(moves) if i == 0 or m != moves[i - 1]]
 
 
 def learn_flow(section: str, texts: list[str]) -> dict | None:
     """The corpus's usual order of moves: moves found in at least half of the papers, by mean relative position,
     and how many papers keep that order."""
-    flows = [f for f in (flow_of(section, t) for t in texts) if len(f) >= 2]
+    kept_texts = [t for t in texts if len(flow_of(section, t)) >= 2]
+    flows = [flow_of(section, t) for t in kept_texts]
     if len(flows) < 2:
         return None
     positions: dict = {}
     for flow in flows:
-        for index, move in enumerate(dict.fromkeys(flow)):
-            positions.setdefault(move, []).append(index / max(len(flow) - 1, 1))
+        order = list(dict.fromkeys(flow))  # first appearance of each move
+        for index, move in enumerate(order):
+            positions.setdefault(move, []).append(index / max(len(order) - 1, 1))
     typical = sorted((m for m, p in positions.items() if len(p) >= len(flows) / 2),
                      key=lambda m: statistics.mean(positions[m]))
+    if len(typical) < 2:
+        return None  # the papers share no order worth showing
     kept = sum(1 for f in flows if _order_kept(typical, f))
-    counts = [len(_paragraphs_for_flow(t)) for t in texts]
+    counts = [len(_paragraphs_for_flow(t)) for t in kept_texts]
     return {'typical': typical, 'papers': len(flows), 'kept': kept,
             'paragraphs': round(statistics.median(counts)) if counts else None}
 
@@ -1198,10 +1209,14 @@ def _main(argv: list[str] | None = None) -> int:
         path = Path(args.file)
         section = args.section or section_of(path.name)
         if section not in MOVES:
-            print('manuwright style flow: name the section with --section (introduction, methods, results, discussion)',
-                  file=sys.stderr)
+            print(f'manuwright style flow: paragraph flow covers introduction, methods, results, discussion and '
+                  f'conclusion; {section or "this file"} is not one of them'
+                  + ('' if section else ' (name it with --section)'), file=sys.stderr)
             return 2
-        profile, _ = load_profile(Path(args.project).resolve())
+        project = Path(args.project).resolve()
+        if args.project == '.':  # run from drafts/: use the paper's own learned style, as the card does
+            project = next((p for p in path.resolve().parents if (p / 'project.json').is_file()), project)
+        profile, _ = load_profile(project)
         typical = (((profile.get('sections') or {}).get(section) or {}).get('flow') or {}).get('typical')
         print('\n'.join(flow_report(section, path.read_text(encoding='utf-8', errors='replace'), typical)))
         return 0

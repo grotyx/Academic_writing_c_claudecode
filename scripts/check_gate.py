@@ -142,7 +142,8 @@ def run_live_check(
         return module.check_numbers([art], results_dir=rd).passed
     if label == "revision_claims":
         module = _load_sibling("check_revision_claims")
-        return module.check_revision_claims(art, strict=True).passed
+        return module.check_revision_claims(
+            art, strict=True, draft_root=module.infer_draft_root(art.resolve(), default=base / "drafts")).passed
     raise ValueError(f"unknown cross-check label: {label}")
 
 
@@ -346,8 +347,8 @@ def check_gate(
         round_number = int(raw_round)
     except ValueError:
         round_number = None
-    if raw_round and round_number is None:
-        failures.append(GateIssue(gate_path, "round", f"round is not a whole number: {raw_round}",
+    if raw_round and (round_number is None or round_number < 1):
+        failures.append(GateIssue(gate_path, "round", f"round must be a whole number of 1 or more: {raw_round}",
                                   "Record round as 1, 2, ... (the fix/re-verify attempt number)."))
     elif round_number is not None and round_number > max_round:
         failures.append(
@@ -406,9 +407,12 @@ def check_gate(
     verify_hashes = list(verify_hashes or [])
     # A recorded artifact hash is always checked against the declared artifact, with or without
     # --verify-hash: an edited section must not keep its old PASS just because the flag was left off.
-    if (entry.provenance.get("artifact") and declared
-            and not any(normalize_key(label) == "artifact" for label, _ in verify_hashes)):
-        verify_hashes.append(("artifact", Path(declared)))
+    if "artifact" in entry.provenance and not any(normalize_key(label) == "artifact" for label, _ in verify_hashes):
+        if declared:
+            verify_hashes.append(("artifact", Path(declared)))  # a blank hash is reported as not recorded below
+        else:
+            failures.append(GateIssue(gate_path, "artifact", "provenance records an artifact hash but no artifact:",
+                                      "Record artifact: <path> for the file the PASS was earned on."))
     for label, file_path in verify_hashes:
         prov_key = normalize_key(label)
         recorded = entry.provenance.get(prov_key)

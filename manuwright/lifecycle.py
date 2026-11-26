@@ -39,8 +39,8 @@ def save(name, data):
 
 def engine_api(engine):
     """Import the engine's harness package (installed or checkout) without copying code."""
-    if str(engine) not in sys.path:
-        sys.path.insert(0, str(engine))
+    # the engine first and the current folder off the path: a paper's own harness/ folder must never load
+    sys.path[:] = [str(engine)] + [p for p in sys.path if p not in ('', '.', str(engine))]
     import harness
     from harness import project
     return harness.__version__, project
@@ -118,14 +118,22 @@ def fresh_reviews(project_api, manifests):
 # --- releases ---------------------------------------------------------------
 
 def latest_release():
-    """Newest vX.Y.Z tag on the public repository, or None when offline."""
+    """Newest release: the PyPI version and the newest vX.Y.Z git tag (git is optional), or None when offline."""
+    import urllib.request
+    found = []
+    try:
+        with urllib.request.urlopen('https://pypi.org/pypi/manuwright/json', timeout=10) as response:
+            found.append(json.loads(response.read().decode('utf-8'))['info']['version'])
+    except (OSError, ValueError, KeyError):
+        pass
     try:
         out = subprocess.run(['git', 'ls-remote', '--tags', '--refs', REPO_URL], capture_output=True,
                              text=True, encoding='utf-8', errors='replace', timeout=20).stdout
+        found += re.findall(r'refs/tags/v(\d+\.\d+\.\d+)$', out, re.M)
     except (OSError, subprocess.TimeoutExpired):
-        return None
-    tags = re.findall(r'refs/tags/v(\d+\.\d+\.\d+)$', out, re.M)
-    return max(tags, key=lambda t: tuple(map(int, t.split('.'))), default=None)
+        pass
+    found = [v for v in found if re.fullmatch(r'\d+\.\d+\.\d+', v)]
+    return max(found, key=lambda t: tuple(map(int, t.split('.'))), default=None)
 
 
 def auto_blockers(project_api, current, new, manifests):
@@ -247,7 +255,10 @@ def update(engine, args):
         last = datetime.fromisoformat(state['last_check'])
         if datetime.now(timezone.utc) - last < timedelta(days=1):
             return 0
-    target = args[args.index('--to') + 1] if '--to' in args else latest_release()
+    target = args[args.index('--to') + 1].removeprefix('v') if '--to' in args else latest_release()
+    if '--to' in args and not re.fullmatch(r'\d+\.\d+\.\d+', target or ''):
+        print(f'manuwright update: --to needs a version such as 1.10.14, not {target!r}', file=sys.stderr)
+        return 2
     save('state.json', {**state, 'last_check': datetime.now(timezone.utc).isoformat(), 'latest': target})
     if not target:
         print('manuwright: no release found (offline or no tags yet).', file=sys.stderr if auto else sys.stdout)

@@ -4,7 +4,7 @@ import importlib.util
 import json
 import re
 from pathlib import Path
-from .results import inside, digest, validate_bindings
+from .results import inside, digest, plain_name, validate_bindings
 
 REPO = Path(__file__).resolve().parents[1]
 STUDY_TYPES = {'original_research', 'systematic_review', 'narrative_review', 'case_report'}
@@ -23,9 +23,8 @@ def load_project(path):
     config = json.loads(path.read_text(encoding='utf-8'))
     if config.get('schema_version') != 1 or not config.get('paper_id'):
         raise ValueError('project requires schema_version: 1 and paper_id')
-    pid = config['paper_id']
-    if not isinstance(pid, str) or pid.strip() in ('.', '..') or any(c in pid for c in '/\\:'):
-        raise ValueError('paper_id must be a plain name (no path separators)')
+    if not plain_name(config['paper_id']):
+        raise ValueError('paper_id must be a plain name (no path separators, dot segments or surrounding spaces)')
     if config.get('study_type') not in STUDY_TYPES:
         raise ValueError('unsupported study_type')
     artifacts = config.get('artifacts')
@@ -47,9 +46,12 @@ def load_project(path):
         state = inside(path.parent, config['state'])
         inputs = set(resolved) | {path} | {inside(path.parent, config[k]) for k in (
             'evidence', 'draft_plan', 'analysis_plan', 'result_bindings', 'response', 'comments', 'ai_usage',
-            'checklist', 'terminology', 'style_spec', 'tracked_baseline') if isinstance(config.get(k), str) and config[k]}
+            'checklist', 'terminology', 'style_spec', 'tracked_baseline', 'semantic_review', 'human_signoff')
+            if isinstance(config.get(k), str) and config[k]}
+        inputs |= {inside(path.parent, item) for key in ('dependencies', 'review_sources')
+                   for item in config.get(key) or [] if isinstance(item, str) and item}
         if (not state.is_relative_to((path.parent / 'review').resolve()) or state.suffix.lower() != '.json'
-                or state in inputs or state.with_suffix('.approval.json') in inputs):
+                or state.name.lower().endswith('.approval.json') or state in inputs):
             raise ValueError('state must be a .json file under review/ that is not also a project input')
     if not config.get('analysis_plan') and not config.get('analysis_not_applicable'):
         raise ValueError('provide analysis_plan or an explicit analysis_not_applicable reason')
@@ -98,6 +100,19 @@ def load_project(path):
             raise ValueError(f'missing {key}')
     if config.get('journal') and config['journal'] not in checker('journal_styles').STYLES:
         raise ValueError('unknown journal preset: ' + str(config['journal']) + ' (see scripts/journal_styles.py)')
+    outputs = {}  # what build will write for each declared file: two sources must not share one output
+    cr = checker('check_crossrefs')
+    named = [(item, 'title_page') for item in artifacts if Path(item).name.startswith('01_title')]
+    named += [(item, 'table_' + (cr.TABLE_FILE_RE.search(Path(item).stem) or [None, Path(item).stem])[1])
+              for item in config.get('tables', [])]
+    named += [(item, 'supplementary_' + re.sub(r'^supp(?:lementary)?[_-]?', '', Path(item).stem, flags=re.I))
+              for item in config.get('supplements', [])]
+    named += [(item, 'figure_' + (cr.FIGURE_FILE_RE.search(Path(item).stem) or [None, Path(item).stem])[1]
+               + Path(item).suffix.lower()) for item in config.get('figures', [])]
+    for item, output in named:
+        if output.casefold() in outputs:
+            raise ValueError(f'{outputs[output.casefold()]} and {item} would both be built as {output}; rename one')
+        outputs[output.casefold()] = item
     return path, config
 
 
@@ -236,7 +251,7 @@ def receipt_problem(path, dependencies, *, human=False):
 def revision_scope(root, config, artifacts):
     module = checker('check_revision_claims')
     response = inside(root, config['response'])
-    draft_root = module.infer_draft_root(response)
+    draft_root = module.infer_draft_root(response, default=root / 'drafts')
     included = set(artifacts)
     for claim in module.parse_change_blocks(response.read_text(encoding='utf-8')):
         revised = module.resolve_revised_section_path(claim, response, draft_root)
@@ -431,8 +446,9 @@ def verify(path, profile='draft'):
         run('revision_scope', lambda: revision_scope(root, config, artifacts))
         run('response_citations', lambda: explain(cc.check_citations([inside(root, config['response'])],
             evidence_path=inside(root, config['evidence']))))
-        run('revision_claims', lambda: explain(checker('check_revision_claims').check_revision_claims(
-            inside(root, config['response']), strict=True)))
+        rc = checker('check_revision_claims')
+        run('revision_claims', lambda: explain(rc.check_revision_claims(inside(root, config['response']), strict=True,
+            draft_root=rc.infer_draft_root(inside(root, config['response']), default=root / 'drafts'))))
         run('response_coverage', lambda: explain(checker('check_response_coverage').check_response_coverage(
             inside(root, config['response']), comments_path=inside(root, config['comments']), strict=True)))
     if profile != 'draft':

@@ -40,7 +40,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-from harness.results import inside  # noqa: E402
+from harness.results import inside, plain_name  # noqa: E402
 
 SCHEMA = 1
 FORMATS = {'.tif': 'tiff', '.tiff': 'tiff', '.png': 'png', '.pdf': 'pdf', '.eps': 'eps'}
@@ -446,11 +446,11 @@ def draw(root: Path, config: dict, spec_path: Path) -> str:
 def paper_python(config: dict) -> Path | None:
     """The paper's analysis environment (manuwright env), which installs matplotlib by default."""
     paper_id = config.get('paper_id')
-    if not isinstance(paper_id, str) or paper_id in ('', '.', '..') or any(c in paper_id for c in '/\\:'):
+    if not plain_name(paper_id):
         return None  # only a plain folder name selects ~/.manuwright/envs/<paper_id>
     home = Path(os.environ.get('MANUWRIGHT_HOME') or Path.home() / '.manuwright')
-    python = home / 'envs' / str(config.get('paper_id', '')) / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
-    return python if config.get('paper_id') and python.exists() else None
+    python = home / 'envs' / paper_id / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
+    return python if python.exists() else None
 
 
 def main(argv: list[str] | None = None) -> int:

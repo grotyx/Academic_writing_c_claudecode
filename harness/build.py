@@ -264,10 +264,14 @@ def build(path):
         if config.get('response'):
             response=checker('compile_response_docx')
             source=inside(root,config['response'])
-            response_refs=formatter.build([source],evidence_path=inside(root,config['evidence']),style='numbered')
+            # the letter is built without its [CHANGE] blocks, so their citations must not be numbered either
+            letter=re.sub(r'(?ms)^[ \t]*\[CHANGE\][ \t]*$.*?^[ \t]*\[/CHANGE\][ \t]*$','',source.read_text(encoding='utf-8'))
+            visible=stage/'response_visible.md';visible.write_text(letter,encoding='utf-8')
+            response_refs=formatter.build([visible],evidence_path=inside(root,config['evidence']),style='numbered')
+            visible.unlink()
             if response_refs.unknown or response_refs.missing_citation:
                 raise ValueError('incomplete response bibliography')
-            response_text=formatter.convert_text(source.read_text(encoding='utf-8'),response_refs.labels)
+            response_text=formatter.convert_text(letter,response_refs.labels)
             if response_refs.references:
                 response_text+='\n\nReferences\n\n'+'\n\n'.join(response_refs.references)
             temporary_response=stage/'response_source.md';temporary_response.write_text(response_text,encoding='utf-8')

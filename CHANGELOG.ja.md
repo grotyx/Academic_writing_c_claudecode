@@ -1,5 +1,21 @@
 # 変更履歴
 
+### v1.10.14 (261126)
+
+v1.10.9–v1.10.13 のコードレビューと 2 回目の独立レビュー (Gemini 4 Carbon) による修正。
+
+- 数値: 年の大きさの整数は、日付の文脈でなければ数として検査する。"Total enrollment was 2024."、"| Total | 2024 |"、"2024 MRI-confirmed patients"、"In Korea, 2024 patients"、"in 2019 patients" は検査し、"in 2018–2022"、"a 2020 meta-analysis"、"Smith et al., 2020"、"Smith (2020)"、"the 2016 WHO classification"、"2021/03/12" は除外する。数値前の単独 en dash ("–2.5") はマイナス。"Tables 1 and 2"、"Figures 1–3" は構造。"*p value* < 0.05"、"Adjusted *P* value"、"P for trend" は p 値。
+- 計画の承認: 判定規則を 1 つに統一。HTML コメント (閉じていないものを含む)、``` や ~~~ のコードブロック、インラインコード内のチェックは承認ではなく、未チェックの承認行と並ぶチェックも承認ではない。`[ x ]` はフック・verify・approve のすべてで認める。`manuwright approve` はコメント内の例のチェックボックスに触れない。`manuwright run` は名前を変えた分析計画も分析計画として検査する。
+- plan-first フック: `data/` 以下の深さを問わずスクリプトと R Markdown・Quarto を検査し、`data/` まで遡って最も近い承認済み分析計画を使う。セクション名そのもののファイル (`drafts/results.md`) のみをブロックし、`drafts/table_2_results.md`・`drafts/discussion_notes.md` はブロックせず、論文より上の drafts フォルダは無視する。strict の文体検査と lint フックが `..` を含むパスを正しく読む。Codex セッションではテンプレートでもセッション・プロンプト・サブエージェントのフックが動く。
+- `state` はレビュー受領記録、承認受領記録、dependency、review source にできない (verify が上書きしていた)。
+- 改訂主張の検査: 複数論文の構成でプロジェクト基準のセクションパスを解決し、verify と gate が論文の drafts フォルダを渡し、drafts/ のない論文も外部のファイルを読めない。
+- ビルド: 出力名の衝突をプロジェクト読み込み時 (レビュー前) に検出する。コメントアウトした引用は検査も番号付けもしない (印刷される参考文献番号がずれていた)。"(EVID:id)" は形式エラー。回答書の参考文献は [CHANGE] ブロックを除く。
+- 相互参照: "As shown in Table 1, 12 patients"・"In Figure 2, 30-day mortality" は Table 1・Figure 2 のみを引用する。"Extended Data"・"Supplemental Digital Content" は補足資料とみなす。
+- 回答カバレッジ: Markdown 見出し ("# Reviewer 1"、"### Comment 2") の回答書を項目ごとに読む。
+- ゲート: `round` は 1 以上、`artifact:` なしで記録された artifact ハッシュは失敗。ブラインド再査読: anchor の引用は revised/ 内にあること、引き上げた判定には検証可能な引用が必要、照合では強調を無視、`--revised .` でも以前の改訂を重ねる。
+- `manuwright update` は PyPI で最新リリースを探し (git は任意)、バージョンの位置にオプションが来ると拒否する (`--to --no-agents`)。`manuwright bind` は検証器と同じ CSV シンボリックリンク・重複列・印刷記号の規則を使う。
+- `style preserve` は "1,250" を 1 つの数、"<="・">=" を比較記号として読み、複数行の HTML コメントは文として検査しない。段落フローは 1 文の目的・結論段落を残し、見出し・コメント・コードを先に除き、"is a" を背景の手がかりとしない。`style flow` は drafts/ から実行しても論文の学習済みスタイルを見つける。`engine_api` はエンジンの harness を現在のフォルダより先に読み込み、取り消した手動リリースは公開しない。
+
 ### v1.10.13 (261126)
 
 - `manuwright gate --max-round` は 1 以上のみ受け付ける。`--max-round 0` は Rule 9 の修正回数の上限を黙って無効にし、`round: 5` も通過していた。今は使い方エラー (exit 2) で止まる。

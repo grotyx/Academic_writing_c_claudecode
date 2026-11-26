@@ -32,7 +32,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from plan_validation import HIDDEN_RE, validate_plan_content, approval_problem, describe_missing
+from plan_validation import has_checked_approval, validate_plan_content, approval_problem, describe_missing
 
 # Tools that can create or modify files in Claude Code.
 WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "apply_patch")  # apply_patch = Codex
@@ -42,8 +42,12 @@ WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "apply_patch")  # apply_patch = Cod
 SECTION_RE = re.compile(r"/0[1-9]_[^/]*\.md$", re.IGNORECASE)
 # Analysis scripts: .../data/py/x.py or .../data/<paper>/py/x.py
 # Since v1.10.10 also R scripts, notebooks and scripts directly in data/ or data/<paper>/.
-ANALYSIS_SCRIPT_RE = re.compile(r"/data/(?:[^/]+/)?(?:(?:py|r|scripts|code)/)?[^/]*\.(?:py|r|ipynb)$", re.IGNORECASE)
+ANALYSIS_SCRIPT_RE = re.compile(r"/data/(?:.+/)?[^/]*\.(?:py|r|rmd|qmd|ipynb)$", re.IGNORECASE)
 SCRIPT_FOLDERS = {"py", "r", "scripts", "code"}
+# Unnumbered section files (drafts/results.md, drafts/discussion_REV1.md): the section name itself, so
+# drafts/table_2_results.md or drafts/discussion_notes.md (Phase 2 tables, notes) are not sections.
+UNNUMBERED_SECTION_RE = re.compile(
+    r"/(?:title|abstract|introduction|methods|results|discussion|conclusions?)(?:_rev\d+)?\.md$", re.IGNORECASE)
 PLACEHOLDER_RE = re.compile(
     r"\[[^\]]*(?:작성|기술|입력|기준|변수|검정법|선택 근거|목적|내용|키워드|"
     r"필요|설명|filename|n rows|n columns|var|fig_|Bar/Box|Additional Analysis|"
@@ -54,22 +58,16 @@ SAMPLE_SIZE_PLACEHOLDER_RE = re.compile(
     r"(?im)^\s*(?:\*\*Expected Sample Size:\*\*\s*)?\[N\]\s*$"
 )
 PERCENT_PLACEHOLDER_RE = re.compile(r"\[%\]")
-UNCHECKED_APPROVAL_RE = re.compile(
-    r"-\s*\[\s\]\s*(?:\*\*)?사용자 승인 완료", re.IGNORECASE
-)
-# A plan counts as approved only with an explicitly CHECKED approval box. A plan
-# that omits the line altogether is not approved (CLAUDE.md Rule 9: an unchecked
-# or missing approval is not a plan).
-CHECKED_APPROVAL_RE = re.compile(
-    r"-\s*\[\s*x\s*\]\s*(?:\*\*)?사용자 승인 완료", re.IGNORECASE
-)
+# A plan counts as approved only with an explicitly CHECKED approval box (plan_validation.has_checked_approval,
+# the one definition harness verify and `manuwright approve` use too). A plan that omits the line altogether is
+# not approved (CLAUDE.md Rule 9: an unchecked or missing approval is not a plan).
 
 
 def _norm(value: str) -> str:
     return (value or "").replace("\\", "/")
 
 
-def plan_problem(plan: Path) -> str | None:
+def plan_problem(plan: Path, kind: str | None = None) -> str | None:
     """Return why a plan file is not usable as an approved plan, else None."""
     if not plan.exists():
         return "missing"
@@ -83,11 +81,10 @@ def plan_problem(plan: Path) -> str | None:
         line = text.count("\n", 0, placeholder.start()) + 1
         return (f"unresolved template: line {line} still has the placeholder "
                 f"\"{placeholder.group(0).strip()[:60]}\"; replace every [...] placeholder with this paper's content")
-    visible = HIDDEN_RE.sub("", text)  # an approval inside an HTML comment or code fence is not an approval
-    if UNCHECKED_APPROVAL_RE.search(visible) or not CHECKED_APPROVAL_RE.search(visible):
+    if not has_checked_approval(text):  # an approval inside a comment, code fence or inline code does not count
         return ("not approved yet: the author has not ticked `- [x] 사용자 승인 완료` "
                 "(or approved it in chat for `manuwright approve`)")
-    kind = "analysis" if plan.name == "analysis_plan.md" else "draft"
+    kind = kind or ("analysis" if plan.name == "analysis_plan.md" else "draft")
     missing = validate_plan_content(text, kind)
     if missing:
         return f"incomplete plan: these items are missing or empty: {describe_missing(missing)}"
@@ -114,7 +111,8 @@ def event_paths(event: dict) -> list[str]:
 def decide(event: dict) -> str | None:
     """Return a block reason, or None to allow. Pure function for testing."""
     for raw_path in event_paths(event):
-        reason = decide_path(event.get("cwd") or ".", raw_path) or strict_style(event, raw_path)
+        reason = decide_path(event.get("cwd") or ".", raw_path) or strict_style(event, raw_path,
+                                                                                 normalized(event.get("cwd") or ".", raw_path))
         if reason:
             return reason
     return None
@@ -151,15 +149,24 @@ def new_text(event: dict, raw_path: str) -> str:
     return "\n".join(added)
 
 
-def strict_style(event: dict, raw_path: str) -> str | None:
+def normalized(event_cwd: str, raw_path: str) -> str:
+    """The write target joined with the event cwd and with dot segments resolved (drafts/figures/../05_results.md)."""
+    target = Path(_norm(raw_path))
+    if not target.is_absolute():
+        target = Path(_norm(event_cwd)) / target
+    return _norm(os.path.normpath(str(target)))
+
+
+def strict_style(event: dict, raw_path: str, target: str | None = None) -> str | None:
     """Strict academic writing mode: block new manuscript prose with high-severity findings."""
-    if not is_prose_file(raw_path):
+    target = target or raw_path
+    if not is_prose_file(target):
         return None
     import academic_style
 
     if academic_style.mode() != "strict":
         return None
-    section = academic_style.section_of(raw_path)
+    section = academic_style.section_of(target)
     issues = [i for i in academic_style.prose_issues(new_text(event, raw_path), section)
               if i[0] == academic_style.HIGH]
     if not issues:
@@ -171,6 +178,35 @@ def strict_style(event: dict, raw_path: str) -> str | None:
         f"Rewrite those sentences and write again. Section card: `manuwright style card {section or '<section>'}`. "
         "(`manuwright mode academic` reports these after the edit instead of blocking.)"
     )
+
+
+def analysis_plan_for(target: Path) -> Path:
+    """The nearest analysis_plan.md from the script's folder up to data/ (data/paper1/py/models/x.py may use
+    data/paper1/analysis_plan.md). None existing: the expected one for the reply (data/<paper>/ or data/)."""
+    folders = []
+    for folder in target.parents:
+        folders.append(folder)
+        if folder.name.lower() == "data":
+            break
+    for folder in folders:
+        if (folder / "analysis_plan.md").exists():
+            return folder / "analysis_plan.md"
+    data = folders[-1]
+    below = target.relative_to(data).parts
+    paper = data / below[0] if len(below) > 1 and below[0].lower() not in SCRIPT_FOLDERS else data
+    return paper / "analysis_plan.md"
+
+
+NOT_DRAFT_FOLDERS = {"knowledge", "data", "review", "output", "results", "style", "profile", "docs"}
+
+
+def in_drafts(target: Path) -> bool:
+    """The file sits in the paper's drafts folder, not merely below a folder called drafts (~/drafts/paper/knowledge)."""
+    parts = [p.lower() for p in target.parts]
+    if "drafts" not in parts:
+        return False
+    below = parts[len(parts) - 1 - parts[::-1].index("drafts") + 1:-1]
+    return not NOT_DRAFT_FOLDERS & set(below)
 
 
 def in_revision(target: Path) -> bool:
@@ -198,7 +234,7 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
 
     # Rule 8 — drafting a section requires a completed draft plan.
     # Revisions (Phase 8) revise an existing manuscript and are exempt.
-    if "/drafts/" in spath and not in_revision(target) and (SECTION_RE.search(spath) or is_prose_file(spath)):
+    if in_drafts(target) and not in_revision(target) and (SECTION_RE.search(spath) or UNNUMBERED_SECTION_RE.search(spath)):
         plan = target.parent / "draft_plan.md"
         problem = plan_problem(plan)
         if problem:
@@ -218,8 +254,7 @@ def decide_path(event_cwd: str, raw_path: str) -> str | None:
 
     # Rule 7 — generating an analysis script requires an approved analysis plan.
     if ANALYSIS_SCRIPT_RE.search(spath):
-        folder = target.parent.parent if target.parent.name.lower() in SCRIPT_FOLDERS else target.parent
-        plan = folder / "analysis_plan.md"
+        plan = analysis_plan_for(target)
         problem = plan_problem(plan)
         if problem:
             if problem == "missing":

@@ -42,12 +42,17 @@ ROOT = Path(__file__).resolve().parents[1]
 # "Table 1", "Tables 1 and 2", "Figure 2-4", "Fig. 3". Continuation numbers
 # after , / and / & must not look like data ("Figure 1, 25% of ..."), hence the
 # negative lookahead for % and decimals on each continued number.
+# Lists ("Tables 1 and 2", "Figures 1, 3") only after a plural label; a singular label takes one number or a
+# range ("Figure 2-4"). "As shown in Table 1, 12 patients" and "In Figure 2, 30-day mortality" cite Table 1 and
+# Figure 2 only. A continuation number never runs into a unit ("30-day") or a percentage.
+_CONT = r"\d+(?!\d|\.\d|\s*%|\s*-\s*[A-Za-z])(?:[A-Za-z](?![A-Za-z]))?"
 MENTION_RE = re.compile(
-    r"\b(Tables?|Fig(?:ures?|s?\.?))\s+"
-    r"(\d+(?:[A-Za-z])?(?:\s*(?:[-–,]|and|&)\s*\d+(?!\d|\s*%|\.\d)(?:[A-Za-z])?)*)",
+    r"\b(?:(Tables|Fig(?:ure)?s\.?)\s+(\d+[A-Za-z]?(?:\s*(?:[-\u2013,]|and|&)\s*" + _CONT + r")*)"
+    r"|(Table|Fig(?:ure)?\.?)\s+(\d+[A-Za-z]?(?:\s*[-\u2013]\s*" + _CONT + r")?))",
     re.IGNORECASE,
 )
-SUPPLEMENT_RE = re.compile(r"(?:Supplementar(?:y|ies)|Supplemental|Suppl\.?|Online|Appendix)\s*$", re.IGNORECASE)
+SUPPLEMENT_RE = re.compile(r"(?:Supplementar(?:y|ies)|Supplemental|Suppl\.?|Online|Appendix|Extended Data|"
+                           r"(?:Supplemental|Supplementary) (?:Digital Content|Material),?)\s*$", re.IGNORECASE)
 RANGE_RE = re.compile(r"(\d+)\s*[-–]\s*(\d+)")
 TABLE_FILE_RE = re.compile(r"table[_\- ]?(\d+)", re.IGNORECASE)
 TABLE_TITLE_RE = re.compile(r"(?im)^#+\s*Table\s+(\d+)\b")
@@ -101,10 +106,11 @@ def find_mentions(artifact: Path) -> list[Mention]:
     for match in MENTION_RE.finditer(text):
         if SUPPLEMENT_RE.search(text[max(0, match.start() - 30):match.start()]):
             continue  # "Supplementary Table 2" is its own numbering, not main Table 2
-        kind = "table" if match.group(1).lower().startswith("tab") else "figure"
+        label, numbers = (match.group(1), match.group(2)) if match.group(1) else (match.group(3), match.group(4))
+        kind = "table" if label.lower().startswith("tab") else "figure"
         line = text.count("\n", 0, match.start()) + 1
         snippet = " ".join(match.group(0).split())[:60]
-        for number in expand_numbers(match.group(2)):
+        for number in expand_numbers(numbers):
             mentions.append(Mention(kind, number, str(artifact), line, snippet))
     return mentions
 

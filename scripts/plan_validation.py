@@ -72,13 +72,22 @@ def validate_plan_content(text: str, kind: str) -> list[str]:
     return missing
 
 
-APPROVED_LINE_RE = re.compile(r'-\s*\[[xX]\]\s*(?:\*\*)?사용자 승인 완료')
-HIDDEN_RE = re.compile(r'<!--.*?-->|```.*?```', re.S)
+# An approval line starts its own line: "- [x] 사용자 승인 완료" ("[ x ]" too), the same rule everywhere.
+APPROVED_LINE_RE = re.compile(r'^\s*-\s*\[\s*[xX]\s*\]\s*(?:\*\*)?사용자 승인 완료', re.M)
+UNTICKED_LINE_RE = re.compile(r'^\s*-\s*\[\s\]\s*(?:\*\*)?사용자 승인 완료', re.M)
+# Text that is not the plan itself: HTML comments (also one never closed), ``` and ~~~ fences, inline code.
+HIDDEN_RE = re.compile(r'<!--.*?(?:-->|\Z)|```.*?(?:```|\Z)|~~~.*?(?:~~~|\Z)|`[^`\n]+`', re.S)
+
+
+def hidden_spans(text: str) -> list[tuple[int, int]]:
+    return [m.span() for m in HIDDEN_RE.finditer(text)]
 
 
 def has_checked_approval(text: str) -> bool:
-    """A ticked approval line in the visible plan; one inside an HTML comment or code fence does not count."""
-    return bool(APPROVED_LINE_RE.search(HIDDEN_RE.sub('', text)))
+    """A ticked approval line in the visible plan, and no unticked one beside it; a line inside an HTML comment,
+    a code fence or inline code does not count."""
+    visible = HIDDEN_RE.sub('', text)
+    return bool(APPROVED_LINE_RE.search(visible)) and not UNTICKED_LINE_RE.search(visible)
 
 
 def nonblank(value) -> bool:

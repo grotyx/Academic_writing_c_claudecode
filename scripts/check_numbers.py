@@ -25,14 +25,18 @@ HTML_COMMENT_RE = re.compile(r"<!--.*?-->", flags=re.DOTALL)
 # Calendar dates only: ISO dates and day/month/year with a four-digit year. A three-group count such as
 # "15/28/12" is a result, not a date, and stays checked.
 _DM = r"(?:0?[1-9]|[12]\d|3[01])"
-DATE_RE = re.compile(r"\b\d{4}-\d{1,2}-\d{1,2}\b|\b" + _DM + "/" + _DM + r"/(?:19|20)\d{2}\b")
+DATE_RE = re.compile(r"\b\d{4}-\d{1,2}-\d{1,2}\b|\b" + _DM + "/" + _DM + r"/(?:19|20)\d{2}\b"
+                     r"|\b(?:19|20)\d{2}/" + _DM + "/" + _DM + r"\b")  # 2021/03/12 (Korea, Japan, China)
+# A unary en dash before a number is a minus sign in Word and statistics exports ("\u20132.5"); a range
+# dash ("1.2\u20133.4") follows a digit and is left alone.
+UNARY_DASH_RE = re.compile(r"(?<![\w.%)])\u2013(?=\.?\d)")
 # Typographic minus and comparison signs mean the same as their ASCII forms; without this a
 # "−2.5" lost its sign and "p ≤ 0.05" its comparator.
 TYPOGRAPHIC = str.maketrans({"\u2212": "-", "\u2264": "<=", "\u2265": ">=", "\u2a7d": "<=", "\u2a7e": ">="})
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 NUMBER_RE = re.compile(
     r"(?<![A-Za-z0-9_])"
-    r"(?:(?P<p>\*?[pP]\*?(?:[\s-]*values?)?)\s*(?P<comp><=|>=|<|>|=)\s*)?"
+    r"(?:(?P<p>\*{0,2}[pP]\*{0,2}(?:[\s-]*values?\*{0,2})?)\s*(?P<comp><=|>=|<|>|=)\s*)?"
     r"(?P<num>[-+]?(?:\d+(?:,\d{3})*(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?)"
     r"(?P<pct>%)?"
 )
@@ -42,8 +46,10 @@ P_VALUE_COLUMNS = frozenset(
 P_VALUE_TEXT_RE = re.compile(r"\b\*?p\*?(?:[\s-]*values?)?\s*(?:<=|>=|<|>|=)", flags=re.IGNORECASE)
 # A CSV cell that is itself a bound, e.g. "<0.001" or "p < 0.001".
 RESULT_BOUND_RE = re.compile(r"^\s*(?:\*?p\*?(?:[\s-]*values?)?\s*)?(?P<comp><=|>=|<|>)\s*", flags=re.IGNORECASE)
+REFERENCE_LIST_RE = re.compile(
+    r"\b(?:Tables|Figures|Figs\.?)\s+(\d+[A-Za-z]?(?:\s*(?:[-\u2013,]|and|&|to)\s*\d+[A-Za-z]?)*)", re.IGNORECASE)
 STRUCTURAL_LABEL_RE = re.compile(
-    r"\b(?:Table|Figure|Fig\.?|Section|Phase|Round|Reviewer|Comment|Line|Page|REV)\s*$",
+    r"\b(?:Tables?|Figures?|Figs?\.?|Sections?|Phase|Round|Reviewer|Comment|Line|Page|REV)\s*$",
     flags=re.IGNORECASE,
 )
 
@@ -88,13 +94,17 @@ def column_key(name: str) -> str:
     return name.replace("*", "").replace("_", " ").strip().casefold()
 
 
+P_COLUMN_RE = re.compile(r"^(?:[a-z-]+\s+)*p(?:[\s-]*val(?:ue)?s?)?(?:\s+for\s+[a-z-]+)?$")
+
+
 def is_p_column(name: str) -> bool:
-    key = column_key(name)
-    return key in P_VALUE_COLUMNS or key.replace(" ", "_") in P_VALUE_COLUMNS or key.replace(" ", "") in P_VALUE_COLUMNS
+    """'P', '*P*-value', 'Adjusted P value', 'P value\u2020', 'P for trend' (footnote marks dropped)."""
+    key = re.sub(r"[\u2020\u2021\u00a7\u00b6#\^]+|\s*\[[a-z]\]$", "", column_key(name)).strip()
+    return bool(P_COLUMN_RE.match(key))
 
 
 def strip_ignored_text(text: str) -> str:
-    text = text.translate(TYPOGRAPHIC)
+    text = UNARY_DASH_RE.sub("-", text.translate(TYPOGRAPHIC))
     # Blank fences and HTML comments keeping their newlines so line numbers
     # reported after them stay correct.
     text = FENCE_RE.sub(lambda match: "\n" * match.group().count("\n"), text)
@@ -114,7 +124,7 @@ def decimal_places(number_text: str) -> int:
 
 
 def extract_numbers_from_text(text: str) -> list[float]:
-    return [to_float(match.group("num")) for match in NUMBER_RE.finditer(text.translate(TYPOGRAPHIC))]
+    return [to_float(match.group("num")) for match in NUMBER_RE.finditer(UNARY_DASH_RE.sub("-", text.translate(TYPOGRAPHIC)))]
 
 
 def load_result_numbers(results_dir: Path) -> list[ResultNumber]:
@@ -138,7 +148,7 @@ def load_result_numbers(results_dir: Path) -> list[ResultNumber]:
                         numbers.append(
                             ResultNumber(
                                 value=number,
-                                raw=value.translate(TYPOGRAPHIC),
+                                raw=UNARY_DASH_RE.sub("-", value.translate(TYPOGRAPHIC)),
                                 source=csv_path,
                                 row=row_index,
                                 column=column or "<unnamed>",
@@ -147,38 +157,60 @@ def load_result_numbers(results_dir: Path) -> list[ResultNumber]:
     return numbers
 
 
-# Words that may follow a year without making it a count: "between 2015 and 2020", "the 2019 guideline".
-YEAR_FOLLOWERS = frozenset("""and or to through until onward onwards guideline guidelines criteria classification
+# Words that may follow a year without making it a count: "the 2019 guideline", "2015 onwards".
+YEAR_FOLLOWERS = frozenset("""onward onwards guideline guidelines criteria classification
     edition version revision update consensus statement recommendation recommendations census survey season wave
-    report data""".split())
+    report data meta study studies trial trials review cohort registry pandemic randomized randomised systematic
+    prospective retrospective multicenter multicentre national nationwide annual outbreak""".split())
+# Words after a year-sized integer that make it a count wherever it stands ("in 2019 patients").
+COUNT_NOUNS = frozenset("""patients participants subjects cases controls women men children adults adolescents infants
+    individuals people persons eyes knees hips shoulders spines levels segments procedures operations surgeries
+    fractures events admissions visits hospitals records""".split())
+DETERMINERS = frozenset("a an the this that its their our".split())
 
 
-# Words before a year that make it a date: "in 2019 at a single center", "between 2015 and 2020".
-YEAR_LEADERS = frozenset("""in since from between until till through during before after by to and or early late
+# Words before a year that make it a date: "in 2019 at a single center", "since 2015".
+YEAR_LEADERS = frozenset("""in since from between until till through during before after by early late
     mid year years january february march april may june july august september october november december
     jan feb mar apr jun jul aug sep sept oct nov dec""".split())
+YEAR = r"(?:19|20)\d{2}"
 
 
 def is_year(before: str, after: str, token: str) -> bool:
-    """A year-sized integer is a calendar year unless its context makes it a count: a thousands separator
-    ("2,048"), "n = 2024", or a following lower-case word that does not continue a date ("We enrolled 2024
-    patients") when no date word comes before it."""
-    if not re.fullmatch(r"(?:19|20)\d{2}", token):
+    """A year-sized integer is checked as a count unless its context makes it a date: a date word before it
+    ("in 2019", "since 2015"), a year range ("2015-2020", "between 2015 and 2020", "from 2015 to 2020"), an
+    author-year citation ("Weber 2007", "(Smith et al., 2020)", "Smith (2020)"), or a following word that
+    continues a date phrase ("the 2019 guideline", "2016 WHO classification"). So "We enrolled 2024 (52%) women",
+    "2,048 patients", "n = 2019" and a table cell "| 2024 |" are checked."""
+    if not re.fullmatch(YEAR, token):
         return False
     if re.search(r"[=:]\s*$", before):
         return False
-    word = re.match(r"\s+([a-z]+)", after)
-    if not word or word.group(1) in YEAR_FOLLOWERS:
+    word = re.match(r"\s+([A-Za-z]+)", after)
+    if word and word.group(1).casefold() in COUNT_NOUNS:
+        return False  # "In Korea, 2024 patients", "in 2019 patients": a count whatever comes before
+    if (re.match(r"\s*(?:[-\u2013/]|to|and|through|until)\s*" + YEAR + r"\b", after)
+            or re.search(YEAR + r"\s*[-\u2013/]\s*$", before)):
         return True
+    if re.search(r"\b(?:between|from)\s+" + YEAR + r"\s+(?:and|to|through|until)\s+$", before, flags=re.IGNORECASE):
+        return True
+    if re.search(r"\(\s*$", before) and re.match(r"\s*[a-z]?\s*[);,]", after):  # "(2020)", "(2020a;"
+        return True
+    if re.search(r"\bet\s+al\.?,?\s*$", before) or re.search(r"[A-Z][A-Za-z'\u2019-]+(?: and [A-Z][A-Za-z'\u2019-]+)?,\s*$", before):
+        return True  # "(Smith et al., 2020)", "(Smith, 2020)", "Kim and Lee, 2019"
     previous = re.search(r"([A-Za-z]+)\.?[\s(]*$", before)
-    if not previous:
-        return False
-    if previous.group(1).casefold() in YEAR_LEADERS:
+    if previous and previous.group(1).casefold() in YEAR_LEADERS:
         return True
-    # Author-year inside a sentence ("Weber 2007 found", "Anchor: Zeosky 2026 npj"): a capitalized name that
-    # does not start the sentence. "Of 2024 patients" at a sentence start stays a count.
-    lead = before[: previous.start()].rstrip()
-    return previous.group(1)[0].isupper() and bool(lead) and not re.search(r"[.!?]$|^\W*$", lead)
+    if previous and previous.group(1)[0].isupper():
+        lead = before[: previous.start()].rstrip()
+        if lead and not re.search(r"[.!?]$|^\W*$", lead):
+            return True  # "as reported by Weber 2007": a name inside a sentence, not "Of 2024 patients"
+    if not word:
+        return False
+    if word.group(1).casefold() in YEAR_FOLLOWERS:
+        return True  # "a 2020 meta-analysis", "the 2019 guideline"
+    # "the 2016 WHO classification": a capitalized word after a determiner; "enrolled 2024 MRI-confirmed" is a count
+    return word.group(1)[0].isupper() and bool(previous) and previous.group(1).casefold() in DETERMINERS
 
 
 def is_structural_number(
@@ -210,6 +242,9 @@ def is_structural_number(
 
     if STRUCTURAL_LABEL_RE.search(before):
         return True
+    for listed in REFERENCE_LIST_RE.finditer(line):  # "Tables 1 and 2", "Figures 1-3"
+        if listed.start(1) <= start < listed.end(1):
+            return True
 
     # A heading number ("## 2.1 Methods") is structure. Only that number is exempt: a caption such as
     # "Table 1 summarizes 876 patients" keeps its count checked (the label number is exempt above).

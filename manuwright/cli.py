@@ -188,8 +188,8 @@ def hook(args):
         if template and tool in ('Write', 'Edit', 'MultiEdit'):
             return 0
         return subprocess.run(script, input=event).returncode  # hook event JSON passes through on stdin
-    if template:
-        return 0  # template checkout: its own session, prompt and subagent hooks already run; never fire twice
+    if template and os.environ.get('CLAUDE_PROJECT_DIR'):
+        return 0  # Claude Code in a template checkout runs its own session, prompt and subagent hooks; Codex does not
     if args[0] != 'session':
         return subprocess.call(script)
     subprocess.call(script + [str(project)])
@@ -243,8 +243,10 @@ def main(argv=None):
     if command in OWN_HELP and HELP_FLAGS & set(rest[:1] if command == 'run' else rest):  # run: later args are the script's
         print(command_help(command))
         return 0
-    if command in OWN_HELP and command != 'run' and rest and rest[-1] in VALUE_FLAGS:
-        print(f'manuwright {command}: {rest[-1]} needs a value\n\n{command_help(command)}', file=sys.stderr)
+    bare = next((flag for i, flag in enumerate(rest) if flag in VALUE_FLAGS
+                 and (i + 1 == len(rest) or rest[i + 1].startswith('--'))), None)
+    if command in OWN_HELP and command != 'run' and bare:  # "update --to --no-agents" must not install "--no-agents"
+        print(f'manuwright {command}: {bare} needs a value\n\n{command_help(command)}', file=sys.stderr)
         return 2
     if command in {'obsidian', 'evidence'}:
         if not __package__:

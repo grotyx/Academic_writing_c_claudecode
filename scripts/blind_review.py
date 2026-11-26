@@ -83,6 +83,7 @@ def manuscript_files(folder: Path) -> list[Path]:
 
 
 def packet(comments: Path, original: Path, revised: Path, out: Path) -> dict:
+    original, revised, out = Path(original).resolve(), Path(revised).resolve(), Path(out).resolve()  # "--revised ."
     out.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(comments, out / 'reviewer_comments.md')
     originals = {section_key(p): p for p in manuscript_files(original)}
@@ -139,16 +140,24 @@ def parse_record(text: str) -> dict:
     return record
 
 
-def quote_problem(folder: Path, anchor: str) -> str | None:
-    """An anchor written as file: "quoted text" must quote text that is in that revised file of the packet."""
-    match = re.fullmatch(r'\s*(?:revised/)?([^\s:"]+\.md)\s*:\s*["\u201c](.+?)["\u201d]\s*', anchor or '')
+ANCHOR_RE = re.compile(r'\s*(?:revised/)?([^\s:"\']+\.md)\s*(?:\((?:line|lines|l\.)\s*[\d\s,-]+\))?\s*:\s*'
+                       r'(?:"(.+?)"|\u201c(.+?)\u201d|\'(.+?)\')\s*')
+
+
+def quote_problem(folder: Path, anchor: str, required: bool = False) -> str | None:
+    """An anchor written as file: "quoted text" (or 'quoted', with an optional (line N)) must quote text that is in
+    that revised file of the packet. required: the anchor must have that checkable form (an upgraded verdict)."""
+    match = ANCHOR_RE.fullmatch(anchor or '')
     if not match:
-        return None  # free-text anchors stay allowed; only a checkable quote is checked
-    target = folder / 'revised' / match.group(1)
-    if not target.is_file():
+        return ('must name a revised file and quote it (05_results_REV1.md: "quoted text"), because the verdict was '
+                'raised after reading the letter') if required and (anchor or '').strip() else None
+    revised = (folder / 'revised').resolve()
+    target = (revised / match.group(1)).resolve()
+    if target.parent != revised or not target.is_file():
         return f'names {match.group(1)}, which is not in revised/'
-    flat = lambda t: ' '.join(t.split()).casefold()  # noqa: E731
-    if flat(match.group(2)) not in flat(target.read_text(encoding='utf-8')):
+    quote = next(g for g in match.groups()[1:] if g)
+    flat = lambda t: ' '.join(re.sub(r'[*_`]', '', t).split()).casefold()  # noqa: E731  (emphasis is formatting)
+    if flat(quote) not in flat(target.read_text(encoding='utf-8')):
         return f'quotes text that is not in revised/{match.group(1)}'
     return None
 
@@ -188,8 +197,9 @@ def check(verdicts: Path) -> list[str]:
             problems.append(f'{cid}: blind_verdict must be one of {", ".join(VERDICTS)}')
         elif blind != 'CANNOT_VERIFY' and not entry.get('anchor'):
             problems.append(f'{cid}: blind verdict {blind} needs an anchor in the revised manuscript')
+        raised = blind in VERDICTS and final in VERDICTS and VERDICTS.index(final) < VERDICTS.index(blind)
         for field in ('anchor', 'final_anchor'):
-            missing = quote_problem(folder, entry.get(field, ''))
+            missing = quote_problem(folder, entry.get(field, ''), required=field == 'final_anchor' and raised)
             if missing:
                 problems.append(f'{cid}: {field} {missing}')
         if final not in VERDICTS:

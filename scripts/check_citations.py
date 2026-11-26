@@ -23,7 +23,7 @@ EVID_RE = re.compile(r"\[EVID:([A-Za-z0-9_.-]+)\]")
 # gate as "0 tokens".
 # Also any opener in another case or spacing ("[evid:x]", "[EVID :x]") and one never closed on its line
 # ("[EVID:x." or a tag broken across a line break): these reached the build as literal text.
-LOOSE_EVID_RE = re.compile(r"\[\s*EVID\s*:([^\]\n]*)\]?", flags=re.IGNORECASE)
+LOOSE_EVID_RE = re.compile(r"\[\s*EVID\s*:([^\]\n]*)\]?|(?<![\[\w])\(?\s*EVID\s*:\s*([^\s\])]*)\)?", flags=re.IGNORECASE)
 HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", flags=re.MULTILINE)
 FIELD_RE = re.compile(r"^-\s+\*\*(.+?):\*\*\s*(.*)$")
 FENCE_RE = re.compile(r"```.*?```", flags=re.DOTALL)
@@ -62,10 +62,15 @@ def normalize_status(value: str) -> str:
     return value.strip().casefold()
 
 
+HTML_COMMENT_RE = re.compile(r"<!--.*?-->", flags=re.DOTALL)
+
+
 def strip_code_fences(text: str) -> str:
-    # Blank fences and inline code length-preservingly so reported line
-    # numbers after a fence stay correct.
+    # Blank fences, HTML comments and inline code length-preservingly so reported line numbers after them stay
+    # correct. A tag in a comment ("<!-- removed [EVID:a] -->") is not a citation: the build drops comments, so
+    # numbering it gave the printed references a ghost entry and shifted every number after it.
     text = FENCE_RE.sub(lambda match: "\n" * match.group().count("\n"), text)
+    text = HTML_COMMENT_RE.sub(lambda match: "\n" * match.group().count("\n"), text)
     return INLINE_CODE_RE.sub(lambda match: " " * len(match.group()), text)
 
 
@@ -152,7 +157,7 @@ def iter_malformed_evid_tags(artifact: Path) -> list[tuple[str, int]]:
     for line_number, line in enumerate(text.splitlines(), start=1):
         for match in LOOSE_EVID_RE.finditer(line):
             if not EVID_RE.match(line, match.start()):
-                malformed.append((match.group(1), line_number))
+                malformed.append((match.group(1) if match.group(1) is not None else match.group(2) or "", line_number))
     return malformed
 
 

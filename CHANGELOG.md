@@ -1,5 +1,21 @@
 # Changelog
 
+### v1.10.14 (261126)
+
+Fixes from a code review of v1.10.9-v1.10.13 and a second independent review (Gemini 4 Carbon).
+
+- Numbers: a year-sized integer is checked as a count unless its context makes it a date. "Total enrollment was 2024.", "| Total | 2024 |", "2024 MRI-confirmed patients", "In Korea, 2024 patients" and "in 2019 patients" are checked; "in 2018–2022", "a 2020 meta-analysis", "Smith et al., 2020", "Smith (2020)", "the 2016 WHO classification" and "2021/03/12" are not. A unary en dash ("–2.5") is a minus. "Tables 1 and 2" and "Figures 1–3" are structure. "*p value* < 0.05", "Adjusted *P* value" and "P for trend" are p values.
+- Plan approval: one rule everywhere. A tick inside an HTML comment (also unclosed), a ``` or ~~~ fence or inline code is not an approval, nor is a tick beside an unticked approval line; `[ x ]` counts in the hook, verify and approve alike. `manuwright approve` never ticks an example box inside a comment. `manuwright run` checks a renamed analysis plan as an analysis plan.
+- The plan-first hook covers scripts at any depth under `data/` and R Markdown/Quarto files, uses the nearest approved analysis plan up to `data/`, gates only files named after a section (`drafts/results.md`, not `drafts/table_2_results.md` or `drafts/discussion_notes.md`), and ignores a folder named drafts above the paper. Strict style and the lint hook read dot-segment paths correctly. In a Codex session the session, prompt and subagent hooks run in a template checkout too.
+- `state` may not be a review receipt, an approval receipt, a dependency or a review source (verify would overwrite it).
+- Revision claims: multi-paper layouts resolve project-relative section paths, verify and gate pass the paper's drafts folder, and a paper without drafts/ cannot read files outside itself.
+- Build: output name collisions are found when the project is loaded, before any review; commented-out citations are neither checked nor numbered (they shifted the printed reference numbers); "(EVID:id)" fails as malformed; the response letter's references skip its [CHANGE] blocks.
+- Cross-references: "As shown in Table 1, 12 patients" and "In Figure 2, 30-day mortality" cite Table 1 and Figure 2 only; "Extended Data" and "Supplemental Digital Content" mentions are supplementary.
+- Response coverage: Markdown-heading letters ("# Reviewer 1", "### Comment 2") are parsed entry by entry.
+- Gate: `round` must be 1 or more; an artifact hash recorded without `artifact:` fails. Blind review: anchor quotes must stay in revised/, an upgraded verdict needs a checkable quote, emphasis is ignored when matching, and `--revised .` overlays earlier revisions.
+- `manuwright update` finds the newest release on PyPI (git is optional) and refuses a flag where a version belongs (`--to --no-agents`). `manuwright bind` applies the CSV symlink, duplicate-column and typographic-sign rules of the validator.
+- `style preserve` reads "1,250" as one number and "<=", ">=" as comparators; multi-line HTML comments are not checked as prose. Paragraph flow keeps one-sentence aim and conclusion paragraphs, removes headings, comments and code first, and no longer reads "is a" as background; `style flow` finds the paper's learned style from drafts/. The engine's harness is imported ahead of the current folder in `engine_api`; a cancelled manual release never publishes.
+
 ### v1.10.13 (261126)
 
 - `manuwright gate --max-round` accepts only 1 or more. `--max-round 0` used to switch the Rule 9 round limit off silently, so `round: 5` passed; it now stops with a usage error (exit 2).

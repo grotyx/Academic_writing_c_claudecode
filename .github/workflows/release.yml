@@ -75,7 +75,7 @@ jobs:
   pypi:
     needs: tag
     # always() lets a manual dispatch run while the tag job is skipped; a failed tag job never publishes.
-    if: ${{ always() && vars.PYPI_PUBLISH == 'true' && ((needs.tag.result == 'success' && needs.tag.outputs.created == 'true') || github.event_name == 'workflow_dispatch') }}
+    if: ${{ always() && !cancelled() && vars.PYPI_PUBLISH == 'true' && ((needs.tag.result == 'success' && needs.tag.outputs.created == 'true') || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     environment: pypi
     permissions:

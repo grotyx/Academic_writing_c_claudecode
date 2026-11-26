@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -157,6 +158,7 @@ def evaluate_path(event: dict, raw_path: str) -> tuple[int, str]:
     target = Path(raw_path)
     if not target.is_absolute():
         target = Path(cwd) / target
+    target = Path(os.path.normpath(str(target)))  # drafts/figures/../05_results.md is drafts/05_results.md
     if not _is_manuscript_md(str(target)) or not target.is_file():
         return 0, ""
 

@@ -21,6 +21,13 @@ def inside(root: Path, value: str) -> Path:
     return path
 
 
+def plain_name(value) -> bool:
+    """A paper_id that is one plain folder name (it names ~/.manuwright/envs/<paper_id>): no separator, drive or
+    dot segment, no surrounding spaces. The single rule for project.json, `manuwright env/run` and figures."""
+    return (isinstance(value, str) and value == value.strip() and value not in ('', '.', '..')
+            and not any(c in value for c in '/\\:'))
+
+
 def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -69,7 +76,8 @@ def validate_bindings(root, manifest, paper_id, artifacts, checker, results_dir=
         values = checker.extract_numbers_from_text(raw)
         if len(values) != 1 or str(record['raw']).strip() != raw.strip():
             raise ValueError(f'result does not match exact CSV cell: {key}')
-        records[key] = (record, checker.ResultNumber(values[0], raw.translate(checker.TYPOGRAPHIC), path, row, source['column']))
+        records[key] = (record, checker.ResultNumber(values[0], checker.UNARY_DASH_RE.sub('-', raw.translate(checker.TYPOGRAPHIC)), path, row,
+                                                  source['column']))
     by_artifact = {inside(root, a): [] for a in artifacts}
     for binding in data['bindings']:
         path = inside(root, binding['artifact'])

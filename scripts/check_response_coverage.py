@@ -41,7 +41,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # Markdown headings ("# Reviewer 1", "### Comment 2.") count like bold or plain labels.
 REVIEWER_RE = re.compile(r"^\s*(?:#{1,6}\s*)?(?:\*{1,2})?\s*Reviewer\s*#?\s*(\d+)\s*:?", re.IGNORECASE)
 COMMENT_RE = re.compile(r"^\s*(?:#{1,6}\s*)?(?:\*{1,2})?\s*Comment\s+(\d+)\s*(?:[).:\]]|$)", re.IGNORECASE)
-RESPONSE_RE = re.compile(r"^\s*(?:\*{1,2})?\s*Response\s*:\s*(.*)$", re.IGNORECASE)
+RESPONSE_RE = re.compile(r"^\s*(?:#{1,6}\s*)?(?:\*{1,2})?\s*Response\s*:\s*(.*)$", re.IGNORECASE)
 # Structural lines that terminate a response body.
 BOUNDARY_RE = re.compile(
     r"^\s*(?:\*{1,2})?\s*(Reviewer\s*#?\s*\d+|Comment\s+\d+\s*[).:\]]|Location\s*:|Revised text\s*:|Reviewer closing\s*:|\[CHANGE\])",
@@ -115,7 +115,9 @@ def parse_letter(text: str) -> list[CommentEntry]:
             cursor = index + 1
             while cursor < len(lines):
                 follow = lines[cursor]
-                if BOUNDARY_RE.match(follow) or RESPONSE_RE.match(follow):
+                # the same patterns that open an entry also end a response ("# Reviewer 2", "### Comment 3")
+                if (BOUNDARY_RE.match(follow) or RESPONSE_RE.match(follow) or REVIEWER_RE.match(follow)
+                        or COMMENT_RE.match(follow)):
                     break
                 collected.append(follow.strip())
                 cursor += 1

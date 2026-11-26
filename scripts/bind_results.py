@@ -64,9 +64,14 @@ def words(text: str) -> set[str]:
 def cells(root: Path, results: Path) -> list[dict]:
     """Every CSV cell holding exactly one number (the validator's rule), with its row label."""
     found = []
+    base = results.resolve()
     for path in sorted(results.rglob('*.csv')):
+        if path.is_symlink() or not path.resolve().is_relative_to(base) or not path.is_file():
+            continue  # the validator accepts only regular CSV files inside results/
         with path.open(encoding='utf-8-sig', newline='') as stream:
             reader = csv.DictReader(stream)
+            if reader.fieldnames and len(reader.fieldnames) != len(set(reader.fieldnames)):
+                raise ValueError(f'duplicate column names in {path.name}: a binding could read the wrong one')
             first = reader.fieldnames[0] if reader.fieldnames else None
             for row_number, row in enumerate(reader, start=2):
                 label = (row.get(first) or '') if first else ''
@@ -78,7 +83,8 @@ def cells(root: Path, results: Path) -> list[dict]:
                         continue
                     found.append({'file': path.relative_to(root).as_posix(), 'path': path, 'row': row_number,
                                   'column': column, 'raw': raw, 'label': label,
-                                  'number': cn.ResultNumber(values[0], raw, path, row_number, column)})
+                                  'number': cn.ResultNumber(values[0], cn.UNARY_DASH_RE.sub('-', raw.translate(cn.TYPOGRAPHIC)),
+                                                            path, row_number, column)})
     return found
 
 

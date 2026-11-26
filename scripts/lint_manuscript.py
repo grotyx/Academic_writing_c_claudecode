@@ -224,7 +224,7 @@ def lint_file(path: Path, forbidden_terms: dict[str, str]) -> list[tuple[str, Pa
     discussion = is_discussion_file(path, text)
 
     if is_abstract_file(path, text):
-        issues.extend(find_keywords_issues(path, text))
+        issues.extend(find_keywords_issues(path, re.sub(r"<!--.*?-->", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)))
 
     journal = paper_journal(path)
     zero = p_leading_zero(journal)

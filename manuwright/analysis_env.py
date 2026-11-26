@@ -28,7 +28,11 @@ openpyxl
 
 
 def env_dir(paper_id):
-    if not isinstance(paper_id, str) or paper_id in ('', '.', '..') or any(c in paper_id for c in '/\\:'):
+    from manuwright.cli import ENGINE
+    if str(ENGINE) not in sys.path:
+        sys.path.insert(0, str(ENGINE))
+    from harness.results import plain_name
+    if not plain_name(paper_id):
         raise ValueError(f'paper_id must be a plain folder name, not {paper_id!r}')
     return Path(os.environ.get('MANUWRIGHT_HOME') or Path.home() / '.manuwright') / 'envs' / paper_id
 
@@ -101,7 +105,7 @@ def plan_problem(root):
         from enforce_gates import plan_problem as check
     finally:
         del sys.path[:2]
-    problem = check(plan)
+    problem = check(plan, 'analysis')
     if problem == 'missing':
         return f'{name} does not exist; write it and get the author\'s approval first'
     return f'{name}: {problem}' if problem else None
