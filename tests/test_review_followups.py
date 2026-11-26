@@ -381,3 +381,31 @@ def test_bind_reads_typographic_bounds(tmp_path):
     put(tmp_path / 'results' / 'p.csv', 'outcome,p\npain,≤0.001\n')
     cell = bind.cells(tmp_path, tmp_path / 'results')[0]
     assert cell['number'].raw == '<=0.001'
+
+
+# --- build problems caught before signoff (v1.10.15) ---
+
+def submission_check(project, name):  # noqa: F811
+    from harness.project import verify
+    sign(project)
+    return next(c for c in verify(project, 'submission')['checks'] if c['check'] == name)
+
+
+def test_submission_check_finds_what_would_stop_the_build(project):  # noqa: F811
+    root = project.parent
+    assert submission_check(project, 'docx_build')['status'] == 'PASS'
+    put(root / 'drafts/05_results.md', '# Results\n\nMean age was 54 years.\n\n```\ncode\n```\n')
+    check = submission_check(project, 'docx_build')
+    assert check['status'] == 'FAIL' and 'code, math or embedded images' in check['detail']
+    put(root / 'drafts/05_results.md', '# Results\n\nMean age was 54 years.\n\n| a | b |\n|---|---|\n| 1 |\n')
+    assert 'malformed Markdown table' in submission_check(project, 'docx_build')['detail']
+
+
+def test_build_problems_name_unnumbered_tables_and_bad_styles(project):  # noqa: F811
+    from harness.build import build_problems
+    root = project.parent
+    put(root / 'drafts/baseline.md', '| a | b |\n|---|---|\n| 1 | 2 |\n')
+    config = json.loads(project.read_text(encoding='utf-8'))
+    config = dict(config, tables=['drafts/baseline.md'], docx={'font_size': 'big'})
+    problems = build_problems(root, config)
+    assert any('table file name needs its number' in p for p in problems) and any('docx style' in p for p in problems)

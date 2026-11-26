@@ -145,13 +145,58 @@ def inline(paragraph, text):
             paragraph.add_run(part)
 
 
+def markdown_problems(text):
+    """What append_markdown would refuse in this text (empty: it builds). verify runs the same rules before signoff."""
+    text = re.sub(r'<!--.*?-->', '', text, flags=re.S)
+    problems = []
+    if '```' in text or '$$' in text or '![' in text:
+        problems.append('DOCX compiler supports prose/headings/pipe tables; move code, math or embedded images to '
+                        'separately reviewed supplements')
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        if not lines[i].strip().startswith('|'):
+            i += 1
+            continue
+        start = i
+        while i < len(lines) and lines[i].strip().startswith('|'):
+            i += 1
+        cells = [[c for c in row.strip().strip('|').split('|')] for row in lines[start:i]
+                 if not re.fullmatch(r'[|\s:\-]+', row.strip())]
+        if not cells or any(len(row) != len(cells[0]) for row in cells):
+            problems.append(f'malformed Markdown table (line {start + 1}: rows have different numbers of cells)')
+    return problems
+
+
+def build_problems(root, config):
+    """Reasons `manuwright build` would stop after a passing submission check: the Word style, a section the DOCX
+    compiler refuses, a table or figure file name without its number. Checked by verify --profile submission."""
+    problems = []
+    try:
+        docx_style(config, root)
+    except ValueError as exc:
+        problems.append(f'docx style: {exc}')
+    cr = checker('check_crossrefs')
+    for item in config['artifacts'] + config.get('tables', []) + config.get('supplements', []):
+        path = inside(root, item)
+        if path.name.startswith('08_references'):
+            continue
+        problems += [f'{item}: {p}' for p in markdown_problems(path.read_text(encoding='utf-8'))]
+    problems += [f'{item}: a table file name needs its number (table_1.md)' for item in config.get('tables', [])
+                 if not cr.TABLE_FILE_RE.search(Path(item).stem)]
+    problems += [f'{item}: a figure file name needs its number (figure_1.png)' for item in config.get('figures', [])
+                 if not cr.FIGURE_FILE_RE.search(Path(item).stem)]
+    return problems
+
+
 def append_markdown(doc, text, style=DOCX_DEFAULTS):
     from docx.shared import Pt
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
+    problems = markdown_problems(text)
+    if problems:
+        raise ValueError(problems[0])
     text = re.sub(r'<!--.*?-->', '', text, flags=re.S)
-    if '```' in text or '$$' in text or '![' in text:
-        raise ValueError('DOCX compiler supports prose/headings/pipe tables; move code, math or embedded images to separately reviewed supplements')
     lines = text.splitlines(); i = 0
     while i < len(lines):
         line = lines[i].strip(); i += 1

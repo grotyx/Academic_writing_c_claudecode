@@ -467,6 +467,11 @@ def verify(path, profile='draft'):
                 raise ValueError(' | '.join(blocked))
         run('ai_disclosure', ai_disclosure)
         run('reporting_checklist', lambda: required_json('checklist'))
+        def docx_build():  # what would stop `manuwright build` after this PASS and the signoff
+            from .build import build_problems
+            problems = build_problems(root, config)
+            return '; '.join(problems) if problems else None
+        run('docx_build', docx_build)
     if snapshot(path, config) != initial:
         record('snapshot', 'FAIL', 'inputs changed during verification')
     status = 'FAIL' if any(x['status']=='FAIL' for x in checks) else 'BLOCKED' if any(x['status']=='BLOCKED' for x in checks) else 'PASS'

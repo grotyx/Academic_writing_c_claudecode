@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.10.15 (261126)
+
+- `verify --profile submission` has a new `docx_build` check: the Word style, code/math/images and ragged tables in any section, table or supplement, and table or figure file names without a number are found before signoff, so `manuwright build` no longer stops after a passing submission check.
+- Release workflow: rerunning after only the PyPI job failed publishes again (files PyPI already has are skipped).
+
 ### v1.10.14 (261126)
 
 Fixes from a code review of v1.10.9-v1.10.13 and a second independent review (Gemini 4 Carbon).

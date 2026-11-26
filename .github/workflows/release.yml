@@ -46,7 +46,10 @@ jobs:
               exit 0
             fi
             if gh release view "$tag" >/dev/null 2>&1; then
-              echo "$tag and its release already exist; nothing to do."
+              # Tag and release exist for this commit: a rerun after the PyPI job failed. Publish again;
+              # files PyPI already has are skipped.
+              echo "$tag and its release already exist; rerunning only the PyPI upload."
+              echo "created=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             awk -v h="### $tag " 'index($0, h) == 1 {on=1; next} on && /^### v/ {exit} on {print}' CHANGELOG.md > notes.md
@@ -101,3 +104,5 @@ jobs:
           python -m pip install --upgrade build
           python -m build
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3 (Twine 7: metadata 2.5)
+        with:
+          skip-existing: true  # a rerun or manual run of a version PyPI already has succeeds instead of failing
