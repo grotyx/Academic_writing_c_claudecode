@@ -21,7 +21,9 @@ EVID_RE = re.compile(r"\[EVID:([A-Za-z0-9_.-]+)\]")
 # not EVID_RE (e.g. "[EVID:o'brien_2021]", "[EVID:müller_2020]",
 # "[EVID:Kim 2020]") are malformed and must fail rather than vanish from the
 # gate as "0 tokens".
-LOOSE_EVID_RE = re.compile(r"\[EVID:([^\]]*)\]")
+# Also any opener in another case or spacing ("[evid:x]", "[EVID :x]") and one never closed on its line
+# ("[EVID:x." or a tag broken across a line break): these reached the build as literal text.
+LOOSE_EVID_RE = re.compile(r"\[\s*EVID\s*:([^\]\n]*)\]?", flags=re.IGNORECASE)
 HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", flags=re.MULTILINE)
 FIELD_RE = re.compile(r"^-\s+\*\*(.+?):\*\*\s*(.*)$")
 FENCE_RE = re.compile(r"```.*?```", flags=re.DOTALL)
@@ -149,7 +151,7 @@ def iter_malformed_evid_tags(artifact: Path) -> list[tuple[str, int]]:
     malformed: list[tuple[str, int]] = []
     for line_number, line in enumerate(text.splitlines(), start=1):
         for match in LOOSE_EVID_RE.finditer(line):
-            if not EVID_RE.fullmatch(match.group(0)):
+            if not EVID_RE.match(line, match.start()):
                 malformed.append((match.group(1), line_number))
     return malformed
 

@@ -39,6 +39,9 @@ verifier_model: opus
 timestamp: 2026-06-18T10:30:00+09:00
 ```
 
+> Note (v1.10.9): `status: PASS` beside any recorded check other than `PASS` or `N/A` fails, even when
+> the command names no `--require` check.
+>
 > Note: `check_gate.py` parses `status`, `artifact`, `round`, the `checks.*` keys, and the
 > `provenance.*` keys. `blocking_failures`, `verifier_model`, and `timestamp` are human-audit
 > fields only — keep them for the record, but the script does not read or validate them.

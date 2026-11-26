@@ -22,20 +22,26 @@ from typing import NamedTuple
 ROOT = Path(__file__).resolve().parents[1]
 FENCE_RE = re.compile(r"```.*?```", flags=re.DOTALL)
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", flags=re.DOTALL)
-DATE_RE = re.compile(r"\b\d{4}-\d{1,2}-\d{1,2}\b|\b\d{1,2}/\d{1,2}/\d{2,4}\b")
+# Calendar dates only: ISO dates and day/month/year with a four-digit year. A three-group count such as
+# "15/28/12" is a result, not a date, and stays checked.
+_DM = r"(?:0?[1-9]|[12]\d|3[01])"
+DATE_RE = re.compile(r"\b\d{4}-\d{1,2}-\d{1,2}\b|\b" + _DM + "/" + _DM + r"/(?:19|20)\d{2}\b")
+# Typographic minus and comparison signs mean the same as their ASCII forms; without this a
+# "−2.5" lost its sign and "p ≤ 0.05" its comparator.
+TYPOGRAPHIC = str.maketrans({"\u2212": "-", "\u2264": "<=", "\u2265": ">=", "\u2a7d": "<=", "\u2a7e": ">="})
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 NUMBER_RE = re.compile(
     r"(?<![A-Za-z0-9_])"
-    r"(?:(?P<p>\*?[pP]\*?)\s*(?P<comp><=|>=|<|>|=)\s*)?"
+    r"(?:(?P<p>\*?[pP]\*?(?:[\s-]*values?)?)\s*(?P<comp><=|>=|<|>|=)\s*)?"
     r"(?P<num>[-+]?(?:\d+(?:,\d{3})*(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?)"
     r"(?P<pct>%)?"
 )
 P_VALUE_COLUMNS = frozenset(
     {"p", "p value", "p_value", "p-value", "pval", "pvalue", "p val"}
 )
-P_VALUE_TEXT_RE = re.compile(r"\b\*?p\*?\s*(?:<=|>=|<|>|=)", flags=re.IGNORECASE)
+P_VALUE_TEXT_RE = re.compile(r"\b\*?p\*?(?:[\s-]*values?)?\s*(?:<=|>=|<|>|=)", flags=re.IGNORECASE)
 # A CSV cell that is itself a bound, e.g. "<0.001" or "p < 0.001".
-RESULT_BOUND_RE = re.compile(r"^\s*(?:\*?p\*?\s*)?(?P<comp><=|>=|<|>)\s*", flags=re.IGNORECASE)
+RESULT_BOUND_RE = re.compile(r"^\s*(?:\*?p\*?(?:[\s-]*values?)?\s*)?(?P<comp><=|>=|<|>)\s*", flags=re.IGNORECASE)
 STRUCTURAL_LABEL_RE = re.compile(
     r"\b(?:Table|Figure|Fig\.?|Section|Phase|Round|Reviewer|Comment|Line|Page|REV)\s*$",
     flags=re.IGNORECASE,
@@ -77,7 +83,18 @@ class NumberCheckResult(NamedTuple):
     result_count: int = 0
 
 
+def column_key(name: str) -> str:
+    """'*P*-value', '_p_', ' P value ' -> 'p-value', 'p', 'p value' (markdown emphasis dropped)."""
+    return name.replace("*", "").replace("_", " ").strip().casefold()
+
+
+def is_p_column(name: str) -> bool:
+    key = column_key(name)
+    return key in P_VALUE_COLUMNS or key.replace(" ", "_") in P_VALUE_COLUMNS or key.replace(" ", "") in P_VALUE_COLUMNS
+
+
 def strip_ignored_text(text: str) -> str:
+    text = text.translate(TYPOGRAPHIC)
     # Blank fences and HTML comments keeping their newlines so line numbers
     # reported after them stay correct.
     text = FENCE_RE.sub(lambda match: "\n" * match.group().count("\n"), text)
@@ -97,7 +114,7 @@ def decimal_places(number_text: str) -> int:
 
 
 def extract_numbers_from_text(text: str) -> list[float]:
-    return [to_float(match.group("num")) for match in NUMBER_RE.finditer(text)]
+    return [to_float(match.group("num")) for match in NUMBER_RE.finditer(text.translate(TYPOGRAPHIC))]
 
 
 def load_result_numbers(results_dir: Path) -> list[ResultNumber]:
@@ -118,13 +135,47 @@ def load_result_numbers(results_dir: Path) -> list[ResultNumber]:
                         numbers.append(
                             ResultNumber(
                                 value=number,
-                                raw=value,
+                                raw=value.translate(TYPOGRAPHIC),
                                 source=csv_path,
                                 row=row_index,
                                 column=column or "<unnamed>",
                             )
                         )
     return numbers
+
+
+# Words that may follow a year without making it a count: "between 2015 and 2020", "the 2019 guideline".
+YEAR_FOLLOWERS = frozenset("""and or to through until onward onwards guideline guidelines criteria classification
+    edition version revision update consensus statement recommendation recommendations census survey season wave
+    report data""".split())
+
+
+# Words before a year that make it a date: "in 2019 at a single center", "between 2015 and 2020".
+YEAR_LEADERS = frozenset("""in since from between until till through during before after by to and or early late
+    mid year years january february march april may june july august september october november december
+    jan feb mar apr jun jul aug sep sept oct nov dec""".split())
+
+
+def is_year(before: str, after: str, token: str) -> bool:
+    """A year-sized integer is a calendar year unless its context makes it a count: a thousands separator
+    ("2,048"), "n = 2024", or a following lower-case word that does not continue a date ("We enrolled 2024
+    patients") when no date word comes before it."""
+    if not re.fullmatch(r"(?:19|20)\d{2}", token):
+        return False
+    if re.search(r"[=:]\s*$", before):
+        return False
+    word = re.match(r"\s+([a-z]+)", after)
+    if not word or word.group(1) in YEAR_FOLLOWERS:
+        return True
+    previous = re.search(r"([A-Za-z]+)\.?[\s(]*$", before)
+    if not previous:
+        return False
+    if previous.group(1).casefold() in YEAR_LEADERS:
+        return True
+    # Author-year inside a sentence ("Weber 2007 found", "Anchor: Zeosky 2026 npj"): a capitalized name that
+    # does not start the sentence. "Of 2024 patients" at a sentence start stays a count.
+    lead = before[: previous.start()].rstrip()
+    return previous.group(1)[0].isupper() and bool(lead) and not re.search(r"[.!?]$|^\W*$", lead)
 
 
 def is_structural_number(
@@ -135,7 +186,7 @@ def is_structural_number(
 
     before = line[:start]
     after = line[start + len(token) :]
-    if value.is_integer() and 1900 <= int(value) <= 2099:
+    if is_year(before, after, token):
         return True
 
     # Trailing part of a hyphenated label (e.g. "L4-5", "C5-6", "COVID-19",
@@ -157,13 +208,9 @@ def is_structural_number(
     if STRUCTURAL_LABEL_RE.search(before):
         return True
 
-    # Markdown headings and table captions often start with structural labels.
-    stripped = line.strip()
-    if re.match(r"^#+\s*\d+(?:\.\d+)*\b", stripped):
-        return True
-    if re.match(r"^Table\s+\d+\b", stripped, flags=re.IGNORECASE):
-        return True
-    if re.match(r"^Figure\s+\d+\b", stripped, flags=re.IGNORECASE):
+    # A heading number ("## 2.1 Methods") is structure. Only that number is exempt: a caption such as
+    # "Table 1 summarizes 876 patients" keeps its count checked (the label number is exempt above).
+    if re.fullmatch(r"\s*#+\s*(?:\d+\.)*", before):
         return True
 
     if value.is_integer() and start == len(line) - len(line.lstrip()) and re.match(r"^\s*[.)]", after):
@@ -191,7 +238,7 @@ def _spans_from(folder: Path, entries, artifact: Path) -> list[str]:
         target = entry.get("artifact")
         if target and (folder / target).resolve() != artifact:
             continue
-        spans.append(entry["text"].strip().casefold())
+        spans.append(entry["text"].strip().translate(TYPOGRAPHIC).casefold())
     return spans
 
 
@@ -224,7 +271,7 @@ def allow_report(root: Path, entries: list, artifacts: list[Path]) -> tuple[int,
     exempted, unmatched = 0, []
     for entry in entries:
         targets = [Path(root, entry["artifact"]).resolve()] if entry.get("artifact") else artifacts
-        span = entry["text"].strip().casefold()
+        span = entry["text"].strip().translate(TYPOGRAPHIC).casefold()
         hits = 0
         for artifact in targets:
             for line in strip_ignored_text(Path(artifact).read_text(encoding="utf-8")).splitlines():
@@ -261,8 +308,7 @@ def iter_artifact_numbers(artifact: Path) -> list[NumberToken]:
                 r'\s*\|(?:\s*:?-{3,}:?\s*\|)+\s*', lines[line_number]):
             # A pipe header is identified by its separator row, not by whether
             # the header contains group sizes or follow-up time points.
-            p_columns = {i for i, cell in enumerate(line.split('|'))
-                         if cell.strip().strip('*').casefold() in P_VALUE_COLUMNS}
+            p_columns = {i for i, cell in enumerate(line.split('|')) if is_p_column(cell)}
         for match in NUMBER_RE.finditer(line):
             raw_number = match.group("num")
             full_token = match.group(0)
@@ -292,7 +338,7 @@ def result_is_p_value(result_number: ResultNumber) -> bool:
     # A directional p-value claim (e.g. p<0.001) may only be satisfied by a
     # result value that is explicitly a p-value. A generic 0-1 proportion/rate
     # is not enough; otherwise clinical rates can falsely satisfy p<threshold.
-    if result_number.column.strip().casefold() in P_VALUE_COLUMNS:
+    if is_p_column(result_number.column):
         return True
     return bool(P_VALUE_TEXT_RE.search(result_number.raw))
 

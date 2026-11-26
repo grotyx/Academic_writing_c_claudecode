@@ -300,6 +300,19 @@ def check_gate(
             )
         )
 
+    # An overall PASS cannot stand beside a recorded failing check, whichever checks the caller named.
+    if status == "PASS":
+        for check_key, check_status in sorted(entry.checks.items()):
+            if check_status not in ("PASS", "N/A"):
+                failures.append(
+                    GateIssue(
+                        gate_path,
+                        f"checks.{check_key}",
+                        f"status is PASS but check {check_key} is {check_status or 'blank'}",
+                        f"Fix the {check_key} failure and re-verify, or record status: FAIL.",
+                    )
+                )
+
     if artifact is not None:
         recorded_artifact = entry.fields.get("artifact", "")
         if normalize_path(recorded_artifact) != normalize_path(artifact):

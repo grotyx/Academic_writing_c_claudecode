@@ -1,5 +1,15 @@
 # 변경 이력
 
+### v1.10.9 (261126)
+
+틀린 원고가 통과할 수 있던 검사 수정 (독립 리뷰 두 건에서 발견).
+
+- 숫자: 인쇄용 빼기 기호(−)와 ≤/≥ 를 인식한다. "−2.5" 가 2.5 와 맞지 않고, "p ≤ 2.5" 는 p 값으로 읽는다. "P value <", "*p*-value <", 표 머리글 "*P*-value" 도 p 값으로 보므로 CSV 의 p = 0.054 가 "P value < 0.05" 를 뒷받침하지 못한다.
+- 숫자: "Table 1", "Figure 2" 로 시작하는 줄의 다른 숫자도 검사한다("Table 1 summarizes 876 patients"). 연도 크기 정수는 날짜 문맥에서만 연도다. "We enrolled 2024 patients", "2,048 patients", "n = 2019" 는 검사하고, "in 2019 at", "between 2015 and 2020", "the 2019 guideline" 은 제외한다. 슬래시 날짜는 네 자리 연도가 있어야 하므로 "15/28/12" 는 숫자로 검사한다. 검사 대상 숫자가 늘었으므로 기존 binding 은 `manuwright bind` 를 다시 돌려야 할 수 있다.
+- 인용: "[evid:x]", "[EVID :x]", 줄 안에서 닫히지 않은 태그("[EVID:x."), 줄바꿈으로 끊긴 태그를 인용 0건으로 세지 않고 형식 오류로 실패 처리한다.
+- 게이트 기록: status PASS 인데 기록된 check 중 PASS·N/A 가 아닌 것이 있으면, 명령이 어떤 check 를 지정했든 실패한다.
+- `manuwright <명령> --help` 는 init, update, env, run, setup, agents, config 등 내장 명령에서 사용법만 출력하고 끝난다(init --help 가 "--help" 폴더를 만들고, update --help 가 업데이트를 실행했다). `verify --help` 등은 논문 폴더 없이도 동작한다.
+
 ### v1.10.8 (261107)
 
 PyPI 페이지.

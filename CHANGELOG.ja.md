@@ -1,5 +1,15 @@
 # 変更履歴
 
+### v1.10.9 (261126)
+
+誤った原稿が通過しうる検査を修正 (2 件の独立レビューで発見)。
+
+- 数値: 印刷用マイナス (−) と ≤/≥ を認識する。"−2.5" は 2.5 と一致せず、"p ≤ 2.5" は p 値として読む。"P value <"、"*p*-value <"、表見出し "*P*-value" も p 値とみなすため、CSV の p = 0.054 は "P value < 0.05" を裏付けない。
+- 数値: "Table 1"・"Figure 2" で始まる行の他の数値も検査する ("Table 1 summarizes 876 patients")。年の大きさの整数は日付の文脈でのみ年とみなす。"We enrolled 2024 patients"、"2,048 patients"、"n = 2019" は検査し、"in 2019 at"、"between 2015 and 2020"、"the 2019 guideline" は除外する。スラッシュ日付は 4 桁の年が必要で、"15/28/12" は数値として検査する。検査対象が増えたため既存の binding は `manuwright bind` の再実行が必要な場合がある。
+- 引用: "[evid:x]"、"[EVID :x]"、行内で閉じていないタグ ("[EVID:x.")、改行で分断されたタグを引用 0 件とせず形式エラーとして失敗させる。
+- ゲート記録: status PASS なのに PASS・N/A 以外の check が記録されていれば、コマンドがどの check を指定したかに関係なく失敗する。
+- `manuwright <コマンド> --help` は init、update、env、run、setup、agents、config などの組み込みコマンドで使い方を表示して終了する (init --help が "--help" フォルダを作り、update --help が更新を実行していた)。`verify --help` などは論文フォルダなしで動く。
+
 ### v1.10.8 (261107)
 
 PyPI ページ。

@@ -100,6 +100,27 @@ Obsidian (Academic Paper Citation Manager plugin):
 """
 
 
+HELP_FLAGS = {'-h', '--help'}
+# Commands handled here, not by a script with its own argparse: `<command> --help` must print usage and
+# stop, never run (init --help created a "--help" paper folder; update --help ran an update).
+OWN_HELP = {'init', 'rules', 'guide', 'check', 'mode', 'update', 'config', 'setup', 'agents', 'target', 'project',
+            'env', 'run', 'library', 'models', 'obsidian', 'evidence'}
+
+
+def command_help(command):
+    """The USAGE lines for one command, with their indented continuation lines."""
+    out, taking = [], False
+    for line in USAGE.splitlines():
+        text = line.strip()
+        if len(line) - len(line.lstrip()) > 20 and taking:
+            out.append(line)
+            continue
+        taking = text == command or text.startswith(command + ' ')
+        if taking:
+            out.append(line)
+    return 'usage: manuwright\n' + '\n'.join(out) if out else USAGE
+
+
 def version():
     text = (ENGINE / 'harness' / '__init__.py').read_text(encoding='utf-8')
     return text.split("__version__ = '")[1].split("'")[0]
@@ -185,6 +206,9 @@ def main(argv=None):
         return 0
     if command == 'hook':
         return hook(rest)
+    if command in OWN_HELP and HELP_FLAGS & set(rest[:1] if command == 'run' else rest):  # run: later args are the script's
+        print(command_help(command))
+        return 0
     if command in {'obsidian', 'evidence'}:
         if not __package__:
             sys.path.insert(0, str(HERE.parent))
@@ -218,6 +242,9 @@ def main(argv=None):
         if command in {'config', 'setup', 'mode'}:
             return getattr(lifecycle, command)(rest)
         return getattr(lifecycle, command)(ENGINE, rest)
+    if command in HARNESS_COMMANDS and HELP_FLAGS & set(rest):  # argparse help; no paper folder needed
+        env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, [str(ENGINE), os.environ.get('PYTHONPATH')])))
+        return subprocess.call([sys.executable, '-m', 'harness', command, '--help'], env=env)
     if command in HARNESS_COMMANDS:
         if command in {'status', 'verify', 'packet', 'build'} and '--project' not in rest:
             manifest = load_lifecycle().find_manifest([])  # inside a paper folder: its project.json

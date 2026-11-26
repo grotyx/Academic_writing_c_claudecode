@@ -50,7 +50,7 @@ def validate_bindings(root, manifest, paper_id, artifacts, checker):
         values = checker.extract_numbers_from_text(raw)
         if len(values) != 1 or str(record['raw']).strip() != raw.strip():
             raise ValueError(f'result does not match exact CSV cell: {key}')
-        records[key] = (record, checker.ResultNumber(values[0], raw, path, row, source['column']))
+        records[key] = (record, checker.ResultNumber(values[0], raw.translate(checker.TYPOGRAPHIC), path, row, source['column']))
     by_artifact = {inside(root, a): [] for a in artifacts}
     for binding in data['bindings']:
         path = inside(root, binding['artifact'])

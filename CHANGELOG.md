@@ -1,5 +1,15 @@
 # Changelog
 
+### v1.10.9 (261126)
+
+Checks that could pass a wrong manuscript (found by two independent reviews).
+
+- Numbers: a typographic minus (−) and ≤/≥ now count, so "−2.5" no longer matches 2.5 and "p ≤ 2.5" is read as a p value. "P value <", "*p*-value <" and a "*P*-value" table header are p values too, so a CSV p of 0.054 cannot support "P value < 0.05".
+- Numbers: a line that starts with "Table 1" or "Figure 2" now has its other numbers checked ("Table 1 summarizes 876 patients"). A year-sized integer is a year only in date context: "We enrolled 2024 patients", "2,048 patients" and "n = 2019" are checked; "in 2019 at", "between 2015 and 2020" and "the 2019 guideline" stay exempt. Slash dates need a four-digit year, so "15/28/12" is a count. Existing bindings may need `manuwright bind` again because more numbers are now tokens.
+- Citations: "[evid:x]", "[EVID :x]", an opener never closed on its line ("[EVID:x.") and a tag broken across a line now fail as malformed instead of counting as zero citations.
+- Gate ledgers: status PASS beside any recorded check other than PASS or N/A fails, whichever checks the command names.
+- `manuwright <command> --help` prints usage and stops for init, update, env, run, setup, agents, config and the other built-in commands (init --help created a "--help" folder; update --help ran an update). `verify --help` and the other profiles no longer need a paper folder.
+
 ### v1.10.8 (261107)
 
 PyPI page.

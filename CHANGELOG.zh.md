@@ -1,5 +1,15 @@
 # 变更记录
 
+### v1.10.9 (261126)
+
+修复可能让错误稿件通过的检查 (两份独立评审发现)。
+
+- 数字: 识别印刷用减号 (−) 和 ≤/≥。"−2.5" 不再匹配 2.5,"p ≤ 2.5" 按 p 值读取。"P value <"、"*p*-value <" 和表头 "*P*-value" 也视为 p 值,因此 CSV 中 p = 0.054 不能支持 "P value < 0.05"。
+- 数字: 以 "Table 1"、"Figure 2" 开头的行中其他数字也会检查 ("Table 1 summarizes 876 patients")。年份大小的整数仅在日期语境中视为年份:"We enrolled 2024 patients"、"2,048 patients"、"n = 2019" 会检查,"in 2019 at"、"between 2015 and 2020"、"the 2019 guideline" 仍豁免。斜杠日期需四位年份,"15/28/12" 按数字检查。检查的数字变多,已有 binding 可能需要重新运行 `manuwright bind`。
+- 引用: "[evid:x]"、"[EVID :x]"、行内未闭合的标签 ("[EVID:x.") 和跨行断开的标签不再计为 0 条引用,而是作为格式错误失败。
+- 门控记录: status 为 PASS 但记录的 check 中有 PASS、N/A 以外的状态时失败,无论命令指定了哪些 check。
+- `manuwright <命令> --help` 对 init、update、env、run、setup、agents、config 等内置命令只打印用法并退出 (此前 init --help 会创建 "--help" 文件夹,update --help 会执行更新)。`verify --help` 等无需论文文件夹。
+
 ### v1.10.8 (261107)
 
 PyPI 页面。
